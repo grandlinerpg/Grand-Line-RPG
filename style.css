@@ -188,7 +188,7 @@ nav a:hover::after{
 /* LOGO CENTRAL */
 
 .main-logo{
-  width:350px;
+  width:300px;
   max-width:90%;
 
   margin-bottom:30px;
@@ -202,7 +202,7 @@ nav a:hover::after{
 .hero p{
   font-family:'Cinzel', serif;
 
-  font-size:22px;
+  font-size:18px;
   font-weight:600;
 
   color:#f5e6c8;
@@ -224,7 +224,7 @@ nav a:hover::after{
 .hero button{
   position:relative;
 
-  padding:22px 70px;
+  padding:14px 32px;
 
   border:2px solid #9b5b00;
   border-radius:14px;
@@ -239,7 +239,7 @@ nav a:hover::after{
   color:#f6d365;
 
   font-family:'Cinzel', serif;
-  font-size:30px;
+  font-size:20px;
   font-weight:700;
 
   letter-spacing:1px;

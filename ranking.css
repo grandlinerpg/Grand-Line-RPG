@@ -1,0 +1,215 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial, sans-serif;
+  color:white;
+
+  min-height:100vh;
+
+  overflow-x:hidden;
+}
+
+/* FUNDO */
+
+.background{
+  position:fixed;
+  inset:0;
+
+  background-image:url('https://i.imgur.com/pKx1Cvd.png');
+
+  background-size:cover;
+  background-position:center;
+
+  z-index:-2;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+
+  background:rgba(0,0,0,0.72);
+
+  z-index:-1;
+}
+
+/* NAVBAR */
+
+.navbar{
+  width:100%;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:12px 35px;
+
+  background:rgba(0,0,0,0.45);
+
+  backdrop-filter:blur(6px);
+
+  border-bottom:
+    1px solid rgba(255,215,120,0.12);
+}
+
+/* LOGO */
+
+.logo-area{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:55px;
+}
+
+.logo-text{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.logo-text h1{
+  font-family:'Cinzel', serif;
+
+  font-size:22px;
+
+  color:#f4d089;
+}
+
+.logo-text p{
+  font-family:'Cinzel', serif;
+
+  font-size:12px;
+
+  letter-spacing:4px;
+
+  color:#f4d089;
+}
+
+/* MENU */
+
+nav{
+  display:flex;
+  gap:24px;
+}
+
+nav a{
+  font-family:'Cinzel', serif;
+
+  color:#f1d08a;
+
+  text-decoration:none;
+
+  font-size:14px;
+  font-weight:bold;
+
+  transition:0.3s;
+}
+
+nav a:hover{
+  color:white;
+}
+
+/* TÍTULO */
+
+.ranking-title{
+  text-align:center;
+
+  margin-top:50px;
+  margin-bottom:40px;
+}
+
+.ranking-title h1{
+  font-family:'Cinzel', serif;
+
+  font-size:42px;
+
+  color:#f6d365;
+
+  margin-bottom:10px;
+}
+
+.ranking-title p{
+  color:#ddd;
+
+  font-size:15px;
+}
+
+/* RANKING */
+
+#ranking-container{
+  width:100%;
+  max-width:900px;
+
+  margin:auto;
+
+  display:flex;
+  flex-direction:column;
+
+  gap:18px;
+
+  padding:20px;
+}
+
+/* CARD */
+
+.card{
+  display:flex;
+  align-items:center;
+
+  gap:25px;
+
+  background:rgba(0,0,0,0.45);
+
+  border:1px solid rgba(255,215,120,0.2);
+
+  border-radius:16px;
+
+  padding:22px;
+
+  backdrop-filter:blur(6px);
+
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-2px);
+
+  border-color:#f6d365;
+}
+
+/* POSIÇÃO */
+
+.rank{
+  font-family:'Cinzel', serif;
+
+  font-size:28px;
+  font-weight:bold;
+
+  color:#f6d365;
+
+  min-width:70px;
+}
+
+/* INFO */
+
+.info h2{
+  font-family:'Cinzel', serif;
+
+  font-size:24px;
+
+  margin-bottom:8px;
+
+  color:white;
+}
+
+.info p{
+  color:#ddd;
+
+  font-size:16px;
+}

@@ -18,7 +18,7 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR -->
+  <!-- NAVBAR (IGUAL JOGADORES) -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -27,7 +27,7 @@
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
-        <p>- RPG -</p>
+        <p>— RPG —</p>
       </div>
 
     </div>
@@ -44,7 +44,6 @@
   <section class="guide-title">
 
     <h1>GUIA DO RPG</h1>
-
     <p>Conheça os principais sistemas do Grand Line RPG.</p>
 
   </section>
@@ -59,12 +58,11 @@
 
       <p>
         Os estilos de luta definem a forma como seu personagem combate.
-        Cada estilo possui habilidades e técnicas próprias.
       </p>
 
-      <a href="estilo-luta.html" class="btn-sistema">
+      <button onclick="go('estilo-luta.html')">
         VER SISTEMA
-      </a>
+      </button>
 
     </div>
 
@@ -74,12 +72,12 @@
       <h2>🧬 Raças e Tribos</h2>
 
       <p>
-        O mundo possui diversas raças e tribos raras com habilidades únicas.
+        Raças especiais com bônus únicos dentro do mundo.
       </p>
 
-      <a href="racas.html" class="btn-sistema">
+      <button onclick="go('racas.html')">
         VER SISTEMA
-      </a>
+      </button>
 
     </div>
 
@@ -89,16 +87,23 @@
       <h2>🍎 Akuma no Mi</h2>
 
       <p>
-        Frutas místicas que concedem poderes sobrenaturais aos usuários.
+        Frutas que concedem poderes sobrenaturais.
       </p>
 
-      <a href="akuma-no-mi.html" class="btn-sistema">
+      <button onclick="go('akuma-no-mi.html')">
         VER SISTEMA
-      </a>
+      </button>
 
     </div>
 
   </main>
+
+  <!-- JS SIMPLES (SÓ NAVEGAÇÃO) -->
+  <script>
+    function go(page){
+      window.location.href = page;
+    }
+  </script>
 
 </body>
 </html>

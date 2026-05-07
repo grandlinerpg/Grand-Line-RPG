@@ -40,16 +40,16 @@ body{
   z-index:-1;
 }
 
-/* NAVBAR */
+/* NAVBAR (IGUAL JOGADORES) */
 
 .navbar{
   width:100%;
+
   display:flex;
+  justify-content:space-between;
   align-items:center;
 
   padding:15px 50px;
-
-  position:relative;
 
   background:
     linear-gradient(
@@ -60,7 +60,8 @@ body{
 
   backdrop-filter:blur(8px);
 
-  border-bottom:1px solid rgba(255,215,120,0.15);
+  border-bottom:
+    1px solid rgba(255,215,120,0.15);
 }
 
 /* LOGO */
@@ -69,12 +70,13 @@ body{
   display:flex;
   align-items:center;
   gap:15px;
-  z-index:2;
 }
 
 .logo{
   width:65px;
-  filter: drop-shadow(0 0 8px rgba(255,215,120,0.35));
+
+  filter:
+    drop-shadow(0 0 8px rgba(255,215,120,0.35));
 }
 
 .logo-text{
@@ -85,29 +87,36 @@ body{
 
 .logo-text h1{
   font-family:'Cinzel', serif;
+
   color:#f4d089;
+
   font-size:28px;
   font-weight:700;
+
   letter-spacing:2px;
-  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
+
+  text-shadow:
+    2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .logo-text p{
   font-family:'Cinzel', serif;
+
   color:#f4d089;
+
   font-size:12px;
+
   letter-spacing:6px;
+
   margin-top:-3px;
-  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
+
+  text-shadow:
+    2px 2px 4px rgba(0,0,0,0.8);
 }
 
-/* MENU CENTRALIZADO */
+/* MENU */
 
 nav{
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-
   display:flex;
   gap:36px;
 }
@@ -127,11 +136,13 @@ nav a{
 
   transition:0.3s;
 
-  text-shadow:0 2px 4px rgba(0,0,0,0.8);
+  text-shadow:
+    0 2px 4px rgba(0,0,0,0.8);
 }
 
 nav a::after{
   content:"";
+
   position:absolute;
 
   left:50%;
@@ -143,12 +154,15 @@ nav a::after{
   background:#c89b3c;
 
   transform:translateX(-50%);
+
   transition:0.3s;
 }
 
 nav a:hover{
   color:#ffe6a7;
-  text-shadow:0 0 8px rgba(255,215,120,0.6);
+
+  text-shadow:
+    0 0 8px rgba(255,215,120,0.6);
 }
 
 nav a:hover::after{
@@ -159,20 +173,27 @@ nav a:hover::after{
 
 .guide-title{
   text-align:center;
+
   margin-top:60px;
   margin-bottom:50px;
 }
 
 .guide-title h1{
   font-family:'Cinzel', serif;
+
   font-size:44px;
+
   color:#f6d365;
+
   margin-bottom:12px;
-  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
+
+  text-shadow:
+    2px 2px 6px rgba(0,0,0,0.8);
 }
 
 .guide-title p{
   color:#ddd;
+
   font-size:16px;
 }
 
@@ -186,7 +207,8 @@ nav a:hover::after{
 
   display:grid;
 
-  grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns:
+    repeat(auto-fit, minmax(300px, 1fr));
 
   gap:25px;
 
@@ -211,32 +233,36 @@ nav a:hover::after{
 
 .guide-card:hover{
   transform:translateY(-3px);
+
   border-color:#f6d365;
 }
 
 .guide-card h2{
   font-family:'Cinzel', serif;
+
   color:#f6d365;
+
   font-size:28px;
+
   margin-bottom:18px;
 }
 
 .guide-card p{
   color:#ddd;
+
   line-height:1.7;
+
   margin-bottom:18px;
 }
 
-/* BOTÃO (link estilo botão) */
+/* BOTÃO RPG */
 
-.btn-sistema{
-  display:block;
+.guide-card button{
   width:100%;
+
   padding:14px;
 
-  text-align:center;
-  text-decoration:none;
-
+  border:none;
   border-radius:14px;
 
   background:
@@ -252,10 +278,12 @@ nav a:hover::after{
   font-size:16px;
   font-weight:700;
 
+  cursor:pointer;
+
   transition:0.3s;
 }
 
-.btn-sistema:hover{
+.guide-card button:hover{
   transform:scale(1.02);
 
   background:
@@ -273,22 +301,29 @@ nav a:hover::after{
   .navbar{
     flex-direction:column;
     gap:25px;
+
     padding:20px;
   }
 
   nav{
-    position:static;
-    transform:none;
-
-    justify-content:center;
     flex-wrap:wrap;
+    justify-content:center;
     gap:25px;
   }
+
 }
 
 @media(max-width:700px){
 
   .guide-title h1{
     font-size:34px;
+  }
+
+  .guide-card h2{
+    font-size:24px;
+  }
+
+  .guide-card{
+    padding:22px;
   }
 }

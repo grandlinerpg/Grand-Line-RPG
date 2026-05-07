@@ -9,10 +9,7 @@
 
   <link rel="stylesheet" href="guia.css">
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap"
-    rel="stylesheet"
-  >
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -26,10 +23,7 @@
 
     <div class="logo-area">
 
-      <img
-        src="https://i.imgur.com/aBJrsQt.png"
-        class="logo"
-      >
+      <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
@@ -51,119 +45,60 @@
 
     <h1>GUIA DO RPG</h1>
 
-    <p>
-      Conheça os principais sistemas do Grand Line RPG.
-    </p>
+    <p>Conheça os principais sistemas do Grand Line RPG.</p>
 
   </section>
 
-  <!-- MENUS -->
+  <!-- CONTEÚDO -->
   <main class="guide-container">
 
-    <!-- CARD -->
+    <!-- CARD 1 -->
     <div class="guide-card">
 
       <h2>⚔️ Estilo de Luta</h2>
 
       <p>
         Os estilos de luta definem a forma como seu personagem combate.
-        Cada estilo possui habilidades, vantagens e técnicas próprias.
+        Cada estilo possui habilidades e técnicas próprias.
       </p>
 
-      <button onclick="toggleContent('fight-style')">
+      <a href="estilo-luta.html" class="btn-sistema">
         VER SISTEMA
-      </button>
-
-      <div class="guide-content" id="fight-style">
-
-        <p>
-          Ao iniciar no RPG, cada jogador pode escolher um estilo
-          de luta para o personagem.
-        </p>
-
-        <p>
-          Novos estilos podem ser aprendidos através de mestres,
-          pergaminhos ou eventos especiais.
-        </p>
-
-      </div>
+      </a>
 
     </div>
 
-    <!-- CARD -->
+    <!-- CARD 2 -->
     <div class="guide-card">
 
       <h2>🧬 Raças e Tribos</h2>
 
       <p>
-        O mundo possui diversas raças e tribos raras,
-        cada uma com habilidades e bônus únicos.
+        O mundo possui diversas raças e tribos raras com habilidades únicas.
       </p>
 
-      <button onclick="toggleContent('races')">
+      <a href="racas.html" class="btn-sistema">
         VER SISTEMA
-      </button>
-
-      <div class="guide-content" id="races">
-
-        <p>
-          Algumas raças possuem resistência especial,
-          enquanto outras recebem bônus físicos ou mágicos.
-        </p>
-
-        <p>
-          Tribos lendárias podem ser extremamente raras
-          e difíceis de obter.
-        </p>
-
-      </div>
+      </a>
 
     </div>
 
-    <!-- CARD -->
+    <!-- CARD 3 -->
     <div class="guide-card">
 
       <h2>🍎 Akuma no Mi</h2>
 
       <p>
-        As Akuma no Mi concedem poderes sobrenaturais
-        capazes de transformar completamente o combate.
+        Frutas místicas que concedem poderes sobrenaturais aos usuários.
       </p>
 
-      <button onclick="toggleContent('fruits')">
+      <a href="akuma-no-mi.html" class="btn-sistema">
         VER SISTEMA
-      </button>
-
-      <div class="guide-content" id="fruits">
-
-        <p>
-          Existem diferentes categorias de Akuma no Mi,
-          incluindo Paramecia, Zoan e Logia.
-        </p>
-
-        <p>
-          Usuários perdem a capacidade de nadar,
-          porém recebem habilidades devastadoras.
-        </p>
-
-      </div>
+      </a>
 
     </div>
 
   </main>
-
-  <script>
-
-    function toggleContent(id){
-
-      const content =
-        document.getElementById(id);
-
-      content.classList.toggle("active");
-
-    }
-
-  </script>
 
 </body>
 </html>

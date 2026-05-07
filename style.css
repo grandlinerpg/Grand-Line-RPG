@@ -20,7 +20,7 @@ body {
 
 .overlay {
   background: rgba(0,0,0,0.6);
-  padding: 40px;
+  padding: 20px;
   border-radius: 20px;
   text-align: center;
   color: white;
@@ -30,19 +30,19 @@ body {
 }
 
 h1 {
-  font-size: 48px;
-  margin-bottom: 20px;
+  font-size: 32px;
+  margin-bottom: 15px;
 }
 
 p {
-  font-size: 18px;
-  margin-bottom: 30px;
+  font-size: 16px;
+  margin-bottom: 20px;
 }
 
 button {
-  padding: 15px 30px;
+  padding: 12px 20px;
   border: none;
   border-radius: 10px;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
 }

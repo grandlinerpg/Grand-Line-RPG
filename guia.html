@@ -18,7 +18,7 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR (IGUAL JOGADORES) -->
+  <!-- NAVBAR -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -43,6 +43,7 @@
   <section class="guide-title">
 
     <h1>GUIA DO RPG</h1>
+
     <p>Conheça os principais sistemas do Grand Line RPG.</p>
 
   </section>
@@ -50,13 +51,28 @@
   <!-- CONTEÚDO -->
   <main class="guide-container">
 
-    <!-- CARD 1 -->
+    <!-- 1 -->
+    <div class="guide-card">
+
+      <h2>📖 Manual de Combate</h2>
+
+      <p>
+        Aprenda como funcionam os combates, regras básicas, turnos e ações do sistema.
+      </p>
+
+      <button onclick="go('manual-combate.html')">
+        VER SISTEMA
+      </button>
+
+    </div>
+
+    <!-- 2 -->
     <div class="guide-card">
 
       <h2>⚔️ Estilo de Luta</h2>
 
       <p>
-        Um estilo de luta é a maneira como o personagem enfrenta o combate.
+        Cada personagem possui um estilo de combate que define seu poder e técnica.
       </p>
 
       <button onclick="go('estilo-luta.html')">
@@ -65,13 +81,13 @@
 
     </div>
 
-    <!-- CARD 2 -->
+    <!-- 3 -->
     <div class="guide-card">
 
       <h2>🧬 Raças e Tribos</h2>
 
       <p>
-        O mundo de One Piece é repleto de diferentes raças e tribos com características únicas. 
+        Diferentes raças possuem habilidades únicas e bônus especiais.
       </p>
 
       <button onclick="go('racas.html')">
@@ -80,13 +96,13 @@
 
     </div>
 
-    <!-- CARD 3 -->
+    <!-- 4 -->
     <div class="guide-card">
 
       <h2>🍎 Akuma no Mi</h2>
 
       <p>
-        Frutas do Diabo são frutas sobrenaturais que concedem um poder único quando comidas.
+        Frutas do diabo que concedem poderes únicos ao usuário.
       </p>
 
       <button onclick="go('akuma-no-mi.html')">
@@ -95,9 +111,24 @@
 
     </div>
 
+    <!-- 5 -->
+    <div class="guide-card">
+
+      <h2>💥 Efeitos de Combate</h2>
+
+      <p>
+        Status como burn, stun, bleed e outros efeitos que alteram batalhas.
+      </p>
+
+      <button onclick="go('efeitos-combate.html')">
+        VER SISTEMA
+      </button>
+
+    </div>
+
   </main>
 
-  <!-- JS SIMPLES (SÓ NAVEGAÇÃO) -->
+  <!-- JS -->
   <script>
     function go(page){
       window.location.href = page;

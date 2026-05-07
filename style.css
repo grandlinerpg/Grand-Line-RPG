@@ -1,47 +1,48 @@
-body{
-  margin:0;
-  height:100vh;
-
-  background-image:url('https://i.imgur.com/pKx1Cvd.png');
-
-  background-size:cover;
-  background-position:center;
-
-  display:flex;
-  justify-content:center;
-  align-items:center;
-
-  font-family:Arial;
+* {
+  box-sizing: border-box;
 }
 
-.overlay{
-  background:rgba(0,0,0,0.6);
+body {
+  margin: 0;
+  height: 100vh;
+  overflow-x: hidden;
 
-  padding:40px;
+  background-image: url('https://i.imgur.com/pKx1Cvd.png');
+  background-size: cover;
+  background-position: center;
 
-  border-radius:20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  text-align:center;
-
-  color:white;
-
-  width:400px;
+  font-family: Arial;
 }
 
-h1{
-  font-size:48px;
-  margin-bottom:20px;
+.overlay {
+  background: rgba(0,0,0,0.6);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  color: white;
+
+  width: 90%;
+  max-width: 400px;
 }
 
-p{
-  font-size:18px;
-  margin-bottom:30px;
+h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
 }
 
-button{
-  padding:15px 30px;
-  border:none;
-  border-radius:10px;
-  font-size:18px;
-  cursor:pointer;
+p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+button {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
 }

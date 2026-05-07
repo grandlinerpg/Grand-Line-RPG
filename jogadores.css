@@ -50,7 +50,12 @@ body{
   background:rgba(0,0,0,0.45);
 
   backdrop-filter:blur(6px);
+
+  border-bottom:
+    1px solid rgba(255,215,120,0.12);
 }
+
+/* LOGO */
 
 .logo-area{
   display:flex;
@@ -102,6 +107,12 @@ nav a{
 
   font-size:14px;
   font-weight:bold;
+
+  transition:0.3s;
+}
+
+nav a:hover{
+  color:white;
 }
 
 /* TÍTULO */
@@ -125,20 +136,22 @@ nav a{
 
 .players-title p{
   color:#ddd;
+
+  font-size:15px;
 }
 
 /* PLAYERS */
 
 #players-container{
   width:100%;
-  max-width:900px;
+  max-width:950px;
 
   margin:auto;
 
   display:flex;
   flex-direction:column;
 
-  gap:18px;
+  gap:20px;
 
   padding:20px;
 }
@@ -146,13 +159,18 @@ nav a{
 /* CARD */
 
 .card{
+  display:flex;
+  align-items:center;
+
+  gap:22px;
+
   background:rgba(0,0,0,0.45);
 
   border:1px solid rgba(255,215,120,0.2);
 
-  border-radius:16px;
+  border-radius:18px;
 
-  padding:22px;
+  padding:20px;
 
   backdrop-filter:blur(6px);
 
@@ -163,6 +181,21 @@ nav a{
   transform:translateY(-2px);
 
   border-color:#f6d365;
+}
+
+/* IMAGEM */
+
+.character-img{
+  width:90px;
+  height:90px;
+
+  object-fit:cover;
+
+  border-radius:14px;
+
+  border:2px solid #c89b3c;
+
+  flex-shrink:0;
 }
 
 /* INFO */
@@ -183,4 +216,21 @@ nav a{
   font-size:16px;
 
   margin-bottom:6px;
+}
+
+/* RESPONSIVO */
+
+@media(max-width:700px){
+
+  .card{
+    flex-direction:column;
+
+    text-align:center;
+  }
+
+  .character-img{
+    width:110px;
+    height:110px;
+  }
+
 }

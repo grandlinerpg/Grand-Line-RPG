@@ -59,13 +59,23 @@ body{
   width:70px;
 }
 
+.logo-text{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
 .logo-text h1{
   color:#f6d365;
   font-size:28px;
+  margin:0;
 }
 
 .logo-text p{
+  font-size:20px;
   letter-spacing:10px;
+  margin:0;
+  text-align:center;
 }
 
 /* Links */

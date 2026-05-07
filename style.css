@@ -6,34 +6,8 @@
 
 body{
   font-family:'Cinzel', serif;
+  background:#0b0f1a;
   color:white;
-  overflow-x:hidden;
-}
-
-/* FUNDO */
-
-.background{
-  position:fixed;
-  width:100%;
-  height:100vh;
-
-  background:url('https://i.imgur.com/pKx1Cvd.png') center/cover;
-
-  z-index:-2;
-}
-
-.overlay{
-  position:fixed;
-  width:100%;
-  height:100vh;
-
-  background:linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.55),
-    rgba(0,0,0,0.8)
-  );
-
-  z-index:-1;
 }
 
 /* NAVBAR */
@@ -43,55 +17,50 @@ body{
   justify-content:space-between;
   align-items:center;
 
-  padding:18px 40px;
+  padding:20px 60px;
 
-  background:linear-gradient(to bottom,#07111f,#0b1d36);
+  background:linear-gradient(#0a1220,#0d1b33);
 
   border-bottom:2px solid #c89b3c;
-
-  position:relative;
 }
 
 /* LOGO */
 
-.logo-area{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
 .logo{
-  width:70px;
-  filter:drop-shadow(0 0 10px rgba(255,215,0,0.3));
-}
+  font-size:26px;
+  font-weight:700;
 
-.logo-text h1{
-  font-size:24px;
   color:#f6d365;
+
+  letter-spacing:2px;
+
+  text-shadow:0 0 10px rgba(0,0,0,0.6);
 }
 
-.logo-text p{
-  font-size:14px;
-  letter-spacing:6px;
-  color:#d6c08b;
-}
+/* MENU */
 
-/* MENU DESKTOP */
-
-nav{
+.menu{
   display:flex;
-  gap:30px;
+  gap:35px;
 }
 
-nav a{
+.menu a{
   text-decoration:none;
-  color:#f5e6b3;
+
+  color:#e8d8a8;
+
   font-weight:600;
+
   position:relative;
+
+  transition:0.3s;
 }
 
-nav a::after{
+/* linha animada */
+
+.menu a::after{
   content:"";
+
   position:absolute;
   bottom:-6px;
   left:0;
@@ -100,65 +69,45 @@ nav a::after{
   height:2px;
 
   background:#d4a017;
+
   transition:0.3s;
 }
 
-nav a:hover{
-  color:#ffd56a;
+.menu a:hover{
+  color:#ffd86a;
+  text-shadow:0 0 10px rgba(255,215,0,0.4);
 }
 
-nav a:hover::after{
+.menu a:hover::after{
   width:100%;
-}
-
-/* BOTÃO MOBILE */
-
-.menu-btn{
-  display:none;
-  background:none;
-  border:none;
-  color:#f6d365;
-  font-size:32px;
-  cursor:pointer;
 }
 
 /* HERO */
 
 .hero{
-  min-height:85vh;
+  height:80vh;
 
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
-
-  text-align:center;
-
-  padding:30px;
-}
-
-.main-logo{
-  width:400px;
-  max-width:85%;
-  margin-bottom:20px;
-}
-
-.hero p{
-  max-width:850px;
-  font-size:22px;
-  margin-bottom:40px;
-  color:#f3ead2;
 }
 
 /* BOTÃO JORNADA */
 
 .btn-journey{
-  padding:22px 60px;
+  position:relative;
 
-  border-radius:20px;
+  padding:24px 70px;
+
+  border-radius:18px;
   border:2px solid #d4a017;
 
-  background:linear-gradient(to bottom,#b32617,#5a0a05);
+  background:
+  linear-gradient(
+    to bottom,
+    #b32617,
+    #6b0c05
+  );
 
   color:#f8e7b0;
 
@@ -169,48 +118,55 @@ nav a:hover::after{
 
   transition:0.3s;
 
+  text-shadow:0 2px 6px rgba(0,0,0,0.8);
+
   box-shadow:
-    inset 0 2px 8px rgba(255,255,255,0.1),
-    0 8px 25px rgba(0,0,0,0.6);
+    inset 0 2px 10px rgba(255,255,255,0.1),
+    0 10px 25px rgba(0,0,0,0.6);
 }
+
+/* brilho topo */
+
+.btn-journey::before{
+  content:"";
+
+  position:absolute;
+  top:0;
+  left:0;
+
+  width:100%;
+  height:50%;
+
+  background:linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.2),
+    transparent
+  );
+
+  border-radius:18px;
+
+  pointer-events:none;
+}
+
+/* hover */
 
 .btn-journey:hover{
-  transform:scale(1.05);
+  transform:translateY(-3px) scale(1.05);
 
-  background:linear-gradient(to bottom,#d5301c,#7a1208);
+  background:
+  linear-gradient(
+    to bottom,
+    #d5301c,
+    #7a1208
+  );
 
   box-shadow:
-    0 0 25px rgba(255,180,0,0.35);
+    0 0 25px rgba(255,180,0,0.35),
+    0 12px 30px rgba(0,0,0,0.7);
 }
 
-/* MOBILE */
+/* click */
 
-@media(max-width:900px){
-
-  .menu-btn{
-    display:block;
-  }
-
-  nav{
-    position:absolute;
-
-    top:70px;
-    right:20px;
-
-    flex-direction:column;
-
-    background:linear-gradient(#081326,#0b1d36);
-
-    border:2px solid #c89b3c;
-
-    padding:20px;
-
-    border-radius:15px;
-
-    display:none;
-  }
-
-  nav.active{
-    display:flex;
-  }
+.btn-journey:active{
+  transform:scale(0.98);
 }

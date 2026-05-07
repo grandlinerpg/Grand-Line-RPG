@@ -40,7 +40,7 @@ body{
   z-index:-1;
 }
 
-/* NAVBAR (IGUAL JOGADORES) */
+/* NAVBAR */
 
 .navbar{
   width:100%;
@@ -60,8 +60,7 @@ body{
 
   backdrop-filter:blur(8px);
 
-  border-bottom:
-    1px solid rgba(255,215,120,0.15);
+  border-bottom:1px solid rgba(255,215,120,0.15);
 }
 
 /* LOGO */
@@ -74,9 +73,7 @@ body{
 
 .logo{
   width:65px;
-
-  filter:
-    drop-shadow(0 0 8px rgba(255,215,120,0.35));
+  filter:drop-shadow(0 0 8px rgba(255,215,120,0.35));
 }
 
 .logo-text{
@@ -87,31 +84,20 @@ body{
 
 .logo-text h1{
   font-family:'Cinzel', serif;
-
   color:#f4d089;
-
   font-size:28px;
   font-weight:700;
-
   letter-spacing:2px;
-
-  text-shadow:
-    2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .logo-text p{
   font-family:'Cinzel', serif;
-
   color:#f4d089;
-
   font-size:12px;
-
   letter-spacing:6px;
-
   margin-top:-3px;
-
-  text-shadow:
-    2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
 }
 
 /* MENU */
@@ -122,79 +108,42 @@ nav{
 }
 
 nav a{
-  position:relative;
-
   font-family:'Cinzel', serif;
   font-size:16px;
   font-weight:600;
-
   color:#f1d08a;
-
   text-decoration:none;
-
   letter-spacing:1px;
-
   transition:0.3s;
-
-  text-shadow:
-    0 2px 4px rgba(0,0,0,0.8);
-}
-
-nav a::after{
-  content:"";
-
-  position:absolute;
-
-  left:50%;
-  bottom:-8px;
-
-  width:0%;
-  height:2px;
-
-  background:#c89b3c;
-
-  transform:translateX(-50%);
-
-  transition:0.3s;
+  text-shadow:0 2px 4px rgba(0,0,0,0.8);
 }
 
 nav a:hover{
   color:#ffe6a7;
-
-  text-shadow:
-    0 0 8px rgba(255,215,120,0.6);
+  text-shadow:0 0 8px rgba(255,215,120,0.6);
 }
 
-nav a:hover::after{
-  width:100%;
-}
-
-/* TÍTULO PRINCIPAL */
+/* TÍTULO */
 
 .guide-title{
   text-align:center;
-
   margin-top:60px;
   margin-bottom:50px;
 }
 
 .guide-title h1{
   font-family:'Cinzel', serif;
-
   font-size:44px;
-
   color:#f6d365;
-
   margin-bottom:12px;
-
-  text-shadow:
-    2px 2px 6px rgba(0,0,0,0.8);
+  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
 }
 
 .guide-title p{
+  font-family:'Cinzel', serif;
   color:#ddd;
-
   font-size:16px;
+  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
 }
 
 /* CONTAINER */
@@ -202,14 +151,10 @@ nav a:hover::after{
 .guide-container{
   width:100%;
   max-width:1100px;
-
   margin:auto;
 
   display:grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(300px, 1fr));
-
+  grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
   gap:25px;
 
   padding:20px 20px 80px;
@@ -219,73 +164,53 @@ nav a:hover::after{
 
 .guide-card{
   background:rgba(0,0,0,0.45);
-
   border:1px solid rgba(255,215,120,0.18);
-
   border-radius:20px;
-
   padding:28px;
 
   backdrop-filter:blur(6px);
-
-  transition:0.3s;
 
   display:flex;
   flex-direction:column;
   align-items:center;
   text-align:center;
+
+  transition:0.3s;
 }
 
 .guide-card:hover{
   transform:translateY(-3px);
-
   border-color:#f6d365;
 }
 
-/* TÍTULO DO CARD */
+/* TITULO */
 
 .guide-card h2{
   font-family:'Cinzel', serif;
-
   color:#f6d365;
-
   font-size:24px;
-
   margin-bottom:14px;
-
-  text-align:center;
 }
 
-/* TEXTO DO CARD */
+/* TEXTO */
 
 .guide-card p{
   color:#ddd;
-
   font-size:16px;
-
   line-height:1.6;
-
   margin-bottom:18px;
-
-  text-align:center;
 }
 
-/* BOTÃO RPG */
+/* BOTÃO */
 
 .guide-card button{
   width:100%;
-
   padding:14px;
 
   border:none;
   border-radius:14px;
 
-  background:
-    linear-gradient(
-      to bottom,
-      #8f1408,
-      #5e0800
-    );
+  background:linear-gradient(to bottom, #8f1408, #5e0800);
 
   color:#f6d365;
 
@@ -294,19 +219,12 @@ nav a:hover::after{
   font-weight:700;
 
   cursor:pointer;
-
   transition:0.3s;
 }
 
 .guide-card button:hover{
   transform:scale(1.02);
-
-  background:
-    linear-gradient(
-      to bottom,
-      #aa1a0b,
-      #730b00
-    );
+  background:linear-gradient(to bottom, #aa1a0b, #730b00);
 }
 
 /* RESPONSIVO */
@@ -316,7 +234,6 @@ nav a:hover::after{
   .navbar{
     flex-direction:column;
     gap:25px;
-
     padding:20px;
   }
 
@@ -325,7 +242,6 @@ nav a:hover::after{
     justify-content:center;
     gap:25px;
   }
-
 }
 
 @media(max-width:700px){

@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Ranking - Grand Line RPG</title>
+  <title>Jogadores - Grand Line RPG</title>
 
-  <link rel="stylesheet" href="ranking.css">
+  <link rel="stylesheet" href="jogadores.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
@@ -37,24 +37,24 @@
 
     <nav>
       <a href="index.html">INÍCIO</a>
-      <a href="ranking.html">RANKING</a>
+      <a href="jogadores.html">JOGADORES</a>
     </nav>
 
   </header>
 
   <!-- TÍTULO -->
-  <section class="ranking-title">
+  <section class="players-title">
 
-    <h1>RANKING GLOBAL</h1>
+    <h1>JOGADORES</h1>
 
     <p>
-      Os piratas mais procurados do Grand Line.
+      Lista oficial de jogadores do Grand Line RPG.
     </p>
 
   </section>
 
-  <!-- RANKING -->
-  <main id="ranking-container"></main>
+  <!-- PLAYERS -->
+  <main id="players-container"></main>
 
   <script>
 
@@ -66,25 +66,21 @@
       .then(data => {
 
         const container =
-          document.getElementById("ranking-container");
+          document.getElementById("players-container");
 
-        data.forEach((player, index) => {
+        data.forEach(player => {
 
           container.innerHTML += `
 
             <div class="card">
 
-              <div class="rank">
-                #${index + 1}
-              </div>
-
               <div class="info">
 
                 <h2>${player.nome}</h2>
 
-                <p>
-                  💰 ${player.recompensa}
-                </p>
+                <p>⭐ Nível: ${player.nivel}</p>
+
+                <p>⚡ EXP: ${player.exp}</p>
 
               </div>
 

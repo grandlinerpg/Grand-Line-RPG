@@ -44,13 +44,11 @@
 
     <h1>JOGADORES</h1>
 
-    <p>
-      Lista oficial de jogadores do Grand Line RPG.
-    </p>
+    <p>Lista oficial de jogadores do Grand Line RPG.</p>
 
   </section>
 
-  <!-- PLAYERS -->
+  <!-- CARDS -->
   <main id="players-container"></main>
 
   <!-- MODAL -->
@@ -78,11 +76,10 @@
       "https://opensheet.elk.sh/1-JMYZlXQ9bi4MftELWt13k9F3LpufVZ46I4c17Fnk_I/teste";
 
     fetch(sheetURL)
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
 
-        const container =
-          document.getElementById("players-container");
+        const container = document.getElementById("players-container");
 
         data.forEach(player => {
 
@@ -112,7 +109,6 @@
             </div>
 
           `;
-
         });
 
       });
@@ -123,14 +119,18 @@
 
       document.getElementById("modal-img").src = img;
       document.getElementById("modal-nome").innerText = nome;
-
       document.getElementById("modal-nivel").innerText = "⭐ Nível: " + nivel;
       document.getElementById("modal-exp").innerText = "⚡ EXP: " + exp;
       document.getElementById("modal-dinheiro").innerText = "💰 Saldo: " + dinheiro;
+
+      document.body.classList.add("modal-open");
     }
 
     function closeModal(){
+
       document.getElementById("modal").style.display = "none";
+
+      document.body.classList.remove("modal-open");
     }
 
   </script>

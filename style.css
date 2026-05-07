@@ -58,7 +58,7 @@ body{
 }
 
 .logo{
-  width:45px;
+  width:50px;
 }
 
 .logo-text h1{
@@ -106,7 +106,7 @@ nav a:hover{
 }
 
 .main-logo{
-  width:700px;
+  width:400px;
   max-width:90%;
 
   margin-bottom:30px;

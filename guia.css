@@ -40,7 +40,7 @@ body{
   z-index:-1;
 }
 
-/* NAVBAR */
+/* NAVBAR (IGUAL JOGADORES) */
 
 .navbar{
   width:100%;
@@ -73,6 +73,7 @@ body{
 
 .logo{
   width:65px;
+
   filter:drop-shadow(0 0 8px rgba(255,215,120,0.35));
 }
 
@@ -108,14 +109,37 @@ nav{
 }
 
 nav a{
+  position:relative;
+
   font-family:'Cinzel', serif;
   font-size:16px;
   font-weight:600;
+
   color:#f1d08a;
+
   text-decoration:none;
+
   letter-spacing:1px;
+
   transition:0.3s;
+
   text-shadow:0 2px 4px rgba(0,0,0,0.8);
+}
+
+nav a::after{
+  content:"";
+
+  position:absolute;
+  left:50%;
+  bottom:-8px;
+
+  width:0%;
+  height:2px;
+
+  background:#c89b3c;
+
+  transform:translateX(-50%);
+  transition:0.3s;
 }
 
 nav a:hover{
@@ -123,27 +147,42 @@ nav a:hover{
   text-shadow:0 0 8px rgba(255,215,120,0.6);
 }
 
-/* TÍTULO */
+nav a:hover::after{
+  width:100%;
+}
+
+/* TÍTULO (IGUAL JOGADORES) */
 
 .guide-title{
   text-align:center;
+
   margin-top:60px;
-  margin-bottom:50px;
+  margin-bottom:40px;
 }
 
 .guide-title h1{
   font-family:'Cinzel', serif;
-  font-size:44px;
+
+  font-size:42px;
+  font-weight:700;
+
   color:#f6d365;
-  margin-bottom:12px;
+
+  letter-spacing:2px;
+
   text-shadow:2px 2px 6px rgba(0,0,0,0.8);
+
+  margin-bottom:12px;
 }
 
 .guide-title p{
   font-family:'Cinzel', serif;
-  color:#ddd;
+
+  color:#f5e6c8;
+
   font-size:16px;
-  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.9);
 }
 
 /* CONTAINER */
@@ -151,10 +190,13 @@ nav a:hover{
 .guide-container{
   width:100%;
   max-width:1100px;
+
   margin:auto;
 
   display:grid;
+
   grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+
   gap:25px;
 
   padding:20px 20px 80px;
@@ -164,9 +206,12 @@ nav a:hover{
 
 .guide-card{
   background:rgba(0,0,0,0.45);
-  border:1px solid rgba(255,215,120,0.18);
-  border-radius:20px;
-  padding:28px;
+
+  border:1px solid rgba(255,215,120,0.2);
+
+  border-radius:18px;
+
+  padding:25px;
 
   backdrop-filter:blur(6px);
 
@@ -176,28 +221,44 @@ nav a:hover{
   text-align:center;
 
   transition:0.3s;
+
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
 }
 
 .guide-card:hover{
-  transform:translateY(-3px);
+  transform:translateY(-2px);
   border-color:#f6d365;
 }
 
-/* TITULO */
+/* TITULO CARD */
 
 .guide-card h2{
   font-family:'Cinzel', serif;
-  color:#f6d365;
+
   font-size:24px;
-  margin-bottom:14px;
+
+  color:#f6d365;
+
+  margin-bottom:8px;
+}
+
+/* EMOJI */
+
+.card-emoji{
+  font-size:32px;
+
+  margin:6px 0 12px 0;
 }
 
 /* TEXTO */
 
 .guide-card p{
   color:#ddd;
+
   font-size:16px;
+
   line-height:1.6;
+
   margin-bottom:18px;
 }
 
@@ -205,6 +266,7 @@ nav a:hover{
 
 .guide-card button{
   width:100%;
+
   padding:14px;
 
   border:none;
@@ -219,6 +281,7 @@ nav a:hover{
   font-weight:700;
 
   cursor:pointer;
+
   transition:0.3s;
 }
 
@@ -255,6 +318,6 @@ nav a:hover{
   }
 
   .guide-card{
-    padding:22px;
+    padding:20px;
   }
 }

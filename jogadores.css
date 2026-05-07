@@ -30,13 +30,7 @@ body{
   position:fixed;
   inset:0;
 
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.70),
-      rgba(0,0,0,0.55)
-    );
-
+  background:linear-gradient(to bottom, rgba(0,0,0,0.70), rgba(0,0,0,0.55));
   z-index:-1;
 }
 
@@ -44,26 +38,17 @@ body{
 
 .navbar{
   width:100%;
-
   display:flex;
   justify-content:space-between;
   align-items:center;
 
   padding:15px 50px;
 
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.65),
-      rgba(0,0,0,0.35)
-    );
-
+  background:linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.35));
   backdrop-filter:blur(8px);
 
   border-bottom:1px solid rgba(255,215,120,0.15);
 }
-
-/* LOGO */
 
 .logo-area{
   display:flex;
@@ -88,7 +73,6 @@ body{
   font-size:28px;
   font-weight:700;
   letter-spacing:2px;
-  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .logo-text p{
@@ -97,7 +81,6 @@ body{
   font-size:12px;
   letter-spacing:6px;
   margin-top:-3px;
-  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
 }
 
 /* MENU */
@@ -113,31 +96,24 @@ nav a{
   font-weight:600;
   color:#f1d08a;
   text-decoration:none;
-  letter-spacing:1px;
   transition:0.3s;
-  text-shadow:0 2px 4px rgba(0,0,0,0.8);
 }
 
 nav a:hover{
   color:#ffe6a7;
-  text-shadow:0 0 8px rgba(255,215,120,0.6);
 }
 
 /* TÍTULO */
 
 .players-title{
   text-align:center;
-  margin-top:60px;
-  margin-bottom:40px;
+  margin:60px 0 40px;
 }
 
 .players-title h1{
   font-family:'Cinzel', serif;
   font-size:42px;
-  font-weight:700;
   color:#f6d365;
-  letter-spacing:2px;
-  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
   margin-bottom:12px;
 }
 
@@ -145,10 +121,9 @@ nav a:hover{
   font-family:'Cinzel', serif;
   color:#f5e6c8;
   font-size:16px;
-  text-shadow:2px 2px 6px rgba(0,0,0,0.9);
 }
 
-/* PLAYERS */
+/* CARDS */
 
 #players-container{
   width:100%;
@@ -162,12 +137,9 @@ nav a:hover{
   padding:20px 20px 60px;
 }
 
-/* CARD */
-
 .card{
   display:flex;
   align-items:center;
-
   gap:20px;
 
   background:rgba(0,0,0,0.45);
@@ -181,8 +153,6 @@ nav a:hover{
   cursor:pointer;
 
   transition:0.3s;
-
-  box-shadow:0 8px 20px rgba(0,0,0,0.35);
 }
 
 .card:hover{
@@ -190,18 +160,13 @@ nav a:hover{
   border-color:#f6d365;
 }
 
-/* IMAGEM */
-
 .character-img{
   width:90px;
   height:90px;
-
   object-fit:cover;
 
   border-radius:12px;
   border:2px solid #c89b3c;
-
-  box-shadow:0 0 12px rgba(255,215,120,0.25);
 }
 
 /* INFO */
@@ -209,17 +174,16 @@ nav a:hover{
 .info h2{
   font-family:'Cinzel', serif;
   font-size:24px;
-  margin-bottom:10px;
   color:#f6d365;
+  margin-bottom:10px;
 }
 
 .info p{
   color:#ddd;
   font-size:16px;
-  margin-bottom:6px;
 }
 
-/* MODAL */
+/* MODAL (CORRETO PC + MOBILE) */
 
 .modal{
   position:fixed;
@@ -231,23 +195,35 @@ nav a:hover{
 
   background:rgba(0,0,0,0.75);
 
-  z-index:999;
+  z-index:9999;
+  padding:20px;
+}
+
+body.modal-open{
+  overflow:hidden;
 }
 
 .modal-box{
+  position:relative;
+
   background:rgba(0,0,0,0.92);
 
   border:1px solid #c89b3c;
+  border-radius:18px;
 
   padding:25px;
 
-  border-radius:18px;
-
-  width:320px;
+  width:100%;
+  max-width:340px;
 
   text-align:center;
 
-  position:relative;
+  animation:pop 0.2s ease-out;
+}
+
+@keyframes pop{
+  from{transform:scale(0.85);opacity:0;}
+  to{transform:scale(1);opacity:1;}
 }
 
 .modal-img{
@@ -265,7 +241,6 @@ nav a:hover{
 .modal-box h2{
   font-family:'Cinzel', serif;
   color:#f6d365;
-  margin-bottom:10px;
 }
 
 .modal-box p{
@@ -280,14 +255,12 @@ nav a:hover{
 
   font-size:24px;
   cursor:pointer;
-
   color:#f6d365;
 }
 
 /* RESPONSIVO */
 
 @media(max-width:950px){
-
   .navbar{
     flex-direction:column;
     gap:25px;
@@ -302,7 +275,6 @@ nav a:hover{
 }
 
 @media(max-width:700px){
-
   .card{
     align-items:flex-start;
   }
@@ -318,5 +290,27 @@ nav a:hover{
 
   .info p{
     font-size:14px;
+  }
+}
+
+@media(max-width:600px){
+  .logo{
+    width:60px;
+  }
+
+  .logo-text h1{
+    font-size:22px;
+  }
+
+  nav{
+    gap:18px;
+  }
+
+  nav a{
+    font-size:15px;
+  }
+
+  .players-title h1{
+    font-size:34px;
   }
 }

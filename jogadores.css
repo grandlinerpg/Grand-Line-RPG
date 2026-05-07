@@ -50,12 +50,7 @@ body{
   background:rgba(0,0,0,0.45);
 
   backdrop-filter:blur(6px);
-
-  border-bottom:
-    1px solid rgba(255,215,120,0.12);
 }
-
-/* LOGO */
 
 .logo-area{
   display:flex;
@@ -107,24 +102,18 @@ nav a{
 
   font-size:14px;
   font-weight:bold;
-
-  transition:0.3s;
-}
-
-nav a:hover{
-  color:white;
 }
 
 /* TÍTULO */
 
-.ranking-title{
+.players-title{
   text-align:center;
 
   margin-top:50px;
   margin-bottom:40px;
 }
 
-.ranking-title h1{
+.players-title h1{
   font-family:'Cinzel', serif;
 
   font-size:42px;
@@ -134,15 +123,13 @@ nav a:hover{
   margin-bottom:10px;
 }
 
-.ranking-title p{
+.players-title p{
   color:#ddd;
-
-  font-size:15px;
 }
 
-/* RANKING */
+/* PLAYERS */
 
-#ranking-container{
+#players-container{
   width:100%;
   max-width:900px;
 
@@ -159,11 +146,6 @@ nav a:hover{
 /* CARD */
 
 .card{
-  display:flex;
-  align-items:center;
-
-  gap:25px;
-
   background:rgba(0,0,0,0.45);
 
   border:1px solid rgba(255,215,120,0.2);
@@ -183,19 +165,6 @@ nav a:hover{
   border-color:#f6d365;
 }
 
-/* POSIÇÃO */
-
-.rank{
-  font-family:'Cinzel', serif;
-
-  font-size:28px;
-  font-weight:bold;
-
-  color:#f6d365;
-
-  min-width:70px;
-}
-
 /* INFO */
 
 .info h2{
@@ -203,13 +172,15 @@ nav a:hover{
 
   font-size:24px;
 
-  margin-bottom:8px;
+  margin-bottom:10px;
 
-  color:white;
+  color:#f6d365;
 }
 
 .info p{
   color:#ddd;
 
   font-size:16px;
+
+  margin-bottom:6px;
 }

@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Ranking - Grand Line RPG</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ranking.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
@@ -28,7 +29,7 @@
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
-        <p>— RPG —</p>
+        <p>- RPG -</p>
       </div>
 
     </div>
@@ -40,16 +41,61 @@
 
   </header>
 
-  <!-- CONTEÚDO -->
-  <main class="hero">
+  <!-- TÍTULO -->
+  <section class="ranking-title">
 
     <h1>RANKING GLOBAL</h1>
 
     <p>
-      Aqui ficará o ranking dos jogadores.
+      Os piratas mais procurados do Grand Line.
     </p>
 
-  </main>
+  </section>
+
+  <!-- RANKING -->
+  <main id="ranking-container"></main>
+
+  <script>
+
+    const sheetURL =
+      "https://opensheet.elk.sh/2PACX-1vRvL6Kx54ljmP5uP_v9MaKvJVNG78mgVRzImGRdM2QNoGQmEg2IXdgi8JM5d-K9OUAUojX1BM3z1hdT/teste";
+
+    fetch(sheetURL)
+      .then(res => res.json())
+      .then(data => {
+
+        const container =
+          document.getElementById("ranking-container");
+
+        data.forEach((player, index) => {
+
+          container.innerHTML += `
+
+            <div class="card">
+
+              <div class="rank">
+                #${index + 1}
+              </div>
+
+              <div class="info">
+
+                <h2>${player.nome}</h2>
+
+                <p>
+                  💰 ${player.recompensa}
+                </p>
+
+              </div>
+
+            </div>
+
+          `;
+
+        });
+
+      });
+
+  </script>
 
 </body>
 </html>

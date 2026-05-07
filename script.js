@@ -1,1 +1,8 @@
-console.log("Grand Line RPG carregado!")
+const menuToggle = document.getElementById("menuToggle");
+const menu = document.getElementById("menu");
+
+menuToggle.addEventListener("click", () => {
+  menu.classList.toggle("active");
+});
+
+console.log("Grand Line RPG carregado!");

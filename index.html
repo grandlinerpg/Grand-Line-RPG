@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Grand Line RPG</title>
+
+  <!-- Fonte -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -14,10 +18,12 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- Navbar -->
+  <!-- NAVBAR -->
   <header class="navbar">
 
+    <!-- Logo -->
     <div class="logo-area">
+
       <img
         src="https://i.imgur.com/aBJrsQt.png"
         class="logo"
@@ -25,21 +31,30 @@
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
-        <p>-RPG-</p>
+        <p>- RPG -</p>
       </div>
+
     </div>
 
-    <nav>
+    <!-- Botão menu mobile -->
+    <button class="menu-toggle" id="menuToggle">
+      ☰
+    </button>
+
+    <!-- Menu -->
+    <nav id="menu">
+
       <a href="">INÍCIO</a>
       <a href="">RANKING</a>
       <a href="">MAPA</a>
       <a href="">FACÇÕES</a>
       <a href="">GUIA</a>
+
     </nav>
 
   </header>
 
-  <!-- Conteúdo -->
+  <!-- HERO -->
   <main class="hero">
 
     <img
@@ -53,7 +68,7 @@
       lendários e torne-se o Rei dos Piratas.
     </p>
 
-    <button>
+    <button class="journey-btn">
       ⚓ COMEÇAR JORNADA
     </button>
 

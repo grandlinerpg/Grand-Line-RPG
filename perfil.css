@@ -146,7 +146,6 @@ nav a:hover {
   object-fit: cover;
 }
 
-/* INFO */
 .char-info {
   display: flex;
   flex-direction: column;
@@ -156,7 +155,7 @@ nav a:hover {
 }
 
 /* =========================
-   LEVEL (CORRIGIDO BRANCO)
+   LEVEL (FORÇADO BRANCO)
 ========================= */
 .level-badge {
   position: absolute;
@@ -166,24 +165,19 @@ nav a:hover {
   height: 55px;
 }
 
-.level-badge img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
 .level-badge span {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-weight: bold;
-  color: #ffffff; /* FIX: branco */
   font-size: 16px;
+  color: #ffffff !important; /* FIX REAL */
+  text-shadow: 0 0 5px rgba(0,0,0,0.8);
 }
 
 /* =========================
-   SALDO + EXP (JANELA DUPLA)
+   SALDO + EXP
 ========================= */
 .top-stats {
   display: flex;
@@ -258,7 +252,7 @@ button {
 }
 
 /* =========================
-   MOBILE (CORRIGIDO)
+   MOBILE CORRIGIDO
 ========================= */
 @media(max-width:700px) {
 
@@ -272,23 +266,32 @@ button {
     justify-content: center;
   }
 
-  /* informações 1 por linha */
+  /* INFO 1 POR LINHA */
   .profile-grid {
     grid-template-columns: 1fr;
   }
 
-  /* atributos 1 por linha */
+  /* ATRIBUTOS 1 POR LINHA */
   .stats {
     grid-template-columns: 1fr;
   }
 
+  /* HEADER EMPILHADO */
   .profile-header {
     flex-direction: column;
     text-align: center;
   }
 
-  /* EXP + SALDO continuam lado a lado */
-  .top-stats {
-    flex-direction: row;
+  /* LEVEL FICA ENTRE FACÇÃO E STATS */
+  .level-badge {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-top: 10px;
+  }
+
+  /* FORÇA BRANCO MOBILE GARANTIDO */
+  .level-badge span {
+    color: #ffffff !important;
   }
 }

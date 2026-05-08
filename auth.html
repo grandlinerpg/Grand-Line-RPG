@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Grand Line RPG - Login</title>
+
+  <link rel="stylesheet" href="auth.css">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap"
+    rel="stylesheet"
+  >
+</head>
+
+<body>
+
+  <!-- FUNDO -->
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <!-- CONTAINER -->
+  <main class="auth-container">
+
+    <!-- LOGIN -->
+    <div class="auth-card" id="login-box">
+
+      <img
+        src="https://i.imgur.com/aBJrsQt.png"
+        class="logo"
+      >
+
+      <h1>GRAND LINE RPG</h1>
+
+      <p>
+        Entre na sua conta para continuar sua jornada.
+      </p>
+
+      <form>
+
+        <div class="input-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            placeholder="Digite seu email"
+          >
+
+        </div>
+
+        <div class="input-group">
+
+          <label>Senha</label>
+
+          <input
+            type="password"
+            placeholder="Digite sua senha"
+          >
+
+        </div>
+
+        <button type="submit">
+          ENTRAR
+        </button>
+
+      </form>
+
+      <div class="switch-page">
+
+        <span>Não possui conta?</span>
+
+        <button
+          class="switch-btn"
+          onclick="showRegister()"
+        >
+          REGISTRAR
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- REGISTRO -->
+    <div
+      class="auth-card hidden"
+      id="register-box"
+    >
+
+      <img
+        src="https://i.imgur.com/aBJrsQt.png"
+        class="logo"
+      >
+
+      <h1>CRIAR CONTA</h1>
+
+      <p>
+        Registre-se para começar sua aventura.
+      </p>
+
+      <form>
+
+        <div class="input-group">
+
+          <label>Nome</label>
+
+          <input
+            type="text"
+            placeholder="Digite seu nome"
+          >
+
+        </div>
+
+        <div class="input-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            placeholder="Digite seu email"
+          >
+
+        </div>
+
+        <div class="input-group">
+
+          <label>Senha</label>
+
+          <input
+            type="password"
+            placeholder="Digite sua senha"
+          >
+
+        </div>
+
+        <div class="input-group">
+
+          <label>Confirmar Senha</label>
+
+          <input
+            type="password"
+            placeholder="Confirme sua senha"
+          >
+
+        </div>
+
+        <button type="submit">
+          REGISTRAR
+        </button>
+
+      </form>
+
+      <div class="switch-page">
+
+        <span>Já possui conta?</span>
+
+        <button
+          class="switch-btn"
+          onclick="showLogin()"
+        >
+          LOGIN
+        </button>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+
+    function showRegister(){
+
+      document
+        .getElementById("login-box")
+        .classList.add("hidden");
+
+      document
+        .getElementById("register-box")
+        .classList.remove("hidden");
+    }
+
+    function showLogin(){
+
+      document
+        .getElementById("register-box")
+        .classList.add("hidden");
+
+      document
+        .getElementById("login-box")
+        .classList.remove("hidden");
+    }
+
+  </script>
+
+</body>
+</html>

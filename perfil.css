@@ -15,7 +15,9 @@ body {
   overflow-x: hidden;
 }
 
-/* FUNDO */
+/* =========================
+   FUNDO
+========================= */
 .background {
   position: fixed;
   inset: 0;
@@ -36,7 +38,9 @@ body {
   z-index: -1;
 }
 
-/* NAVBAR */
+/* =========================
+   NAVBAR
+========================= */
 .navbar {
   width: 100%;
   display: flex;
@@ -91,7 +95,9 @@ nav a:hover {
   color: #ffe6a7;
 }
 
-/* PERFIL */
+/* =========================
+   PERFIL CONTAINER
+========================= */
 .profile-container {
   min-height: 100vh;
   display: flex;
@@ -100,13 +106,17 @@ nav a:hover {
   padding: 40px 20px;
 }
 
+/* CARD PRINCIPAL */
 .profile-card {
   width: 100%;
-  max-width: 700px;
-  background: rgba(0,0,0,0.6);
+  max-width: 750px;
+
+  background: rgba(0,0,0,0.65);
   border-radius: 15px;
   padding: 30px;
+
   border: 1px solid rgba(255,215,120,0.25);
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
 .profile-card h1 {
@@ -115,6 +125,56 @@ nav a:hover {
   margin-bottom: 10px;
 }
 
+/* =========================
+   HEADER DO PERSONAGEM
+========================= */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  background: rgba(255,255,255,0.03);
+  padding: 15px;
+  border-radius: 12px;
+
+  margin: 15px 0;
+}
+
+/* IMAGEM DO PERSONAGEM */
+.char-image img {
+  width: 95px;
+  height: 95px;
+
+  border-radius: 12px;
+  border: 2px solid #f6d365;
+
+  object-fit: cover;
+
+  box-shadow: 0 0 10px rgba(246,211,101,0.3);
+}
+
+/* INFO DO PERSONAGEM */
+.char-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  font-family: 'Cinzel', serif;
+  color: #f6d365;
+}
+
+.char-info b {
+  color: #ffe6a7;
+}
+
+#faction {
+  color: #ffd36a;
+  font-weight: bold;
+}
+
+/* =========================
+   GRID INFO
+========================= */
 .profile-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -128,6 +188,9 @@ nav a:hover {
   border-radius: 10px;
 }
 
+/* =========================
+   STATS
+========================= */
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -140,9 +203,12 @@ nav a:hover {
   padding: 12px;
   border-radius: 10px;
   color: #f6d365;
+  font-family: 'Cinzel', serif;
 }
 
-/* BOTÃO PADRÃO */
+/* =========================
+   BOTÃO SAIR
+========================= */
 button {
   width: 100%;
   padding: 14px;
@@ -163,61 +229,10 @@ button:hover {
 }
 
 /* =========================
-   BOTÃO CARREGANDO (FIX)
+   MOBILE
 ========================= */
-
-.button-loading {
-  width: 100%;
-  padding: 14px;
-
-  border: 1px solid rgba(255, 215, 120, 0.25);
-  border-radius: 12px;
-
-  background: linear-gradient(
-    to bottom,
-    rgba(20, 20, 20, 0.95),
-    rgba(10, 10, 10, 0.95)
-  );
-
-  color: #f6d365;
-
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  letter-spacing: 2px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  gap: 10px;
-
-  cursor: default;
-
-  opacity: 1;
-
-  box-shadow: 0 0 15px rgba(0,0,0,0.4);
-}
-
-/* spinner */
-.button-loading::after {
-  content: "";
-  width: 14px;
-  height: 14px;
-
-  border: 2px solid #f6d365;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* MOBILE */
 @media(max-width:700px) {
+
   .navbar {
     flex-direction: column;
     gap: 15px;
@@ -232,4 +247,10 @@ button:hover {
   .stats {
     grid-template-columns: 1fr;
   }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
 }

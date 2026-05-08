@@ -28,7 +28,8 @@ body {
 .overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(to bottom,
+  background: linear-gradient(
+    to bottom,
     rgba(0,0,0,0.75),
     rgba(0,0,0,0.55)
   );
@@ -141,7 +142,7 @@ nav a:hover {
   color: #f6d365;
 }
 
-/* BOTÃO */
+/* BOTÃO PADRÃO */
 button {
   width: 100%;
   padding: 14px;
@@ -159,6 +160,60 @@ button {
 
 button:hover {
   transform: translateY(-2px);
+}
+
+/* =========================
+   BOTÃO CARREGANDO (FIX)
+========================= */
+
+.button-loading {
+  width: 100%;
+  padding: 14px;
+
+  border: 1px solid rgba(255, 215, 120, 0.25);
+  border-radius: 12px;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 20, 20, 0.95),
+    rgba(10, 10, 10, 0.95)
+  );
+
+  color: #f6d365;
+
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  letter-spacing: 2px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  cursor: default;
+
+  opacity: 1;
+
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+}
+
+/* spinner */
+.button-loading::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+
+  border: 2px solid #f6d365;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* MOBILE */

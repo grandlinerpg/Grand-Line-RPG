@@ -96,7 +96,7 @@ nav a:hover {
 }
 
 /* =========================
-   PERFIL CONTAINER
+   CONTAINER
 ========================= */
 .profile-container {
   min-height: 100vh;
@@ -120,7 +120,7 @@ nav a:hover {
 }
 
 /* =========================
-   TÍTULOS CENTRALIZADOS
+   TÍTULOS
 ========================= */
 .title-center {
   text-align: center;
@@ -147,6 +147,7 @@ nav a:hover {
   border-radius: 12px;
 
   margin: 15px 0;
+
   position: relative;
 }
 
@@ -184,25 +185,31 @@ nav a:hover {
 }
 
 /* =========================
-   LEVEL BADGE
+   LEVEL (SEM MOLDURA)
 ========================= */
 .level-badge {
-  margin-left: auto;
-  position: relative;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 
-  width: 70px;
-  height: 70px;
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
 }
 
 .level-badge img {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
 
-  object-fit: cover;
+  object-fit: contain;
 
-  border: 2px solid #f6d365;
-  box-shadow: 0 0 12px rgba(246,211,101,0.4);
+  border: none;
+  box-shadow: none;
 }
 
 .level-badge span {
@@ -214,8 +221,8 @@ nav a:hover {
 
   font-family: 'Cinzel', serif;
   font-weight: bold;
-  font-size: 18px;
 
+  font-size: 16px;
   color: #000;
 }
 
@@ -234,7 +241,7 @@ nav a:hover {
 }
 
 /* =========================
-   GRID INFORMAÇÕES
+   INFORMAÇÕES
 ========================= */
 .profile-grid {
   display: grid;
@@ -255,7 +262,7 @@ nav a:hover {
   font-weight: bold;
 }
 
-/* EXP BOX */
+/* EXP */
 .exp-box {
   grid-column: span 2;
   text-align: center;
@@ -289,7 +296,7 @@ nav a:hover {
 }
 
 /* =========================
-   BOTÃO SAIR
+   BOTÃO
 ========================= */
 button {
   width: 100%;
@@ -337,6 +344,9 @@ button:hover {
   }
 
   .level-badge {
-    margin: 10px auto 0 auto;
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-top: 10px;
   }
 }

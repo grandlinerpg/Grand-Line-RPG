@@ -20,17 +20,21 @@
   <header class="navbar">
 
     <div class="logo-area">
+
       <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
         <p>— RPG —</p>
       </div>
+
     </div>
 
     <nav>
       <a href="index.html">INÍCIO</a>
       <a href="jogadores.html">JOGADORES</a>
+      <a href="faccoes.html">FACÇÕES</a>
+      <a href="mapa.html">MAPA</a>
       <a href="guia.html">GUIA</a>
     </nav>
 
@@ -45,20 +49,29 @@
       TORNE-SE LENDÁRIO. NAVEGUE. LUTE. CONQUISTE.
     </p>
 
-    <div id="home-button-area"></div>
+    <div id="home-button-area">
+      <a class="hero-btn" href="#">CARREGANDO...</a>
+    </div>
 
   </main>
 
-  <!-- FIREBASE -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "SUA_KEY",
-      authDomain: "SEU_AUTH",
-      projectId: "SEU_ID",
+      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+      projectId: "grand-line-rpg-dcda9",
+      storageBucket: "grand-line-rpg-dcda9.firebasestorage.app",
+      messagingSenderId: "172042779786",
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
     };
 
     const app = initializeApp(firebaseConfig);
@@ -66,26 +79,35 @@
 
     const area = document.getElementById("home-button-area");
 
-    let loaded = false;
+    area.innerHTML = `<a class="hero-btn" href="#">CARREGANDO...</a>`;
 
-    onAuthStateChanged(auth, (user) => {
+    setPersistence(auth, browserLocalPersistence).then(() => {
 
-      if (loaded) return;
-      loaded = true;
+      onAuthStateChanged(auth, (user) => {
 
-      if (user) {
+        if (user) {
 
-        area.innerHTML = `
-          <a href="perfil.html" class="hero-btn">👤 MEU PERFIL</a>
-        `;
+          area.innerHTML = `
+            <a href="perfil.html" class="hero-btn">👤 MEU PERFIL</a>
+          `;
 
-      } else {
+        } else {
 
-        area.innerHTML = `
-          <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
-        `;
+          area.innerHTML = `
+            <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
+          `;
 
-      }
+        }
+
+      });
+
+    }).catch((error) => {
+
+      console.error(error);
+
+      area.innerHTML = `
+        <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
+      `;
 
     });
 

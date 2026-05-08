@@ -7,6 +7,9 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+// ======================
+// FIREBASE CONFIG
+// ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -17,9 +20,15 @@ const firebaseConfig = {
   measurementId: "G-1H48YJSFXQ"
 };
 
+// ======================
+// INIT FIREBASE
+// ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// ======================
+// START AUTH
+// ======================
 async function startAuth() {
 
   await setPersistence(auth, browserLocalPersistence);
@@ -32,30 +41,43 @@ async function startAuth() {
     }
 
     // ======================
-    // CONTA FIREBASE
+    // DADOS FIREBASE AUTH
     // ======================
-    document.getElementById("email").innerText = user.email;
+    console.log("Logado como:", user.email);
 
     // ======================
-    // RPG (MOCK)
+    // RPG (MOCK - FUTURO FIRESTORE)
     // ======================
+
+    // Jogador / personagem
     document.getElementById("player-name").innerText = "Pirata";
     document.getElementById("char-name").innerText = "Monkey D. Teste";
     document.getElementById("faction").innerText = "Piratas";
 
+    // imagem personagem
     document.getElementById("char-img").src =
       "https://i.imgur.com/DYQY9IR.png";
 
+    // infos
     document.getElementById("style").innerText = "Espadachim";
     document.getElementById("race").innerText = "Humano";
     document.getElementById("fruit").innerText = "Nenhuma";
 
     // ======================
-    // NOVOS SISTEMAS RPG
+    // LEVEL / EXP / SALDO
     // ======================
-    document.getElementById("level").innerText = 5;
-    document.getElementById("exp").innerText = 2450;
-    document.getElementById("saldo").innerText = 15000;
+
+    const level = 5;
+    const exp = 250;
+    const expMax = 1000;
+    const saldo = 15000;
+
+    document.getElementById("level").innerText = level;
+
+    document.getElementById("exp").innerText = exp;
+    document.getElementById("exp-max").innerText = expMax;
+
+    document.getElementById("saldo").innerText = saldo;
 
     // ======================
     // ATRIBUTOS
@@ -71,6 +93,9 @@ async function startAuth() {
 
 }
 
+// ======================
+// LOGOUT
+// ======================
 window.logout = function () {
   signOut(auth).then(() => {
     window.location.replace("index.html");

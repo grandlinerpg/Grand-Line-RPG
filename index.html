@@ -8,6 +8,7 @@
   <title>Grand Line RPG</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -32,7 +33,7 @@
     </div>
 
     <nav>
-      <a href="index.html">INÍCIO</a>
+      <a href="index.html" id="home-link">INÍCIO</a>
       <a href="jogadores.html">JOGADORES</a>
       <a href="faccoes.html">FACÇÕES</a>
       <a href="mapa.html">MAPA</a>
@@ -51,13 +52,13 @@
       TORNE-SE LENDÁRIO. NAVEGUE. LUTE. CONQUISTE.
     </p>
 
-    <button onclick="window.location.href='auth.html'">
-      ⚓ COMEÇAR JORNADA
-    </button>
+    <div id="home-button-area">
+      <button class="button-loading">CARREGANDO...</button>
+    </div>
 
   </main>
 
-  <!-- FIREBASE AUTO REDIRECT -->
+  <!-- FIREBASE -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -69,24 +70,45 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
-      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-      projectId: "grand-line-rpg-dcda9",
-      storageBucket: "grand-line-rpg-dcda9.firebasestorage.app",
-      messagingSenderId: "172042779786",
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      apiKey: "SUA_KEY",
+      authDomain: "SEU_AUTH",
+      projectId: "SEU_ID",
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+
+    const area = document.getElementById("home-button-area");
+    const homeLink = document.getElementById("home-link");
 
     setPersistence(auth, browserLocalPersistence).then(() => {
 
       onAuthStateChanged(auth, (user) => {
 
         if (user) {
-          // 🔥 JÁ LOGADO → VAI DIRETO PRO PERFIL
-          window.location.href = "perfil.html";
+
+          // 🔥 LOGADO → muda INÍCIO para PERFIL
+          homeLink.innerText = "PERFIL";
+          homeLink.href = "perfil.html";
+
+          area.innerHTML = `
+            <button class="button-loading" onclick="window.location.href='perfil.html'">
+              👤 ACESSAR PERFIL
+            </button>
+          `;
+
+        } else {
+
+          // ❌ DESLOGADO
+          homeLink.innerText = "INÍCIO";
+          homeLink.href = "index.html";
+
+          area.innerHTML = `
+            <button onclick="window.location.href='auth.html'">
+              ⚓ COMEÇAR JORNADA
+            </button>
+          `;
+
         }
 
       });

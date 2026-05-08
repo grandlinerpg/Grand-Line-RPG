@@ -51,6 +51,7 @@
 
       <hr>
 
+      <!-- DADOS -->
       <div class="profile-grid">
         <div><b>Jogador:</b> <span id="player-name">---</span></div>
         <div><b>Personagem:</b> <span id="char-name">---</span></div>
@@ -61,6 +62,7 @@
 
       <hr>
 
+      <!-- ATRIBUTOS -->
       <h2>⚔️ ATRIBUTOS</h2>
 
       <div class="stats">
@@ -78,7 +80,7 @@
 
   </main>
 
-  <!-- FIREBASE (CORRIGIDO PRA NÃO BUGAR) -->
+  <!-- FIREBASE (SEM BUG DE REDIRECT) -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -100,23 +102,25 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // 🔥 ISSO AQUI EVITA O BUG DE ABRIR E FECHAR
-    setPersistence(auth, browserLocalPersistence);
+    // 🔥 ESSENCIAL PRA NÃO BUGAR LOGIN/LOGOUT
+    await setPersistence(auth, browserLocalPersistence);
 
-    let carregou = false;
+    let carregado = false;
 
     onAuthStateChanged(auth, (user) => {
 
-      if (carregou) return;
-      carregou = true;
+      if (carregado) return;
+      carregado = true;
 
       if (!user) {
         window.location.replace("auth.html");
         return;
       }
 
+      // DADOS DO USUÁRIO
       document.getElementById("email").innerText = user.email;
 
+      // EXEMPLO (DEPOIS VAI VIR DO FIREBASE DB)
       document.getElementById("player-name").innerText = "Pirata";
       document.getElementById("char-name").innerText = "Monkey D. Teste";
       document.getElementById("style").innerText = "Espadachim";

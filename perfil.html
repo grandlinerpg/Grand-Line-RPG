@@ -18,18 +18,16 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR (MESMO DO INDEX) -->
+  <!-- NAVBAR -->
   <header class="navbar">
 
     <div class="logo-area">
-
       <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
         <p>— RPG —</p>
       </div>
-
     </div>
 
     <nav>
@@ -53,31 +51,25 @@
 
       <hr>
 
-      <!-- DADOS -->
       <div class="profile-grid">
-
         <div><b>Jogador:</b> <span id="player-name">---</span></div>
         <div><b>Personagem:</b> <span id="char-name">---</span></div>
         <div><b>Estilo:</b> <span id="style">---</span></div>
         <div><b>Raça:</b> <span id="race">---</span></div>
         <div><b>Akuma no Mi:</b> <span id="fruit">---</span></div>
-
       </div>
 
       <hr>
 
-      <!-- ATRIBUTOS -->
       <h2>⚔️ ATRIBUTOS</h2>
 
       <div class="stats">
-
         <div>💪 Força: <span id="str">0</span></div>
         <div>🛡 Resistência: <span id="res">0</span></div>
         <div>🎯 Destreza: <span id="dex">0</span></div>
         <div>⚡ Agilidade: <span id="agi">0</span></div>
         <div>🔋 Stamina: <span id="sta">0</span></div>
         <div>❤️ Vida: <span id="hp">0</span></div>
-
       </div>
 
       <button onclick="logout()">SAIR DA CONTA</button>
@@ -86,14 +78,17 @@
 
   </main>
 
-  <!-- FIREBASE -->
+  <!-- FIREBASE (CORRIGIDO PRA NÃO BUGAR) -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
     import {
       getAuth,
       onAuthStateChanged,
-      signOut
+      signOut,
+      setPersistence,
+      browserLocalPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -105,16 +100,23 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // 🔥 ISSO AQUI EVITA O BUG DE ABRIR E FECHAR
+    setPersistence(auth, browserLocalPersistence);
+
+    let carregou = false;
+
     onAuthStateChanged(auth, (user) => {
 
+      if (carregou) return;
+      carregou = true;
+
       if (!user) {
-        window.location.href = "auth.html";
+        window.location.replace("auth.html");
         return;
       }
 
       document.getElementById("email").innerText = user.email;
 
-      // EXEMPLO (DEPOIS VEM DO FIREBASE DE VERDADE)
       document.getElementById("player-name").innerText = "Pirata";
       document.getElementById("char-name").innerText = "Monkey D. Teste";
       document.getElementById("style").innerText = "Espadachim";
@@ -132,7 +134,7 @@
 
     window.logout = function () {
       signOut(auth).then(() => {
-        window.location.href = "index.html";
+        window.location.replace("index.html");
       });
     };
 

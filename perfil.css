@@ -1,55 +1,203 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-<head>
-  <meta charset="UTF-8">
-  <title>Perfil</title>
-</head>
+body{
+  font-family:Arial, sans-serif;
+  color:white;
+  min-height:100vh;
 
-<body>
+  display:flex;
+  justify-content:center;
+  align-items:center;
 
-<script type="module">
+  background:black;
+}
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+/* FUNDO (mesmo estilo do resto do site) */
 
-const firebaseConfig = {
-  apiKey: "SUA_KEY",
-  authDomain: "SEU_AUTH",
-  projectId: "SEU_ID",
-};
+.background{
+  position:fixed;
+  inset:0;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+  background-image:url('https://i.imgur.com/pKx1Cvd.png');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
 
-let locked = false;
+  transform:scale(1.03);
 
-onAuthStateChanged(auth, (user) => {
+  z-index:-2;
+}
 
-  if (locked) return;
-  locked = true;
+.overlay{
+  position:fixed;
+  inset:0;
 
-  if (!user) {
-    window.location.href = "auth.html";
-    return;
+  background:linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.75),
+    rgba(0,0,0,0.60)
+  );
+
+  z-index:-1;
+}
+
+/* CONTAINER */
+
+.profile-container{
+  width:100%;
+  min-height:100vh;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:30px;
+}
+
+/* CARD */
+
+.profile-card{
+  width:100%;
+  max-width:420px;
+
+  background:rgba(0,0,0,0.55);
+
+  border:1px solid rgba(255,215,120,0.18);
+
+  border-radius:22px;
+
+  padding:35px;
+
+  text-align:center;
+
+  backdrop-filter:blur(10px);
+
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* IMAGEM */
+
+.profile-img{
+  width:110px;
+  height:110px;
+
+  border-radius:50%;
+
+  object-fit:cover;
+
+  border:2px solid #f6d365;
+
+  margin-bottom:15px;
+
+  box-shadow:0 0 20px rgba(246,211,101,0.3);
+}
+
+/* NOME */
+
+.profile-card h1{
+  font-family:'Cinzel', serif;
+
+  font-size:28px;
+
+  color:#f6d365;
+
+  margin-bottom:8px;
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
+}
+
+/* EMAIL */
+
+.profile-card p{
+  color:#ddd;
+
+  font-size:14px;
+
+  margin-bottom:25px;
+}
+
+/* INFO BOXES */
+
+.profile-info{
+  display:flex;
+  justify-content:space-between;
+
+  gap:10px;
+
+  margin-bottom:25px;
+}
+
+.info-box{
+  flex:1;
+
+  background:rgba(255,255,255,0.06);
+
+  border:1px solid rgba(255,215,120,0.15);
+
+  border-radius:14px;
+
+  padding:12px 8px;
+}
+
+.info-box span{
+  display:block;
+
+  font-size:12px;
+
+  color:#f6d365;
+
+  margin-bottom:6px;
+}
+
+.info-box h2{
+  font-size:18px;
+
+  color:white;
+}
+
+/* BOTÃO */
+
+button{
+  width:100%;
+
+  padding:14px;
+
+  border:none;
+  border-radius:14px;
+
+  background:linear-gradient(to bottom, #8f1408, #5e0800);
+
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
+
+  font-size:16px;
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:0.3s;
+}
+
+button:hover{
+  transform:scale(1.02);
+  background:linear-gradient(to bottom, #aa1a0b, #730b00);
+}
+
+/* RESPONSIVO */
+
+@media(max-width:600px){
+
+  .profile-card{
+    padding:25px;
   }
 
-  document.body.innerHTML = `
-    <h1>Perfil do Jogador</h1>
-    <p>${user.email}</p>
+  .profile-info{
+    flex-direction:column;
+  }
 
-    <button id="logout">Sair</button>
-  `;
-
-  document.getElementById("logout").onclick = () => {
-    signOut(auth).then(() => {
-      window.location.href = "index.html";
-    });
-  };
-
-});
-
-</script>
-
-</body>
-</html>
+}

@@ -17,7 +17,7 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR (não mexe nisso) -->
+  <!-- NAVBAR -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -51,7 +51,7 @@
 
     <!-- BOTÃO DINÂMICO -->
     <div id="home-button-area">
-      <button class="button-loading">CARREGANDO...</button>
+      <button>CARREGANDO...</button>
     </div>
 
   </main>
@@ -78,27 +78,31 @@
 
     const area = document.getElementById("home-button-area");
 
-    setPersistence(auth, browserLocalPersistence).then(() => {
+    // 🔥 FORÇA SESSÃO
+    setPersistence(auth, browserLocalPersistence);
 
-      onAuthStateChanged(auth, (user) => {
+    // 🔥 VERIFICA LOGIN
+    onAuthStateChanged(auth, (user) => {
 
-        if (user) {
-          // 🔥 LOGADO → botão vira PERFIL
-          area.innerHTML = `
-            <a href="perfil.html" class="hero-btn">
-              👤 MEU PERFIL
-            </a>
-          `;
-        } else {
-          // ⚓ DESLOGADO → botão normal
-          area.innerHTML = `
-            <a href="auth.html" class="hero-btn">
-              ⚓ COMEÇAR JORNADA
-            </a>
-          `;
-        }
+      console.log("USER:", user);
 
-      });
+      if (user) {
+
+        area.innerHTML = `
+          <a href="perfil.html" class="hero-btn">
+            👤 MEU PERFIL
+          </a>
+        `;
+
+      } else {
+
+        area.innerHTML = `
+          <a href="auth.html" class="hero-btn">
+            ⚓ COMEÇAR JORNADA
+          </a>
+        `;
+
+      }
 
     });
 

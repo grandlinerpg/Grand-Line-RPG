@@ -27,7 +27,6 @@ body{
   background-repeat:no-repeat;
 
   transform:scale(1.03);
-
   z-index:-2;
 }
 
@@ -120,7 +119,6 @@ nav a{
   font-weight:600;
 
   color:#f1d08a;
-
   text-decoration:none;
 
   letter-spacing:1px;
@@ -132,9 +130,7 @@ nav a{
 
 nav a::after{
   content:"";
-
   position:absolute;
-
   left:50%;
   bottom:-8px;
 
@@ -144,7 +140,6 @@ nav a::after{
   background:#c89b3c;
 
   transform:translateX(-50%);
-
   transition:0.3s;
 }
 
@@ -205,7 +200,7 @@ nav a:hover::after{
   margin-bottom:45px;
 }
 
-/* BOTÃO (DINÂMICO: LOGIN / PERFIL) */
+/* BOTÃO */
 
 .hero-btn,
 .button-loading,
@@ -249,6 +244,11 @@ nav a:hover::after{
 .hero-btn:active,
 .hero button:active{
   transform:scale(0.98);
+}
+
+/* 🔥 CORREÇÃO IMPORTANTE (evita bug mobile de layout quebrado) */
+main{
+  width:100%;
 }
 
 /* RESPONSIVO */

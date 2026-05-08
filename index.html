@@ -60,7 +60,6 @@
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
     import {
       getAuth,
       onAuthStateChanged,
@@ -69,9 +68,9 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "SUA_KEY",
-      authDomain: "SEU_AUTH",
-      projectId: "SEU_ID",
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_AUTH_DOMAIN",
+      projectId: "SEU_PROJECT_ID"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -79,14 +78,15 @@
 
     const area = document.getElementById("home-button-area");
 
-    // 🔥 garante login persistente (IMPORTANTE NO GITHUB PAGES)
-    setPersistence(auth, browserLocalPersistence).then(() => {
+    async function init() {
+
+      // 🔥 garante login salvo
+      await setPersistence(auth, browserLocalPersistence);
 
       onAuthStateChanged(auth, (user) => {
 
         if (user) {
 
-          // LOGADO → botão perfil
           area.innerHTML = `
             <a href="perfil.html" class="hero-btn">
               👤 MEU PERFIL
@@ -95,7 +95,6 @@
 
         } else {
 
-          // DESLOGADO → botão login
           area.innerHTML = `
             <a href="auth.html" class="hero-btn">
               ⚓ COMEÇAR JORNADA
@@ -106,7 +105,9 @@
 
       });
 
-    });
+    }
+
+    init();
 
   </script>
 

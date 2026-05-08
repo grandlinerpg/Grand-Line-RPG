@@ -18,7 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
-// CONFIG FIREBASE
+// CONFIG
 // ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -31,16 +31,23 @@ const firebaseConfig = {
 };
 
 // ======================
-// INIT FIREBASE
+// INIT
 // ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
 // ======================
-// PERSISTÊNCIA LOGIN
+// PERSISTÊNCIA (CORRIGIDA)
 // ======================
-setPersistence(auth, browserLocalPersistence);
+async function initAuth() {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+  } catch (err) {
+    console.error("Erro persistência:", err);
+  }
+}
+initAuth();
 
 // ======================
 // REGISTER
@@ -50,52 +57,47 @@ window.register = async function () {
   const email = document.getElementById("register-email").value;
   const senha = document.getElementById("register-password").value;
   const nome = document.getElementById("register-name").value;
-  const confirmar = document.getElementById("register-confirm").value;
 
-  if (!email || !senha || !nome || !confirmar) {
-    alert("Preencha todos os campos!");
-    return;
-  }
-
-  if (senha !== confirmar) {
-    alert("As senhas não coincidem!");
+  if (!email || !senha || !nome) {
+    alert("Preencha tudo!");
     return;
   }
 
   try {
 
-    const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-    const user = userCredential.user;
+    const userCred = await createUserWithEmailAndPassword(auth, email, senha);
+    const user = userCred.user;
 
-    // 🔥 CRIA PERSONAGEM NO BANCO
-    await set(ref(db, "usuarios/" + user.uid), {
+    console.log("UID criado:", user.uid);
+
+    // 🔥 SALVAR NO REALTIME DATABASE
+    await set(ref(db, "players/" + user.uid), {
       nome: nome,
       email: email,
       level: 1,
       exp: 0,
       saldo: 0,
       faction: "Sem Facção",
-
       charName: "Novo Personagem",
       style: "-",
       race: "-",
       fruit: "-",
-
-      stats: {
-        str: 0,
-        res: 0,
-        dex: 0,
-        agi: 0,
-        sta: 0,
-        hp: 100
-      }
+      str: 0,
+      res: 0,
+      dex: 0,
+      agi: 0,
+      sta: 0,
+      hp: 100
     });
 
-    alert("Conta criada com sucesso!");
+    console.log("Salvou no database");
+
+    alert("Conta criada!");
     showLogin();
 
-  } catch (error) {
-    alert(error.message);
+  } catch (err) {
+    console.error("ERRO REGISTER:", err);
+    alert(err.message);
   }
 };
 
@@ -108,24 +110,23 @@ window.login = async function () {
   const senha = document.getElementById("login-password").value;
 
   if (!email || !senha) {
-    alert("Preencha todos os campos!");
+    alert("Preencha tudo!");
     return;
   }
 
   try {
 
-    const userCredential = await signInWithEmailAndPassword(auth, email, senha);
-    const user = userCredential.user;
+    const userCred = await signInWithEmailAndPassword(auth, email, senha);
+    const user = userCred.user;
 
-    // salva UID localmente
+    console.log("Login OK:", user.uid);
+
     localStorage.setItem("uid", user.uid);
 
-    alert("Login realizado com sucesso!");
-
-    // vai pro perfil
     window.location.href = "perfil.html";
 
-  } catch (error) {
-    alert(error.message);
+  } catch (err) {
+    console.error("ERRO LOGIN:", err);
+    alert(err.message);
   }
 };

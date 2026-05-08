@@ -6,8 +6,12 @@
 
 body{
   font-family:Arial, sans-serif;
-  overflow:hidden;
   color:white;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  min-height:100vh;
 }
 
 /* FUNDO */
@@ -16,9 +20,7 @@ body{
   position:fixed;
   inset:0;
 
-  background-image:
-    url('https://i.imgur.com/pKx1Cvd.png');
-
+  background-image:url('https://i.imgur.com/pKx1Cvd.png');
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -52,7 +54,7 @@ body{
   justify-content:center;
   align-items:center;
 
-  padding:20px;
+  padding:40px 20px;
 }
 
 /* CARD */
@@ -61,88 +63,112 @@ body{
   width:100%;
   max-width:420px;
 
-  background:
-    rgba(0,0,0,0.45);
+  background:rgba(0,0,0,0.50);
 
-  border:
-    1px solid rgba(255,215,120,0.18);
+  border:1px solid rgba(255,215,120,0.18);
 
-  border-radius:24px;
+  border-radius:22px;
 
-  padding:40px 35px;
+  padding:35px;
 
   backdrop-filter:blur(8px);
 
-  text-align:center;
-
   box-shadow:
-    0 8px 25px rgba(0,0,0,0.35);
-
-  animation:fade 0.25s ease;
-}
-
-@keyframes fade{
-
-  from{
-    opacity:0;
-    transform:translateY(10px);
-  }
-
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-
-}
-
-/* ESCONDER */
-
-.hidden{
-  display:none;
+    0 10px 30px rgba(0,0,0,0.45);
 }
 
 /* LOGO */
 
-.logo{
-  width:90px;
-
-  margin-bottom:20px;
-
-  filter:
-    drop-shadow(
-      0 0 10px rgba(255,215,120,0.35)
-    );
-}
-
-/* TEXTOS */
-
-.auth-card h1{
-  font-family:'Cinzel', serif;
-
-  color:#f6d365;
-
-  font-size:32px;
-
-  margin-bottom:12px;
-}
-
-.auth-card p{
-  color:#ddd;
-
-  font-size:15px;
+.logo-area{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 
   margin-bottom:30px;
 }
 
-/* INPUTS */
+.logo{
+  width:90px;
+
+  margin-bottom:12px;
+
+  filter:
+    drop-shadow(0 0 10px rgba(255,215,120,0.35));
+}
+
+.logo-area h1{
+  font-family:'Cinzel', serif;
+
+  color:#f4d089;
+
+  font-size:30px;
+
+  letter-spacing:2px;
+
+  margin-bottom:4px;
+
+  text-shadow:
+    2px 2px 6px rgba(0,0,0,0.8);
+}
+
+.logo-area p{
+  font-family:'Cinzel', serif;
+
+  color:#f4d089;
+
+  font-size:12px;
+
+  letter-spacing:6px;
+
+  text-shadow:
+    2px 2px 6px rgba(0,0,0,0.8);
+}
+
+/* TÍTULO */
+
+.auth-title{
+  text-align:center;
+
+  margin-bottom:25px;
+}
+
+.auth-title h2{
+  font-family:'Cinzel', serif;
+
+  font-size:32px;
+
+  color:#f6d365;
+
+  margin-bottom:10px;
+
+  text-shadow:
+    2px 2px 6px rgba(0,0,0,0.8);
+}
+
+.auth-title p{
+  color:#ddd;
+
+  font-size:15px;
+
+  line-height:1.5;
+}
+
+/* FORM */
+
+.auth-form{
+  display:flex;
+  flex-direction:column;
+
+  gap:18px;
+}
+
+/* INPUT GROUP */
 
 .input-group{
   display:flex;
   flex-direction:column;
 
-  text-align:left;
-
-  margin-bottom:22px;
+  gap:8px;
 }
 
 .input-group label{
@@ -150,27 +176,40 @@ body{
 
   color:#f6d365;
 
-  margin-bottom:10px;
-
   font-size:14px;
+
+  letter-spacing:1px;
 }
 
 .input-group input{
   width:100%;
 
-  padding:14px;
+  padding:14px 16px;
 
   border:none;
-  outline:none;
-
   border-radius:12px;
 
-  background:
-    rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.08);
 
   color:white;
 
   font-size:15px;
+
+  outline:none;
+
+  transition:0.3s;
+
+  border:
+    1px solid rgba(255,215,120,0.12);
+}
+
+.input-group input:focus{
+  border-color:#f6d365;
+
+  background:rgba(255,255,255,0.12);
+
+  box-shadow:
+    0 0 12px rgba(255,215,120,0.15);
 }
 
 .input-group input::placeholder{
@@ -179,8 +218,10 @@ body{
 
 /* BOTÃO */
 
-button{
+.auth-button{
   width:100%;
+
+  margin-top:10px;
 
   padding:15px;
 
@@ -197,7 +238,6 @@ button{
   color:#f6d365;
 
   font-family:'Cinzel', serif;
-
   font-size:16px;
   font-weight:700;
 
@@ -206,7 +246,7 @@ button{
   transition:0.3s;
 }
 
-button:hover{
+.auth-button:hover{
   transform:scale(1.02);
 
   background:
@@ -217,47 +257,32 @@ button:hover{
     );
 }
 
-/* TROCA */
+/* LINKS */
 
-.switch-page{
-  margin-top:25px;
+.auth-links{
+  margin-top:22px;
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  text-align:center;
+}
 
-  gap:8px;
+.auth-links p{
+  color:#ddd;
 
   font-size:14px;
 }
 
-.switch-page span{
-  color:#ccc;
-}
-
-.switch-btn{
-  width:auto;
-
-  padding:0;
-
-  border:none;
-
-  background:none;
-
+.auth-links a{
   color:#f6d365;
 
-  font-size:14px;
+  text-decoration:none;
+
   font-weight:700;
 
-  cursor:pointer;
+  transition:0.3s;
 }
 
-.switch-btn:hover{
+.auth-links a:hover{
   color:#ffe6a7;
-
-  transform:none;
-
-  background:none;
 }
 
 /* RESPONSIVO */
@@ -265,10 +290,18 @@ button:hover{
 @media(max-width:600px){
 
   .auth-card{
-    padding:30px 24px;
+    padding:28px 22px;
   }
 
-  .auth-card h1{
+  .logo{
+    width:75px;
+  }
+
+  .logo-area h1{
+    font-size:24px;
+  }
+
+  .auth-title h2{
     font-size:28px;
   }
 

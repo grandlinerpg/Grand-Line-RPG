@@ -68,7 +68,7 @@ window.login = async function () {
 
     // espera leve para garantir sessão salva
     setTimeout(() => {
-      window.location.href = "index.html";
+      window.location.href = "perfil.html";
     }, 500);
 
   } catch (error) {

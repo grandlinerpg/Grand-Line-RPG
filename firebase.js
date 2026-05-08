@@ -1,17 +1,27 @@
 // ======================
-// IMPORTS FIREBASE (CDN)
+// FIREBASE IMPORTS
 // ======================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+import {
+  getDatabase,
+  ref,
+  set,
+  get,
+  child
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
 // ======================
-// CONFIG FIREBASE
+// CONFIG
 // ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -20,30 +30,69 @@ const firebaseConfig = {
   storageBucket: "grand-line-rpg-dcda9.appspot.com",
   messagingSenderId: "172042779786",
   appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-  measurementId: "G-1H48YJSFXQ"
+  measurementId: "G-1H48YJSFXQ",
+  databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
 // ======================
-// INIT FIREBASE
+// INIT
 // ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getDatabase(app);
 
 // ======================
-// PERSISTÊNCIA
+// LOGIN PERSISTENCE
 // ======================
-let authReady = false;
+setPersistence(auth, browserLocalPersistence);
 
-async function initAuth() {
-  try {
-    await setPersistence(auth, browserLocalPersistence);
-    authReady = true;
-  } catch (error) {
-    console.error(error);
+// ======================
+// REGISTER
+// ======================
+window.register = async function () {
+
+  const email = document.getElementById("register-email").value;
+  const senha = document.getElementById("register-password").value;
+  const nome = document.getElementById("register-name").value;
+
+  if (!email || !senha || !nome) {
+    alert("Preencha tudo!");
+    return;
   }
-}
 
-initAuth();
+  try {
+
+    const userCred = await createUserWithEmailAndPassword(auth, email, senha);
+
+    const user = userCred.user;
+
+    // 🔥 CRIA PERSONAGEM NO BANCO
+    await set(ref(db, "players/" + user.uid), {
+      nome: nome,
+      email: email,
+      level: 1,
+      exp: 0,
+      saldo: 0,
+      faction: "Sem Facção",
+      charName: "Novo Personagem",
+      style: "-",
+      race: "-",
+      fruit: "-",
+      str: 0,
+      res: 0,
+      dex: 0,
+      agi: 0,
+      sta: 0,
+      hp: 100
+    });
+
+    alert("Conta criada!");
+    showLogin();
+
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
 // ======================
 // LOGIN
@@ -53,57 +102,18 @@ window.login = async function () {
   const email = document.getElementById("login-email").value;
   const senha = document.getElementById("login-password").value;
 
-  if (!email || !senha) {
-    alert("Preencha todos os campos!");
-    return;
-  }
-
   try {
 
-    if (!authReady) await initAuth();
+    const userCred = await signInWithEmailAndPassword(auth, email, senha);
 
-    await signInWithEmailAndPassword(auth, email, senha);
+    const user = userCred.user;
 
-    alert("Login realizado com sucesso!");
+    // salva UID pra usar no perfil
+    localStorage.setItem("uid", user.uid);
 
-    // REDIRECIONA PRO PERFIL
     window.location.href = "perfil.html";
 
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-// ======================
-// REGISTER
-// ======================
-window.register = async function () {
-
-  const email = document.getElementById("register-email").value;
-  const senha = document.getElementById("register-password").value;
-  const confirmar = document.getElementById("register-confirm").value;
-
-  if (!email || !senha || !confirmar) {
-    alert("Preencha todos os campos!");
-    return;
-  }
-
-  if (senha !== confirmar) {
-    alert("As senhas não coincidem!");
-    return;
-  }
-
-  try {
-
-    if (!authReady) await initAuth();
-
-    await createUserWithEmailAndPassword(auth, email, senha);
-
-    alert("Conta criada com sucesso!");
-
-    showLogin();
-
-  } catch (error) {
-    alert(error.message);
+  } catch (err) {
+    alert(err.message);
   }
 };

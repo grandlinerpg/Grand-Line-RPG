@@ -4,10 +4,15 @@
   box-sizing:border-box;
 }
 
+html, body{
+  height:100%;
+}
+
 body{
   font-family:Arial, sans-serif;
   overflow-x:hidden;
   color:white;
+  min-height:100vh;
 }
 
 /* FUNDO */
@@ -22,7 +27,6 @@ body{
   background-repeat:no-repeat;
 
   transform:scale(1.03);
-
   z-index:-2;
 }
 
@@ -39,7 +43,7 @@ body{
   z-index:-1;
 }
 
-/* NAVBAR (IGUAL INDEX) */
+/* NAVBAR */
 
 .navbar{
   width:100%;
@@ -113,11 +117,9 @@ nav a{
   font-weight:600;
 
   color:#f1d08a;
-
   text-decoration:none;
 
   letter-spacing:1px;
-
   transition:0.3s;
 
   text-shadow:0 2px 4px rgba(0,0,0,0.8);
@@ -125,7 +127,6 @@ nav a{
 
 nav a::after{
   content:"";
-
   position:absolute;
   left:50%;
   bottom:-8px;
@@ -134,7 +135,6 @@ nav a::after{
   height:2px;
 
   background:#c89b3c;
-
   transform:translateX(-50%);
   transition:0.3s;
 }
@@ -152,7 +152,7 @@ nav a:hover::after{
 
 .profile-container{
   width:100%;
-  min-height:calc(100vh - 100px);
+  min-height:100vh;
 
   display:flex;
   justify-content:center;
@@ -197,7 +197,7 @@ nav a:hover::after{
   margin-bottom:15px;
 }
 
-/* GRID DADOS */
+/* GRID */
 
 .profile-grid{
   display:grid;
@@ -207,7 +207,6 @@ nav a:hover::after{
   margin:20px 0;
 
   color:#f5e6c8;
-
   font-size:15px;
 }
 
@@ -242,17 +241,18 @@ nav a:hover::after{
   font-weight:600;
 }
 
-/* LINHA */
+/* HR */
 
 hr{
   border:1px solid rgba(255,215,120,0.2);
   margin:15px 0;
 }
 
-/* BOTÃO */
+/* BOTÃO (CORRIGIDO BUG MOBILE) */
 
 button{
   width:100%;
+  display:block;
 
   padding:14px;
 
@@ -297,5 +297,4 @@ button:hover{
   .stats{
     grid-template-columns:1fr;
   }
-
 }

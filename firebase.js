@@ -25,10 +25,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🔥 garantir persistência ANTES de qualquer coisa
+// 🔥 controle de inicialização
+let authReady = false;
+
 async function initAuth() {
-  await setPersistence(auth, browserLocalPersistence);
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    authReady = true;
+  } catch (err) {
+    console.error("Erro persistência:", err);
+  }
 }
+
 initAuth();
 
 // ======================
@@ -46,14 +54,19 @@ window.login = async function () {
 
   try {
 
+    // 🔥 garante que persistência já foi configurada
+    if (!authReady) {
+      await initAuth();
+    }
+
     await signInWithEmailAndPassword(auth, email, senha);
 
     alert("Login realizado com sucesso!");
 
-    // 🔥 espera o Firebase salvar sessão antes de trocar página
+    // 🔥 espera próximo ciclo do browser
     setTimeout(() => {
-      window.location.href = "index.html";
-    }, 300);
+      window.location.replace("index.html");
+    }, 500);
 
   } catch (error) {
     alert(error.message);
@@ -80,6 +93,10 @@ window.register = async function () {
   }
 
   try {
+
+    if (!authReady) {
+      await initAuth();
+    }
 
     await createUserWithEmailAndPassword(auth, email, senha);
 

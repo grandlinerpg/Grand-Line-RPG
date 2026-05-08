@@ -33,7 +33,7 @@
     </div>
 
     <nav>
-      <a href="index.html">INÍCIO</a>
+      <a href="#" onclick="voltar()">VOLTAR</a>
       <a href="faccoes.html">FACÇÕES</a>
     </nav>
 
@@ -105,9 +105,19 @@
   </main>
 
   <script>
+
     function go(page){
       window.location.href = page;
     }
+
+    function voltar(){
+      if (document.referrer) {
+        window.history.back();
+      } else {
+        window.location.href = "index.html";
+      }
+    }
+
   </script>
 
 </body>

@@ -121,6 +121,7 @@ nav a:hover {
   font-family: 'Cinzel', serif;
   color: #f6d365;
   margin: 10px 0;
+  font-size: 20px; /* ajustável se quiser menor */
 }
 
 /* =========================
@@ -157,7 +158,7 @@ nav a:hover {
 }
 
 /* =========================
-   LEVEL (FIX DEFINITIVO)
+   LEVEL (CORRIGIDO)
 ========================= */
 .level-badge {
   position: absolute;
@@ -287,26 +288,17 @@ button {
   .profile-header {
     flex-direction: column;
     text-align: center;
+    padding-bottom: 90px; /* espaço pro level não sobrepor */
   }
 
-  /* LEVEL NÃO FLUTUA MAIS */
-  @media(max-width:700px) {
-
-  .profile-header {
-    flex-direction: column;
-    text-align: center;
-    position: relative;
-    padding-bottom: 20px;
-  }
-
+  /* LEVEL CENTRALIZADO ENTRE FACÇÃO E SALDO */
   .level-badge {
     position: absolute;
-    top: 100%;
+    top: auto;
+    bottom: 10px;
     left: 50%;
-    transform: translate(-50%, 10px);
+    transform: translateX(-50%);
   }
-
-}
 
   .level-badge span {
     color: #fff !important;

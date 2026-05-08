@@ -48,11 +48,24 @@
 
       <p id="email">Carregando...</p>
 
+      <!-- HEADER RPG -->
+      <div class="profile-header">
+
+        <div class="char-image">
+          <img id="char-img" src="https://i.imgur.com/DYQY9IR.png">
+        </div>
+
+        <div class="char-info">
+          <p><b>Jogador:</b> <span id="player-name">---</span></p>
+          <p><b>Personagem:</b> <span id="char-name">---</span></p>
+          <p><b>Facção:</b> <span id="faction">---</span></p>
+        </div>
+
+      </div>
+
       <hr>
 
       <div class="profile-grid">
-        <div><b>Jogador:</b> <span id="player-name">---</span></div>
-        <div><b>Personagem:</b> <span id="char-name">---</span></div>
         <div><b>Estilo:</b> <span id="style">---</span></div>
         <div><b>Raça:</b> <span id="race">---</span></div>
         <div><b>Akuma no Mi:</b> <span id="fruit">---</span></div>
@@ -77,76 +90,8 @@
 
   </main>
 
-  <!-- FIREBASE SCRIPT -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut,
-      setPersistence,
-      browserLocalPersistence
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    // ======================
-    // SUA CONFIG FIREBASE
-    // ======================
-    const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
-      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-      projectId: "grand-line-rpg-dcda9",
-      storageBucket: "grand-line-rpg-dcda9.firebasestorage.app",
-      messagingSenderId: "172042779786",
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-      measurementId: "G-1H48YJSFXQ"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    async function startAuth() {
-
-      await setPersistence(auth, browserLocalPersistence);
-
-      onAuthStateChanged(auth, (user) => {
-
-        if (!user) {
-          window.location.replace("auth.html");
-          return;
-        }
-
-        // ======================
-        // DADOS DO USUÁRIO
-        // ======================
-        document.getElementById("email").innerText = user.email;
-
-        // 🔥 MOCK (depois vamos puxar do Firestore)
-        document.getElementById("player-name").innerText = "Pirata";
-        document.getElementById("char-name").innerText = "Monkey D. Teste";
-        document.getElementById("style").innerText = "Espadachim";
-        document.getElementById("race").innerText = "Humano";
-        document.getElementById("fruit").innerText = "Nenhuma";
-
-        document.getElementById("str").innerText = 10;
-        document.getElementById("res").innerText = 8;
-        document.getElementById("dex").innerText = 12;
-        document.getElementById("agi").innerText = 15;
-        document.getElementById("sta").innerText = 20;
-        document.getElementById("hp").innerText = 100;
-
-      });
-
-    }
-
-    startAuth();
-
-    window.logout = function () {
-      signOut(auth).then(() => {
-        window.location.replace("index.html");
-      });
-    };
-
-  </script>
+  <!-- JS -->
+  <script type="module" src="perfil.js"></script>
 
 </body>
 </html>

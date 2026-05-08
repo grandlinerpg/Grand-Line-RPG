@@ -84,7 +84,6 @@ nav a {
   color: #f1d08a;
   text-decoration: none;
   font-family: 'Cinzel', serif;
-  transition: 0.3s;
 }
 
 nav a:hover {
@@ -110,10 +109,9 @@ nav a:hover {
   padding: 30px;
 
   border: 1px solid rgba(255,215,120,0.25);
-  box-shadow: 0 0 25px rgba(0,0,0,0.6);
 }
 
-/* TÍTULOS */
+/* TITULOS */
 .title-center {
   text-align: center;
   font-family: 'Cinzel', serif;
@@ -131,8 +129,6 @@ nav a:hover {
   padding: 15px;
   border-radius: 12px;
 
-  margin: 15px 0;
-
   position: relative;
 }
 
@@ -145,9 +141,6 @@ nav a:hover {
   border: 2px solid #f6d365;
 
   object-fit: cover;
-  object-position: center top;
-
-  box-shadow: 0 0 12px rgba(246,211,101,0.25);
 }
 
 /* INFO */
@@ -160,10 +153,6 @@ nav a:hover {
   color: #f6d365;
 }
 
-.char-info b {
-  color: #ffe6a7;
-}
-
 /* LEVEL */
 .level-badge {
   position: absolute;
@@ -172,45 +161,48 @@ nav a:hover {
 
   width: 55px;
   height: 55px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  pointer-events: none;
 }
 
 .level-badge img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  border: none;
-  box-shadow: none;
 }
 
 .level-badge span {
   position: absolute;
   top: 50%;
   left: 50%;
-
   transform: translate(-50%, -50%);
-
-  font-family: 'Cinzel', serif;
   font-weight: bold;
-  font-size: 16px;
   color: #000;
 }
 
-/* SALDO */
-.saldo-top {
+/* =========================
+   SALDO + EXP (NOVO LAYOUT)
+========================= */
+.top-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin: 12px 0;
+}
+
+.stat-box {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  border-radius: 10px;
+
   text-align: center;
 
   font-family: 'Cinzel', serif;
-  font-size: 18px;
+  color: #f6d365;
+}
 
+.stat-box span {
   color: #ffe6a7;
-
-  margin: 10px 0;
+  font-weight: bold;
 }
 
 /* INFORMAÇÕES */
@@ -233,18 +225,7 @@ nav a:hover {
   font-weight: bold;
 }
 
-/* EXP */
-.exp-box {
-  grid-column: span 2;
-  text-align: center;
-
-  background: rgba(255,255,255,0.04);
-  padding: 10px;
-  border-radius: 10px;
-
-  font-family: 'Cinzel', serif;
-  color: #f6d365;
-}
+/* EXP BOX REMOVIDO (AGORA NO TOP) */
 
 /* ATRIBUTOS */
 .stats {
@@ -276,13 +257,6 @@ button {
   color: #f6d365;
 
   font-family: 'Cinzel', serif;
-  cursor: pointer;
-
-  transition: 0.2s;
-}
-
-button:hover {
-  transform: translateY(-2px);
 }
 
 /* MOBILE FIX */
@@ -298,13 +272,13 @@ button:hover {
     justify-content: center;
   }
 
-  /* 🔥 AQUI ESTÁ A CORREÇÃO IMPORTANTE */
+  /* INFORMAÇÕES VOLTAM 1 POR LINHA */
   .profile-grid {
-    grid-template-columns: 1fr 1fr 1fr; /* Estilo + Raça + Akuma lado a lado */
+    grid-template-columns: 1fr;
   }
 
   .stats {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .profile-header {
@@ -312,8 +286,8 @@ button:hover {
     text-align: center;
   }
 
-  .level-badge {
-    position: relative;
-    margin-top: 10px;
+  /* SALDO + EXP continuam lado a lado */
+  .top-stats {
+    flex-direction: row;
   }
 }

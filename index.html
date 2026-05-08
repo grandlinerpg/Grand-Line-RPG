@@ -14,9 +14,11 @@
 
 <body>
 
+  <!-- FUNDO -->
   <div class="background"></div>
   <div class="overlay"></div>
 
+  <!-- NAVBAR -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -40,6 +42,7 @@
 
   </header>
 
+  <!-- HERO -->
   <main class="hero">
 
     <img src="https://i.imgur.com/DYQY9IR.png" class="main-logo">
@@ -49,12 +52,14 @@
       TORNE-SE LENDÁRIO. NAVEGUE. LUTE. CONQUISTE.
     </p>
 
+    <!-- BOTÃO DINÂMICO -->
     <div id="home-button-area">
-      <a class="hero-btn" href="#">CARREGANDO...</a>
+      <button class="button-loading">CARREGANDO...</button>
     </div>
 
   </main>
 
+  <!-- FIREBASE -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -79,8 +84,6 @@
 
     const area = document.getElementById("home-button-area");
 
-    area.innerHTML = `<a class="hero-btn" href="#">CARREGANDO...</a>`;
-
     setPersistence(auth, browserLocalPersistence).then(() => {
 
       onAuthStateChanged(auth, (user) => {
@@ -100,14 +103,6 @@
         }
 
       });
-
-    }).catch((error) => {
-
-      console.error(error);
-
-      area.innerHTML = `
-        <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
-      `;
 
     });
 

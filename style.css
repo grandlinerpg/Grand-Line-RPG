@@ -122,7 +122,6 @@ nav a{
   text-decoration:none;
 
   letter-spacing:1px;
-
   transition:0.3s;
 
   text-shadow:0 2px 4px rgba(0,0,0,0.8);
@@ -138,7 +137,6 @@ nav a::after{
   height:2px;
 
   background:#c89b3c;
-
   transform:translateX(-50%);
   transition:0.3s;
 }
@@ -200,11 +198,16 @@ nav a:hover::after{
   margin-bottom:45px;
 }
 
-/* BOTÃO */
+/* 🔥 BOTÃO DINÂMICO (LOGIN / PERFIL) */
 
-.hero-btn,
-.button-loading,
-.hero button{
+#home-button-area{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* estilo único pra link e botão */
+.hero-btn{
   display:inline-flex;
   justify-content:center;
   align-items:center;
@@ -235,20 +238,24 @@ nav a:hover::after{
   transition:0.25s;
 }
 
-.hero-btn:hover,
-.hero button:hover{
+.hero-btn:hover{
   transform:translateY(-2px) scale(1.02);
   background:linear-gradient(to bottom, #aa1a0b, #730b00);
 }
 
-.hero-btn:active,
-.hero button:active{
+.hero-btn:active{
   transform:scale(0.98);
 }
 
-/* 🔥 CORREÇÃO IMPORTANTE (evita bug mobile de layout quebrado) */
-main{
-  width:100%;
+/* loading fallback */
+.button-loading{
+  padding:14px 32px;
+  border-radius:14px;
+
+  background:#333;
+  color:#aaa;
+
+  border:none;
 }
 
 /* RESPONSIVO */
@@ -293,8 +300,7 @@ main{
     line-height:1.6;
   }
 
-  .hero-btn,
-  .hero button{
+  .hero-btn{
     width:100%;
     max-width:320px;
     font-size:20px;

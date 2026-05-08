@@ -62,7 +62,6 @@
 
       <hr>
 
-      <!-- ATRIBUTOS -->
       <h2>⚔️ ATRIBUTOS</h2>
 
       <div class="stats">
@@ -80,11 +79,10 @@
 
   </main>
 
-  <!-- FIREBASE (SEM BUG DE REDIRECT) -->
+  <!-- FIREBASE JS -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
     import {
       getAuth,
       onAuthStateChanged,
@@ -102,37 +100,41 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // 🔥 ESSENCIAL PRA NÃO BUGAR LOGIN/LOGOUT
-    await setPersistence(auth, browserLocalPersistence);
+    // 🔥 IMPORTANTE: garante login persistente
+    setPersistence(auth, browserLocalPersistence);
 
-    let carregado = false;
+    let iniciado = false;
 
     onAuthStateChanged(auth, (user) => {
 
-      if (carregado) return;
-      carregado = true;
+      if (iniciado) return;
+      iniciado = true;
 
-      if (!user) {
-        window.location.replace("auth.html");
-        return;
-      }
+      // espera Firebase estabilizar (evita bug de voltar pro login)
+      setTimeout(() => {
 
-      // DADOS DO USUÁRIO
-      document.getElementById("email").innerText = user.email;
+        if (!user) {
+          window.location.replace("auth.html");
+          return;
+        }
 
-      // EXEMPLO (DEPOIS VAI VIR DO FIREBASE DB)
-      document.getElementById("player-name").innerText = "Pirata";
-      document.getElementById("char-name").innerText = "Monkey D. Teste";
-      document.getElementById("style").innerText = "Espadachim";
-      document.getElementById("race").innerText = "Humano";
-      document.getElementById("fruit").innerText = "Nenhuma";
+        document.getElementById("email").innerText = user.email;
 
-      document.getElementById("str").innerText = 10;
-      document.getElementById("res").innerText = 8;
-      document.getElementById("dex").innerText = 12;
-      document.getElementById("agi").innerText = 15;
-      document.getElementById("sta").innerText = 20;
-      document.getElementById("hp").innerText = 100;
+        // dados fake (depois liga no Firestore)
+        document.getElementById("player-name").innerText = "Pirata";
+        document.getElementById("char-name").innerText = "Monkey D. Teste";
+        document.getElementById("style").innerText = "Espadachim";
+        document.getElementById("race").innerText = "Humano";
+        document.getElementById("fruit").innerText = "Nenhuma";
+
+        document.getElementById("str").innerText = 10;
+        document.getElementById("res").innerText = 8;
+        document.getElementById("dex").innerText = 12;
+        document.getElementById("agi").innerText = 15;
+        document.getElementById("sta").innerText = 20;
+        document.getElementById("hp").innerText = 100;
+
+      }, 150);
 
     });
 

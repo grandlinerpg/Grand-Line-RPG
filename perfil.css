@@ -164,8 +164,8 @@ nav a:hover {
   top: 10px;
   right: 10px;
 
-  width: 55px;
-  height: 55px;
+  width: 85px;
+  height: 85px;
 
   display: flex;
   align-items: center;
@@ -181,7 +181,7 @@ nav a:hover {
 .level-badge span {
   position: absolute;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 22px;
   color: #fff;
   text-shadow: 0 0 5px rgba(0,0,0,0.8);
 }

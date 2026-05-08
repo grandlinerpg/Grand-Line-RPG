@@ -37,11 +37,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// login persistente
 setPersistence(auth, browserLocalPersistence);
 
 // ======================
-// REGISTER
+// REGISTER (CORRIGIDO E ORGANIZADO)
 // ======================
 window.register = async function () {
 
@@ -65,14 +64,12 @@ window.register = async function () {
     const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
     const user = userCredential.user;
 
-    console.log("UID criado:", user.uid);
+    console.log("CRIANDO PERSONAGEM UID:", user.uid);
 
-    // 🔥 ESTRUTURA RPG COMPLETA
-    await set(ref(db, "players/" + user.uid), {
-
+    const playerData = {
       uid: user.uid,
-      nome,
-      email,
+      nome: nome,
+      email: email,
 
       info: {
         level: 1,
@@ -96,13 +93,17 @@ window.register = async function () {
         sta: 0,
         hp: 100
       }
-    });
+    };
+
+    await set(ref(db, `players/${user.uid}`), playerData);
+
+    console.log("SALVO NO FIREBASE COM ESTRUTURA RPG ✔");
 
     alert("Conta criada com sucesso!");
     showLogin();
 
   } catch (error) {
-    console.error(error);
+    console.error("ERRO FIREBASE:", error);
     alert(error.message);
   }
 };

@@ -8,7 +8,6 @@
   <title>Perfil - Grand Line RPG</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="perfil.css">
 </head>
 
@@ -51,7 +50,6 @@
 
       <hr>
 
-      <!-- DADOS -->
       <div class="profile-grid">
         <div><b>Jogador:</b> <span id="player-name">---</span></div>
         <div><b>Personagem:</b> <span id="char-name">---</span></div>
@@ -79,9 +77,7 @@
 
   </main>
 
-  <!-- FIREBASE JS -->
   <script type="module">
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getAuth,
@@ -100,18 +96,10 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // 🔥 IMPORTANTE: garante login persistente
-    setPersistence(auth, browserLocalPersistence);
+    async function startAuth() {
+      await setPersistence(auth, browserLocalPersistence);
 
-    let iniciado = false;
-
-    onAuthStateChanged(auth, (user) => {
-
-      if (iniciado) return;
-      iniciado = true;
-
-      // espera Firebase estabilizar (evita bug de voltar pro login)
-      setTimeout(() => {
+      onAuthStateChanged(auth, (user) => {
 
         if (!user) {
           window.location.replace("auth.html");
@@ -120,7 +108,6 @@
 
         document.getElementById("email").innerText = user.email;
 
-        // dados fake (depois liga no Firestore)
         document.getElementById("player-name").innerText = "Pirata";
         document.getElementById("char-name").innerText = "Monkey D. Teste";
         document.getElementById("style").innerText = "Espadachim";
@@ -134,16 +121,16 @@
         document.getElementById("sta").innerText = 20;
         document.getElementById("hp").innerText = 100;
 
-      }, 150);
+      });
+    }
 
-    });
+    startAuth();
 
     window.logout = function () {
       signOut(auth).then(() => {
         window.location.replace("index.html");
       });
     };
-
   </script>
 
 </body>

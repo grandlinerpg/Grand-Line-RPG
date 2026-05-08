@@ -1,317 +1,55 @@
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+<!DOCTYPE html>
+<html lang="pt-br">
 
-body{
-  font-family:Arial, sans-serif;
-  overflow-x:hidden;
-  color:white;
-}
+<head>
+  <meta charset="UTF-8">
+  <title>Perfil</title>
+</head>
 
-/* FUNDO */
+<body>
 
-.background{
-  position:fixed;
-  inset:0;
+<script type="module">
 
-  background-image:url('https://i.imgur.com/pKx1Cvd.png');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
+const firebaseConfig = {
+  apiKey: "SUA_KEY",
+  authDomain: "SEU_AUTH",
+  projectId: "SEU_ID",
+};
 
-  transform:scale(1.03);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  z-index:-2;
-}
+let locked = false;
 
-.overlay{
-  position:fixed;
-  inset:0;
+onAuthStateChanged(auth, (user) => {
 
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.75),
-      rgba(0,0,0,0.60)
-    );
+  if (locked) return;
+  locked = true;
 
-  z-index:-1;
-}
-
-/* NAVBAR */
-
-.navbar{
-  width:100%;
-
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-
-  padding:15px 50px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.65),
-      rgba(0,0,0,0.35)
-    );
-
-  backdrop-filter:blur(8px);
-
-  border-bottom:
-    1px solid rgba(255,215,120,0.15);
-}
-
-/* LOGO */
-
-.logo-area{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
-
-.logo{
-  width:65px;
-
-  filter:
-    drop-shadow(0 0 8px rgba(255,215,120,0.35));
-}
-
-.logo-text{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-
-.logo-text h1{
-  font-family:'Cinzel', serif;
-
-  color:#f4d089;
-
-  font-size:28px;
-  font-weight:700;
-
-  letter-spacing:2px;
-}
-
-.logo-text p{
-  font-family:'Cinzel', serif;
-
-  color:#f4d089;
-
-  font-size:12px;
-
-  letter-spacing:6px;
-
-  margin-top:-3px;
-}
-
-/* MENU */
-
-nav{
-  display:flex;
-  gap:36px;
-}
-
-nav a{
-  font-family:'Cinzel', serif;
-
-  font-size:16px;
-  font-weight:600;
-
-  color:#f1d08a;
-
-  text-decoration:none;
-
-  transition:0.3s;
-}
-
-nav a:hover{
-  color:#ffe6a7;
-}
-
-/* PERFIL */
-
-.profile-container{
-  width:100%;
-  min-height:calc(100vh - 90px);
-
-  display:flex;
-  justify-content:center;
-  align-items:center;
-
-  padding:40px 20px;
-}
-
-.profile-card{
-  width:100%;
-  max-width:520px;
-
-  background:
-    rgba(0,0,0,0.45);
-
-  border:
-    1px solid rgba(255,215,120,0.18);
-
-  border-radius:24px;
-
-  padding:40px;
-
-  backdrop-filter:blur(8px);
-
-  text-align:center;
-
-  box-shadow:
-    0 8px 25px rgba(0,0,0,0.35);
-}
-
-/* FOTO */
-
-.profile-img{
-  width:130px;
-  height:130px;
-
-  object-fit:cover;
-
-  border-radius:18px;
-
-  border:2px solid #c89b3c;
-
-  margin-bottom:20px;
-
-  box-shadow:
-    0 0 18px rgba(255,215,120,0.25);
-}
-
-/* TEXTOS */
-
-.profile-card h1{
-  font-family:'Cinzel', serif;
-
-  color:#f6d365;
-
-  font-size:34px;
-
-  margin-bottom:10px;
-}
-
-.profile-email{
-  color:#ddd;
-
-  font-size:15px;
-
-  margin-bottom:30px;
-}
-
-/* INFO */
-
-.profile-info{
-  display:grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap:15px;
-
-  margin-bottom:30px;
-}
-
-.info-box{
-  background:
-    rgba(255,255,255,0.05);
-
-  border:
-    1px solid rgba(255,215,120,0.10);
-
-  border-radius:16px;
-
-  padding:18px 10px;
-}
-
-.info-box span{
-  display:block;
-
-  color:#f6d365;
-
-  font-size:14px;
-
-  margin-bottom:8px;
-}
-
-.info-box h2{
-  font-size:24px;
-}
-
-/* BOTÃO */
-
-button{
-  width:100%;
-
-  padding:15px;
-
-  border:none;
-  border-radius:14px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      #8f1408,
-      #5e0800
-    );
-
-  color:#f6d365;
-
-  font-family:'Cinzel', serif;
-
-  font-size:16px;
-  font-weight:700;
-
-  cursor:pointer;
-
-  transition:0.3s;
-}
-
-button:hover{
-  transform:scale(1.02);
-
-  background:
-    linear-gradient(
-      to bottom,
-      #aa1a0b,
-      #730b00
-    );
-}
-
-/* RESPONSIVO */
-
-@media(max-width:700px){
-
-  .navbar{
-    flex-direction:column;
-    gap:20px;
-
-    padding:20px;
+  if (!user) {
+    window.location.href = "auth.html";
+    return;
   }
 
-  nav{
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:20px;
-  }
+  document.body.innerHTML = `
+    <h1>Perfil do Jogador</h1>
+    <p>${user.email}</p>
 
-  .profile-info{
-    grid-template-columns:1fr;
-  }
+    <button id="logout">Sair</button>
+  `;
 
-  .profile-card{
-    padding:30px 22px;
-  }
+  document.getElementById("logout").onclick = () => {
+    signOut(auth).then(() => {
+      window.location.href = "index.html";
+    });
+  };
 
-  .profile-card h1{
-    font-size:28px;
-  }
+});
 
-}
+</script>
+
+</body>
+</html>

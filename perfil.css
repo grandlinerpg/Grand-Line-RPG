@@ -178,14 +178,13 @@ nav a:hover {
 }
 
 /* =========================
-   SALDO + EXP (NOVO LAYOUT)
+   SALDO + EXP (HUD RPG)
 ========================= */
 .top-stats {
   display: flex;
-  justify-content: space-between;
   gap: 10px;
 
-  margin: 12px 0;
+  margin: 15px 0;
 }
 
 .stat-box {
@@ -225,8 +224,6 @@ nav a:hover {
   font-weight: bold;
 }
 
-/* EXP BOX REMOVIDO (AGORA NO TOP) */
-
 /* ATRIBUTOS */
 .stats {
   display: grid;
@@ -259,7 +256,9 @@ button {
   font-family: 'Cinzel', serif;
 }
 
-/* MOBILE FIX */
+/* =========================
+   MOBILE (CORRIGIDO DE VERDADE)
+========================= */
 @media(max-width:700px) {
 
   .navbar {
@@ -272,7 +271,7 @@ button {
     justify-content: center;
   }
 
-  /* INFORMAÇÕES VOLTAM 1 POR LINHA */
+  /* VOLTA 1 POR LINHA */
   .profile-grid {
     grid-template-columns: 1fr;
   }

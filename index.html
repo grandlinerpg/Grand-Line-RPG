@@ -17,22 +17,20 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR -->
+  <!-- NAVBAR (não mexe nisso) -->
   <header class="navbar">
 
     <div class="logo-area">
-
       <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
         <p>— RPG —</p>
       </div>
-
     </div>
 
     <nav>
-      <a href="index.html" id="home-link">INÍCIO</a>
+      <a href="index.html">INÍCIO</a>
       <a href="jogadores.html">JOGADORES</a>
       <a href="faccoes.html">FACÇÕES</a>
       <a href="mapa.html">MAPA</a>
@@ -51,8 +49,9 @@
       TORNE-SE LENDÁRIO. NAVEGUE. LUTE. CONQUISTE.
     </p>
 
+    <!-- BOTÃO DINÂMICO -->
     <div id="home-button-area">
-      <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
+      <button class="button-loading">CARREGANDO...</button>
     </div>
 
   </main>
@@ -68,7 +67,6 @@
       browserLocalPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // 🔥 TROCA AQUI PELO SEU FIREBASE REAL
     const firebaseConfig = {
       apiKey: "SUA_KEY",
       authDomain: "SEU_AUTH",
@@ -79,40 +77,30 @@
     const auth = getAuth(app);
 
     const area = document.getElementById("home-button-area");
-    const homeLink = document.getElementById("home-link");
 
-    setPersistence(auth, browserLocalPersistence)
-      .then(() => {
+    setPersistence(auth, browserLocalPersistence).then(() => {
 
-        onAuthStateChanged(auth, (user) => {
+      onAuthStateChanged(auth, (user) => {
 
-          console.log("USER:", user); // DEBUG
-
-          if (user) {
-
-            // 🔥 LOGADO
-            homeLink.textContent = "PERFIL";
-            homeLink.href = "perfil.html";
-
-            area.innerHTML = `
-              <a href="perfil.html" class="hero-btn">👤 MEU PERFIL</a>
-            `;
-
-          } else {
-
-            // ⚓ DESLOGADO
-            homeLink.textContent = "INÍCIO";
-            homeLink.href = "index.html";
-
-            area.innerHTML = `
-              <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
-            `;
-
-          }
-
-        });
+        if (user) {
+          // 🔥 LOGADO → botão vira PERFIL
+          area.innerHTML = `
+            <a href="perfil.html" class="hero-btn">
+              👤 MEU PERFIL
+            </a>
+          `;
+        } else {
+          // ⚓ DESLOGADO → botão normal
+          area.innerHTML = `
+            <a href="auth.html" class="hero-btn">
+              ⚓ COMEÇAR JORNADA
+            </a>
+          `;
+        }
 
       });
+
+    });
 
   </script>
 

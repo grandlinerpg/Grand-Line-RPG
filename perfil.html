@@ -9,17 +9,16 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="perfil.css">
 </head>
 
 <body>
 
-  <!-- FUNDO IGUAL INDEX -->
+  <!-- FUNDO -->
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR IGUAL INDEX -->
+  <!-- NAVBAR (MESMO DO INDEX) -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -43,39 +42,45 @@
 
   </header>
 
-  <!-- CONTEÚDO PERFIL -->
+  <!-- PERFIL -->
   <main class="profile-container">
 
     <div class="profile-card">
 
-      <h1 id="nomeJogador">Carregando...</h1>
+      <h1>👤 PERFIL DO JOGADOR</h1>
 
-      <p id="nomePersonagem">Personagem: --</p>
+      <p id="email">Carregando...</p>
 
+      <hr>
+
+      <!-- DADOS -->
       <div class="profile-grid">
 
-        <div>⚔️ Estilo: <span id="estilo">--</span></div>
-        <div>🧬 Raça: <span id="raca">--</span></div>
-        <div>🍎 Akuma no Mi: <span id="akuma">--</span></div>
+        <div><b>Jogador:</b> <span id="player-name">---</span></div>
+        <div><b>Personagem:</b> <span id="char-name">---</span></div>
+        <div><b>Estilo:</b> <span id="style">---</span></div>
+        <div><b>Raça:</b> <span id="race">---</span></div>
+        <div><b>Akuma no Mi:</b> <span id="fruit">---</span></div>
 
       </div>
 
       <hr>
 
-      <h2>Atributos</h2>
+      <!-- ATRIBUTOS -->
+      <h2>⚔️ ATRIBUTOS</h2>
 
       <div class="stats">
 
-        <div>💪 Força: <span id="forca">0</span></div>
-        <div>🛡️ Resistência: <span id="resistencia">0</span></div>
-        <div>🎯 Destreza: <span id="destreza">0</span></div>
-        <div>⚡ Agilidade: <span id="agilidade">0</span></div>
-        <div>🔋 Stamina: <span id="stamina">0</span></div>
-        <div>❤️ Vida: <span id="vida">0</span></div>
+        <div>💪 Força: <span id="str">0</span></div>
+        <div>🛡 Resistência: <span id="res">0</span></div>
+        <div>🎯 Destreza: <span id="dex">0</span></div>
+        <div>⚡ Agilidade: <span id="agi">0</span></div>
+        <div>🔋 Stamina: <span id="sta">0</span></div>
+        <div>❤️ Vida: <span id="hp">0</span></div>
 
       </div>
 
-      <button onclick="logout()">SAIR</button>
+      <button onclick="logout()">SAIR DA CONTA</button>
 
     </div>
 
@@ -92,10 +97,9 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "SUA_API",
+      apiKey: "SUA_KEY",
       authDomain: "SEU_AUTH",
       projectId: "SEU_ID",
-      appId: "SEU_APP"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -108,19 +112,29 @@
         return;
       }
 
-      document.getElementById("nomeJogador").innerText =
-        user.displayName || "Jogador";
+      document.getElementById("email").innerText = user.email;
 
-      document.getElementById("nomePersonagem").innerText =
-        "Personagem: Não definido";
+      // EXEMPLO (DEPOIS VEM DO FIREBASE DE VERDADE)
+      document.getElementById("player-name").innerText = "Pirata";
+      document.getElementById("char-name").innerText = "Monkey D. Teste";
+      document.getElementById("style").innerText = "Espadachim";
+      document.getElementById("race").innerText = "Humano";
+      document.getElementById("fruit").innerText = "Nenhuma";
+
+      document.getElementById("str").innerText = 10;
+      document.getElementById("res").innerText = 8;
+      document.getElementById("dex").innerText = 12;
+      document.getElementById("agi").innerText = 15;
+      document.getElementById("sta").innerText = 20;
+      document.getElementById("hp").innerText = 100;
 
     });
 
-    window.logout = () => {
+    window.logout = function () {
       signOut(auth).then(() => {
         window.location.href = "index.html";
       });
-    }
+    };
 
   </script>
 

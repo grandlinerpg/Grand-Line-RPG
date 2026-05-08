@@ -56,60 +56,8 @@
 
   </main>
 
-  <!-- FIREBASE -->
-  <script type="module">
-
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      setPersistence,
-      browserLocalPersistence
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_AUTH_DOMAIN",
-      projectId: "SEU_PROJECT_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    const area = document.getElementById("home-button-area");
-
-    async function init() {
-
-      // 🔥 garante login salvo
-      await setPersistence(auth, browserLocalPersistence);
-
-      onAuthStateChanged(auth, (user) => {
-
-        if (user) {
-
-          area.innerHTML = `
-            <a href="perfil.html" class="hero-btn">
-              👤 MEU PERFIL
-            </a>
-          `;
-
-        } else {
-
-          area.innerHTML = `
-            <a href="auth.html" class="hero-btn">
-              ⚓ COMEÇAR JORNADA
-            </a>
-          `;
-
-        }
-
-      });
-
-    }
-
-    init();
-
-  </script>
+  <!-- JS -->
+  <script type="module" src="index.js"></script>
 
 </body>
 </html>

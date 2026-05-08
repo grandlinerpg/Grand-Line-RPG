@@ -8,7 +8,6 @@
   <title>Grand Line RPG</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -81,39 +80,41 @@
     const area = document.getElementById("home-button-area");
     const homeLink = document.getElementById("home-link");
 
-    setPersistence(auth, browserLocalPersistence).then(() => {
+    // 🔥 evita bug de reload de estado
+    setPersistence(auth, browserLocalPersistence)
+      .then(() => {
 
-      onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => {
 
-        if (user) {
+          if (user) {
 
-          // 🔥 LOGADO → muda INÍCIO para PERFIL
-          homeLink.innerText = "PERFIL";
-          homeLink.href = "perfil.html";
+            // 👤 LOGADO
+            homeLink.textContent = "PERFIL";
+            homeLink.href = "perfil.html";
 
-          area.innerHTML = `
-            <button class="button-loading" onclick="window.location.href='perfil.html'">
-              👤 ACESSAR PERFIL
-            </button>
-          `;
+            area.innerHTML = `
+              <a href="perfil.html" class="hero-btn">
+                👤 MEU PERFIL
+              </a>
+            `;
 
-        } else {
+          } else {
 
-          // ❌ DESLOGADO
-          homeLink.innerText = "INÍCIO";
-          homeLink.href = "index.html";
+            // ⚓ DESLOGADO
+            homeLink.textContent = "INÍCIO";
+            homeLink.href = "index.html";
 
-          area.innerHTML = `
-            <button onclick="window.location.href='auth.html'">
-              ⚓ COMEÇAR JORNADA
-            </button>
-          `;
+            area.innerHTML = `
+              <a href="auth.html" class="hero-btn">
+                ⚓ COMEÇAR JORNADA
+              </a>
+            `;
 
-        }
+          }
+
+        });
 
       });
-
-    });
 
   </script>
 

@@ -4,10 +4,15 @@
   box-sizing:border-box;
 }
 
+html, body{
+  height:100%;
+}
+
 body{
   font-family:Arial, sans-serif;
   overflow-x:hidden;
   color:white;
+  min-height:100vh;
 }
 
 /* FUNDO */
@@ -103,6 +108,8 @@ body{
 nav{
   display:flex;
   gap:36px;
+  flex-wrap:wrap;
+  justify-content:center;
 }
 
 nav a{
@@ -127,6 +134,7 @@ nav a::after{
   content:"";
 
   position:absolute;
+
   left:50%;
   bottom:-8px;
 
@@ -136,6 +144,7 @@ nav a::after{
   background:#c89b3c;
 
   transform:translateX(-50%);
+
   transition:0.3s;
 }
 
@@ -148,169 +157,147 @@ nav a:hover::after{
   width:100%;
 }
 
-/* CONTAINER */
+/* HERO */
 
-.profile-container{
+.hero{
   width:100%;
   min-height:calc(100vh - 100px);
 
   display:flex;
+  flex-direction:column;
   justify-content:center;
   align-items:center;
+
+  text-align:center;
 
   padding:40px 20px;
 }
 
-/* CARD */
+/* LOGO CENTRAL */
 
-.profile-card{
-  width:100%;
-  max-width:650px;
+.main-logo{
+  width:300px;
+  max-width:90%;
 
-  background:rgba(0,0,0,0.6);
+  margin-bottom:30px;
 
-  border:1px solid rgba(255,215,120,0.25);
-  border-radius:18px;
-
-  padding:30px;
-
-  backdrop-filter:blur(10px);
-
-  text-align:center;
-
-  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  filter:drop-shadow(0 0 25px rgba(0,0,0,0.8));
 }
 
-/* TITULO */
+/* TEXTO */
 
-.profile-card h1{
+.hero p{
   font-family:'Cinzel', serif;
-  color:#f6d365;
-  margin-bottom:10px;
-  letter-spacing:1px;
-}
 
-/* EMAIL */
-
-.profile-card p{
-  color:#ddd;
-  margin-bottom:20px;
-}
-
-/* GRID DADOS */
-
-.profile-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-
-  margin-bottom:20px;
-
-  color:#f5e6c8;
-}
-
-.profile-grid div{
-  background:rgba(255,255,255,0.04);
-  padding:12px;
-  border-radius:12px;
-
-  border:1px solid rgba(255,215,120,0.08);
-
-  transition:0.2s;
-}
-
-.profile-grid div:hover{
-  transform:translateY(-2px);
-  border-color:rgba(255,215,120,0.3);
-}
-
-/* ATRIBUTOS */
-
-.stats{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-
-  margin-top:10px;
-  margin-bottom:20px;
-
-  color:#f6d365;
-}
-
-.stats div{
-  background:rgba(255,255,255,0.04);
-  padding:12px;
-  border-radius:12px;
-
-  border:1px solid rgba(255,215,120,0.08);
-
+  font-size:18px;
   font-weight:600;
 
-  transition:0.2s;
+  color:#f5e6c8;
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.9);
+
+  letter-spacing:1px;
+
+  max-width:900px;
+
+  line-height:1.7;
+
+  margin-bottom:45px;
 }
 
-.stats div:hover{
-  transform:translateY(-2px);
-  border-color:rgba(255,215,120,0.3);
-}
+/* BOTÃO (DINÂMICO: LOGIN / PERFIL) */
 
-/* LINHA */
+.hero-btn,
+.button-loading,
+.hero button{
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
 
-hr{
-  border:1px solid rgba(255,215,120,0.2);
-  margin:20px 0;
-}
+  padding:14px 32px;
 
-/* BOTÃO */
-
-button{
-  width:100%;
-  padding:14px;
-
-  border:none;
-  border-radius:12px;
+  border:2px solid #9b5b00;
+  border-radius:14px;
 
   background:linear-gradient(to bottom, #8f1408, #5e0800);
+
   color:#f6d365;
 
   font-family:'Cinzel', serif;
+  font-size:20px;
   font-weight:700;
+
+  text-decoration:none;
+
+  letter-spacing:1px;
 
   cursor:pointer;
 
+  box-shadow:
+    inset 0 2px 0 rgba(255,210,120,0.3),
+    0 8px 20px rgba(0,0,0,0.45);
+
   transition:0.25s;
-
-  box-shadow:0 6px 15px rgba(0,0,0,0.4);
 }
 
-button:hover{
-  transform:translateY(-2px);
+.hero-btn:hover,
+.hero button:hover{
+  transform:translateY(-2px) scale(1.02);
   background:linear-gradient(to bottom, #aa1a0b, #730b00);
-  box-shadow:0 10px 20px rgba(0,0,0,0.6);
 }
 
-button:active{
+.hero-btn:active,
+.hero button:active{
   transform:scale(0.98);
 }
 
 /* RESPONSIVO */
 
-@media(max-width:700px){
+@media(max-width:950px){
 
   .navbar{
     flex-direction:column;
-    gap:20px;
+    gap:25px;
     padding:20px;
   }
 
   nav{
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:20px;
+    gap:25px;
   }
 
-  .profile-grid,
-  .stats{
-    grid-template-columns:1fr;
+  .main-logo{
+    width:380px;
+  }
+
+  .hero p{
+    font-size:19px;
+  }
+}
+
+@media(max-width:600px){
+
+  .logo{
+    width:60px;
+  }
+
+  .logo-text h1{
+    font-size:22px;
+  }
+
+  nav a{
+    font-size:15px;
+  }
+
+  .hero p{
+    font-size:16px;
+    line-height:1.6;
+  }
+
+  .hero-btn,
+  .hero button{
+    width:100%;
+    max-width:320px;
+    font-size:20px;
+    padding:18px 20px;
   }
 }

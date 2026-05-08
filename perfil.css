@@ -121,7 +121,7 @@ nav a:hover {
   font-family: 'Cinzel', serif;
   color: #f6d365;
   margin: 10px 0;
-  font-size: 20px; /* ajustável se quiser menor */
+  font-size: 20px;
 }
 
 /* =========================
@@ -158,7 +158,7 @@ nav a:hover {
 }
 
 /* =========================
-   LEVEL (CORRIGIDO)
+   LEVEL
 ========================= */
 .level-badge {
   position: absolute;
@@ -264,7 +264,7 @@ button {
 }
 
 /* =========================
-   MOBILE (CORRIGIDO DE VERDADE)
+   MOBILE (CORRIGIDO SÓ O LEVEL)
 ========================= */
 @media(max-width:700px) {
 
@@ -278,33 +278,31 @@ button {
     justify-content: center;
   }
 
-  /* 1 por linha */
   .profile-grid,
   .stats {
     grid-template-columns: 1fr;
   }
 
-  /* header empilhado */
+  /* HEADER COM ESPAÇO NATURAL */
   .profile-header {
     flex-direction: column;
     text-align: center;
-    padding-bottom: 90px; /* espaço pro level não sobrepor */
+    gap: 12px;
   }
 
-  /* LEVEL CENTRALIZADO ENTRE FACÇÃO E SALDO */
+  /* LEVEL NÃO SOBREPÕE MAIS NADA */
   .level-badge {
-    position: absolute;
+    position: relative;
     top: auto;
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: auto;
+    transform: none;
+    margin-top: 10px;
   }
 
   .level-badge span {
     color: #fff !important;
   }
 
-  /* SALDO + EXP continuam lado a lado */
   .top-stats {
     flex-direction: row;
   }

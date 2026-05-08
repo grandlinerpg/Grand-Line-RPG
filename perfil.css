@@ -295,7 +295,7 @@ button {
   .level-badge {
     position: absolute;
     top: auto;
-    bottom: 10px;
+    bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
   }

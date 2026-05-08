@@ -43,9 +43,8 @@
 
     <div class="profile-card">
 
-      <h1>👤 PERFIL DO JOGADOR</h1>
-
-      <p id="email">Carregando...</p>
+      <!-- TITULO -->
+      <h1 class="title-center">PERFIL</h1>
 
       <!-- PERSONAGEM -->
       <div class="profile-header">
@@ -60,35 +59,50 @@
           <p><b>Facção:</b> <span id="faction">---</span></p>
         </div>
 
+        <!-- LEVEL BADGE -->
+        <div class="level-badge">
+          <img src="https://i.imgur.com/rqeoHJs.png">
+          <span id="level">1</span>
+        </div>
+
       </div>
 
       <hr>
 
-      <!-- STATS PRINCIPAIS -->
+      <!-- SALDO -->
+      <div class="saldo-top">
+        💰 SALDO: <span id="saldo">0</span> ฿
+      </div>
+
+      <hr>
+
+      <!-- INFORMAÇÕES -->
+      <h2 class="title-center">INFORMAÇÕES</h2>
+
       <div class="profile-grid">
 
         <div><b>Estilo:</b> <span id="style">---</span></div>
         <div><b>Raça:</b> <span id="race">---</span></div>
         <div><b>Akuma no Mi:</b> <span id="fruit">---</span></div>
 
-        <div><b>Nível:</b> <span id="level">1</span></div>
-        <div><b>EXP:</b> <span id="exp">0</span></div>
-        <div><b>Saldo:</b> <span id="saldo">0</span> ฿</div>
+        <div class="exp-box">
+          <b>EXP:</b> <span id="exp">0</span> / <span id="exp-max">1000</span>
+        </div>
 
       </div>
 
       <hr>
 
       <!-- ATRIBUTOS -->
-      <h2>⚔️ ATRIBUTOS</h2>
+      <h2 class="title-center">ATRIBUTOS</h2>
 
       <div class="stats">
-        <div>💪 Força: <span id="str">0</span></div>
-        <div>🛡 Resistência: <span id="res">0</span></div>
-        <div>🎯 Destreza: <span id="dex">0</span></div>
-        <div>⚡ Agilidade: <span id="agi">0</span></div>
-        <div>🔋 Stamina: <span id="sta">0</span></div>
-        <div>❤️ Vida: <span id="hp">0</span></div>
+        <div>Força: <span id="str">0</span></div>
+        <div>Resistência: <span id="res">0</span></div>
+        <div>Destreza: <span id="dex">0</span></div>
+        <div>Agilidade: <span id="agi">0</span></div>
+        <div>Stamina: <span id="sta">0</span></div>
+        <div>Vida: <span id="hp">0</span></div>
       </div>
 
       <button onclick="logout()">SAIR DA CONTA</button>

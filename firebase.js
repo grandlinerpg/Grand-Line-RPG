@@ -8,7 +8,7 @@ import {
   signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// CONFIG
+// CONFIG FIREBASE
 
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -20,7 +20,7 @@ const firebaseConfig = {
   measurementId: "G-1H48YJSFXQ"
 };
 
-// INICIAR FIREBASE
+// INICIAR
 
 const app = initializeApp(firebaseConfig);
 
@@ -30,11 +30,23 @@ const auth = getAuth(app);
 
 window.register = async function(){
 
+  const nome =
+    document.getElementById("register-name").value;
+
   const email =
     document.getElementById("register-email").value;
 
   const senha =
     document.getElementById("register-password").value;
+
+  const confirmar =
+    document.getElementById("register-confirm").value;
+
+  if(senha !== confirmar){
+
+    alert("As senhas não coincidem.");
+    return;
+  }
 
   try{
 
@@ -74,7 +86,7 @@ window.login = async function(){
       senha
     );
 
-    alert("Login realizado!");
+    alert("Login realizado com sucesso!");
 
     window.location.href = "index.html";
 

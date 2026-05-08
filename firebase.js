@@ -37,17 +37,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// ======================
-// PERSISTÊNCIA (CORRIGIDA)
-// ======================
-async function initAuth() {
-  try {
-    await setPersistence(auth, browserLocalPersistence);
-  } catch (err) {
-    console.error("Erro persistência:", err);
-  }
-}
-initAuth();
+// login persistente
+setPersistence(auth, browserLocalPersistence);
 
 // ======================
 // REGISTER
@@ -57,47 +48,62 @@ window.register = async function () {
   const email = document.getElementById("register-email").value;
   const senha = document.getElementById("register-password").value;
   const nome = document.getElementById("register-name").value;
+  const confirmar = document.getElementById("register-confirm").value;
 
-  if (!email || !senha || !nome) {
-    alert("Preencha tudo!");
+  if (!email || !senha || !nome || !confirmar) {
+    alert("Preencha todos os campos!");
+    return;
+  }
+
+  if (senha !== confirmar) {
+    alert("As senhas não coincidem!");
     return;
   }
 
   try {
 
-    const userCred = await createUserWithEmailAndPassword(auth, email, senha);
-    const user = userCred.user;
+    const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+    const user = userCredential.user;
 
     console.log("UID criado:", user.uid);
 
-    // 🔥 SALVAR NO REALTIME DATABASE
+    // 🔥 ESTRUTURA RPG COMPLETA
     await set(ref(db, "players/" + user.uid), {
-      nome: nome,
-      email: email,
-      level: 1,
-      exp: 0,
-      saldo: 0,
-      faction: "Sem Facção",
-      charName: "Novo Personagem",
-      style: "-",
-      race: "-",
-      fruit: "-",
-      str: 0,
-      res: 0,
-      dex: 0,
-      agi: 0,
-      sta: 0,
-      hp: 100
+
+      uid: user.uid,
+      nome,
+      email,
+
+      info: {
+        level: 1,
+        exp: 0,
+        saldo: 0
+      },
+
+      character: {
+        faction: "Sem Facção",
+        charName: "Novo Personagem",
+        style: "-",
+        race: "-",
+        fruit: "-"
+      },
+
+      stats: {
+        str: 0,
+        res: 0,
+        dex: 0,
+        agi: 0,
+        sta: 0,
+        hp: 100
+      }
     });
 
-    console.log("Salvou no database");
-
-    alert("Conta criada!");
+    alert("Conta criada com sucesso!");
     showLogin();
 
-  } catch (err) {
-    console.error("ERRO REGISTER:", err);
-    alert(err.message);
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
   }
 };
 
@@ -110,23 +116,20 @@ window.login = async function () {
   const senha = document.getElementById("login-password").value;
 
   if (!email || !senha) {
-    alert("Preencha tudo!");
+    alert("Preencha todos os campos!");
     return;
   }
 
   try {
 
-    const userCred = await signInWithEmailAndPassword(auth, email, senha);
-    const user = userCred.user;
-
-    console.log("Login OK:", user.uid);
+    const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+    const user = userCredential.user;
 
     localStorage.setItem("uid", user.uid);
 
     window.location.href = "perfil.html";
 
-  } catch (err) {
-    console.error("ERRO LOGIN:", err);
-    alert(err.message);
+  } catch (error) {
+    alert(error.message);
   }
 };

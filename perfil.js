@@ -1,4 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
   getAuth,
   onAuthStateChanged,
@@ -7,6 +8,12 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+import {
+  getDatabase,
+  ref,
+  get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
 // ======================
 // FIREBASE CONFIG
 // ======================
@@ -14,83 +21,95 @@ const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
   projectId: "grand-line-rpg-dcda9",
-  storageBucket: "grand-line-rpg-dcda9.firebasestorage.app",
+  storageBucket: "grand-line-rpg-dcda9.appspot.com",
   messagingSenderId: "172042779786",
   appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-  measurementId: "G-1H48YJSFXQ"
+  measurementId: "G-1H48YJSFXQ",
+  databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
 // ======================
-// INIT FIREBASE
+// INIT
 // ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getDatabase(app);
 
 // ======================
-// START AUTH
+// AUTH + LOAD PROFILE
 // ======================
 async function startAuth() {
 
   await setPersistence(auth, browserLocalPersistence);
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
       window.location.replace("auth.html");
       return;
     }
 
-    // ======================
-    // DADOS FIREBASE AUTH
-    // ======================
-    console.log("Logado como:", user.email);
+    const uid = user.uid;
 
-    // ======================
-    // RPG (MOCK - FUTURO FIRESTORE)
-    // ======================
+    try {
 
-    // Jogador / personagem
-    document.getElementById("player-name").innerText = "Pirata";
-    document.getElementById("char-name").innerText = "Monkey D. Teste";
-    document.getElementById("faction").innerText = "Piratas";
+      // ======================
+      // BUSCA NO FIREBASE
+      // ======================
+      const snap = await get(ref(db, "players/" + uid));
 
-    // imagem personagem
-    document.getElementById("char-img").src =
-      "https://i.imgur.com/DYQY9IR.png";
+      if (!snap.exists()) {
+        console.log("Sem dados no DB");
+        return;
+      }
 
-    // infos
-    document.getElementById("style").innerText = "Espadachim";
-    document.getElementById("race").innerText = "Humano";
-    document.getElementById("fruit").innerText = "Nenhuma";
+      const data = snap.val();
 
-    // ======================
-    // LEVEL / EXP / SALDO
-    // ======================
+      // ======================
+      // INFO DO PLAYER
+      // ======================
+      document.getElementById("player-name").innerText = data.nome || "-";
+      document.getElementById("char-name").innerText = data.character?.charName || "-";
+      document.getElementById("faction").innerText = data.character?.faction || "-";
 
-    const level = 5;
-    const exp = 250;
-    const expMax = 1000;
-    const saldo = 15000;
+      document.getElementById("char-img").src =
+        "https://i.imgur.com/DYQY9IR.png";
 
-    document.getElementById("level").innerText = level;
+      document.getElementById("style").innerText = data.character?.style || "-";
+      document.getElementById("race").innerText = data.character?.race || "-";
+      document.getElementById("fruit").innerText = data.character?.fruit || "-";
 
-    document.getElementById("exp").innerText = exp;
-    document.getElementById("exp-max").innerText = expMax;
+      // ======================
+      // INFO / LEVEL / EXP
+      // ======================
+      const level = data.info?.level || 1;
+      const exp = data.info?.exp || 0;
+      const saldo = data.info?.saldo || 0;
 
-    document.getElementById("saldo").innerText = saldo;
+      // 🔥 DINÂMICO (já preparado pra RPG)
+      const expMax = level * 1000;
 
-    // ======================
-    // ATRIBUTOS
-    // ======================
-    document.getElementById("str").innerText = 10;
-    document.getElementById("res").innerText = 8;
-    document.getElementById("dex").innerText = 12;
-    document.getElementById("agi").innerText = 15;
-    document.getElementById("sta").innerText = 20;
-    document.getElementById("hp").innerText = 100;
+      document.getElementById("level").innerText = level;
+      document.getElementById("exp").innerText = exp;
+      document.getElementById("exp-max").innerText = expMax;
+      document.getElementById("saldo").innerText = saldo;
 
+      // ======================
+      // ATRIBUTOS
+      // ======================
+      const stats = data.stats || {};
+
+      document.getElementById("str").innerText = stats.str || 0;
+      document.getElementById("res").innerText = stats.res || 0;
+      document.getElementById("dex").innerText = stats.dex || 0;
+      document.getElementById("agi").innerText = stats.agi || 0;
+      document.getElementById("sta").innerText = stats.sta || 0;
+      document.getElementById("hp").innerText = stats.hp || 0;
+
+    } catch (err) {
+      console.error("Erro ao carregar perfil:", err);
+    }
   });
-
 }
 
 // ======================

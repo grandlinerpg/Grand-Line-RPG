@@ -290,12 +290,23 @@ button {
   }
 
   /* LEVEL NÃO FLUTUA MAIS */
-  .level-badge {
+  @media(max-width:700px) {
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
     position: relative;
-    margin-top: 10px;
-    top: auto;
-    right: auto;
+    padding-bottom: 20px;
   }
+
+  .level-badge {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 10px);
+  }
+
+}
 
   .level-badge span {
     color: #fff !important;

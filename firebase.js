@@ -5,11 +5,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getAuth,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // CONFIG FIREBASE
-
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -20,80 +21,61 @@ const firebaseConfig = {
   measurementId: "G-1H48YJSFXQ"
 };
 
-// INICIAR
-
+// INICIALIZA
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
 
+// 🔥 GARANTE QUE O LOGIN NÃO SE PERCA (IMPORTANTE PRO GITHUB PAGES)
+setPersistence(auth, browserLocalPersistence);
+
+// =========================
 // REGISTRAR
+// =========================
+window.register = async function () {
 
-window.register = async function(){
+  const email = document.getElementById("register-email").value;
+  const senha = document.getElementById("register-password").value;
+  const confirmar = document.getElementById("register-confirm").value;
 
-  const nome =
-    document.getElementById("register-name").value;
-
-  const email =
-    document.getElementById("register-email").value;
-
-  const senha =
-    document.getElementById("register-password").value;
-
-  const confirmar =
-    document.getElementById("register-confirm").value;
-
-  if(senha !== confirmar){
-
+  if (senha !== confirmar) {
     alert("As senhas não coincidem.");
     return;
   }
 
-  try{
-
-    await createUserWithEmailAndPassword(
-      auth,
-      email,
-      senha
-    );
+  try {
+    await createUserWithEmailAndPassword(auth, email, senha);
 
     alert("Conta criada com sucesso!");
 
     showLogin();
 
-  }catch(error){
-
+  } catch (error) {
     alert(error.message);
-
   }
+};
 
-}
+// =========================
+// LOGIN (CORRIGIDO)
+// =========================
+window.login = async function () {
 
-// LOGIN
+  const email = document.getElementById("login-email").value;
+  const senha = document.getElementById("login-password").value;
 
-window.login = async function(){
+  try {
 
-  const email =
-    document.getElementById("login-email").value;
+    await setPersistence(auth, browserLocalPersistence);
 
-  const senha =
-    document.getElementById("login-password").value;
-
-  try{
-
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      senha
-    );
+    await signInWithEmailAndPassword(auth, email, senha);
 
     alert("Login realizado com sucesso!");
 
-    window.location.href = "index.html";
+    // 🔥 pequeno delay evita bug de estado no Firebase
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 300);
 
-  }catch(error){
-
+  } catch (error) {
     alert(error.message);
-
   }
-
-}
+};

@@ -3,114 +3,126 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Perfil - Grand Line RPG</title>
 
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="perfil.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="background"></div>
-<div class="overlay"></div>
+  <!-- FUNDO IGUAL INDEX -->
+  <div class="background"></div>
+  <div class="overlay"></div>
 
-<main class="profile-container">
+  <!-- NAVBAR IGUAL INDEX -->
+  <header class="navbar">
 
-  <div class="profile-card">
+    <div class="logo-area">
 
-    <!-- HEADER -->
-    <div class="profile-header">
+      <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
-      <img src="https://i.imgur.com/8Km9tLL.png" class="profile-img">
-
-      <div>
-        <h1 id="playerName">Carregando...</h1>
-        <p id="playerEmail"></p>
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
       </div>
 
     </div>
 
-    <!-- INFO RPG -->
-    <div class="info-grid">
+    <nav>
+      <a href="index.html">INÍCIO</a>
+      <a href="jogadores.html">JOGADORES</a>
+      <a href="faccoes.html">FACÇÕES</a>
+      <a href="mapa.html">MAPA</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
 
-      <div class="info">
-        <span>👤 Personagem</span>
-        <p>Luffy Fake</p>
+  </header>
+
+  <!-- CONTEÚDO PERFIL -->
+  <main class="profile-container">
+
+    <div class="profile-card">
+
+      <h1 id="nomeJogador">Carregando...</h1>
+
+      <p id="nomePersonagem">Personagem: --</p>
+
+      <div class="profile-grid">
+
+        <div>⚔️ Estilo: <span id="estilo">--</span></div>
+        <div>🧬 Raça: <span id="raca">--</span></div>
+        <div>🍎 Akuma no Mi: <span id="akuma">--</span></div>
+
       </div>
 
-      <div class="info">
-        <span>🏴 Raça</span>
-        <p>Humano</p>
+      <hr>
+
+      <h2>Atributos</h2>
+
+      <div class="stats">
+
+        <div>💪 Força: <span id="forca">0</span></div>
+        <div>🛡️ Resistência: <span id="resistencia">0</span></div>
+        <div>🎯 Destreza: <span id="destreza">0</span></div>
+        <div>⚡ Agilidade: <span id="agilidade">0</span></div>
+        <div>🔋 Stamina: <span id="stamina">0</span></div>
+        <div>❤️ Vida: <span id="vida">0</span></div>
+
       </div>
 
-      <div class="info">
-        <span>⚔️ Estilo</span>
-        <p>Espadachim</p>
-      </div>
-
-      <div class="info">
-        <span>🍎 Akuma no Mi</span>
-        <p>Gomu Gomu no Mi</p>
-      </div>
+      <button onclick="logout()">SAIR</button>
 
     </div>
 
-    <!-- ATRIBUTOS -->
-    <h2 class="section-title">Atributos</h2>
+  </main>
 
-    <div class="stats">
+  <!-- FIREBASE -->
+  <script type="module">
 
-      <div class="stat">FOR <b>10</b></div>
-      <div class="stat">RES <b>8</b></div>
-      <div class="stat">DES <b>7</b></div>
-      <div class="stat">AGI <b>9</b></div>
-      <div class="stat">STA <b>12</b></div>
-      <div class="stat hp">VIDA <b>120</b></div>
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    </div>
+    const firebaseConfig = {
+      apiKey: "SUA_API",
+      authDomain: "SEU_AUTH",
+      projectId: "SEU_ID",
+      appId: "SEU_APP"
+    };
 
-    <!-- BOTÃO -->
-    <button onclick="logout()">SAIR</button>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-  </div>
+    onAuthStateChanged(auth, (user) => {
 
-</main>
+      if (!user) {
+        window.location.href = "auth.html";
+        return;
+      }
 
-<script type="module">
+      document.getElementById("nomeJogador").innerText =
+        user.displayName || "Jogador";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      document.getElementById("nomePersonagem").innerText =
+        "Personagem: Não definido";
 
-const firebaseConfig = {
-  apiKey: "SUA_KEY",
-  authDomain: "SEU_AUTH",
-  projectId: "SEU_ID"
-};
+    });
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+    window.logout = () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    }
 
-onAuthStateChanged(auth, (user) => {
-
-  if (!user) {
-    window.location.href = "auth.html";
-    return;
-  }
-
-  document.getElementById("playerName").innerText =
-    user.displayName || "Pirata desconhecido";
-
-  document.getElementById("playerEmail").innerText =
-    user.email;
-
-});
-
-window.logout = async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
-};
-
-</script>
+  </script>
 
 </body>
 </html>

@@ -7,63 +7,44 @@
 
   <title>Grand Line RPG</title>
 
-  <!-- Fonte -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap"
-    rel="stylesheet"
-  >
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- Fundo -->
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- Navbar -->
   <header class="navbar">
 
     <div class="logo-area">
-
-      <img
-        src="https://i.imgur.com/aBJrsQt.png"
-        class="logo"
-      >
+      <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
         <p>— RPG —</p>
       </div>
-
     </div>
 
     <nav>
       <a href="index.html">INÍCIO</a>
       <a href="jogadores.html">JOGADORES</a>
-      <a href="">FACÇÕES</a>
-      <a href="">MAPA</a>
       <a href="guia.html">GUIA</a>
     </nav>
 
   </header>
 
-  <!-- Hero -->
   <main class="hero">
 
-    <img
-      src="https://i.imgur.com/DYQY9IR.png"
-      class="main-logo"
-    >
+    <img src="https://i.imgur.com/DYQY9IR.png" class="main-logo">
 
     <p>
       VIVA SUA PRÓPRIA AVENTURA NO NOVO MUNDO!<br>
       TORNE-SE LENDÁRIO. NAVEGUE. LUTE. CONQUISTE.
     </p>
 
-    <!-- BOTÃO DINÂMICO -->
     <div id="home-button-area"></div>
 
   </main>
@@ -71,52 +52,37 @@
   <!-- FIREBASE -->
   <script type="module">
 
-    import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-    import {
-      getAuth,
-      onAuthStateChanged
-    }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
-      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-      projectId: "grand-line-rpg-dcda9",
-      storageBucket: "grand-line-rpg-dcda9.firebasestorage.app",
-      messagingSenderId: "172042779786",
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-      measurementId: "G-1H48YJSFXQ"
+      apiKey: "SUA_KEY",
+      authDomain: "SEU_AUTH",
+      projectId: "SEU_ID",
     };
 
     const app = initializeApp(firebaseConfig);
-
     const auth = getAuth(app);
 
-    const area =
-      document.getElementById("home-button-area");
+    const area = document.getElementById("home-button-area");
+
+    let loaded = false;
 
     onAuthStateChanged(auth, (user) => {
 
-      if(user){
+      if (loaded) return;
+      loaded = true;
+
+      if (user) {
 
         area.innerHTML = `
-
-          <a href="perfil.html" class="hero-btn">
-            👤 MEU PERFIL
-          </a>
-
+          <a href="perfil.html" class="hero-btn">👤 MEU PERFIL</a>
         `;
 
-      }else{
+      } else {
 
         area.innerHTML = `
-
-          <a href="auth.html" class="hero-btn">
-            ⚓ COMEÇAR JORNADA
-          </a>
-
+          <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
         `;
 
       }

@@ -16,7 +16,6 @@ body{
 }
 
 /* FUNDO */
-
 .background{
   position:fixed;
   inset:0;
@@ -44,7 +43,6 @@ body{
 }
 
 /* NAVBAR */
-
 .navbar{
   width:100%;
 
@@ -66,7 +64,6 @@ body{
 }
 
 /* LOGO */
-
 .logo-area{
   display:flex;
   align-items:center;
@@ -103,7 +100,6 @@ body{
 }
 
 /* MENU */
-
 nav{
   display:flex;
   gap:36px;
@@ -151,7 +147,6 @@ nav a:hover::after{
 }
 
 /* HERO */
-
 .hero{
   width:100%;
   min-height:calc(100vh - 100px);
@@ -167,7 +162,6 @@ nav a:hover::after{
 }
 
 /* LOGO CENTRAL */
-
 .main-logo{
   width:300px;
   max-width:90%;
@@ -178,7 +172,6 @@ nav a:hover::after{
 }
 
 /* TEXTO */
-
 .hero p{
   font-family:'Cinzel', serif;
 
@@ -198,15 +191,14 @@ nav a:hover::after{
   margin-bottom:45px;
 }
 
-/* 🔥 BOTÃO DINÂMICO (LOGIN / PERFIL) */
-
+/* BOTÃO CENTRAL */
 #home-button-area{
   display:flex;
   justify-content:center;
   align-items:center;
 }
 
-/* estilo único pra link e botão */
+/* BOTÃO PRINCIPAL */
 .hero-btn{
   display:inline-flex;
   justify-content:center;
@@ -247,7 +239,7 @@ nav a:hover::after{
   transform:scale(0.98);
 }
 
-/* loading fallback */
+/* loading */
 .button-loading{
   padding:14px 32px;
   border-radius:14px;
@@ -259,7 +251,6 @@ nav a:hover::after{
 }
 
 /* RESPONSIVO */
-
 @media(max-width:950px){
 
   .navbar{

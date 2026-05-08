@@ -52,7 +52,7 @@
     </p>
 
     <div id="home-button-area">
-      <button class="button-loading">CARREGANDO...</button>
+      <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
     </div>
 
   </main>
@@ -68,6 +68,7 @@
       browserLocalPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+    // 🔥 TROCA AQUI PELO SEU FIREBASE REAL
     const firebaseConfig = {
       apiKey: "SUA_KEY",
       authDomain: "SEU_AUTH",
@@ -80,22 +81,21 @@
     const area = document.getElementById("home-button-area");
     const homeLink = document.getElementById("home-link");
 
-    // 🔥 evita bug de reload de estado
     setPersistence(auth, browserLocalPersistence)
       .then(() => {
 
         onAuthStateChanged(auth, (user) => {
 
+          console.log("USER:", user); // DEBUG
+
           if (user) {
 
-            // 👤 LOGADO
+            // 🔥 LOGADO
             homeLink.textContent = "PERFIL";
             homeLink.href = "perfil.html";
 
             area.innerHTML = `
-              <a href="perfil.html" class="hero-btn">
-                👤 MEU PERFIL
-              </a>
+              <a href="perfil.html" class="hero-btn">👤 MEU PERFIL</a>
             `;
 
           } else {
@@ -105,9 +105,7 @@
             homeLink.href = "index.html";
 
             area.innerHTML = `
-              <a href="auth.html" class="hero-btn">
-                ⚓ COMEÇAR JORNADA
-              </a>
+              <a href="auth.html" class="hero-btn">⚓ COMEÇAR JORNADA</a>
             `;
 
           }

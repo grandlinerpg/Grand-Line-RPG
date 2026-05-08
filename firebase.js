@@ -25,8 +25,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🔥 garante login salvo no navegador (IMPORTANTE)
-await setPersistence(auth, browserLocalPersistence);
+// 🔥 garantir persistência ANTES de qualquer coisa
+async function initAuth() {
+  await setPersistence(auth, browserLocalPersistence);
+}
+initAuth();
 
 // ======================
 // LOGIN
@@ -47,8 +50,10 @@ window.login = async function () {
 
     alert("Login realizado com sucesso!");
 
-    // 🔥 troca de página limpa (SEM BUG DE SESSÃO)
-    window.location.replace("index.html");
+    // 🔥 espera o Firebase salvar sessão antes de trocar página
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 300);
 
   } catch (error) {
     alert(error.message);
@@ -80,7 +85,6 @@ window.register = async function () {
 
     alert("Conta criada com sucesso!");
 
-    // volta pro login
     showLogin();
 
   } catch (error) {

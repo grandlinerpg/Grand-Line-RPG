@@ -11,7 +11,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // ======================
-// CONFIG FIREBASE (CORRETO)
+// CONFIG FIREBASE
 // ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -30,7 +30,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // ======================
-// PERSISTÊNCIA LOGIN
+// PERSISTÊNCIA
 // ======================
 let authReady = false;
 
@@ -39,7 +39,7 @@ async function initAuth() {
     await setPersistence(auth, browserLocalPersistence);
     authReady = true;
   } catch (error) {
-    console.error("Erro persistência:", error);
+    console.error(error);
   }
 }
 
@@ -66,10 +66,8 @@ window.login = async function () {
 
     alert("Login realizado com sucesso!");
 
-    // espera leve para garantir sessão salva
-    setTimeout(() => {
-      window.location.href = "perfil.html";
-    }, 500);
+    // REDIRECIONA PRO PERFIL
+    window.location.href = "perfil.html";
 
   } catch (error) {
     alert(error.message);
@@ -103,7 +101,7 @@ window.register = async function () {
 
     alert("Conta criada com sucesso!");
 
-    showLogin(); // sua função de UI
+    showLogin();
 
   } catch (error) {
     alert(error.message);

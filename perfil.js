@@ -7,7 +7,6 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -21,7 +20,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// ======================
 async function startAuth() {
 
   await setPersistence(auth, browserLocalPersistence);
@@ -33,16 +31,16 @@ async function startAuth() {
       return;
     }
 
-    // EMAIL (conta)
+    // ======================
+    // CONTA FIREBASE
+    // ======================
     document.getElementById("email").innerText = user.email;
 
     // ======================
-    // DADOS RPG (MOCK)
+    // RPG (MOCK)
     // ======================
     document.getElementById("player-name").innerText = "Pirata";
-
     document.getElementById("char-name").innerText = "Monkey D. Teste";
-
     document.getElementById("faction").innerText = "Piratas";
 
     document.getElementById("char-img").src =
@@ -52,6 +50,16 @@ async function startAuth() {
     document.getElementById("race").innerText = "Humano";
     document.getElementById("fruit").innerText = "Nenhuma";
 
+    // ======================
+    // NOVOS SISTEMAS RPG
+    // ======================
+    document.getElementById("level").innerText = 5;
+    document.getElementById("exp").innerText = 2450;
+    document.getElementById("saldo").innerText = 15000;
+
+    // ======================
+    // ATRIBUTOS
+    // ======================
     document.getElementById("str").innerText = 10;
     document.getElementById("res").innerText = 8;
     document.getElementById("dex").innerText = 12;
@@ -63,7 +71,6 @@ async function startAuth() {
 
 }
 
-// logout
 window.logout = function () {
   signOut(auth).then(() => {
     window.location.replace("index.html");

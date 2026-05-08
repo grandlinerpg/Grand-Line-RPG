@@ -74,11 +74,11 @@ window.register = async function () {
       info: {
         level: 1,
         exp: 0,
-        saldo: 0
+        saldo: 10000
       },
 
       character: {
-        faction: "Sem Facção",
+        faction: "Governo Mundial",
         charName: "Novo Personagem",
         style: "-",
         race: "-",
@@ -86,11 +86,11 @@ window.register = async function () {
       },
 
       stats: {
-        str: 0,
-        res: 0,
-        dex: 0,
-        agi: 0,
-        sta: 0,
+        str: 1,
+        res: 1,
+        dex: 1,
+        agi: 1,
+        sta: 1,
         hp: 100
       }
     };

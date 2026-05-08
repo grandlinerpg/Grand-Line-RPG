@@ -1,3 +1,6 @@
+// ======================
+// IMPORTS FIREBASE (CDN)
+// ======================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
@@ -8,32 +11,35 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // ======================
-// CONFIG FIREBASE
+// CONFIG FIREBASE (CORRETO)
 // ======================
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_BUCKET",
-  messagingSenderId: "SEU_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+  authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+  projectId: "grand-line-rpg-dcda9",
+  storageBucket: "grand-line-rpg-dcda9.appspot.com",
+  messagingSenderId: "172042779786",
+  appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+  measurementId: "G-1H48YJSFXQ"
 };
 
 // ======================
-// INIT
+// INIT FIREBASE
 // ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🔥 controle de inicialização
+// ======================
+// PERSISTÊNCIA LOGIN
+// ======================
 let authReady = false;
 
 async function initAuth() {
   try {
     await setPersistence(auth, browserLocalPersistence);
     authReady = true;
-  } catch (err) {
-    console.error("Erro persistência:", err);
+  } catch (error) {
+    console.error("Erro persistência:", error);
   }
 }
 
@@ -54,18 +60,15 @@ window.login = async function () {
 
   try {
 
-    // 🔥 garante que persistência já foi configurada
-    if (!authReady) {
-      await initAuth();
-    }
+    if (!authReady) await initAuth();
 
     await signInWithEmailAndPassword(auth, email, senha);
 
     alert("Login realizado com sucesso!");
 
-    // 🔥 espera próximo ciclo do browser
+    // espera leve para garantir sessão salva
     setTimeout(() => {
-      window.location.replace("index.html");
+      window.location.href = "index.html";
     }, 500);
 
   } catch (error) {
@@ -94,15 +97,13 @@ window.register = async function () {
 
   try {
 
-    if (!authReady) {
-      await initAuth();
-    }
+    if (!authReady) await initAuth();
 
     await createUserWithEmailAndPassword(auth, email, senha);
 
     alert("Conta criada com sucesso!");
 
-    showLogin();
+    showLogin(); // sua função de UI
 
   } catch (error) {
     alert(error.message);

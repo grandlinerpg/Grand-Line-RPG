@@ -3,130 +3,114 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Perfil - Grand Line RPG</title>
 
   <link rel="stylesheet" href="perfil.css">
-
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-  <!-- FUNDO -->
-  <div class="background"></div>
-  <div class="overlay"></div>
+<div class="background"></div>
+<div class="overlay"></div>
 
-  <!-- NAVBAR -->
-  <header class="navbar">
+<main class="profile-container">
 
-    <div class="logo-area">
+  <div class="profile-card">
 
-      <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
-
-      <div class="logo-text">
-        <h1>GRAND LINE</h1>
-        <p>— RPG —</p>
-      </div>
-
-    </div>
-
-    <nav>
-      <a href="index.html">INÍCIO</a>
-      <a href="jogadores.html">JOGADORES</a>
-      <a href="guia.html">GUIA</a>
-    </nav>
-
-  </header>
-
-  <!-- PERFIL -->
-  <main class="profile-container">
-
-    <div class="profile-card">
+    <!-- HEADER -->
+    <div class="profile-header">
 
       <img src="https://i.imgur.com/8Km9tLL.png" class="profile-img">
 
-      <h1 id="profile-name">Carregando...</h1>
-
-      <p id="profile-email">Carregando email...</p>
-
-      <div class="profile-info">
-
-        <div class="info-box">
-          <span>⭐ Nível</span>
-          <h2>1</h2>
-        </div>
-
-        <div class="info-box">
-          <span>⚡ EXP</span>
-          <h2>0</h2>
-        </div>
-
-        <div class="info-box">
-          <span>💰 Berries</span>
-          <h2>0</h2>
-        </div>
-
+      <div>
+        <h1 id="playerName">Carregando...</h1>
+        <p id="playerEmail"></p>
       </div>
-
-      <button onclick="logout()">
-        SAIR DA CONTA
-      </button>
 
     </div>
 
-  </main>
+    <!-- INFO RPG -->
+    <div class="info-grid">
 
-  <!-- FIREBASE -->
-  <script type="module">
+      <div class="info">
+        <span>👤 Personagem</span>
+        <p>Luffy Fake</p>
+      </div>
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      <div class="info">
+        <span>🏴 Raça</span>
+        <p>Humano</p>
+      </div>
 
-    // 🔥 CONFIG CORRETA (MESMO DO LOGIN/INDEX)
-    const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
-      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-      projectId: "grand-line-rpg-dcda9",
-      storageBucket: "grand-line-rpg-dcda9.firebasestorage.app",
-      messagingSenderId: "172042779786",
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173"
-    };
+      <div class="info">
+        <span>⚔️ Estilo</span>
+        <p>Espadachim</p>
+      </div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+      <div class="info">
+        <span>🍎 Akuma no Mi</span>
+        <p>Gomu Gomu no Mi</p>
+      </div>
 
-    let loaded = false;
+    </div>
 
-    onAuthStateChanged(auth, (user) => {
+    <!-- ATRIBUTOS -->
+    <h2 class="section-title">Atributos</h2>
 
-      if (loaded) return;
-      loaded = true;
+    <div class="stats">
 
-      if (!user) {
-        window.location.href = "auth.html";
-        return;
-      }
+      <div class="stat">FOR <b>10</b></div>
+      <div class="stat">RES <b>8</b></div>
+      <div class="stat">DES <b>7</b></div>
+      <div class="stat">AGI <b>9</b></div>
+      <div class="stat">STA <b>12</b></div>
+      <div class="stat hp">VIDA <b>120</b></div>
 
-      document.getElementById("profile-name").innerText =
-        user.displayName || "Pirata";
+    </div>
 
-      document.getElementById("profile-email").innerText =
-        user.email;
+    <!-- BOTÃO -->
+    <button onclick="logout()">SAIR</button>
 
-    });
+  </div>
 
-    window.logout = async function () {
-      await signOut(auth);
-      window.location.href = "auth.html";
-    };
+</main>
 
-  </script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "SUA_KEY",
+  authDomain: "SEU_AUTH",
+  projectId: "SEU_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+
+  if (!user) {
+    window.location.href = "auth.html";
+    return;
+  }
+
+  document.getElementById("playerName").innerText =
+    user.displayName || "Pirata desconhecido";
+
+  document.getElementById("playerEmail").innerText =
+    user.email;
+
+});
+
+window.logout = async () => {
+  await signOut(auth);
+  window.location.href = "index.html";
+};
+
+</script>
 
 </body>
 </html>

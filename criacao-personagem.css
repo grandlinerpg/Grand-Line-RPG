@@ -80,6 +80,8 @@ body{
 .logo{
   width:90px;
   margin-bottom:15px;
+
+  filter:drop-shadow(0 0 10px rgba(255,215,120,0.25));
 }
 
 /* TEXTOS */
@@ -94,11 +96,16 @@ body{
   color:#ddd;
   font-size:15px;
   margin-bottom:25px;
+  line-height:1.4;
 }
 
 /* PREVIEW */
 .preview-box{
   margin-bottom:20px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
 .preview-box img{

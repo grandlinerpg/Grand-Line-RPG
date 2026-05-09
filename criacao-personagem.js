@@ -77,13 +77,13 @@ window.criarPersonagem = async function () {
     return;
   }
 
-  const personagem = selectPersonagem.value;
+  const personagem = selectPersonagem.options[selectPersonagem.selectedIndex].text; // ✔ CORREÇÃO AQUI
   const estilo = selectEstilo.value;
 
   const data = {
     charName: personagem,
     style: estilo,
-    image: gerarUrl(personagem),
+    image: gerarUrl(selectPersonagem.value),
     faction: "Governo Mundial"
   };
 

@@ -88,13 +88,16 @@ async function startAuth() {
         .replace(/[\u0300-\u036f]/g, "");
 
       const imagem =
-        `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png`;
+        `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png?v=${Date.now()}`;
 
-      document.getElementById("char-img").src = imagem;
+      const charImg = document.getElementById("char-img");
+
+      charImg.src = imagem;
 
       // fallback
-      document.getElementById("char-img").onerror = function () {
-        this.src = "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png";
+      charImg.onerror = function () {
+        this.src =
+          "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png?v=" + Date.now();
       };
 
       // ======================

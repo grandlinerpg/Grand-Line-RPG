@@ -140,7 +140,7 @@ window.login = async function () {
     const temPersonagem =
       data.character &&
       data.character.charName &&
-      data.character.charName !== "Novo Personagem";
+      data.character.charName !== "Sem Personagem";
 
     if (temPersonagem) {
       window.location.href = "perfil.html";

@@ -80,7 +80,7 @@ window.register = async function () {
         faction: "Governo Mundial",
         charName: "Sem Personagem",
         style: "—",
-        race: "—",
+        race: "Humano",
         fruit: "—"
       },
 

@@ -149,8 +149,8 @@ nav a:hover {
 
 /* IMAGEM */
 .char-image img {
-  width: 95px;
-  height: 95px;
+  width: 150px;
+  height: 150px;
   border-radius: 12px;
   border: 2px solid #f6d365;
   object-fit: cover;
@@ -296,7 +296,12 @@ button {
     flex-direction: column;
     text-align: center;
     gap: 12px;
-    padding-bottom: 25px; /* <<< ESSA LINHA CRIA ESPAÇO PRO LEVEL */
+    padding-bottom: 25px;
+  }
+
+  .char-image img {
+    width: 120px;
+    height: 120px;
   }
 
   /* LEVEL NÃO SOBREPÕE MAIS NADA */

@@ -149,8 +149,8 @@ nav a:hover {
 
 /* IMAGEM */
 .char-image img {
-  width: 150px;
-  height: 150px;
+  width: 135px;
+  height: 135px;
   border-radius: 12px;
   border: 2px solid #f6d365;
   object-fit: cover;

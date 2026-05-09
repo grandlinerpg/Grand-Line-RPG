@@ -1,17 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  getDatabase,
-  ref,
-  set
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
-// FIREBASE CONFIG
+// FIREBASE
 // ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -23,36 +15,50 @@ const firebaseConfig = {
   databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
-// ======================
-// INIT
-// ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
 // ======================
-// PERSONAGENS
-// ======================
-const personagens = {
-  luffy: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/luffy.png",
-  zoro: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/zoro.png",
-  sanji: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/sanji.png"
-};
-
-// ======================
-// ELEMENTOS (SEGURANÇA)
+// ELEMENTOS
 // ======================
 const selectPersonagem = document.getElementById("personagem");
 const selectEstilo = document.getElementById("estilo");
-const imgPreview = document.getElementById("preview-img");
+const img = document.getElementById("preview-img");
 
-// evita crash se DOM ainda não carregou
-if (selectPersonagem && imgPreview) {
-  selectPersonagem.addEventListener("change", () => {
-    const value = selectPersonagem.value;
-    imgPreview.src = personagens[value] || imgPreview.src;
-  });
+// ======================
+// LÓGICA IGUAL PERFIL (SLUG)
+// ======================
+function gerarSlug(nome) {
+  return nome
+    .toLowerCase()
+    .replaceAll(" ", "-")
+    .replaceAll(".", "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
+
+// ======================
+// PREVIEW DA IMAGEM
+// ======================
+function atualizarImagem() {
+  const slug = gerarSlug(selectPersonagem.value);
+
+  const url =
+    `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${slug}.png`;
+
+  img.src = url;
+
+  img.onerror = () => {
+    img.src =
+      "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png";
+  };
+}
+
+selectPersonagem.addEventListener("change", atualizarImagem);
+
+// inicia preview
+atualizarImagem();
 
 // ======================
 // CRIAR PERSONAGEM
@@ -66,26 +72,26 @@ window.criarPersonagem = async function () {
     return;
   }
 
-  const personagem = selectPersonagem.value;
-  const estilo = selectEstilo.value;
+  const charName = selectPersonagem.value;
+  const style = selectEstilo.value;
 
-  if (!personagem || !estilo) {
-    alert("Escolha personagem e estilo!");
-    return;
-  }
+  const slug = gerarSlug(charName);
+
+  const image =
+    `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${slug}.png`;
 
   const data = {
-    charName: personagem,
-    style: estilo,
-    image: personagens[personagem] || "",
+    charName,
+    style,
+    image,
     faction: "Governo Mundial"
   };
 
   try {
+
     await set(ref(db, `players/${user.uid}/character`), data);
 
     alert("Personagem criado com sucesso!");
-
     window.location.href = "perfil.html";
 
   } catch (err) {
@@ -95,12 +101,10 @@ window.criarPersonagem = async function () {
 };
 
 // ======================
-// PROTEÇÃO DE ACESSO
+// PROTEÇÃO
 // ======================
 onAuthStateChanged(auth, (user) => {
-
   if (!user) {
     window.location.href = "auth.html";
   }
-
 });

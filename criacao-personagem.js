@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getAuth, 
-  onAuthStateChanged 
+import {
+  getAuth,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -31,35 +31,31 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 // ======================
-// IMAGENS DOS PERSONAGENS
-// (você pode adicionar mais depois)
+// PERSONAGENS
 // ======================
 const personagens = {
-  luffy: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png",
-  zoro: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png",
-  sanji: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png"
+  luffy: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/luffy.png",
+  zoro: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/zoro.png",
+  sanji: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/sanji.png"
 };
 
 // ======================
-// ELEMENTOS
+// ELEMENTOS (SEGURANÇA)
 // ======================
 const selectPersonagem = document.getElementById("personagem");
 const selectEstilo = document.getElementById("estilo");
 const imgPreview = document.getElementById("preview-img");
 
-// ======================
-// TROCA DE IMAGEM (PREVIEW)
-// ======================
-selectPersonagem.addEventListener("change", () => {
-  const value = selectPersonagem.value;
-
-  if (personagens[value]) {
-    imgPreview.src = personagens[value];
-  }
-});
+// evita crash se DOM ainda não carregou
+if (selectPersonagem && imgPreview) {
+  selectPersonagem.addEventListener("change", () => {
+    const value = selectPersonagem.value;
+    imgPreview.src = personagens[value] || imgPreview.src;
+  });
+}
 
 // ======================
-// SALVAR PERSONAGEM
+// CRIAR PERSONAGEM
 // ======================
 window.criarPersonagem = async function () {
 
@@ -86,7 +82,6 @@ window.criarPersonagem = async function () {
   };
 
   try {
-
     await set(ref(db, `players/${user.uid}/character`), data);
 
     alert("Personagem criado com sucesso!");

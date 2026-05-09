@@ -14,7 +14,8 @@ import {
 import {
   getDatabase,
   ref,
-  set
+  set,
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
@@ -40,7 +41,7 @@ const db = getDatabase(app);
 setPersistence(auth, browserLocalPersistence);
 
 // ======================
-// REGISTER (CORRIGIDO E ORGANIZADO)
+// REGISTER
 // ======================
 window.register = async function () {
 
@@ -63,8 +64,6 @@ window.register = async function () {
 
     const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
     const user = userCredential.user;
-
-    console.log("CRIANDO PERSONAGEM UID:", user.uid);
 
     const playerData = {
       uid: user.uid,
@@ -97,19 +96,18 @@ window.register = async function () {
 
     await set(ref(db, `players/${user.uid}`), playerData);
 
-    console.log("SALVO NO FIREBASE COM ESTRUTURA RPG ✔");
-
     alert("Conta criada com sucesso!");
-    showLogin();
+
+    // 🔥 AGORA VAI PARA LOGIN
+    window.location.href = "auth.html";
 
   } catch (error) {
-    console.error("ERRO FIREBASE:", error);
     alert(error.message);
   }
 };
 
 // ======================
-// LOGIN
+// LOGIN (NOVO FLUXO)
 // ======================
 window.login = async function () {
 
@@ -128,7 +126,27 @@ window.login = async function () {
 
     localStorage.setItem("uid", user.uid);
 
-    window.location.href = "perfil.html";
+    // 🔥 BUSCA DADOS DO PLAYER
+    const snap = await get(ref(db, `players/${user.uid}`));
+
+    if (!snap.exists()) {
+      alert("Jogador não encontrado!");
+      return;
+    }
+
+    const data = snap.val();
+
+    // 🔥 CHECA SE TEM PERSONAGEM
+    const temPersonagem =
+      data.character &&
+      data.character.charName &&
+      data.character.charName !== "Novo Personagem";
+
+    if (temPersonagem) {
+      window.location.href = "perfil.html";
+    } else {
+      window.location.href = "criacao-personagem.html";
+    }
 
   } catch (error) {
     alert(error.message);

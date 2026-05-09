@@ -68,16 +68,46 @@ async function startAuth() {
       // ======================
       // INFO DO PLAYER
       // ======================
-      document.getElementById("player-name").innerText = data.nome || "-";
-      document.getElementById("char-name").innerText = data.character?.charName || "-";
-      document.getElementById("faction").innerText = data.character?.faction || "-";
+      document.getElementById("player-name").innerText =
+        data.nome || "-";
 
-      document.getElementById("char-img").src =
-        "https://i.imgur.com/DYQY9IR.png";
+      document.getElementById("char-name").innerText =
+        data.character?.charName || "-";
 
-      document.getElementById("style").innerText = data.character?.style || "-";
-      document.getElementById("race").innerText = data.character?.race || "-";
-      document.getElementById("fruit").innerText = data.character?.fruit || "-";
+      document.getElementById("faction").innerText =
+        data.character?.faction || "-";
+
+      // ======================
+      // IMAGEM AUTOMÁTICA
+      // ======================
+      const personagem = (data.character?.charName || "default")
+        .toLowerCase()
+        .replaceAll(" ", "-")
+        .replaceAll(".", "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      const imagem =
+        `https://res.cloudinary.com/djh45admn/image/upload/${personagem}.png`;
+
+      document.getElementById("char-img").src = imagem;
+
+      // fallback caso não exista imagem
+      document.getElementById("char-img").onerror = function () {
+        this.src = "https://i.imgur.com/DYQY9IR.png";
+      };
+
+      // ======================
+      // INFORMAÇÕES
+      // ======================
+      document.getElementById("style").innerText =
+        data.character?.style || "-";
+
+      document.getElementById("race").innerText =
+        data.character?.race || "-";
+
+      document.getElementById("fruit").innerText =
+        data.character?.fruit || "-";
 
       // ======================
       // INFO / LEVEL / EXP
@@ -86,7 +116,7 @@ async function startAuth() {
       const exp = data.info?.exp || 0;
       const saldo = data.info?.saldo || 0;
 
-      // 🔥 DINÂMICO (já preparado pra RPG)
+      // EXP DINÂMICA
       const expMax = level * 1000;
 
       document.getElementById("level").innerText = level;

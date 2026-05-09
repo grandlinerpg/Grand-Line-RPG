@@ -94,7 +94,7 @@ async function startAuth() {
 
       // fallback
       document.getElementById("char-img").onerror = function () {
-        this.src = "https://i.imgur.com/DYQY9IR.png";
+        this.src = "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png";
       };
 
       // ======================

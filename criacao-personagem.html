@@ -1,107 +1,33 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!-- PREVIEW -->
+<div class="preview-box">
+  <img 
+    id="preview-img"
+    src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png"
+  >
+</div>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- PERSONAGEM -->
+<div class="input-group">
+  <label>Personagem</label>
+  <select id="personagem">
+    <option value="luffy">Monkey D. Luffy</option>
+    <option value="zoro">Roronoa Zoro</option>
+    <option value="sanji">Sanji</option>
+  </select>
+</div>
 
-  <title>Criar Personagem - Grand Line RPG</title>
+<!-- ESTILO -->
+<div class="input-group">
+  <label>Estilo de Luta</label>
+  <select id="estilo">
+    <option value="Espadachim">Espadachim</option>
+    <option value="Boxeador">Boxeador</option>
+    <option value="Atirador">Atirador</option>
+    <option value="Black Leg">Black Leg</option>
+    <option value="Rokushiki">Rokushiki</option>
+  </select>
+</div>
 
-  <link rel="stylesheet" href="criacao.css">
-
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
-</head>
-
-<body>
-
-  <!-- FUNDO -->
-  <div class="background"></div>
-  <div class="overlay"></div>
-
-  <!-- CONTAINER -->
-  <div class="create-container">
-
-    <div class="create-card">
-
-      <img class="logo" src="https://i.imgur.com/aBJrsQt.png">
-
-      <h1>CRIAÇÃO DE PERSONAGEM</h1>
-
-      <p>Escolha seu personagem e seu estilo de luta.</p>
-
-      <!-- PREVIEW -->
-      <div class="preview-box">
-
-        <img id="char-img"
-          src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png">
-
-      </div>
-
-      <!-- PERSONAGEM -->
-      <div class="input-group">
-
-        <label>Personagem</label>
-
-        <select id="char-select">
-
-          <option value="luffy">Monkey D. Luffy</option>
-          <option value="zoro">Roronoa Zoro</option>
-          <option value="eustass-kid">Eustass Kid</option>
-
-        </select>
-
-      </div>
-
-      <!-- ESTILO -->
-      <div class="input-group">
-
-        <label>Estilo de Luta</label>
-
-        <select id="style-select">
-
-          <option value="Espadachim">Espadachim</option>
-          <option value="Boxeador">Boxeador</option>
-          <option value="Atirador">Atirador</option>
-          <option value="Black Leg">Black Leg</option>
-          <option value="Rokushiki">Rokushiki</option>
-
-        </select>
-
-      </div>
-
-      <button onclick="criar()">
-        CRIAR PERSONAGEM
-      </button>
-
-    </div>
-
-  </div>
-
-  <script>
-
-    const imagens = {
-      "luffy": "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/luffy.png",
-      "zoro": "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/zoro.png",
-      "eustass-kid": "https://res.cloudinary.com/djh45admn/image/upload/v1778334616/eustass-kid.png"
-    };
-
-    const select = document.getElementById("char-select");
-    const img = document.getElementById("char-img");
-
-    select.addEventListener("change", () => {
-      img.src = imagens[select.value];
-    });
-
-    function criar(){
-      const char = select.value;
-      const style = document.getElementById("style-select").value;
-
-      alert("Personagem criado!\n" + char + " - " + style);
-
-      window.location.href = "perfil.html";
-    }
-
-  </script>
-
-</body>
-</html>
+<button onclick="criarPersonagem()">
+  CRIAR PERSONAGEM
+</button>

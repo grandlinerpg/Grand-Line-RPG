@@ -78,7 +78,7 @@ async function startAuth() {
         data.character?.faction || "-";
 
       // ======================
-      // IMAGEM AUTOMÁTICA
+      // IMAGEM PERSONAGEM
       // ======================
       const personagem = (data.character?.charName || "default")
         .toLowerCase()
@@ -88,11 +88,11 @@ async function startAuth() {
         .replace(/[\u0300-\u036f]/g, "");
 
       const imagem =
-        `https://res.cloudinary.com/djh45admn/image/upload/${personagem}.png`;
+        `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png`;
 
       document.getElementById("char-img").src = imagem;
 
-      // fallback caso não exista imagem
+      // fallback
       document.getElementById("char-img").onerror = function () {
         this.src = "https://i.imgur.com/DYQY9IR.png";
       };
@@ -116,7 +116,6 @@ async function startAuth() {
       const exp = data.info?.exp || 0;
       const saldo = data.info?.saldo || 0;
 
-      // EXP DINÂMICA
       const expMax = level * 1000;
 
       document.getElementById("level").innerText = level;

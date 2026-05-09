@@ -1,0 +1,186 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial, sans-serif;
+
+  overflow-x:hidden;
+  overflow-y:auto;
+
+  color:white;
+
+  min-height:100vh;
+}
+
+/* FUNDO */
+.background{
+  position:fixed;
+  inset:0;
+
+  background-image:url('https://i.imgur.com/pKx1Cvd.png');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+
+  transform:scale(1.03);
+
+  z-index:-2;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.75),
+      rgba(0,0,0,0.60)
+    );
+
+  z-index:-1;
+}
+
+/* CONTAINER */
+.create-container{
+  width:100%;
+  min-height:100vh;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:40px 20px;
+}
+
+/* CARD */
+.create-card{
+  width:100%;
+  max-width:450px;
+
+  background:rgba(0,0,0,0.45);
+
+  border:1px solid rgba(255,215,120,0.18);
+
+  border-radius:24px;
+
+  padding:40px 35px;
+
+  backdrop-filter:blur(8px);
+
+  text-align:center;
+
+  box-shadow:0 8px 25px rgba(0,0,0,0.35);
+}
+
+/* LOGO */
+.logo{
+  width:90px;
+  margin-bottom:15px;
+}
+
+/* TEXTOS */
+.create-card h1{
+  font-family:'Cinzel', serif;
+  color:#f6d365;
+  font-size:30px;
+  margin-bottom:10px;
+}
+
+.create-card p{
+  color:#ddd;
+  font-size:15px;
+  margin-bottom:25px;
+}
+
+/* PREVIEW */
+.preview-box{
+  margin-bottom:20px;
+}
+
+.preview-box img{
+  width:180px;
+  height:180px;
+
+  object-fit:cover;
+
+  border-radius:12px;
+
+  border:2px solid #f6d365;
+
+  box-shadow:0 0 15px rgba(255,215,120,0.2);
+}
+
+/* INPUTS */
+.input-group{
+  display:flex;
+  flex-direction:column;
+  text-align:left;
+
+  margin-bottom:20px;
+}
+
+.input-group label{
+  font-family:'Cinzel', serif;
+  color:#f6d365;
+  margin-bottom:8px;
+  font-size:14px;
+}
+
+.input-group select{
+  padding:14px;
+
+  border:none;
+  border-radius:12px;
+
+  background:rgba(255,255,255,0.08);
+  color:white;
+
+  outline:none;
+
+  border:1px solid rgba(255,215,120,0.10);
+}
+
+/* BOTÃO */
+button{
+  width:100%;
+
+  padding:15px;
+
+  border:none;
+  border-radius:14px;
+
+  background:linear-gradient(to bottom, #8f1408, #5e0800);
+
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
+  font-size:16px;
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:0.3s;
+}
+
+button:hover{
+  transform:scale(1.02);
+  background:linear-gradient(to bottom, #aa1a0b, #730b00);
+}
+
+/* MOBILE */
+@media(max-width:600px){
+
+  .create-card{
+    padding:30px 22px;
+  }
+
+  .preview-box img{
+    width:150px;
+    height:150px;
+  }
+
+}

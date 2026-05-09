@@ -7,7 +7,7 @@ import {
 import {
   getDatabase,
   ref,
-  set
+  update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
@@ -38,10 +38,9 @@ const selectEstilo = document.getElementById("estilo");
 const img = document.getElementById("preview-img");
 
 // ======================
-// FUNÇÃO PADRÃO (MESMA DO PERFIL)
+// FUNÇÃO IMAGEM
 // ======================
 function gerarUrl(nome) {
-
   return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${
     nome
       .toLowerCase()
@@ -50,19 +49,16 @@ function gerarUrl(nome) {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
   }.png`;
-
 }
 
 // ======================
-// PREVIEW DINÂMICO
+// PREVIEW
 // ======================
 function atualizarImagem() {
   img.src = gerarUrl(selectPersonagem.value);
 }
 
 selectPersonagem.addEventListener("change", atualizarImagem);
-
-// inicia imagem correta
 atualizarImagem();
 
 // ======================
@@ -77,19 +73,18 @@ window.criarPersonagem = async function () {
     return;
   }
 
-  const personagem = selectPersonagem.options[selectPersonagem.selectedIndex].text; // ✔ CORREÇÃO AQUI
+  const personagem = selectPersonagem.options[selectPersonagem.selectedIndex].text;
   const estilo = selectEstilo.value;
-
-  const data = {
-    charName: personagem,
-    style: estilo,
-    image: gerarUrl(selectPersonagem.value),
-    faction: "Governo Mundial"
-  };
 
   try {
 
-    await set(ref(db, `players/${user.uid}/character`), data);
+    // 🔥 SÓ ATUALIZA O QUE MUDOU (NÃO APAGA race, fruit, etc)
+    await update(ref(db, `players/${user.uid}/character`), {
+      charName: personagem,
+      style: estilo,
+      image: gerarUrl(selectPersonagem.value),
+      faction: "Governo Mundial"
+    });
 
     alert("Personagem criado!");
     window.location.href = "perfil.html";

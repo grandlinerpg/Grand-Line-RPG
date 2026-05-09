@@ -1,9 +1,17 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { 
+  getAuth, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
-// FIREBASE
+// FIREBASE CONFIG
 // ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -15,6 +23,9 @@ const firebaseConfig = {
   databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
+// ======================
+// INIT
+// ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -27,37 +38,31 @@ const selectEstilo = document.getElementById("estilo");
 const img = document.getElementById("preview-img");
 
 // ======================
-// LÓGICA IGUAL PERFIL (SLUG)
+// FUNÇÃO PADRÃO (MESMA DO PERFIL)
 // ======================
-function gerarSlug(nome) {
-  return nome
-    .toLowerCase()
-    .replaceAll(" ", "-")
-    .replaceAll(".", "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+function gerarUrl(nome) {
+
+  return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${
+    nome
+      .toLowerCase()
+      .replaceAll(" ", "-")
+      .replaceAll(".", "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+  }.png`;
+
 }
 
 // ======================
-// PREVIEW DA IMAGEM
+// PREVIEW DINÂMICO
 // ======================
 function atualizarImagem() {
-  const slug = gerarSlug(selectPersonagem.value);
-
-  const url =
-    `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${slug}.png`;
-
-  img.src = url;
-
-  img.onerror = () => {
-    img.src =
-      "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png";
-  };
+  img.src = gerarUrl(selectPersonagem.value);
 }
 
 selectPersonagem.addEventListener("change", atualizarImagem);
 
-// inicia preview
+// inicia imagem correta
 atualizarImagem();
 
 // ======================
@@ -72,18 +77,13 @@ window.criarPersonagem = async function () {
     return;
   }
 
-  const charName = selectPersonagem.value;
-  const style = selectEstilo.value;
-
-  const slug = gerarSlug(charName);
-
-  const image =
-    `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${slug}.png`;
+  const personagem = selectPersonagem.value;
+  const estilo = selectEstilo.value;
 
   const data = {
-    charName,
-    style,
-    image,
+    charName: personagem,
+    style: estilo,
+    image: gerarUrl(personagem),
     faction: "Governo Mundial"
   };
 
@@ -91,7 +91,7 @@ window.criarPersonagem = async function () {
 
     await set(ref(db, `players/${user.uid}/character`), data);
 
-    alert("Personagem criado com sucesso!");
+    alert("Personagem criado!");
     window.location.href = "perfil.html";
 
   } catch (err) {

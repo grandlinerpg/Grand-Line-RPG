@@ -1,33 +1,91 @@
-<!-- PREVIEW -->
-<div class="preview-box">
-  <img 
-    id="preview-img"
-    src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png"
-  >
-</div>
+<!DOCTYPE html>
+<html lang="pt-br">
 
-<!-- PERSONAGEM -->
-<div class="input-group">
-  <label>Personagem</label>
-  <select id="personagem">
-    <option value="luffy">Monkey D. Luffy</option>
-    <option value="zoro">Roronoa Zoro</option>
-    <option value="sanji">Sanji</option>
-  </select>
-</div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ESTILO -->
-<div class="input-group">
-  <label>Estilo de Luta</label>
-  <select id="estilo">
-    <option value="Espadachim">Espadachim</option>
-    <option value="Boxeador">Boxeador</option>
-    <option value="Atirador">Atirador</option>
-    <option value="Black Leg">Black Leg</option>
-    <option value="Rokushiki">Rokushiki</option>
-  </select>
-</div>
+  <title>Criar Personagem - Grand Line RPG</title>
 
-<button onclick="criarPersonagem()">
-  CRIAR PERSONAGEM
-</button>
+  <link rel="stylesheet" href="criacao-personagem.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- FUNDO -->
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <!-- CONTAINER -->
+  <div class="create-container">
+
+    <div class="create-card">
+
+      <!-- LOGO -->
+      <img class="logo" src="https://i.imgur.com/aBJrsQt.png">
+
+      <h1>CRIAÇÃO DE PERSONAGEM</h1>
+      <p>Escolha seu personagem e seu estilo de luta.</p>
+
+      <!-- PREVIEW -->
+      <div class="preview-box">
+        <img 
+          id="preview-img"
+          src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png"
+        >
+      </div>
+
+      <!-- PERSONAGEM -->
+      <div class="input-group">
+        <label>Personagem</label>
+        <select id="personagem">
+          <option value="luffy">Monkey D. Luffy</option>
+          <option value="zoro">Roronoa Zoro</option>
+          <option value="sanji">Sanji</option>
+        </select>
+      </div>
+
+      <!-- ESTILO -->
+      <div class="input-group">
+        <label>Estilo de Luta</label>
+        <select id="estilo">
+          <option value="Espadachim">Espadachim</option>
+          <option value="Boxeador">Boxeador</option>
+          <option value="Atirador">Atirador</option>
+          <option value="Black Leg">Black Leg</option>
+          <option value="Rokushiki">Rokushiki</option>
+        </select>
+      </div>
+
+      <!-- BOTÃO -->
+      <button onclick="criarPersonagem()">
+        CRIAR PERSONAGEM
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- JS FIREBASE -->
+  <script type="module" src="criacao-personagem.js"></script>
+
+  <!-- PREVIEW SCRIPT -->
+  <script>
+    const imagens = {
+      luffy: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/luffy.png",
+      zoro: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/zoro.png",
+      sanji: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/sanji.png"
+    };
+
+    const select = document.getElementById("personagem");
+    const img = document.getElementById("preview-img");
+
+    select.addEventListener("change", () => {
+      img.src = imagens[select.value];
+    });
+  </script>
+
+</body>
+</html>

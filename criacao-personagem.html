@@ -7,8 +7,10 @@
 
   <title>Criar Personagem - Grand Line RPG</title>
 
+  <!-- CSS -->
   <link rel="stylesheet" href="criacao-personagem.css">
 
+  <!-- FONT -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
@@ -29,7 +31,7 @@
       <h1>CRIAÇÃO DE PERSONAGEM</h1>
       <p>Escolha seu personagem e seu estilo de luta.</p>
 
-      <!-- PREVIEW -->
+      <!-- PREVIEW IMAGEM -->
       <div class="preview-box">
         <img 
           id="preview-img"
@@ -42,7 +44,7 @@
         <label>Personagem</label>
         <select id="personagem">
           <option value="luffy">Monkey D. Luffy</option>
-          <option value="zoro">Roronoa Zoro</option>
+          <option value="zoro">Eustass Kid</option>
           <option value="sanji">Sanji</option>
         </select>
       </div>
@@ -68,24 +70,8 @@
 
   </div>
 
-  <!-- JS FIREBASE -->
+  <!-- JS -->
   <script type="module" src="criacao-personagem.js"></script>
-
-  <!-- PREVIEW SCRIPT -->
-  <script>
-    const imagens = {
-      luffy: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/luffy.png",
-      zoro: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/zoro.png",
-      sanji: "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/sanji.png"
-    };
-
-    const select = document.getElementById("personagem");
-    const img = document.getElementById("preview-img");
-
-    select.addEventListener("change", () => {
-      img.src = imagens[select.value];
-    });
-  </script>
 
 </body>
 </html>

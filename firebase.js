@@ -100,7 +100,7 @@ window.register = async function () {
     console.log("SALVO NO FIREBASE COM ESTRUTURA RPG ✔");
 
     alert("Conta criada com sucesso!");
-    window.location.href = "criacao-personagem.html";
+    showLogin();
 
   } catch (error) {
     console.error("ERRO FIREBASE:", error);

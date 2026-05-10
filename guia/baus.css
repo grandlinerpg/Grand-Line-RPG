@@ -336,10 +336,57 @@ nav a:hover::after{
   color:#f6d365;
 }
 
-.reward.legendary{
-  border:1px solid rgba(255,215,120,0.35);
+/* FORMAS DE OBTER */
 
-  background:rgba(255,215,120,0.08);
+.obtain-section{
+  width:100%;
+  max-width:1000px;
+
+  margin:auto;
+
+  padding:0 20px 70px;
+}
+
+.obtain-section h2{
+  text-align:center;
+
+  font-family:'Cinzel', serif;
+
+  font-size:36px;
+
+  color:#f6d365;
+
+  margin-bottom:25px;
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
+}
+
+.obtain-box{
+  background:rgba(0,0,0,0.45);
+
+  border:1px solid rgba(255,215,120,0.2);
+
+  border-radius:18px;
+
+  padding:30px;
+
+  backdrop-filter:blur(6px);
+
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
+}
+
+.obtain-box p{
+  color:#ddd;
+
+  line-height:1.8;
+
+  margin-bottom:14px;
+
+  font-size:16px;
+}
+
+.obtain-box p:last-child{
+  margin-bottom:0;
 }
 
 /* INFO SECTION */

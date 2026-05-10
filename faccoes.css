@@ -197,6 +197,7 @@ nav a:hover{
 
 .faccao-content{
   padding:24px;
+  text-align:center;
 }
 
 .faccao-content h2{
@@ -205,11 +206,15 @@ nav a:hover{
   color:#f6d365;
 
   margin-bottom:12px;
+
+  text-align:center;
 }
 
 .descricao{
   color:#ddd;
-  line-height:1.7;
+  line-height:1.8;
+
+  text-align:center;
 }
 
 /* STATS */

@@ -33,7 +33,7 @@
     </div>
 
     <nav>
-      <a href="#" onclick="voltar()">VOLTAR</a>
+      <a href="#" id="voltarBtn">VOLTAR</a>
       <a href="guia.html">GUIA</a>
     </nav>
 
@@ -155,19 +155,51 @@
 
   </main>
 
-  <script>
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_AUTH_DOMAIN",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_STORAGE_BUCKET",
+      messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+      appId: "SEU_APP_ID"
+
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
 
     function go(page){
       window.location.href = page;
     }
 
-    function voltar(){
-      if (document.referrer) {
-        window.history.back();
-      } else {
-        window.location.href = "index.html";
-      }
-    }
+    const voltarBtn = document.getElementById("voltarBtn");
+
+    onAuthStateChanged(auth, (user) => {
+
+      voltarBtn.addEventListener("click", () => {
+
+        if(user){
+          window.location.href = "perfil.html";
+        } else {
+          window.location.href = "index.html";
+        }
+
+      });
+
+    });
+
+    window.go = go;
 
   </script>
 

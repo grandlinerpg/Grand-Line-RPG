@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Baús do Tesouro - Grand Line RPG</title>
+
+  <link rel="stylesheet" href="baus.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- FUNDO -->
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+
+    <div class="logo-area">
+
+      <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
+
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+
+    </div>
+
+    <nav>
+      <a href="#" onclick="voltar()">VOLTAR</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
+
+  </header>
+
+  <!-- TÍTULO -->
+  <section class="guide-title">
+
+    <h1>BAÚS DO TESOURO</h1>
+
+    <p>
+      Tesouros escondidos espalhados pelos mares do Grand Line.
+    </p>
+
+  </section>
+
+  <!-- INTRO -->
+  <section class="intro-box">
+
+    <h2>O Sistema de Baús</h2>
+
+    <p>
+      No mundo de <span>Grand Line RPG</span>, os Baús do Tesouro representam
+      recompensas raras encontradas durante as jornadas pelos mares.
+    </p>
+
+    <p>
+      Os baús aparecem aleatoriamente no mapa diariamente e podem ser disputados
+      entre jogadores e facções.
+    </p>
+
+  </section>
+
+  <!-- BAÚS -->
+  <main class="guide-container">
+
+    <!-- BAÚ COMUM -->
+    <div class="guide-card">
+
+      <div class="chest-icon">🪙</div>
+
+      <h2>Baú Comum</h2>
+
+      <p>
+        Um baú simples encontrado em regiões menos perigosas.
+      </p>
+
+      <div class="reward-list">
+
+        <div class="reward">
+          <span>📜 Pergaminho de Ensinamento</span>
+          <b>65%</b>
+        </div>
+
+        <div class="reward">
+          <span>🍎 Akuma no Mi</span>
+          <b>25%</b>
+        </div>
+
+        <div class="reward">
+          <span>🧬 Fator de Linhagem</span>
+          <b>9%</b>
+        </div>
+
+        <div class="reward legendary">
+          <span>✨ Pergaminho de Maestria</span>
+          <b>1%</b>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- BAÚ RARO -->
+    <div class="guide-card">
+
+      <div class="chest-icon">💰</div>
+
+      <h2>Baú Raro</h2>
+
+      <p>
+        Encontrado em territórios perigosos e rotas avançadas.
+      </p>
+
+      <div class="reward-list">
+
+        <div class="reward">
+          <span>📜 Pergaminho de Ensinamento</span>
+          <b>45%</b>
+        </div>
+
+        <div class="reward">
+          <span>🍎 Akuma no Mi</span>
+          <b>40%</b>
+        </div>
+
+        <div class="reward">
+          <span>🧬 Fator de Linhagem</span>
+          <b>13%</b>
+        </div>
+
+        <div class="reward legendary">
+          <span>✨ Pergaminho de Maestria</span>
+          <b>2%</b>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- BAÚ LENDÁRIO -->
+    <div class="guide-card legendary-card">
+
+      <div class="chest-icon">👑</div>
+
+      <h2>Baú Lendário</h2>
+
+      <p>
+        Um tesouro extremamente raro contendo recompensas únicas.
+      </p>
+
+      <div class="reward-list">
+
+        <div class="reward">
+          <span>📜 Pergaminho de Ensinamento</span>
+          <b>30%</b>
+        </div>
+
+        <div class="reward">
+          <span>🍎 Akuma no Mi</span>
+          <b>50%</b>
+        </div>
+
+        <div class="reward">
+          <span>🧬 Fator de Linhagem</span>
+          <b>17%</b>
+        </div>
+
+        <div class="reward legendary">
+          <span>✨ Pergaminho de Maestria</span>
+          <b>3%</b>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FUNCIONALIDADES -->
+  <section class="info-section">
+
+    <h2>Funcionalidade dos Itens</h2>
+
+    <div class="info-grid">
+
+      <div class="info-card">
+        <h3>📜 Pergaminho de Ensinamento</h3>
+        <p>
+          Permite ao personagem alterar livremente seu Estilo de Luta.
+        </p>
+      </div>
+
+      <div class="info-card">
+        <h3>🍎 Akuma no Mi</h3>
+        <p>
+          Concede ao personagem uma Akuma no Mi aleatória.
+        </p>
+      </div>
+
+      <div class="info-card">
+        <h3>🧬 Fator de Linhagem</h3>
+        <p>
+          Permite ao personagem sortear e assumir uma nova raça.
+        </p>
+      </div>
+
+      <div class="info-card">
+        <h3>✨ Pergaminho de Maestria</h3>
+        <p>
+          Item extremamente raro ligado a técnicas especiais e evolução avançada.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <script>
+
+    function voltar(){
+      if(document.referrer){
+        window.history.back();
+      } else {
+        window.location.href = "guia.html";
+      }
+    }
+
+  </script>
+
+</body>
+</html>

@@ -187,45 +187,6 @@ nav a:hover::after{
   text-shadow:2px 2px 6px rgba(0,0,0,0.9);
 }
 
-/* INTRO */
-
-.intro-box{
-  width:90%;
-  max-width:1000px;
-
-  margin:auto;
-  margin-bottom:35px;
-
-  background:rgba(0,0,0,0.45);
-
-  border:1px solid rgba(255,215,120,0.18);
-
-  border-radius:18px;
-
-  padding:28px;
-
-  backdrop-filter:blur(6px);
-}
-
-.intro-box h2{
-  font-family:'Cinzel', serif;
-  color:#f6d365;
-  font-size:28px;
-  margin-bottom:15px;
-}
-
-.intro-box p{
-  color:#ddd;
-  line-height:1.7;
-  margin-bottom:12px;
-  font-size:16px;
-}
-
-.intro-box span{
-  color:#ffe6a7;
-  font-weight:bold;
-}
-
 /* CONTAINER */
 
 .guide-container{
@@ -436,6 +397,8 @@ nav a:hover::after{
   padding:22px;
 
   backdrop-filter:blur(5px);
+
+  text-align:center;
 }
 
 .info-card h3{
@@ -445,7 +408,13 @@ nav a:hover::after{
 
   font-size:20px;
 
-  margin-bottom:12px;
+  margin-bottom:10px;
+}
+
+.card-emoji{
+  font-size:34px;
+
+  margin-bottom:14px;
 }
 
 .info-card p{
@@ -483,9 +452,5 @@ nav a:hover::after{
 
   .info-section h2{
     font-size:30px;
-  }
-
-  .intro-box{
-    padding:22px;
   }
 }

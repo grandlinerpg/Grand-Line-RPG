@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Baús do Tesouro - Grand Line RPG</title>
+  <title>Guia - Grand Line RPG</title>
 
-  <link rel="stylesheet" href="baus.css">
+  <link rel="stylesheet" href="guia.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
@@ -42,196 +42,130 @@
   <!-- TÍTULO -->
   <section class="guide-title">
 
-    <h1>BAÚS DO TESOURO</h1>
+    <h1>GUIA DO RPG</h1>
 
-    <p>
-      Tesouros escondidos espalhados pelos mares do Grand Line.
-    </p>
+    <p>Conheça os principais sistemas do Grand Line RPG.</p>
 
   </section>
 
-  <!-- INTRO -->
-  <section class="intro-box">
-
-    <h2>O Sistema de Baús</h2>
-
-    <p>
-      No mundo de <span>Grand Line RPG</span>, os Baús do Tesouro representam
-      recompensas raras encontradas durante as jornadas pelos mares.
-    </p>
-
-    <p>
-      Os baús aparecem aleatoriamente no mapa diariamente e podem ser disputados
-      entre jogadores e facções.
-    </p>
-
-  </section>
-
-  <!-- BAÚS -->
+  <!-- CONTEÚDO -->
   <main class="guide-container">
 
-    <!-- BAÚ COMUM -->
+    <!-- 1 MANUAL -->
     <div class="guide-card">
 
-      <div class="chest-icon">🪙</div>
+      <h2>Sistema de Combate</h2>
 
-      <h2>Baú Comum</h2>
+      <div class="card-emoji">📖</div>
 
       <p>
-        Um baú simples encontrado em regiões menos perigosas.
+        Aprenda como funcionam os combates, regras básicas e ações do sistema.
       </p>
 
-      <div class="reward-list">
-
-        <div class="reward">
-          <span>📜 Pergaminho de Ensinamento</span>
-          <b>65%</b>
-        </div>
-
-        <div class="reward">
-          <span>🍎 Akuma no Mi</span>
-          <b>25%</b>
-        </div>
-
-        <div class="reward">
-          <span>🧬 Fator de Linhagem</span>
-          <b>10%</b>
-        </div>
-
-      </div>
+      <button onclick="go('manual-combate.html')">
+        VER SISTEMA
+      </button>
 
     </div>
 
-    <!-- BAÚ RARO -->
+    <!-- 2 ESTILO -->
     <div class="guide-card">
 
-      <div class="chest-icon">💰</div>
+      <h2>Estilo de Luta</h2>
 
-      <h2>Baú Raro</h2>
+      <div class="card-emoji">⚔️</div>
 
       <p>
-        Encontrado em territórios perigosos e rotas avançadas.
+        Um estilo de luta define a forma como o personagem combate.
       </p>
 
-      <div class="reward-list">
-
-        <div class="reward">
-          <span>📜 Pergaminho de Ensinamento</span>
-          <b>45%</b>
-        </div>
-
-        <div class="reward">
-          <span>🍎 Akuma no Mi</span>
-          <b>40%</b>
-        </div>
-
-        <div class="reward">
-          <span>🧬 Fator de Linhagem</span>
-          <b>15%</b>
-        </div>
-
-      </div>
+      <button onclick="go('estilo-luta.html')">
+        VER SISTEMA
+      </button>
 
     </div>
 
-    <!-- BAÚ LENDÁRIO -->
-    <div class="guide-card legendary-card">
+    <!-- 3 RAÇAS -->
+    <div class="guide-card">
 
-      <div class="chest-icon">👑</div>
+      <h2>Raças e Tribos</h2>
 
-      <h2>Baú Lendário</h2>
+      <div class="card-emoji">🧬</div>
 
       <p>
-        Um tesouro extremamente raro contendo recompensas únicas.
+        O mundo possui diferentes raças e tribos com características únicas.
       </p>
 
-      <div class="reward-list">
+      <button onclick="go('racas.html')">
+        VER SISTEMA
+      </button>
 
-        <div class="reward">
-          <span>📜 Pergaminho de Ensinamento</span>
-          <b>30%</b>
-        </div>
+    </div>
 
-        <div class="reward">
-          <span>🍎 Akuma no Mi</span>
-          <b>50%</b>
-        </div>
+    <!-- 4 AKUMA -->
+    <div class="guide-card">
 
-        <div class="reward">
-          <span>🧬 Fator de Linhagem</span>
-          <b>20%</b>
-        </div>
+      <h2>Akuma no Mi</h2>
 
-      </div>
+      <div class="card-emoji">🍎</div>
+
+      <p>
+        Frutas do diabo concedem poderes únicos ao usuário.
+      </p>
+
+      <button onclick="go('akuma-no-mi.html')">
+        VER SISTEMA
+      </button>
+
+    </div>
+
+    <!-- 5 BAÚS -->
+    <div class="guide-card">
+
+      <h2>Baús do Tesouro</h2>
+
+      <div class="card-emoji">🪙</div>
+
+      <p>
+        Encontre baús escondidos pelo mundo e obtenha recompensas raras.
+      </p>
+
+      <button onclick="go('baus.html')">
+        VER SISTEMA
+      </button>
+
+    </div>
+
+    <!-- 6 EFEITOS -->
+    <div class="guide-card">
+
+      <h2>Efeitos</h2>
+
+      <div class="card-emoji">💥</div>
+
+      <p>
+        Status como burn, stun e bleed que alteram batalhas.
+      </p>
+
+      <button onclick="go('efeitos-combate.html')">
+        VER SISTEMA
+      </button>
 
     </div>
 
   </main>
 
-  <!-- FORMAS DE OBTER -->
-  <section class="obtain-section">
-
-    <h2>Formas de Obter</h2>
-
-    <div class="obtain-box">
-
-      <p>
-        Os Baús do Tesouro aparecem aleatoriamente pelo mapa todos os dias.
-      </p>
-
-      <p>
-        Facções e jogadores podem disputar os baús durante eventos,
-        explorações e confrontos marítimos.
-      </p>
-
-      <p>
-        Após a obtenção do baú, a facção vencedora decide qual membro
-        receberá a recompensa encontrada.
-      </p>
-
-    </div>
-
-  </section>
-
-  <!-- FUNCIONALIDADES -->
-  <section class="info-section">
-
-    <h2>Funcionalidade dos Itens</h2>
-
-    <div class="info-grid">
-
-      <div class="info-card">
-        <h3>📜 Pergaminho de Ensinamento</h3>
-        <p>
-          Permite ao personagem alterar livremente seu Estilo de Luta.
-        </p>
-      </div>
-
-      <div class="info-card">
-        <h3>🍎 Akuma no Mi</h3>
-        <p>
-          Concede ao personagem uma Akuma no Mi aleatória.
-        </p>
-      </div>
-
-      <div class="info-card">
-        <h3>🧬 Fator de Linhagem</h3>
-        <p>
-          Permite ao personagem sortear e assumir uma nova raça.
-        </p>
-      </div>
-
-    </div>
-
-  </section>
-
   <script>
 
+    function go(page){
+      window.location.href = page;
+    }
+
     function voltar(){
-      if(document.referrer){
+      if (document.referrer) {
         window.history.back();
       } else {
-        window.location.href = "guia.html";
+        window.location.href = "index.html";
       }
     }
 

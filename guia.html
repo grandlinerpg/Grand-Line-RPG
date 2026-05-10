@@ -34,8 +34,6 @@
 
     <nav>
       <a href="#" id="voltarBtn">INÍCIO</a>
-      <a href="faccoes.html">FACÇÕES</a>
-      <a href="mapa.html">MAPA</a>
       <a href="guia.html">GUIA</a>
     </nav>
 
@@ -177,9 +175,9 @@
 
     };
 
-    const app = initializeApp(firebaseConfig);
+    initializeApp(firebaseConfig);
 
-    const auth = getAuth(app);
+    const auth = getAuth();
 
     function go(page){
       window.location.href = page;
@@ -191,21 +189,15 @@
 
     onAuthStateChanged(auth, (user) => {
 
-      if(user){
+      if (user) {
 
         voltarBtn.textContent = "PERFIL";
-
-        voltarBtn.addEventListener("click", () => {
-          window.location.href = "perfil.html";
-        });
+        voltarBtn.href = "perfil.html";
 
       } else {
 
         voltarBtn.textContent = "INÍCIO";
-
-        voltarBtn.addEventListener("click", () => {
-          window.location.href = "index.html";
-        });
+        voltarBtn.href = "index.html";
 
       }
 

@@ -243,6 +243,15 @@ nav a:hover::after{
   text-align:center;
 }
 
+.chest-icon img{
+  width:120px;
+  height:auto;
+
+  object-fit:contain;
+
+  filter:drop-shadow(0 0 12px rgba(255,215,120,0.18));
+}
+
 /* TITULO */
 
 .guide-card h2{
@@ -462,6 +471,4 @@ nav a:hover::after{
   }
 
   .info-section h2{
-    font-size:30px;
-  }
-}
+    font-size:30px

@@ -33,7 +33,7 @@
     </div>
 
     <nav>
-      <a href="#" id="voltarBtn">VOLTAR</a>
+      <a href="#" id="voltarBtn">INÍCIO</a>
       <a href="guia.html">GUIA</a>
     </nav>
 
@@ -183,23 +183,31 @@
       window.location.href = page;
     }
 
+    window.go = go;
+
     const voltarBtn = document.getElementById("voltarBtn");
 
     onAuthStateChanged(auth, (user) => {
 
-      voltarBtn.addEventListener("click", () => {
+      if(user){
 
-        if(user){
+        voltarBtn.textContent = "PERFIL";
+
+        voltarBtn.addEventListener("click", () => {
           window.location.href = "perfil.html";
-        } else {
-          window.location.href = "index.html";
-        }
+        });
 
-      });
+      } else {
+
+        voltarBtn.textContent = "INÍCIO";
+
+        voltarBtn.addEventListener("click", () => {
+          window.location.href = "index.html";
+        });
+
+      }
 
     });
-
-    window.go = go;
 
   </script>
 

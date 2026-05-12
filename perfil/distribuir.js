@@ -14,45 +14,14 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 let userRef = null;
-let cachedData = null;
 
 // ======================
-// FUNÇÃO UPGRADE (GLOBAL)
+// BUFFER LOCAL (EDIÇÃO)
 // ======================
-async function upgradeStat(statName) {
-
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const snap = await get(userRef);
-  if (!snap.exists()) return;
-
-  const data = snap.val();
-
-  const stats = data.stats || {};
-  const points = data.points || {};
-
-  if ((points.available || 0) <= 0) return;
-
-  const newStats = {
-    ...stats,
-    [statName]: (stats[statName] || 0) + 1
-  };
-
-  const newPoints = {
-    available: (points.available || 0) - 1,
-    used: (points.used || 0) + 1
-  };
-
-  await update(userRef, {
-    stats: newStats,
-    points: newPoints
-  });
-
-  document.getElementById(`modal-${statName}`).innerText = newStats[statName];
-  document.getElementById("available-points").innerText = newPoints.available;
-  document.getElementById("used-points").innerText = newPoints.used;
-}
+let tempStats = {};
+let tempPoints = {};
+let originalStats = {};
+let originalPoints = {};
 
 // ======================
 // CARREGA MODAL
@@ -66,6 +35,7 @@ fetch("perfil/distribuir.html")
     const modal = document.querySelector(".points-modal");
     const openBtn = document.getElementById("open-points");
     const closeBtn = document.querySelector(".close-btn");
+    const confirmBtn = document.querySelector(".save-btn");
 
     modal.style.display = "none";
 
@@ -84,46 +54,89 @@ fetch("perfil/distribuir.html")
       const snap = await get(userRef);
       if (!snap.exists()) return;
 
-      cachedData = snap.val();
+      const data = snap.val();
 
-      const stats = cachedData.stats || {};
-      const points = cachedData.points || {};
+      // salva estado original (caso feche sem salvar)
+      originalStats = structuredClone(data.stats || {});
+      originalPoints = structuredClone(data.points || {});
 
-      document.getElementById("modal-str").innerText = stats.str || 0;
-      document.getElementById("modal-res").innerText = stats.res || 0;
-      document.getElementById("modal-dex").innerText = stats.dex || 0;
-      document.getElementById("modal-agi").innerText = stats.agi || 0;
-      document.getElementById("modal-sta").innerText = stats.sta || 0;
-      document.getElementById("modal-hp").innerText  = stats.hp  || 0;
+      // buffer editável
+      tempStats = structuredClone(originalStats);
+      tempPoints = structuredClone(originalPoints);
 
-      document.getElementById("available-points").innerText = points.available || 0;
-      document.getElementById("used-points").innerText = points.used || 0;
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+      };
+
+      set("modal-str", tempStats.str || 0);
+      set("modal-res", tempStats.res || 0);
+      set("modal-dex", tempStats.dex || 0);
+      set("modal-agi", tempStats.agi || 0);
+      set("modal-sta", tempStats.sta || 0);
+      set("modal-hp", tempStats.hp || 0);
+
+      set("available-points", tempPoints.available || 0);
+      set("used-points", tempPoints.used || 0);
 
     });
 
     // ======================
-    // FECHAR MODAL
+    // FECHAR MODAL = DESCARTA
     // ======================
     closeBtn.addEventListener("click", () => {
+
       modal.style.display = "none";
+
+      // volta tudo pro original (descarta mudanças)
+      tempStats = structuredClone(originalStats);
+      tempPoints = structuredClone(originalPoints);
     });
 
     // ======================
-    // 🔥 EVENT DELEGATION (AQUI RESOLVE 100%)
+    // + ATRIBUTOS (SÓ LOCAL)
     // ======================
     document.addEventListener("click", (e) => {
 
       if (!e.target.classList.contains("plus-btn")) return;
 
+      if ((tempPoints.available || 0) <= 0) return;
+
       const id = e.target.id;
 
-      if (id === "up-str") upgradeStat("str");
-      if (id === "up-res") upgradeStat("res");
-      if (id === "up-dex") upgradeStat("dex");
-      if (id === "up-agi") upgradeStat("agi");
-      if (id === "up-sta") upgradeStat("sta");
-      if (id === "up-hp") upgradeStat("hp");
+      const add = (stat) => {
+        tempStats[stat] = (tempStats[stat] || 0) + 1;
+        tempPoints.available -= 1;
+        tempPoints.used += 1;
 
+        document.getElementById(`modal-${stat}`).innerText = tempStats[stat];
+        document.getElementById("available-points").innerText = tempPoints.available;
+        document.getElementById("used-points").innerText = tempPoints.used;
+      };
+
+      if (id === "up-str") add("str");
+      if (id === "up-res") add("res");
+      if (id === "up-dex") add("dex");
+      if (id === "up-agi") add("agi");
+      if (id === "up-sta") add("sta");
+      if (id === "up-hp") add("hp");
+
+    });
+
+    // ======================
+    // CONFIRMAR (SALVA NO FIREBASE)
+    // ======================
+    confirmBtn.addEventListener("click", async () => {
+
+      const user = auth.currentUser;
+      if (!user || !userRef) return;
+
+      await update(userRef, {
+        stats: tempStats,
+        points: tempPoints
+      });
+
+      modal.style.display = "none";
     });
 
   });

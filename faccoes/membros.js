@@ -1,11 +1,18 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
 // FIREBASE CONFIG
 // ======================
 const firebaseConfig = {
-  apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+  apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
   databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com",
   projectId: "grand-line-rpg-dcda9",
@@ -18,30 +25,30 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // ======================
-// ELEMENTOS
+// FUNÇÃO PRINCIPAL
 // ======================
-const modal = document.querySelector(".members-modal");
-const list = document.getElementById("members-list");
-const closeBtn = document.querySelector(".close-members");
+async function renderMembers(faction) {
 
-// ======================
-// ABRIR JANELA
-// ======================
-window.openMembers = async function (faction = null) {
+  const modal = document.querySelector(".members-modal");
+  const list = document.getElementById("members-list");
+
+  if (!modal || !list) return;
 
   modal.style.display = "flex";
 
   const snap = await get(ref(db, "players"));
 
+  list.innerHTML = "";
+
   if (!snap.exists()) return;
 
   const data = snap.val();
 
-  list.innerHTML = "";
-
   Object.values(data).forEach(player => {
 
-    if (faction && player.character?.faction !== faction) return;
+    const playerFaction = player.character?.faction;
+
+    if (faction && playerFaction !== faction) return;
 
     const card = document.createElement("div");
     card.className = "member-card";
@@ -61,11 +68,18 @@ window.openMembers = async function (faction = null) {
 
     list.appendChild(card);
   });
-};
+
+  // fechar botão (garante que existe após render)
+  const closeBtn = document.querySelector(".close-members");
+
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      modal.style.display = "none";
+    };
+  }
+}
 
 // ======================
-// FECHAR
+// EXPÕE GLOBAL
 // ======================
-closeBtn.addEventListener("click", () => {
-  modal.style.display = "none";
-});
+window.openMembers = renderMembers;

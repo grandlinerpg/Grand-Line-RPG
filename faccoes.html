@@ -8,7 +8,6 @@
   <title>Facções - Grand Line RPG</title>
 
   <link rel="stylesheet" href="faccoes.css">
-
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
@@ -22,14 +21,12 @@
   <header class="navbar">
 
     <div class="logo-area">
-
       <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
         <p>— RPG —</p>
       </div>
-
     </div>
 
     <nav>
@@ -43,11 +40,8 @@
 
   <!-- TÍTULO -->
   <section class="guide-title">
-
     <h1>FACÇÕES DO MUNDO</h1>
-
     <p>Escolha seu lado no mundo de Grand Line.</p>
-
   </section>
 
   <!-- FACÇÕES -->
@@ -87,20 +81,15 @@
 
         <div class="buttons">
 
-          <button onclick="go('faccoes/governo.html')">
-            ENTRAR
-          </button>
+          <button onclick="go('faccoes/governo.html')">ENTRAR</button>
 
-          <!-- ALTERADO -->
-          <button class="secondary"
-            onclick="openMembers('governo')">
+          <button class="secondary" onclick="openMembers('governo')">
             VER MEMBROS
           </button>
 
         </div>
 
       </div>
-
     </div>
 
     <!-- REVOLUCIONÁRIOS -->
@@ -137,20 +126,15 @@
 
         <div class="buttons">
 
-          <button onclick="go('faccoes/revolucionario.html')">
-            ENTRAR
-          </button>
+          <button onclick="go('faccoes/revolucionario.html')">ENTRAR</button>
 
-          <!-- ALTERADO -->
-          <button class="secondary"
-            onclick="openMembers('revolucionario')">
+          <button class="secondary" onclick="openMembers('revolucionario')">
             VER MEMBROS
           </button>
 
         </div>
 
       </div>
-
     </div>
 
     <!-- PIRATAS -->
@@ -187,20 +171,15 @@
 
         <div class="buttons">
 
-          <button onclick="go('faccoes/piratas.html')">
-            ENTRAR
-          </button>
+          <button onclick="go('faccoes/piratas.html')">ENTRAR</button>
 
-          <!-- ALTERADO -->
-          <button class="secondary"
-            onclick="openMembers('piratas')">
+          <button class="secondary" onclick="openMembers('piratas')">
             VER BANDOS
           </button>
 
         </div>
 
       </div>
-
     </div>
 
   </main>
@@ -214,7 +193,7 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuZBfqG4AGTVUQ",
+      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
       projectId: "grand-line-rpg-dcda9",
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
@@ -231,6 +210,43 @@
     }
 
     window.go = go;
+
+    // ======================
+    // MODAL MEMBROS
+    // ======================
+    async function openMembers(faccao) {
+
+      const old = document.getElementById("members-container");
+      if (old) old.remove();
+
+      const res = await fetch("faccoes/membros.html");
+      const html = await res.text();
+
+      const container = document.createElement("div");
+      container.id = "members-container";
+      container.innerHTML = html;
+
+      document.body.appendChild(container);
+
+      const closeBtn = container.querySelector(".close-members");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+          container.remove();
+        });
+      }
+
+      window.currentFaction = faccao;
+
+      if (!document.getElementById("members-script")) {
+        const script = document.createElement("script");
+        script.src = "faccoes/membros.js";
+        script.type = "module";
+        script.id = "members-script";
+        document.body.appendChild(script);
+      }
+    }
+
+    window.openMembers = openMembers;
 
     // ======================
     // LOGIN CHECK
@@ -252,5 +268,4 @@
   </script>
 
 </body>
-
 </html>

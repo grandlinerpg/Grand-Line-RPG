@@ -43,32 +43,17 @@ if (!uid) {
 }
 
 // ======================
-// LOAD HTML
+// LOAD MODAL HTML
 // ======================
 
-fetch("./distribuir.html")
+fetch("./perfil/distribuir.html")
   .then(res => res.text())
-  .then(async data => {
+  .then(async (html) => {
 
-    document.getElementById("modal-container").innerHTML = data;
+    document.getElementById("modal-container").innerHTML = html;
 
     const modal = document.querySelector(".points-modal");
-
     modal.style.display = "none";
-
-    // ======================
-    // ELEMENTOS
-    // ======================
-
-    const availableSpan = document.getElementById("available-points");
-    const usedSpan = document.getElementById("used-points");
-
-    const strValue = document.getElementById("modal-str");
-    const resValue = document.getElementById("modal-res");
-    const dexValue = document.getElementById("modal-dex");
-    const agiValue = document.getElementById("modal-agi");
-    const staValue = document.getElementById("modal-sta");
-    const hpValue = document.getElementById("modal-hp");
 
     // ======================
     // FIREBASE DATA
@@ -95,11 +80,24 @@ fetch("./distribuir.html")
     };
 
     // ======================
+    // ELEMENTOS
+    // ======================
+
+    const availableSpan = document.getElementById("available-points");
+    const usedSpan = document.getElementById("used-points");
+
+    const strValue = document.getElementById("modal-str");
+    const resValue = document.getElementById("modal-res");
+    const dexValue = document.getElementById("modal-dex");
+    const agiValue = document.getElementById("modal-agi");
+    const staValue = document.getElementById("modal-sta");
+    const hpValue = document.getElementById("modal-hp");
+
+    // ======================
     // UPDATE UI
     // ======================
 
     function updateUI() {
-
       strValue.textContent = stats.str;
       resValue.textContent = stats.res;
       dexValue.textContent = stats.dex;
@@ -118,7 +116,6 @@ fetch("./distribuir.html")
     // ======================
 
     function addPoint(stat) {
-
       if (points.available <= 0) return;
 
       stats[stat]++;
@@ -132,85 +129,49 @@ fetch("./distribuir.html")
     // BOTÕES +
     // ======================
 
-    document.getElementById("plus-str")
-      .addEventListener("click", () => addPoint("str"));
-
-    document.getElementById("plus-res")
-      .addEventListener("click", () => addPoint("res"));
-
-    document.getElementById("plus-dex")
-      .addEventListener("click", () => addPoint("dex"));
-
-    document.getElementById("plus-agi")
-      .addEventListener("click", () => addPoint("agi"));
-
-    document.getElementById("plus-sta")
-      .addEventListener("click", () => addPoint("sta"));
-
-    document.getElementById("plus-hp")
-      .addEventListener("click", () => addPoint("hp"));
+    document.getElementById("plus-str").onclick = () => addPoint("str");
+    document.getElementById("plus-res").onclick = () => addPoint("res");
+    document.getElementById("plus-dex").onclick = () => addPoint("dex");
+    document.getElementById("plus-agi").onclick = () => addPoint("agi");
+    document.getElementById("plus-sta").onclick = () => addPoint("sta");
+    document.getElementById("plus-hp").onclick = () => addPoint("hp");
 
     // ======================
-    // ABRIR
+    // ABRIR MODAL
     // ======================
 
-    document
-      .getElementById("open-points")
-      .addEventListener("click", () => {
+    document.getElementById("open-points").onclick = () => {
+      modal.style.display = "flex";
+    };
 
-        modal.style.display = "flex";
+    // ======================
+    // FECHAR MODAL
+    // ======================
 
+    document.querySelector(".close-btn").onclick = () => {
+      modal.style.display = "none";
+    };
+
+    // ======================
+    // SALVAR NO FIREBASE
+    // ======================
+
+    document.querySelector(".save-btn").onclick = async () => {
+
+      await update(ref(db, `players/${uid}`), {
+        stats: stats,
+        points: points
       });
 
-    // ======================
-    // FECHAR
-    // ======================
+      // atualiza perfil na tela
+      document.getElementById("str").textContent = stats.str;
+      document.getElementById("res").textContent = stats.res;
+      document.getElementById("dex").textContent = stats.dex;
+      document.getElementById("agi").textContent = stats.agi;
+      document.getElementById("sta").textContent = stats.sta;
+      document.getElementById("hp").textContent = stats.hp;
 
-    document
-      .querySelector(".close-btn")
-      .addEventListener("click", () => {
-
-        modal.style.display = "none";
-
-      });
-
-    // ======================
-    // SALVAR
-    // ======================
-
-    document
-      .querySelector(".save-btn")
-      .addEventListener("click", async () => {
-
-        try {
-
-          await update(ref(db, `players/${uid}`), {
-
-            stats: stats,
-
-            points: {
-              available: points.available,
-              used: points.used
-            }
-
-          });
-
-          // atualiza perfil na hora
-          document.getElementById("str").textContent = stats.str;
-          document.getElementById("res").textContent = stats.res;
-          document.getElementById("dex").textContent = stats.dex;
-          document.getElementById("agi").textContent = stats.agi;
-          document.getElementById("sta").textContent = stats.sta;
-          document.getElementById("hp").textContent = stats.hp;
-
-          modal.style.display = "none";
-
-        } catch (error) {
-
-          alert(error.message);
-
-        }
-
-      });
+      modal.style.display = "none";
+    };
 
   });

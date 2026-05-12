@@ -9,6 +9,7 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="perfil.css">
+  <link rel="stylesheet" href="perfil/distribuir.css">
 </head>
 
 <body>
@@ -107,7 +108,7 @@
         <div>❤️ Vida: <span id="hp">0</span></div>
       </div>
 
-      <button class="gold-btn">
+      <button class="gold-btn" id="open-points">
         DISTRIBUIR PONTOS
       </button>
 
@@ -119,8 +120,11 @@
 
   </main>
 
+  <div id="modal-container"></div>
+
   <!-- FIREBASE SCRIPT -->
   <script type="module" src="perfil.js"></script>
+  <script type="module" src="perfil/distribuir.js"></script>
 
 </body>
 </html>

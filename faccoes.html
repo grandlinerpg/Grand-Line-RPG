@@ -69,7 +69,6 @@
         </p>
 
         <div class="stats">
-
           <div class="stat">
             <span>MEMBROS</span>
             <strong>24</strong>
@@ -84,16 +83,16 @@
             <span>ARMAZÉM</span>
             <strong>95.000</strong>
           </div>
-
         </div>
 
         <div class="buttons">
 
-          <button onclick="go('governo.html')">
+          <button onclick="go('faccoes/governo.html')">
             ENTRAR
           </button>
 
-          <button class="secondary">
+          <button class="secondary"
+            onclick="go('faccoes/membros.html?faccao=governo')">
             VER MEMBROS
           </button>
 
@@ -119,7 +118,6 @@
         </p>
 
         <div class="stats">
-
           <div class="stat">
             <span>MEMBROS</span>
             <strong>17</strong>
@@ -134,16 +132,16 @@
             <span>ARMAZÉM</span>
             <strong>80.000</strong>
           </div>
-
         </div>
 
         <div class="buttons">
 
-          <button onclick="go('revolucionarios.html')">
+          <button onclick="go('faccoes/revolucionario.html')">
             ENTRAR
           </button>
 
-          <button class="secondary">
+          <button class="secondary"
+            onclick="go('faccoes/membros.html?faccao=revolucionario')">
             VER MEMBROS
           </button>
 
@@ -169,7 +167,6 @@
         </p>
 
         <div class="stats">
-
           <div class="stat">
             <span>MEMBROS</span>
             <strong>53</strong>
@@ -184,16 +181,16 @@
             <span>ARMAZÉM</span>
             <strong>90.000</strong>
           </div>
-
         </div>
 
         <div class="buttons">
 
-          <button onclick="go('piratas.html')">
+          <button onclick="go('faccoes/piratas.html')">
             ENTRAR
           </button>
 
-          <button class="secondary">
+          <button class="secondary"
+            onclick="go('faccoes/membros.html?faccao=piratas')">
             VER BANDOS
           </button>
 
@@ -208,7 +205,6 @@
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
     import {
       getAuth,
       onAuthStateChanged
@@ -225,10 +221,9 @@
     };
 
     const app = initializeApp(firebaseConfig);
-
     const auth = getAuth(app);
 
-    function go(page){
+    function go(page) {
       window.location.href = page;
     }
 
@@ -239,15 +234,11 @@
     onAuthStateChanged(auth, (user) => {
 
       if (user) {
-
         voltarBtn.textContent = "PERFIL";
         voltarBtn.href = "perfil.html";
-
       } else {
-
         voltarBtn.textContent = "INÍCIO";
         voltarBtn.href = "index.html";
-
       }
 
     });
@@ -255,4 +246,5 @@
   </script>
 
 </body>
+
 </html>

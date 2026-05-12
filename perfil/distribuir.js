@@ -46,7 +46,7 @@ if (!uid) {
 // LOAD HTML
 // ======================
 
-fetch("perfil/distribuir.html")
+fetch("./distribuir.html")
   .then(res => res.text())
   .then(async data => {
 

@@ -329,6 +329,10 @@ button {
   font-family: 'Cinzel', serif;
 }
 
+.gold-btn{
+  margin-bottom:10px;
+}
+
 /* =========================
    MOBILE
 ========================= */

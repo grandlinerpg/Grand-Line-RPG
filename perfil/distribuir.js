@@ -1,18 +1,19 @@
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   getDatabase,
   ref,
-  get,
-  update
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// ⚠️ NÃO inicializa Firebase aqui se já inicializa no perfil.js
-const auth = getAuth();
-const db = getDatabase();
+import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+// ======================
+// FIREBASE (usa mesma instância do projeto)
+// ======================
+const app = getApp();
+const auth = getAuth(app);
+const db = getDatabase(app);
 
 // ======================
 // CARREGA MODAL
@@ -24,45 +25,51 @@ fetch("perfil/distribuir.html")
     document.getElementById("modal-container").innerHTML = html;
 
     const modal = document.querySelector(".points-modal");
-    modal.style.display = "none";
-
     const openBtn = document.getElementById("open-points");
     const closeBtn = document.querySelector(".close-btn");
 
-    openBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+
+    // ======================
+    // ABRIR / FECHAR MODAL
+    // ======================
+    openBtn.addEventListener("click", async () => {
+
       modal.style.display = "flex";
-    });
 
-    closeBtn.addEventListener("click", () => {
-      modal.style.display = "none";
-    });
-
-    // ======================
-    // FIREBASE DADOS (usa perfil do usuário logado)
-    // ======================
-    onAuthStateChanged(auth, async (user) => {
+      const user = auth.currentUser;
       if (!user) return;
 
-      const userRef = ref(db, `players/${user.uid}`);
-      const snap = await get(userRef);
-
+      const snap = await get(ref(db, `players/${user.uid}`));
       if (!snap.exists()) return;
 
       const data = snap.val();
 
       // ======================
-      // PREENCHER MODAL
+      // ESTRUTURA CORRETA
       // ======================
-      document.getElementById("modal-str").innerText = data.str || 0;
-      document.getElementById("modal-res").innerText = data.res || 0;
-      document.getElementById("modal-dex").innerText = data.dex || 0;
-      document.getElementById("modal-agi").innerText = data.agi || 0;
-      document.getElementById("modal-sta").innerText = data.sta || 0;
-      document.getElementById("modal-hp").innerText  = data.hp  || 0;
+      const stats = data.stats || {};
+      const points = data.points || {};
 
-      document.getElementById("available-points").innerText = data.availablePoints || 0;
-      document.getElementById("used-points").innerText = data.usedPoints || 0;
+      // ======================
+      // ATRIBUTOS
+      // ======================
+      document.getElementById("modal-str").innerText = stats.str || 0;
+      document.getElementById("modal-res").innerText = stats.res || 0;
+      document.getElementById("modal-dex").innerText = stats.dex || 0;
+      document.getElementById("modal-agi").innerText = stats.agi || 0;
+      document.getElementById("modal-sta").innerText = stats.sta || 0;
+      document.getElementById("modal-hp").innerText  = stats.hp  || 0;
 
+      // ======================
+      // PONTOS
+      // ======================
+      document.getElementById("available-points").innerText = points.available || 0;
+      document.getElementById("used-points").innerText = points.used || 0;
+    });
+
+    closeBtn.addEventListener("click", () => {
+      modal.style.display = "none";
     });
 
   });

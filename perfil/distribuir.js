@@ -41,21 +41,21 @@ if (!uid) {
 }
 
 // ======================
-// STATE GLOBAL
+// ESTADO
 // ======================
 
 let stats = null;
 let points = null;
 
 // ======================
-// LOAD MODAL HTML
+// LOAD MODAL (BASE FUNCIONAL)
 // ======================
 
 fetch("perfil/distribuir.html")
   .then(res => res.text())
-  .then((html) => {
+  .then((data) => {
 
-    document.getElementById("modal-container").innerHTML = html;
+    document.getElementById("modal-container").innerHTML = data;
 
     const modal = document.querySelector(".points-modal");
     const openBtn = document.getElementById("open-points");
@@ -64,18 +64,18 @@ fetch("perfil/distribuir.html")
     modal.style.display = "none";
 
     // ======================
-    // ABRIR MODAL
+    // ABRIR (FUNCIONANDO + CARREGA DADOS)
     // ======================
 
     openBtn.addEventListener("click", async () => {
 
       modal.style.display = "flex";
 
-      await loadPlayer(); // carrega sempre que abrir
+      await loadPlayer(); // 🔥 carrega dados ao abrir
     });
 
     // ======================
-    // FECHAR MODAL
+    // FECHAR
     // ======================
 
     closeBtn.addEventListener("click", () => {
@@ -85,7 +85,7 @@ fetch("perfil/distribuir.html")
   });
 
 // ======================
-// CARREGAR PLAYER FIREBASE
+// CARREGAR DADOS FIREBASE
 // ======================
 
 async function loadPlayer() {
@@ -98,7 +98,7 @@ async function loadPlayer() {
 
   console.log("PLAYER:", player);
 
-  // garante estrutura mesmo se faltar algo
+  // fallback seguro
   stats = player.stats || {
     str: 1,
     res: 1,
@@ -114,7 +114,7 @@ async function loadPlayer() {
   };
 
   // ======================
-  // JOGA NO MODAL
+  // INJETAR NO MODAL
   // ======================
 
   document.getElementById("modal-str").textContent = stats.str;

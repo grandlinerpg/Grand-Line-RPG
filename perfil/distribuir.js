@@ -1,17 +1,9 @@
-// ======================
-// FIREBASE
-// ======================
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getDatabase,
   ref,
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-// ======================
-// CONFIG
-// ======================
 
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -23,89 +15,61 @@ const firebaseConfig = {
   databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
-// ======================
-// INIT
-// ======================
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ======================
-// UID
-// ======================
-
 const uid = localStorage.getItem("uid");
-
-if (!uid) {
-  window.location.href = "auth.html";
-}
-
-// ======================
-// ESTADO
-// ======================
+if (!uid) window.location.href = "auth.html";
 
 let stats = null;
 let points = null;
 
 // ======================
-// LOAD MODAL (FUNCIONAL)
+// MODAL HTML
 // ======================
 
 fetch("perfil/distribuir.html")
-  .then(res => res.text())
-  .then((data) => {
+  .then(r => r.text())
+  .then(html => {
 
-    document.getElementById("modal-container").innerHTML = data;
+    document.getElementById("modal-container").innerHTML = html;
 
     const modal = document.querySelector(".points-modal");
 
     modal.style.display = "none";
 
-    // 🔥 AGORA O DOM JÁ EXISTE, ENTÃO FUNCIONA
-    const openBtn = document.getElementById("open-points");
-    const closeBtn = document.querySelector(".close-btn");
-
-    if (!openBtn || !closeBtn) {
-      console.error("Botão abrir/fechar não encontrado");
-      return;
-    }
-
     // ======================
-    // ABRIR MODAL
+    // 🔥 DELEGATION (SEMPRE FUNCIONA)
     // ======================
 
-    openBtn.addEventListener("click", async () => {
+    document.addEventListener("click", async (e) => {
 
-      modal.style.display = "flex";
+      // abrir modal
+      if (e.target.id === "open-points") {
+        modal.style.display = "flex";
+        await loadPlayer();
+      }
 
-      await loadPlayer(); // carrega dados ao abrir
-    });
+      // fechar modal
+      if (e.target.classList.contains("close-btn")) {
+        modal.style.display = "none";
+      }
 
-    // ======================
-    // FECHAR MODAL
-    // ======================
-
-    closeBtn.addEventListener("click", () => {
-      modal.style.display = "none";
     });
 
   });
 
 // ======================
-// CARREGAR DADOS FIREBASE
+// FIREBASE LOAD
 // ======================
 
 async function loadPlayer() {
 
   const snap = await get(ref(db, `players/${uid}`));
-
   if (!snap.exists()) return;
 
   const player = snap.val();
 
-  console.log("PLAYER:", player);
-
-  // fallback seguro
   stats = player.stats || {
     str: 1,
     res: 1,
@@ -119,10 +83,6 @@ async function loadPlayer() {
     available: 0,
     used: 0
   };
-
-  // ======================
-  // INJETAR NO MODAL
-  // ======================
 
   document.getElementById("modal-str").textContent = stats.str;
   document.getElementById("modal-res").textContent = stats.res;

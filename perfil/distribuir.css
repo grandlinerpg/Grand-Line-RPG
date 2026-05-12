@@ -17,7 +17,7 @@
 
 .points-window{
   width:95%;
-  max-width:650px;
+  max-width:500px;
 
   background:
     linear-gradient(
@@ -133,6 +133,10 @@
 .plus-btn{
   width:36px;
   height:36px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
 
   border:none;
   border-radius:10px;

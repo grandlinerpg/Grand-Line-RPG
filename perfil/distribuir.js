@@ -9,12 +9,50 @@ import {
 
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-// ======================
-// FIREBASE
-// ======================
 const app = getApp();
 const auth = getAuth(app);
 const db = getDatabase(app);
+
+let userRef = null;
+let cachedData = null;
+
+// ======================
+// FUNÇÃO UPGRADE (GLOBAL)
+// ======================
+async function upgradeStat(statName) {
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const snap = await get(userRef);
+  if (!snap.exists()) return;
+
+  const data = snap.val();
+
+  const stats = data.stats || {};
+  const points = data.points || {};
+
+  if ((points.available || 0) <= 0) return;
+
+  const newStats = {
+    ...stats,
+    [statName]: (stats[statName] || 0) + 1
+  };
+
+  const newPoints = {
+    available: (points.available || 0) - 1,
+    used: (points.used || 0) + 1
+  };
+
+  await update(userRef, {
+    stats: newStats,
+    points: newPoints
+  });
+
+  document.getElementById(`modal-${statName}`).innerText = newStats[statName];
+  document.getElementById("available-points").innerText = newPoints.available;
+  document.getElementById("used-points").innerText = newPoints.used;
+}
 
 // ======================
 // CARREGA MODAL
@@ -29,60 +67,7 @@ fetch("perfil/distribuir.html")
     const openBtn = document.getElementById("open-points");
     const closeBtn = document.querySelector(".close-btn");
 
-    if (!modal || !openBtn || !closeBtn) {
-      console.error("Modal não carregou corretamente");
-      return;
-    }
-
     modal.style.display = "none";
-
-    let userRef = null;
-
-    // ======================
-    // FUNÇÃO UPGRADE
-    // ======================
-    async function upgradeStat(statName) {
-
-      const user = auth.currentUser;
-      if (!user || !userRef) return;
-
-      const snap = await get(userRef);
-      if (!snap.exists()) return;
-
-      const data = snap.val();
-
-      const stats = data.stats || {};
-      const points = data.points || {};
-
-      if ((points.available || 0) <= 0) return;
-
-      const newStats = {
-        ...stats,
-        [statName]: (stats[statName] || 0) + 1
-      };
-
-      const newPoints = {
-        available: (points.available || 0) - 1,
-        used: (points.used || 0) + 1
-      };
-
-      await update(userRef, {
-        stats: newStats,
-        points: newPoints
-      });
-
-      // ======================
-      // UI UPDATE
-      // ======================
-      const statEl = document.getElementById(`modal-${statName}`);
-      if (statEl) statEl.innerText = newStats[statName];
-
-      const av = document.getElementById("available-points");
-      const us = document.getElementById("used-points");
-
-      if (av) av.innerText = newPoints.available;
-      if (us) us.innerText = newPoints.used;
-    }
 
     // ======================
     // ABRIR MODAL
@@ -99,46 +84,20 @@ fetch("perfil/distribuir.html")
       const snap = await get(userRef);
       if (!snap.exists()) return;
 
-      const data = snap.val();
+      cachedData = snap.val();
 
-      const stats = data.stats || {};
-      const points = data.points || {};
+      const stats = cachedData.stats || {};
+      const points = cachedData.points || {};
 
-      // ======================
-      // ATRIBUTOS
-      // ======================
-      const set = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = value;
-      };
+      document.getElementById("modal-str").innerText = stats.str || 0;
+      document.getElementById("modal-res").innerText = stats.res || 0;
+      document.getElementById("modal-dex").innerText = stats.dex || 0;
+      document.getElementById("modal-agi").innerText = stats.agi || 0;
+      document.getElementById("modal-sta").innerText = stats.sta || 0;
+      document.getElementById("modal-hp").innerText  = stats.hp  || 0;
 
-      set("modal-str", stats.str || 0);
-      set("modal-res", stats.res || 0);
-      set("modal-dex", stats.dex || 0);
-      set("modal-agi", stats.agi || 0);
-      set("modal-sta", stats.sta || 0);
-      set("modal-hp", stats.hp || 0);
-
-      // ======================
-      // PONTOS
-      // ======================
-      set("available-points", points.available || 0);
-      set("used-points", points.used || 0);
-
-      // ======================
-      // BOTÕES (AGORA SEM BUG)
-      // ======================
-      const bind = (id, stat) => {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = () => upgradeStat(stat);
-      };
-
-      bind("up-str", "str");
-      bind("up-res", "res");
-      bind("up-dex", "dex");
-      bind("up-agi", "agi");
-      bind("up-sta", "sta");
-      bind("up-hp", "hp");
+      document.getElementById("available-points").innerText = points.available || 0;
+      document.getElementById("used-points").innerText = points.used || 0;
 
     });
 
@@ -147,6 +106,24 @@ fetch("perfil/distribuir.html")
     // ======================
     closeBtn.addEventListener("click", () => {
       modal.style.display = "none";
+    });
+
+    // ======================
+    // 🔥 EVENT DELEGATION (AQUI RESOLVE 100%)
+    // ======================
+    document.addEventListener("click", (e) => {
+
+      if (!e.target.classList.contains("plus-btn")) return;
+
+      const id = e.target.id;
+
+      if (id === "up-str") upgradeStat("str");
+      if (id === "up-res") upgradeStat("res");
+      if (id === "up-dex") upgradeStat("dex");
+      if (id === "up-agi") upgradeStat("agi");
+      if (id === "up-sta") upgradeStat("sta");
+      if (id === "up-hp") upgradeStat("hp");
+
     });
 
   });

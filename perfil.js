@@ -154,3 +154,10 @@ window.logout = function () {
 };
 
 startAuth();
+
+
+// ======================================================
+// 🔥 ADIÇÃO NECESSÁRIA PARA O MODAL (SEM MEXER NO RESTO)
+// ======================================================
+window.auth = auth;
+window.db = db;

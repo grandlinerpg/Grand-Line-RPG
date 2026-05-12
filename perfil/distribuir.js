@@ -42,135 +42,138 @@ if (!uid) {
 }
 
 // ======================
-// LOAD MODAL
+// WAIT DOM + LOAD MODAL
 // ======================
 
-fetch("perfil/distribuir.html")
-  .then(res => res.text())
-  .then(async (html) => {
+window.addEventListener("DOMContentLoaded", () => {
 
-    document.getElementById("modal-container").innerHTML = html;
+  fetch("perfil/distribuir.html")
+    .then(res => res.text())
+    .then(async (html) => {
 
-    const modal = document.querySelector(".points-modal");
+      document.getElementById("modal-container").innerHTML = html;
 
-    if (!modal) {
-      console.error("Modal não encontrado");
-      return;
-    }
+      const modal = document.querySelector(".points-modal");
+      const openBtn = document.getElementById("open-points");
 
-    modal.style.display = "none";
+      modal.style.display = "none";
 
-    // ======================
-    // FIREBASE DATA
-    // ======================
+      if (!openBtn) {
+        console.error("Botão DISTRIBUIR PONTOS não encontrado");
+        return;
+      }
 
-    const snap = await get(ref(db, `players/${uid}`));
+      // ======================
+      // FIREBASE DATA
+      // ======================
 
-    if (!snap.exists()) return;
+      const snap = await get(ref(db, `players/${uid}`));
 
-    const player = snap.val();
+      if (!snap.exists()) return;
 
-    let stats = {
-      str: player.stats?.str || 1,
-      res: player.stats?.res || 1,
-      dex: player.stats?.dex || 1,
-      agi: player.stats?.agi || 1,
-      sta: player.stats?.sta || 1,
-      hp: player.stats?.hp || 1
-    };
+      const player = snap.val();
 
-    let points = {
-      available: player.points?.available || 0,
-      used: player.points?.used || 0
-    };
+      let stats = {
+        str: player.stats?.str || 1,
+        res: player.stats?.res || 1,
+        dex: player.stats?.dex || 1,
+        agi: player.stats?.agi || 1,
+        sta: player.stats?.sta || 1,
+        hp: player.stats?.hp || 1
+      };
 
-    // ======================
-    // ELEMENTOS UI
-    // ======================
+      let points = {
+        available: player.points?.available || 0,
+        used: player.points?.used || 0
+      };
 
-    function updateUI() {
+      // ======================
+      // ELEMENTOS MODAL
+      // ======================
 
-      document.getElementById("modal-str").textContent = stats.str;
-      document.getElementById("modal-res").textContent = stats.res;
-      document.getElementById("modal-dex").textContent = stats.dex;
-      document.getElementById("modal-agi").textContent = stats.agi;
-      document.getElementById("modal-sta").textContent = stats.sta;
-      document.getElementById("modal-hp").textContent = stats.hp;
+      const availableSpan = document.getElementById("available-points");
+      const usedSpan = document.getElementById("used-points");
 
-      document.getElementById("available-points").textContent = points.available;
-      document.getElementById("used-points").textContent = points.used;
-    }
+      const strValue = document.getElementById("modal-str");
+      const resValue = document.getElementById("modal-res");
+      const dexValue = document.getElementById("modal-dex");
+      const agiValue = document.getElementById("modal-agi");
+      const staValue = document.getElementById("modal-sta");
+      const hpValue = document.getElementById("modal-hp");
 
-    updateUI();
+      function updateUI() {
+        strValue.textContent = stats.str;
+        resValue.textContent = stats.res;
+        dexValue.textContent = stats.dex;
+        agiValue.textContent = stats.agi;
+        staValue.textContent = stats.sta;
+        hpValue.textContent = stats.hp;
 
-    // ======================
-    // ADD POINT
-    // ======================
-
-    function addPoint(stat) {
-
-      if (points.available <= 0) return;
-
-      stats[stat]++;
-      points.available--;
-      points.used++;
+        availableSpan.textContent = points.available;
+        usedSpan.textContent = points.used;
+      }
 
       updateUI();
-    }
 
-    // ======================
-    // BOTÕES +
-    // ======================
+      function addPoint(stat) {
+        if (points.available <= 0) return;
 
-    document.getElementById("plus-str")?.addEventListener("click", () => addPoint("str"));
-    document.getElementById("plus-res")?.addEventListener("click", () => addPoint("res"));
-    document.getElementById("plus-dex")?.addEventListener("click", () => addPoint("dex"));
-    document.getElementById("plus-agi")?.addEventListener("click", () => addPoint("agi"));
-    document.getElementById("plus-sta")?.addEventListener("click", () => addPoint("sta"));
-    document.getElementById("plus-hp")?.addEventListener("click", () => addPoint("hp"));
+        stats[stat]++;
+        points.available--;
+        points.used++;
 
-    // ======================
-    // ABRIR MODAL (CORRIGIDO)
-    // ======================
+        updateUI();
+      }
 
-    const openBtn = document.getElementById("open-points");
+      // ======================
+      // BOTÕES +
+      // ======================
 
-    if (openBtn) {
+      document.getElementById("plus-str").onclick = () => addPoint("str");
+      document.getElementById("plus-res").onclick = () => addPoint("res");
+      document.getElementById("plus-dex").onclick = () => addPoint("dex");
+      document.getElementById("plus-agi").onclick = () => addPoint("agi");
+      document.getElementById("plus-sta").onclick = () => addPoint("sta");
+      document.getElementById("plus-hp").onclick = () => addPoint("hp");
+
+      // ======================
+      // ABRIR MODAL (CORRETO)
+      // ======================
+
       openBtn.addEventListener("click", () => {
         modal.style.display = "flex";
       });
-    } else {
-      console.error("Botão open-points não encontrado");
-    }
 
-    // ======================
-    // FECHAR MODAL
-    // ======================
+      // ======================
+      // FECHAR MODAL
+      // ======================
 
-    const closeBtn = document.querySelector(".close-btn");
-
-    if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
+      document.querySelector(".close-btn").onclick = () => {
         modal.style.display = "none";
-      });
-    }
+      };
 
-    // ======================
-    // SALVAR
-    // ======================
+      // ======================
+      // SALVAR NO FIREBASE
+      // ======================
 
-    const saveBtn = document.querySelector(".save-btn");
-
-    if (saveBtn) {
-      saveBtn.addEventListener("click", async () => {
+      document.querySelector(".save-btn").onclick = async () => {
 
         await update(ref(db, `players/${uid}`), {
           stats,
           points
         });
 
-        modal.style.display = "none";
-      });
-    }
+        // atualiza perfil
+        document.getElementById("str").textContent = stats.str;
+        document.getElementById("res").textContent = stats.res;
+        document.getElementById("dex").textContent = stats.dex;
+        document.getElementById("agi").textContent = stats.agi;
+        document.getElementById("sta").textContent = stats.sta;
+        document.getElementById("hp").textContent = stats.hp;
 
-  });
+        modal.style.display = "none";
+      };
+
+    });
+
+});

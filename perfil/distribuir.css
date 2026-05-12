@@ -16,11 +16,8 @@
 /* JANELA */
 
 .points-window{
-  width:90%;
-  max-width:420px;
-  max-height:90vh;
-
-  overflow-y:auto;
+  width:88%;
+  max-width:340px;
 
   background:
     linear-gradient(
@@ -31,9 +28,9 @@
 
   border:1px solid rgba(255,215,120,0.20);
 
-  border-radius:18px;
+  border-radius:14px;
 
-  padding:25px;
+  padding:14px;
 
   box-shadow:
     0 0 35px rgba(0,0,0,0.65);
@@ -48,24 +45,24 @@
   justify-content:space-between;
   align-items:center;
 
-  margin-bottom:25px;
+  margin-bottom:14px;
 }
 
 .window-top h1{
   color:#f6d365;
 
-  font-size:24px;
+  font-size:17px;
   letter-spacing:1px;
 }
 
 /* FECHAR */
 
 .close-btn{
-  width:42px;
-  height:42px;
+  width:30px;
+  height:30px;
 
   border:none;
-  border-radius:10px;
+  border-radius:8px;
 
   background:
     linear-gradient(
@@ -76,7 +73,7 @@
 
   color:white;
 
-  font-size:18px;
+  font-size:14px;
 
   cursor:pointer;
 
@@ -93,7 +90,7 @@
   display:flex;
   flex-direction:column;
 
-  gap:12px;
+  gap:8px;
 }
 
 /* LINHAS */
@@ -105,13 +102,13 @@
 
   background:rgba(255,255,255,0.04);
 
-  padding:14px 16px;
+  padding:8px 10px;
 
-  border-radius:12px;
+  border-radius:10px;
 
   color:#f6d365;
 
-  font-size:16px;
+  font-size:12px;
 }
 
 /* CONTROLES */
@@ -120,29 +117,31 @@
   display:flex;
   align-items:center;
 
-  gap:12px;
+  gap:8px;
 }
 
 .point-controls span{
-  min-width:20px;
+  min-width:16px;
 
   text-align:center;
 
   color:#fff;
+
+  font-size:12px;
 }
 
 /* BOTÃO + */
 
 .plus-btn{
-  width:36px;
-  height:36px;
+  width:24px;
+  height:24px;
 
   display:flex;
   justify-content:center;
   align-items:center;
 
   border:none;
-  border-radius:10px;
+  border-radius:7px;
 
   background:
     linear-gradient(
@@ -153,7 +152,7 @@
 
   color:white;
 
-  font-size:20px;
+  font-size:14px;
   font-weight:bold;
 
   cursor:pointer;
@@ -174,9 +173,9 @@
   display:grid;
   grid-template-columns:1fr 1fr;
 
-  gap:12px;
+  gap:8px;
 
-  margin-top:25px;
+  margin-top:14px;
 }
 
 /* BOX */
@@ -184,9 +183,9 @@
 .footer-box{
   background:rgba(255,255,255,0.04);
 
-  border-radius:12px;
+  border-radius:10px;
 
-  padding:16px;
+  padding:10px;
 
   text-align:center;
 }
@@ -194,15 +193,15 @@
 .footer-box p{
   color:#f6d365;
 
-  font-size:13px;
+  font-size:10px;
 
-  margin-bottom:8px;
+  margin-bottom:5px;
 }
 
 .footer-box span{
   color:white;
 
-  font-size:24px;
+  font-size:16px;
   font-weight:bold;
 }
 
@@ -211,12 +210,12 @@
 .save-btn{
   width:100%;
 
-  margin-top:20px;
+  margin-top:14px;
 
-  padding:15px;
+  padding:10px;
 
   border:none;
-  border-radius:12px;
+  border-radius:10px;
 
   background:
     linear-gradient(
@@ -228,7 +227,7 @@
   color:#fff3c9;
 
   font-family:'Cinzel', serif;
-  font-size:16px;
+  font-size:12px;
   font-weight:700;
 
   letter-spacing:1px;
@@ -250,15 +249,7 @@
 @media(max-width:700px){
 
   .points-window{
-    padding:18px;
-  }
-
-  .window-top h1{
-    font-size:19px;
-  }
-
-  .point-row{
-    font-size:14px;
+    width:92%;
   }
 
   .points-footer{

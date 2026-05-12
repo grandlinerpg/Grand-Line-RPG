@@ -16,8 +16,11 @@
 /* JANELA */
 
 .points-window{
-  width:95%;
-  max-width:500px;
+  width:90%;
+  max-width:420px;
+  max-height:90vh;
+
+  overflow-y:auto;
 
   background:
     linear-gradient(

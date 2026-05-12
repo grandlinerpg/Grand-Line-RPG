@@ -29,6 +29,11 @@ fetch("perfil/distribuir.html")
     const openBtn = document.getElementById("open-points");
     const closeBtn = document.querySelector(".close-btn");
 
+    if (!modal || !openBtn || !closeBtn) {
+      console.error("Modal não carregou corretamente");
+      return;
+    }
+
     modal.style.display = "none";
 
     let userRef = null;
@@ -38,7 +43,8 @@ fetch("perfil/distribuir.html")
     // ======================
     async function upgradeStat(statName) {
 
-      if (!userRef) return;
+      const user = auth.currentUser;
+      if (!user || !userRef) return;
 
       const snap = await get(userRef);
       if (!snap.exists()) return;
@@ -65,10 +71,17 @@ fetch("perfil/distribuir.html")
         points: newPoints
       });
 
-      // atualiza UI
-      document.getElementById(`modal-${statName}`).innerText = newStats[statName];
-      document.getElementById("available-points").innerText = newPoints.available;
-      document.getElementById("used-points").innerText = newPoints.used;
+      // ======================
+      // UI UPDATE
+      // ======================
+      const statEl = document.getElementById(`modal-${statName}`);
+      if (statEl) statEl.innerText = newStats[statName];
+
+      const av = document.getElementById("available-points");
+      const us = document.getElementById("used-points");
+
+      if (av) av.innerText = newPoints.available;
+      if (us) us.innerText = newPoints.used;
     }
 
     // ======================
@@ -94,28 +107,38 @@ fetch("perfil/distribuir.html")
       // ======================
       // ATRIBUTOS
       // ======================
-      document.getElementById("modal-str").innerText = stats.str || 0;
-      document.getElementById("modal-res").innerText = stats.res || 0;
-      document.getElementById("modal-dex").innerText = stats.dex || 0;
-      document.getElementById("modal-agi").innerText = stats.agi || 0;
-      document.getElementById("modal-sta").innerText = stats.sta || 0;
-      document.getElementById("modal-hp").innerText  = stats.hp  || 0;
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = value;
+      };
+
+      set("modal-str", stats.str || 0);
+      set("modal-res", stats.res || 0);
+      set("modal-dex", stats.dex || 0);
+      set("modal-agi", stats.agi || 0);
+      set("modal-sta", stats.sta || 0);
+      set("modal-hp", stats.hp || 0);
 
       // ======================
       // PONTOS
       // ======================
-      document.getElementById("available-points").innerText = points.available || 0;
-      document.getElementById("used-points").innerText = points.used || 0;
+      set("available-points", points.available || 0);
+      set("used-points", points.used || 0);
 
       // ======================
-      // BOTÕES DE UPGRADE
+      // BOTÕES (AGORA SEM BUG)
       // ======================
-      document.getElementById("up-str").onclick = () => upgradeStat("str");
-      document.getElementById("up-res").onclick = () => upgradeStat("res");
-      document.getElementById("up-dex").onclick = () => upgradeStat("dex");
-      document.getElementById("up-agi").onclick = () => upgradeStat("agi");
-      document.getElementById("up-sta").onclick = () => upgradeStat("sta");
-      document.getElementById("up-hp").onclick  = () => upgradeStat("hp");
+      const bind = (id, stat) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.onclick = () => upgradeStat(stat);
+      };
+
+      bind("up-str", "str");
+      bind("up-res", "res");
+      bind("up-dex", "dex");
+      bind("up-agi", "agi");
+      bind("up-sta", "sta");
+      bind("up-hp", "hp");
 
     });
 

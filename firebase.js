@@ -91,6 +91,10 @@ window.register = async function () {
         agi: 1,
         sta: 1,
         hp: 1
+      },
+      points: {
+        available: 10,
+        used: 0
       }
     };
 

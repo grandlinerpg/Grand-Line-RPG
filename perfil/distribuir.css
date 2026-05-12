@@ -1,20 +1,16 @@
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+/* MODAL */
 
-body{
-  width:100%;
-  height:100vh;
+.points-modal{
+  position:fixed;
+  inset:0;
 
   display:flex;
   justify-content:center;
   align-items:center;
 
-  background:rgba(0,0,0,0.65);
+  background:rgba(0,0,0,0.70);
 
-  font-family:'Cinzel', serif;
+  z-index:9999;
 }
 
 /* JANELA */
@@ -30,14 +26,16 @@ body{
       rgba(8,8,8,0.98)
     );
 
-  border:1px solid rgba(255,215,120,0.25);
+  border:1px solid rgba(255,215,120,0.20);
 
   border-radius:18px;
 
   padding:25px;
 
   box-shadow:
-    0 0 30px rgba(0,0,0,0.6);
+    0 0 35px rgba(0,0,0,0.65);
+
+  font-family:'Cinzel', serif;
 }
 
 /* TOPO */
@@ -73,7 +71,7 @@ body{
       #5e0800
     );
 
-  color:#fff;
+  color:white;
 
   font-size:18px;
 
@@ -95,7 +93,7 @@ body{
   gap:12px;
 }
 
-/* LINHA */
+/* LINHAS */
 
 .point-row{
   display:flex;
@@ -195,13 +193,13 @@ body{
 }
 
 .footer-box span{
-  color:#fff;
+  color:white;
 
   font-size:24px;
   font-weight:bold;
 }
 
-/* CONFIRMAR */
+/* BOTÃO FINAL */
 
 .save-btn{
   width:100%;

@@ -16,127 +16,129 @@ const db = getDatabase(app);
 let userRef = null;
 
 // ======================
-// BUFFER LOCAL (EDIÇÃO)
+// BUFFER LOCAL
 // ======================
 let tempStats = {};
 let tempPoints = {};
 let originalStats = {};
 let originalPoints = {};
 
-// ======================
-// CARREGA MODAL
-// ======================
 fetch("perfil/distribuir.html")
   .then(res => res.text())
   .then(html => {
 
     document.getElementById("modal-container").innerHTML = html;
 
-    const modal = document.querySelector(".points-modal");
-    const openBtn = document.getElementById("open-points");
-    const closeBtn = document.querySelector(".close-btn");
-    const confirmBtn = document.querySelector(".save-btn");
+    // ⚠️ espera DOM estabilizar depois do innerHTML
+    setTimeout(() => {
 
-    modal.style.display = "none";
+      const modal = document.querySelector(".points-modal");
+      const openBtn = document.getElementById("open-points");
+      const closeBtn = document.querySelector(".close-btn");
+      const confirmBtn = document.querySelector(".save-btn");
 
-    // ======================
-    // ABRIR MODAL
-    // ======================
-    openBtn.addEventListener("click", async () => {
-
-      modal.style.display = "flex";
-
-      const user = auth.currentUser;
-      if (!user) return;
-
-      userRef = ref(db, `players/${user.uid}`);
-
-      const snap = await get(userRef);
-      if (!snap.exists()) return;
-
-      const data = snap.val();
-
-      // salva estado original (caso feche sem salvar)
-      originalStats = structuredClone(data.stats || {});
-      originalPoints = structuredClone(data.points || {});
-
-      // buffer editável
-      tempStats = structuredClone(originalStats);
-      tempPoints = structuredClone(originalPoints);
-
-      const set = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = val;
-      };
-
-      set("modal-str", tempStats.str || 0);
-      set("modal-res", tempStats.res || 0);
-      set("modal-dex", tempStats.dex || 0);
-      set("modal-agi", tempStats.agi || 0);
-      set("modal-sta", tempStats.sta || 0);
-      set("modal-hp", tempStats.hp || 0);
-
-      set("available-points", tempPoints.available || 0);
-      set("used-points", tempPoints.used || 0);
-
-    });
-
-    // ======================
-    // FECHAR MODAL = DESCARTA
-    // ======================
-    closeBtn.addEventListener("click", () => {
+      if (!modal || !openBtn || !closeBtn || !confirmBtn) {
+        console.error("Modal não carregou corretamente");
+        return;
+      }
 
       modal.style.display = "none";
 
-      // volta tudo pro original (descarta mudanças)
-      tempStats = structuredClone(originalStats);
-      tempPoints = structuredClone(originalPoints);
-    });
+      // ======================
+      // ABRIR MODAL
+      // ======================
+      openBtn.addEventListener("click", async () => {
 
-    // ======================
-    // + ATRIBUTOS (SÓ LOCAL)
-    // ======================
-    document.addEventListener("click", (e) => {
+        const user = auth.currentUser;
+        if (!user) return;
 
-      if (!e.target.classList.contains("plus-btn")) return;
+        userRef = ref(db, `players/${user.uid}`);
 
-      if ((tempPoints.available || 0) <= 0) return;
+        const snap = await get(userRef);
+        if (!snap.exists()) return;
 
-      const id = e.target.id;
+        const data = snap.val();
 
-      const add = (stat) => {
+        originalStats = structuredClone(data.stats || {});
+        originalPoints = structuredClone(data.points || {});
+
+        tempStats = structuredClone(originalStats);
+        tempPoints = structuredClone(originalPoints);
+
+        modal.style.display = "flex";
+
+        const set = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = val;
+        };
+
+        set("modal-str", tempStats.str || 0);
+        set("modal-res", tempStats.res || 0);
+        set("modal-dex", tempStats.dex || 0);
+        set("modal-agi", tempStats.agi || 0);
+        set("modal-sta", tempStats.sta || 0);
+        set("modal-hp", tempStats.hp || 0);
+
+        set("available-points", tempPoints.available || 0);
+        set("used-points", tempPoints.used || 0);
+
+      });
+
+      // ======================
+      // FECHAR = DESCARTA (NÃO SALVA)
+      // ======================
+      closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+
+        tempStats = structuredClone(originalStats);
+        tempPoints = structuredClone(originalPoints);
+      });
+
+      // ======================
+      // + ATRIBUTOS (LOCAL ONLY)
+      // ======================
+      document.addEventListener("click", (e) => {
+
+        const btn = e.target.closest(".plus-btn");
+        if (!btn) return;
+
+        if ((tempPoints.available || 0) <= 0) return;
+
+        const stat = btn.dataset.stat;
+
+        if (!stat) return;
+
         tempStats[stat] = (tempStats[stat] || 0) + 1;
         tempPoints.available -= 1;
         tempPoints.used += 1;
 
-        document.getElementById(`modal-${stat}`).innerText = tempStats[stat];
-        document.getElementById("available-points").innerText = tempPoints.available;
-        document.getElementById("used-points").innerText = tempPoints.used;
-      };
+        const statEl = document.getElementById(`modal-${stat}`);
+        if (statEl) statEl.innerText = tempStats[stat];
 
-      if (id === "up-str") add("str");
-      if (id === "up-res") add("res");
-      if (id === "up-dex") add("dex");
-      if (id === "up-agi") add("agi");
-      if (id === "up-sta") add("sta");
-      if (id === "up-hp") add("hp");
+        const av = document.getElementById("available-points");
+        const us = document.getElementById("used-points");
 
-    });
+        if (av) av.innerText = tempPoints.available;
+        if (us) us.innerText = tempPoints.used;
 
-    // ======================
-    // CONFIRMAR (SALVA NO FIREBASE)
-    // ======================
-    confirmBtn.addEventListener("click", async () => {
-
-      const user = auth.currentUser;
-      if (!user || !userRef) return;
-
-      await update(userRef, {
-        stats: tempStats,
-        points: tempPoints
       });
 
-      modal.style.display = "none";
-    });
+      // ======================
+      // CONFIRMAR (SALVA NO FIREBASE)
+      // ======================
+      confirmBtn.addEventListener("click", async () => {
+
+        const user = auth.currentUser;
+        if (!user || !userRef) return;
+
+        await update(userRef, {
+          stats: tempStats,
+          points: tempPoints
+        });
+
+        modal.style.display = "none";
+      });
+
+    }, 0);
 
   });

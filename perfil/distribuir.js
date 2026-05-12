@@ -3,7 +3,6 @@
 // ======================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
   getDatabase,
   ref,
@@ -43,16 +42,23 @@ if (!uid) {
 }
 
 // ======================
-// LOAD MODAL HTML
+// LOAD MODAL
 // ======================
 
-fetch("./perfil/distribuir.html")
+fetch("perfil/distribuir.html")
   .then(res => res.text())
   .then(async (html) => {
 
     document.getElementById("modal-container").innerHTML = html;
 
     const modal = document.querySelector(".points-modal");
+    const openBtn = document.getElementById("open-points");
+
+    if (!modal || !openBtn) {
+      console.error("Modal ou botão não encontrado");
+      return;
+    }
+
     modal.style.display = "none";
 
     // ======================
@@ -79,41 +85,19 @@ fetch("./perfil/distribuir.html")
       used: player.points?.used || 0
     };
 
-    // ======================
-    // ELEMENTOS
-    // ======================
-
-    const availableSpan = document.getElementById("available-points");
-    const usedSpan = document.getElementById("used-points");
-
-    const strValue = document.getElementById("modal-str");
-    const resValue = document.getElementById("modal-res");
-    const dexValue = document.getElementById("modal-dex");
-    const agiValue = document.getElementById("modal-agi");
-    const staValue = document.getElementById("modal-sta");
-    const hpValue = document.getElementById("modal-hp");
-
-    // ======================
-    // UPDATE UI
-    // ======================
-
     function updateUI() {
-      strValue.textContent = stats.str;
-      resValue.textContent = stats.res;
-      dexValue.textContent = stats.dex;
-      agiValue.textContent = stats.agi;
-      staValue.textContent = stats.sta;
-      hpValue.textContent = stats.hp;
+      document.getElementById("modal-str").textContent = stats.str;
+      document.getElementById("modal-res").textContent = stats.res;
+      document.getElementById("modal-dex").textContent = stats.dex;
+      document.getElementById("modal-agi").textContent = stats.agi;
+      document.getElementById("modal-sta").textContent = stats.sta;
+      document.getElementById("modal-hp").textContent = stats.hp;
 
-      availableSpan.textContent = points.available;
-      usedSpan.textContent = points.used;
+      document.getElementById("available-points").textContent = points.available;
+      document.getElementById("used-points").textContent = points.used;
     }
 
     updateUI();
-
-    // ======================
-    // ADD POINT
-    // ======================
 
     function addPoint(stat) {
       if (points.available <= 0) return;
@@ -137,15 +121,15 @@ fetch("./perfil/distribuir.html")
     document.getElementById("plus-hp").onclick = () => addPoint("hp");
 
     // ======================
-    // ABRIR MODAL
+    // ABRIR MODAL (IMPORTANTE)
     // ======================
 
-    document.getElementById("open-points").onclick = () => {
+    openBtn.addEventListener("click", () => {
       modal.style.display = "flex";
-    };
+    });
 
     // ======================
-    // FECHAR MODAL
+    // FECHAR
     // ======================
 
     document.querySelector(".close-btn").onclick = () => {
@@ -153,23 +137,15 @@ fetch("./perfil/distribuir.html")
     };
 
     // ======================
-    // SALVAR NO FIREBASE
+    // SALVAR
     // ======================
 
     document.querySelector(".save-btn").onclick = async () => {
 
       await update(ref(db, `players/${uid}`), {
-        stats: stats,
-        points: points
+        stats,
+        points
       });
-
-      // atualiza perfil na tela
-      document.getElementById("str").textContent = stats.str;
-      document.getElementById("res").textContent = stats.res;
-      document.getElementById("dex").textContent = stats.dex;
-      document.getElementById("agi").textContent = stats.agi;
-      document.getElementById("sta").textContent = stats.sta;
-      document.getElementById("hp").textContent = stats.hp;
 
       modal.style.display = "none";
     };

@@ -42,10 +42,12 @@
 
 .window-top{
   display:flex;
-  justify-content:space-between;
+  justify-content:center;
   align-items:center;
 
   margin-bottom:14px;
+
+  position:relative;
 }
 
 .window-top h1{
@@ -53,6 +55,8 @@
 
   font-size:17px;
   letter-spacing:1px;
+
+  text-align:center;
 }
 
 /* FECHAR */
@@ -60,6 +64,13 @@
 .close-btn{
   width:30px;
   height:30px;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  position:absolute;
+  right:0;
 
   border:none;
   border-radius:8px;

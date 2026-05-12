@@ -29,7 +29,6 @@ fetch("perfil/distribuir.html")
 
     document.getElementById("modal-container").innerHTML = html;
 
-    // ⚠️ espera DOM estabilizar depois do innerHTML
     setTimeout(() => {
 
       const modal = document.querySelector(".points-modal");
@@ -85,7 +84,7 @@ fetch("perfil/distribuir.html")
       });
 
       // ======================
-      // FECHAR = DESCARTA (NÃO SALVA)
+      // FECHAR = DESCARTA
       // ======================
       closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
@@ -95,18 +94,17 @@ fetch("perfil/distribuir.html")
       });
 
       // ======================
-      // + ATRIBUTOS (LOCAL ONLY)
+      // + ATRIBUTOS (SEM dataset, usando ID mesmo)
       // ======================
       document.addEventListener("click", (e) => {
 
-        const btn = e.target.closest(".plus-btn");
-        if (!btn) return;
+        const id = e.target.id;
+
+        if (!id || !id.startsWith("up-")) return;
 
         if ((tempPoints.available || 0) <= 0) return;
 
-        const stat = btn.dataset.stat;
-
-        if (!stat) return;
+        const stat = id.replace("up-", "");
 
         tempStats[stat] = (tempStats[stat] || 0) + 1;
         tempPoints.available -= 1;
@@ -124,7 +122,7 @@ fetch("perfil/distribuir.html")
       });
 
       // ======================
-      // CONFIRMAR (SALVA NO FIREBASE)
+      // CONFIRMAR (SALVA + F5)
       // ======================
       confirmBtn.addEventListener("click", async () => {
 
@@ -137,6 +135,8 @@ fetch("perfil/distribuir.html")
         });
 
         modal.style.display = "none";
+
+        window.location.reload(); // 🔥 F5 automático
       });
 
     }, 0);

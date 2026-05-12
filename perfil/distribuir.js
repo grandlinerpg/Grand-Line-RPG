@@ -1,15 +1,16 @@
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   getDatabase,
   ref,
-  get
+  get,
+  update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 // ======================
-// FIREBASE (usa mesma instância do projeto)
+// FIREBASE
 // ======================
 const app = getApp();
 const auth = getAuth(app);
@@ -30,8 +31,48 @@ fetch("perfil/distribuir.html")
 
     modal.style.display = "none";
 
+    let userRef = null;
+
     // ======================
-    // ABRIR / FECHAR MODAL
+    // FUNÇÃO UPGRADE
+    // ======================
+    async function upgradeStat(statName) {
+
+      if (!userRef) return;
+
+      const snap = await get(userRef);
+      if (!snap.exists()) return;
+
+      const data = snap.val();
+
+      const stats = data.stats || {};
+      const points = data.points || {};
+
+      if ((points.available || 0) <= 0) return;
+
+      const newStats = {
+        ...stats,
+        [statName]: (stats[statName] || 0) + 1
+      };
+
+      const newPoints = {
+        available: (points.available || 0) - 1,
+        used: (points.used || 0) + 1
+      };
+
+      await update(userRef, {
+        stats: newStats,
+        points: newPoints
+      });
+
+      // atualiza UI
+      document.getElementById(`modal-${statName}`).innerText = newStats[statName];
+      document.getElementById("available-points").innerText = newPoints.available;
+      document.getElementById("used-points").innerText = newPoints.used;
+    }
+
+    // ======================
+    // ABRIR MODAL
     // ======================
     openBtn.addEventListener("click", async () => {
 
@@ -40,14 +81,13 @@ fetch("perfil/distribuir.html")
       const user = auth.currentUser;
       if (!user) return;
 
-      const snap = await get(ref(db, `players/${user.uid}`));
+      userRef = ref(db, `players/${user.uid}`);
+
+      const snap = await get(userRef);
       if (!snap.exists()) return;
 
       const data = snap.val();
 
-      // ======================
-      // ESTRUTURA CORRETA
-      // ======================
       const stats = data.stats || {};
       const points = data.points || {};
 
@@ -66,8 +106,22 @@ fetch("perfil/distribuir.html")
       // ======================
       document.getElementById("available-points").innerText = points.available || 0;
       document.getElementById("used-points").innerText = points.used || 0;
+
+      // ======================
+      // BOTÕES DE UPGRADE
+      // ======================
+      document.getElementById("up-str").onclick = () => upgradeStat("str");
+      document.getElementById("up-res").onclick = () => upgradeStat("res");
+      document.getElementById("up-dex").onclick = () => upgradeStat("dex");
+      document.getElementById("up-agi").onclick = () => upgradeStat("agi");
+      document.getElementById("up-sta").onclick = () => upgradeStat("sta");
+      document.getElementById("up-hp").onclick  = () => upgradeStat("hp");
+
     });
 
+    // ======================
+    // FECHAR MODAL
+    // ======================
     closeBtn.addEventListener("click", () => {
       modal.style.display = "none";
     });

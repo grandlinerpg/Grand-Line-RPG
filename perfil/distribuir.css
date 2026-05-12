@@ -51,6 +51,8 @@
 }
 
 .window-top h1{
+  width:100%;
+
   color:#f6d365;
 
   font-size:17px;
@@ -71,6 +73,9 @@
 
   position:absolute;
   right:0;
+  top:50%;
+
+  transform:translateY(-50%);
 
   border:none;
   border-radius:8px;
@@ -85,6 +90,7 @@
   color:white;
 
   font-size:14px;
+  line-height:1;
 
   cursor:pointer;
 
@@ -92,7 +98,7 @@
 }
 
 .close-btn:hover{
-  transform:scale(1.05);
+  transform:translateY(-50%) scale(1.05);
 }
 
 /* LISTA */
@@ -261,6 +267,25 @@
 
   .points-window{
     width:92%;
+  }
+
+  .window-top{
+    justify-content:center;
+  }
+
+  .window-top h1{
+    width:100%;
+    text-align:center;
+  }
+
+  .close-btn{
+    right:0;
+    top:50%;
+    transform:translateY(-50%);
+  }
+
+  .close-btn:hover{
+    transform:translateY(-50%) scale(1.05);
   }
 
   .points-footer{

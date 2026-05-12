@@ -41,6 +41,13 @@ if (!uid) {
 }
 
 // ======================
+// STATE GLOBAL
+// ======================
+
+let stats = null;
+let points = null;
+
+// ======================
 // LOAD MODAL HTML
 // ======================
 
@@ -51,22 +58,20 @@ fetch("perfil/distribuir.html")
     document.getElementById("modal-container").innerHTML = html;
 
     const modal = document.querySelector(".points-modal");
-
-    modal.style.display = "none";
-
     const openBtn = document.getElementById("open-points");
     const closeBtn = document.querySelector(".close-btn");
 
+    modal.style.display = "none";
+
     // ======================
-    // ABRIR MODAL + CARREGAR DADOS
+    // ABRIR MODAL
     // ======================
 
     openBtn.addEventListener("click", async () => {
 
       modal.style.display = "flex";
 
-      await loadPlayer(); // 🔥 carrega sempre ao abrir
-
+      await loadPlayer(); // carrega sempre que abrir
     });
 
     // ======================
@@ -77,44 +82,48 @@ fetch("perfil/distribuir.html")
       modal.style.display = "none";
     });
 
-    // ======================
-    // BUSCAR PLAYER NO FIREBASE
-    // ======================
-
-    async function loadPlayer() {
-
-      const snap = await get(ref(db, `players/${uid}`));
-
-      if (!snap.exists()) return;
-
-      const player = snap.val();
-
-      console.log("PLAYER FIREBASE:", player); // debug importante
-
-      // 🔥 pega stats reais do banco
-      const stats = player.stats;
-
-      // 🔥 pega points reais do banco
-      const points = player.points;
-
-      if (!stats || !points) {
-        console.warn("Stats ou points não existem no Firebase");
-        return;
-      }
-
-      // ======================
-      // JOGA NO MODAL
-      // ======================
-
-      document.getElementById("modal-str").textContent = stats.str;
-      document.getElementById("modal-res").textContent = stats.res;
-      document.getElementById("modal-dex").textContent = stats.dex;
-      document.getElementById("modal-agi").textContent = stats.agi;
-      document.getElementById("modal-sta").textContent = stats.sta;
-      document.getElementById("modal-hp").textContent = stats.hp;
-
-      document.getElementById("available-points").textContent = points.available;
-      document.getElementById("used-points").textContent = points.used;
-    }
-
   });
+
+// ======================
+// CARREGAR PLAYER FIREBASE
+// ======================
+
+async function loadPlayer() {
+
+  const snap = await get(ref(db, `players/${uid}`));
+
+  if (!snap.exists()) return;
+
+  const player = snap.val();
+
+  console.log("PLAYER:", player);
+
+  // garante estrutura mesmo se faltar algo
+  stats = player.stats || {
+    str: 1,
+    res: 1,
+    dex: 1,
+    agi: 1,
+    sta: 1,
+    hp: 1
+  };
+
+  points = player.points || {
+    available: 0,
+    used: 0
+  };
+
+  // ======================
+  // JOGA NO MODAL
+  // ======================
+
+  document.getElementById("modal-str").textContent = stats.str;
+  document.getElementById("modal-res").textContent = stats.res;
+  document.getElementById("modal-dex").textContent = stats.dex;
+  document.getElementById("modal-agi").textContent = stats.agi;
+  document.getElementById("modal-sta").textContent = stats.sta;
+  document.getElementById("modal-hp").textContent = stats.hp;
+
+  document.getElementById("available-points").textContent = points.available;
+  document.getElementById("used-points").textContent = points.used;
+}

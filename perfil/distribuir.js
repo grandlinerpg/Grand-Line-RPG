@@ -48,7 +48,7 @@ let stats = null;
 let points = null;
 
 // ======================
-// LOAD MODAL (BASE FUNCIONAL)
+// LOAD MODAL (FUNCIONAL)
 // ======================
 
 fetch("perfil/distribuir.html")
@@ -58,24 +58,31 @@ fetch("perfil/distribuir.html")
     document.getElementById("modal-container").innerHTML = data;
 
     const modal = document.querySelector(".points-modal");
-    const openBtn = document.getElementById("open-points");
-    const closeBtn = document.querySelector(".close-btn");
 
     modal.style.display = "none";
 
+    // 🔥 AGORA O DOM JÁ EXISTE, ENTÃO FUNCIONA
+    const openBtn = document.getElementById("open-points");
+    const closeBtn = document.querySelector(".close-btn");
+
+    if (!openBtn || !closeBtn) {
+      console.error("Botão abrir/fechar não encontrado");
+      return;
+    }
+
     // ======================
-    // ABRIR (FUNCIONANDO + CARREGA DADOS)
+    // ABRIR MODAL
     // ======================
 
     openBtn.addEventListener("click", async () => {
 
       modal.style.display = "flex";
 
-      await loadPlayer(); // 🔥 carrega dados ao abrir
+      await loadPlayer(); // carrega dados ao abrir
     });
 
     // ======================
-    // FECHAR
+    // FECHAR MODAL
     // ======================
 
     closeBtn.addEventListener("click", () => {

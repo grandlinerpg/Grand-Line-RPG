@@ -1,96 +1,78 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getDatabase,
   ref,
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
-  authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-  projectId: "grand-line-rpg-dcda9",
-  storageBucket: "grand-line-rpg-dcda9.appspot.com",
-  messagingSenderId: "172042779786",
-  appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-  databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const uid = localStorage.getItem("uid");
-if (!uid) window.location.href = "auth.html";
-
-let stats = null;
-let points = null;
-
-// ======================
-// MODAL HTML
-// ======================
+import {
+  getAuth
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 fetch("perfil/distribuir.html")
-  .then(r => r.text())
-  .then(html => {
+  .then(res => res.text())
+  .then(data => {
 
-    document.getElementById("modal-container").innerHTML = html;
+    document.getElementById("modal-container").innerHTML = data;
 
     const modal = document.querySelector(".points-modal");
-
     modal.style.display = "none";
 
+    const openBtn = document.getElementById("open-points");
+    const closeBtn = document.querySelector(".close-btn");
+
     // ======================
-    // 🔥 DELEGATION (SEMPRE FUNCIONA)
+    // CARREGAR DADOS FIREBASE
     // ======================
+    async function loadStats() {
 
-    document.addEventListener("click", async (e) => {
+      const user = window.auth?.currentUser;
+      const db = window.db;
 
-      // abrir modal
-      if (e.target.id === "open-points") {
-        modal.style.display = "flex";
-        await loadPlayer();
-      }
+      if (!user || !db) return;
 
-      // fechar modal
-      if (e.target.classList.contains("close-btn")) {
-        modal.style.display = "none";
-      }
+      const snap = await get(ref(db, "players/" + user.uid));
+
+      if (!snap.exists()) return;
+
+      const data = snap.val();
+      const stats = data.stats || {};
+
+      // ======================
+      // ATRIBUTOS
+      // ======================
+      document.getElementById("modal-str").textContent = stats.str || 0;
+      document.getElementById("modal-res").textContent = stats.res || 0;
+      document.getElementById("modal-dex").textContent = stats.dex || 0;
+      document.getElementById("modal-agi").textContent = stats.agi || 0;
+      document.getElementById("modal-sta").textContent = stats.sta || 0;
+      document.getElementById("modal-hp").textContent  = stats.hp || 0;
+
+      // ======================
+      // PONTOS
+      // ======================
+      document.getElementById("available-points").textContent =
+        data.info?.pointsAvailable || 0;
+
+      document.getElementById("used-points").textContent =
+        data.info?.pointsUsed || 0;
+    }
+
+    // ======================
+    // ABRIR MODAL
+    // ======================
+    openBtn.addEventListener("click", async () => {
+
+      modal.style.display = "flex";
+
+      await loadStats(); // 🔥 busca Firebase ao abrir
 
     });
 
+    // ======================
+    // FECHAR MODAL
+    // ======================
+    closeBtn.addEventListener("click", () => {
+      modal.style.display = "none";
+    });
+
   });
-
-// ======================
-// FIREBASE LOAD
-// ======================
-
-async function loadPlayer() {
-
-  const snap = await get(ref(db, `players/${uid}`));
-  if (!snap.exists()) return;
-
-  const player = snap.val();
-
-  stats = player.stats || {
-    str: 1,
-    res: 1,
-    dex: 1,
-    agi: 1,
-    sta: 1,
-    hp: 1
-  };
-
-  points = player.points || {
-    available: 0,
-    used: 0
-  };
-
-  document.getElementById("modal-str").textContent = stats.str;
-  document.getElementById("modal-res").textContent = stats.res;
-  document.getElementById("modal-dex").textContent = stats.dex;
-  document.getElementById("modal-agi").textContent = stats.agi;
-  document.getElementById("modal-sta").textContent = stats.sta;
-  document.getElementById("modal-hp").textContent = stats.hp;
-
-  document.getElementById("available-points").textContent = points.available;
-  document.getElementById("used-points").textContent = points.used;
-}

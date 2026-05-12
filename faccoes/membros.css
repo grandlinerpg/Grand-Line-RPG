@@ -1,1 +1,76 @@
+.members-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
 
+.members-window {
+  width: 650px;
+  max-height: 80vh;
+  background: #0f0f0f;
+  border: 1px solid gold;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.members-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.members-top h1 {
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.close-members {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.members-list {
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* CARD */
+.member-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: 0.2s;
+}
+
+.member-card:hover {
+  border-color: gold;
+  transform: scale(1.02);
+}
+
+.member-name {
+  font-weight: bold;
+}
+
+.member-info {
+  font-size: 13px;
+  opacity: 0.8;
+}

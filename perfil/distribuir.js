@@ -43,7 +43,7 @@ fetch("perfil/distribuir.html")
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
 
-      const userRef = ref(db, `users/${user.uid}`);
+      const userRef = ref(db, `players/${user.uid}`);
       const snap = await get(userRef);
 
       if (!snap.exists()) return;

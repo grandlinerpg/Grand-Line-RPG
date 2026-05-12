@@ -52,10 +52,9 @@ fetch("perfil/distribuir.html")
     document.getElementById("modal-container").innerHTML = html;
 
     const modal = document.querySelector(".points-modal");
-    const openBtn = document.getElementById("open-points");
 
-    if (!modal || !openBtn) {
-      console.error("Modal ou botão não encontrado");
+    if (!modal) {
+      console.error("Modal não encontrado");
       return;
     }
 
@@ -85,7 +84,12 @@ fetch("perfil/distribuir.html")
       used: player.points?.used || 0
     };
 
+    // ======================
+    // ELEMENTOS UI
+    // ======================
+
     function updateUI() {
+
       document.getElementById("modal-str").textContent = stats.str;
       document.getElementById("modal-res").textContent = stats.res;
       document.getElementById("modal-dex").textContent = stats.dex;
@@ -99,7 +103,12 @@ fetch("perfil/distribuir.html")
 
     updateUI();
 
+    // ======================
+    // ADD POINT
+    // ======================
+
     function addPoint(stat) {
+
       if (points.available <= 0) return;
 
       stats[stat]++;
@@ -113,41 +122,55 @@ fetch("perfil/distribuir.html")
     // BOTÕES +
     // ======================
 
-    document.getElementById("plus-str").onclick = () => addPoint("str");
-    document.getElementById("plus-res").onclick = () => addPoint("res");
-    document.getElementById("plus-dex").onclick = () => addPoint("dex");
-    document.getElementById("plus-agi").onclick = () => addPoint("agi");
-    document.getElementById("plus-sta").onclick = () => addPoint("sta");
-    document.getElementById("plus-hp").onclick = () => addPoint("hp");
+    document.getElementById("plus-str")?.addEventListener("click", () => addPoint("str"));
+    document.getElementById("plus-res")?.addEventListener("click", () => addPoint("res"));
+    document.getElementById("plus-dex")?.addEventListener("click", () => addPoint("dex"));
+    document.getElementById("plus-agi")?.addEventListener("click", () => addPoint("agi"));
+    document.getElementById("plus-sta")?.addEventListener("click", () => addPoint("sta"));
+    document.getElementById("plus-hp")?.addEventListener("click", () => addPoint("hp"));
 
     // ======================
-    // ABRIR MODAL (IMPORTANTE)
+    // ABRIR MODAL (CORRIGIDO)
     // ======================
 
-    openBtn.addEventListener("click", () => {
-      modal.style.display = "flex";
-    });
+    const openBtn = document.getElementById("open-points");
+
+    if (openBtn) {
+      openBtn.addEventListener("click", () => {
+        modal.style.display = "flex";
+      });
+    } else {
+      console.error("Botão open-points não encontrado");
+    }
 
     // ======================
-    // FECHAR
+    // FECHAR MODAL
     // ======================
 
-    document.querySelector(".close-btn").onclick = () => {
-      modal.style.display = "none";
-    };
+    const closeBtn = document.querySelector(".close-btn");
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+    }
 
     // ======================
     // SALVAR
     // ======================
 
-    document.querySelector(".save-btn").onclick = async () => {
+    const saveBtn = document.querySelector(".save-btn");
 
-      await update(ref(db, `players/${uid}`), {
-        stats,
-        points
+    if (saveBtn) {
+      saveBtn.addEventListener("click", async () => {
+
+        await update(ref(db, `players/${uid}`), {
+          stats,
+          points
+        });
+
+        modal.style.display = "none";
       });
-
-      modal.style.display = "none";
-    };
+    }
 
   });

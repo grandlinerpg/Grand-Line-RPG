@@ -123,15 +123,9 @@ async function startAuth() {
       const expMax = 1000;
 
       document.getElementById("level").innerText = level;
-      
-      document.getElementById("exp").innerText =
-        exp.toLocaleString("pt-BR");
-      
-      document.getElementById("exp-max").innerText =
-        expMax.toLocaleString("pt-BR");
-      
-      document.getElementById("saldo").innerText =
-        saldo.toLocaleString("pt-BR");
+      document.getElementById("exp").innerText = exp;
+      document.getElementById("exp-max").innerText = expMax;
+      document.getElementById("saldo").innerText = saldo;
 
       // ======================
       // ATRIBUTOS

@@ -1,9 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// ======================
-// FIREBASE CONFIG
-// ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -17,34 +14,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ======================
-// ELEMENTOS DO MODAL
-// ======================
-const modal = document.querySelector(".members-modal");
-const list = document.getElementById("members-list");
-const closeBtn = document.querySelector(".close-members");
-
-// facção vem da página principal
-const faction = window.currentFaction || null;
-
-// ======================
-// FECHAR MODAL
-// ======================
-function closeModal() {
-  if (modal) modal.remove();
-  const container = document.getElementById("members-container");
-  if (container) container.innerHTML = "";
-}
-
-// ======================
-// CARREGAR MEMBROS
-// ======================
 async function loadMembers() {
-  if (!modal || !list) return;
 
-  modal.style.display = "flex";
+  const list = document.getElementById("members-list");
+  const modal = document.querySelector(".members-modal");
+
+  const faction = window.currentFaction;
 
   const snap = await get(ref(db, "players"));
+
   list.innerHTML = "";
 
   if (!snap.exists()) return;
@@ -53,51 +31,29 @@ async function loadMembers() {
 
   let count = 0;
 
-  Object.values(data).forEach(player => {
+  Object.values(data).forEach(p => {
 
-    const playerFaction = player.character?.faction;
-
-    if (faction && playerFaction !== faction) return;
+    if (p.character?.faction !== faction) return;
 
     count++;
 
-    const card = document.createElement("div");
-    card.className = "member-card";
+    const div = document.createElement("div");
+    div.className = "member-card";
 
-    const name = player.nome || "Desconhecido";
-    const char = player.character?.charName || "-";
-    const level = player.info?.level || 1;
-
-    card.innerHTML = `
+    div.innerHTML = `
       <div>
-        <div class="member-name">${name}</div>
-        <div class="member-info">${char}</div>
+        <strong>${p.nome}</strong><br>
+        <small>${p.character?.charName}</small>
       </div>
-
-      <div class="member-info">Lv ${level}</div>
+      <div>Lv ${p.info?.level || 1}</div>
     `;
 
-    list.appendChild(card);
+    list.appendChild(div);
   });
 
-  // atualiza contador na facção (se existir no HTML)
-  const countEl = document.getElementById(`count-${faction}`);
-  if (countEl) countEl.textContent = count;
+  modal.querySelector(".close-members").onclick = () => {
+    modal.remove();
+  };
 }
 
-// ======================
-// EVENTO DO BOTÃO FECHAR
-// ======================
-function setupCloseButton() {
-  const btn = document.querySelector(".close-members");
-
-  if (btn) {
-    btn.addEventListener("click", closeModal);
-  }
-}
-
-// ======================
-// START
-// ======================
-setupCloseButton();
 loadMembers();

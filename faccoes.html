@@ -160,111 +160,114 @@
 
   <script type="module">
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-    import {
-      getAuth,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    import {
-      getDatabase,
-      ref,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuZBfqG4AGTVUQ",
-      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-      projectId: "grand-line-rpg-dcda9",
-      storageBucket: "grand-line-rpg-dcda9.appspot.com",
-      messagingSenderId: "172042779786",
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuZBfqG4AGTVUQ",
+  authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+  projectId: "grand-line-rpg-dcda9",
+  storageBucket: "grand-line-rpg-dcda9.appspot.com",
+  messagingSenderId: "172042779786",
+  appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+  databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+};
 
-    const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+function go(page) {
+  window.location.href = page;
+}
 
-    function go(page){
-      window.location.href = page;
+window.go = go;
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  const voltarBtn = document.getElementById("voltarBtn");
+
+  onAuthStateChanged(auth, (user) => {
+
+    if (user) {
+      voltarBtn.textContent = "PERFIL";
+      voltarBtn.href = "perfil.html";
+    } else {
+      voltarBtn.textContent = "INÍCIO";
+      voltarBtn.href = "index.html";
     }
 
-    window.go = go;
+  });
 
-    const voltarBtn = document.getElementById("voltarBtn");
+});
 
-    onAuthStateChanged(auth, (user) => {
+function contarFaccao() {
 
-      if (user) {
-        voltarBtn.textContent = "PERFIL";
-        voltarBtn.href = "perfil.html";
-      } else {
-        voltarBtn.textContent = "INÍCIO";
-        voltarBtn.href = "index.html";
-      }
+  const playersRef = ref(db, "players");
 
-    });
+  onValue(playersRef, (snapshot) => {
 
-    function contarFaccao() {
+    const data = snapshot.val();
 
-      const playersRef = ref(db, "players");
+    let governo = 0;
+    let revolucionario = 0;
+    let piratas = 0;
 
-      onValue(playersRef, (snapshot) => {
+    let forcaGoverno = 0;
+    let forcaRevolucionario = 0;
+    let forcaPiratas = 0;
 
-        const data = snapshot.val();
+    if (data) {
 
-        let governo = 0;
-        let revolucionario = 0;
-        let piratas = 0;
+      Object.values(data).forEach(user => {
 
-        let forcaGoverno = 0;
-        let forcaRevolucionario = 0;
-        let forcaPiratas = 0;
+        const faction = user?.character?.faction;
+        const level = Number(user?.info?.level || 0);
 
-        if (data) {
-
-          Object.values(data).forEach(user => {
-
-            const faction = user?.character?.faction;
-            const level = Number(user?.info?.level || 0);
-
-            if (faction === "Governo Mundial") {
-              governo++;
-              forcaGoverno += level;
-            }
-
-            if (faction === "Exército Revolucionário") {
-              revolucionario++;
-              forcaRevolucionario += level;
-            }
-
-            if (faction === "Piratas") {
-              piratas++;
-              forcaPiratas += level;
-            }
-
-          });
-
+        if (faction === "Governo Mundial") {
+          governo++;
+          forcaGoverno += level;
         }
 
-        document.getElementById("count-governo").textContent = governo;
-        document.getElementById("count-revolucionario").textContent = revolucionario;
-        document.getElementById("count-piratas").textContent = piratas;
+        if (faction === "Exército Revolucionário") {
+          revolucionario++;
+          forcaRevolucionario += level;
+        }
 
-        document.getElementById("forca-governo").textContent = forcaGoverno;
-        document.getElementById("forca-revolucionario").textContent = forcaRevolucionario;
-        document.getElementById("forca-piratas").textContent = forcaPiratas;
+        if (faction === "Piratas") {
+          piratas++;
+          forcaPiratas += level;
+        }
 
       });
 
     }
 
-    contarFaccao();
+    document.getElementById("count-governo").textContent = governo;
+    document.getElementById("count-revolucionario").textContent = revolucionario;
+    document.getElementById("count-piratas").textContent = piratas;
 
-  </script>
+    document.querySelector(".governo .stats .stat:nth-child(2) strong").textContent = forcaGoverno;
+    document.querySelector(".revolucionario .stats .stat:nth-child(2) strong").textContent = forcaRevolucionario;
+    document.querySelector(".piratas .stats .stat:nth-child(2) strong").textContent = forcaPiratas;
+
+  });
+
+}
+
+contarFaccao();
+
+</script>
 
 </body>
 </html>

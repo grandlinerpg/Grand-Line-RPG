@@ -288,7 +288,7 @@ body.modal-open{
   width:64px;
   height:64px;
 
-  margin:8px auto 14px;
+  margin:12px auto 14px;
 
   background-image:url('https://res.cloudinary.com/djh45admn/image/upload/v1778336779/nivelglrpg.png');
   background-size:cover;
@@ -312,7 +312,7 @@ body.modal-open{
 .modal-box h2{
   font-family:'Cinzel', serif;
   color:#f6d365;
-  margin-bottom:14px;
+  margin-bottom:10px;
   font-size:28px;
 }
 

@@ -1,16 +1,6 @@
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import {
-  getDatabase,
-  ref,
-  get
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-// ======================
-// FIREBASE CONFIG
-// ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -24,10 +14,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ======================
-// FUNÇÃO PRINCIPAL
-// ======================
-async function renderMembers(faction) {
+// FUNÇÃO GLOBAL
+window.openMembers = async function (faction) {
 
   const modal = document.querySelector(".members-modal");
   const list = document.getElementById("members-list");
@@ -53,33 +41,23 @@ async function renderMembers(faction) {
     const card = document.createElement("div");
     card.className = "member-card";
 
-    const name = player.nome || "Desconhecido";
-    const char = player.character?.charName || "-";
-    const level = player.info?.level || 1;
-
     card.innerHTML = `
       <div>
-        <div class="member-name">${name}</div>
-        <div class="member-info">${char}</div>
+        <div class="member-name">${player.nome || "Desconhecido"}</div>
+        <div class="member-info">${player.character?.charName || "-"}</div>
       </div>
 
-      <div class="member-info">Lv ${level}</div>
+      <div class="member-info">Lv ${player.info?.level || 1}</div>
     `;
 
     list.appendChild(card);
   });
 
-  // fechar botão (garante que existe após render)
-  const closeBtn = document.querySelector(".close-members");
+  const closeBtn = modal.querySelector(".close-members");
 
   if (closeBtn) {
     closeBtn.onclick = () => {
       modal.style.display = "none";
     };
   }
-}
-
-// ======================
-// EXPÕE GLOBAL
-// ======================
-window.openMembers = renderMembers;
+};

@@ -64,12 +64,12 @@
 
           <div class="stat">
             <span>FORÇA</span>
-            <strong>92.450</strong>
+            <strong id="forca-governo">0</strong>
           </div>
 
           <div class="stat">
             <span>ARMAZÉM</span>
-            <strong>95.000</strong>
+            <strong>0</strong>
           </div>
         </div>
 
@@ -101,12 +101,12 @@
 
           <div class="stat">
             <span>FORÇA</span>
-            <strong>71.900</strong>
+            <strong id="forca-revolucionario">0</strong>
           </div>
 
           <div class="stat">
             <span>ARMAZÉM</span>
-            <strong>80.000</strong>
+            <strong>0</strong>
           </div>
         </div>
 
@@ -138,7 +138,7 @@
 
           <div class="stat">
             <span>FORÇA</span>
-            <strong>0</strong>
+            <strong id="forca-piratas">0</strong>
           </div>
 
           <div class="stat">
@@ -174,7 +174,7 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuZBfqG4AGTVUQ",
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
       projectId: "grand-line-rpg-dcda9",
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
@@ -198,15 +198,11 @@
     onAuthStateChanged(auth, (user) => {
 
       if (user) {
-
         voltarBtn.textContent = "PERFIL";
         voltarBtn.href = "perfil.html";
-
       } else {
-
         voltarBtn.textContent = "INÍCIO";
         voltarBtn.href = "index.html";
-
       }
 
     });
@@ -221,19 +217,42 @@
         let revolucionario = 0;
         let piratas = 0;
 
+        let forcaGoverno = 0;
+        let forcaRevolucionario = 0;
+        let forcaPiratas = 0;
+
         if (data) {
           Object.values(data).forEach(user => {
-            const faction = user?.character?.faction;
 
-            if (faction === "Governo Mundial") governo++;
-            if (faction === "Exército Revolucionário") revolucionario++;
-            if (faction === "Piratas") piratas++;
+            const faction = user?.character?.faction;
+            const level = Number(user?.info?.level || 0);
+
+            if (faction === "Governo Mundial") {
+              governo++;
+              forcaGoverno += level;
+            }
+
+            if (faction === "Exército Revolucionário") {
+              revolucionario++;
+              forcaRevolucionario += level;
+            }
+
+            if (faction === "Piratas") {
+              piratas++;
+              forcaPiratas += level;
+            }
+
           });
         }
 
         document.getElementById("count-governo").textContent = governo;
         document.getElementById("count-revolucionario").textContent = revolucionario;
         document.getElementById("count-piratas").textContent = piratas;
+
+        document.getElementById("forca-governo").textContent = forcaGoverno;
+        document.getElementById("forca-revolucionario").textContent = forcaRevolucionario;
+        document.getElementById("forca-piratas").textContent = forcaPiratas;
+
       });
     }
 

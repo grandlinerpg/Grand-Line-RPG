@@ -224,10 +224,11 @@
 
       document.getElementById("modal-nivel").innerText = level;
 
-      document.getElementById("modal-exp").innerText = exp;
+      document.getElementById("modal-exp").innerText =
+        exp.toLocaleString("pt-BR");
 
       document.getElementById("modal-dinheiro").innerText =
-        "฿ " + dinheiro;
+        "฿ " + dinheiro.toLocaleString("pt-BR");
 
       document.body.classList.add("modal-open");
     }

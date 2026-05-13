@@ -156,7 +156,6 @@
 
   </main>
 
-  <!-- MODAL ROOT -->
   <div id="members-container"></div>
 
   <script type="module">
@@ -182,12 +181,14 @@
     }
     window.go = go;
 
-    const voltarBtn = document.getElementById("voltarBtn");
-
-    // 🔧 CORREÇÃO: garante que o DOM esteja pronto antes de alterar o botão
     window.addEventListener("DOMContentLoaded", () => {
 
+      const voltarBtn = document.getElementById("voltarBtn");
+
       onAuthStateChanged(auth, (user) => {
+
+        if (!voltarBtn) return;
+
         if (user) {
           voltarBtn.textContent = "PERFIL";
           voltarBtn.href = "perfil.html";
@@ -195,6 +196,7 @@
           voltarBtn.textContent = "INÍCIO";
           voltarBtn.href = "index.html";
         }
+
       });
 
     });

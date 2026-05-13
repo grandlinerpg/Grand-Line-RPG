@@ -48,8 +48,9 @@
 
       <img id="modal-img" class="modal-img">
 
-      <h2 id="modal-nome"></h2>
+      <h2 id="modal-charname"></h2>
 
+      <p id="modal-nome"></p>
       <p id="modal-nivel"></p>
       <p id="modal-exp"></p>
       <p id="modal-dinheiro"></p>
@@ -101,30 +102,30 @@
         const card = document.createElement("div");
         card.classList.add("card");
 
-        const nome = player.nome || "Desconhecido";
-        const uidNome = player.uid?.nome || "Sem nome";
-        const foto = buildImage(nome);
+        const charName = player.character?.charName || "Desconhecido";
+        const playerName = player.nome || "Sem nome";
+        const foto = buildImage(charName);
 
-        const nivel = player.info?.level || 1;
+        const level = player.info?.level || 1;
         const exp = player.info?.exp || 0;
         const dinheiro = player.info?.dinheiro || 0;
 
         card.innerHTML = `
           <div class="img-wrap">
-            <img src="${foto}" class="character-img" alt="${nome}">
+            <img src="${foto}" class="character-img" alt="${charName}">
 
             <div class="nivel-badge">
-              ${nivel}
+              ${level}
             </div>
           </div>
 
           <div class="info">
-            <h2>${nome}</h2>
-            <p class="uid-name">${uidNome}</p>
+            <h2>${charName}</h2>
+            <p class="player-name">${playerName}</p>
           </div>
         `;
 
-        card.onclick = () => openModal(foto, nome, nivel, exp, dinheiro);
+        card.onclick = () => openModal(foto, charName, playerName, level, exp, dinheiro);
 
         container.appendChild(card);
       });
@@ -132,11 +133,14 @@
 
     loadPlayers();
 
-    function openModal(img, nome, nivel, exp, dinheiro) {
+    function openModal(img, charName, playerName, level, exp, dinheiro) {
       document.getElementById("modal").style.display = "flex";
       document.getElementById("modal-img").src = img;
-      document.getElementById("modal-nome").innerText = nome;
-      document.getElementById("modal-nivel").innerText = "⭐ Nível: " + nivel;
+
+      document.getElementById("modal-charname").innerText = charName;
+      document.getElementById("modal-nome").innerText = "Jogador: " + playerName;
+
+      document.getElementById("modal-nivel").innerText = "⭐ Nível: " + level;
       document.getElementById("modal-exp").innerText = "⚡ EXP: " + exp;
       document.getElementById("modal-dinheiro").innerText = "💰 Saldo: " + dinheiro;
 

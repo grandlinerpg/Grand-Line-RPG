@@ -11,7 +11,6 @@ body{
 }
 
 /* FUNDO */
-
 .background{
   position:fixed;
   inset:0;
@@ -40,30 +39,22 @@ body{
 }
 
 /* NAVBAR */
-
 .navbar{
   width:100%;
-
   display:flex;
   justify-content:space-between;
   align-items:center;
-
   padding:15px 50px;
-
   background:linear-gradient(
     to bottom,
     rgba(0,0,0,0.65),
     rgba(0,0,0,0.35)
   );
-
   backdrop-filter:blur(8px);
-
-  border-bottom:
-    1px solid rgba(255,215,120,0.15);
+  border-bottom:1px solid rgba(255,215,120,0.15);
 }
 
 /* LOGO */
-
 .logo-area{
   display:flex;
   align-items:center;
@@ -72,9 +63,7 @@ body{
 
 .logo{
   width:65px;
-
-  filter:
-    drop-shadow(0 0 8px rgba(255,215,120,0.35));
+  filter:drop-shadow(0 0 8px rgba(255,215,120,0.35));
 }
 
 .logo-text{
@@ -85,35 +74,23 @@ body{
 
 .logo-text h1{
   font-family:'Cinzel', serif;
-
   color:#f4d089;
-
   font-size:28px;
   font-weight:700;
-
   letter-spacing:2px;
-
-  text-shadow:
-    2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
 }
 
 .logo-text p{
   font-family:'Cinzel', serif;
-
   color:#f4d089;
-
   font-size:12px;
-
   letter-spacing:6px;
-
   margin-top:-3px;
-
-  text-shadow:
-    2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
 }
 
 /* MENU */
-
 nav{
   display:flex;
   gap:36px;
@@ -121,15 +98,11 @@ nav{
 
 nav a{
   position:relative;
-
   font-family:'Cinzel', serif;
   font-size:16px;
   font-weight:600;
-
   color:#f1d08a;
-
   text-decoration:none;
-
   transition:0.3s;
 }
 
@@ -138,152 +111,84 @@ nav a:hover{
 }
 
 /* TÍTULO */
-
 .players-title{
   text-align:center;
-
   margin:60px 0 40px;
 }
 
 .players-title h1{
   font-family:'Cinzel', serif;
-
   font-size:42px;
-
   color:#f6d365;
-
   margin-bottom:12px;
-
-  text-shadow:
-    2px 2px 6px rgba(0,0,0,0.8);
+  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
 }
 
 .players-title p{
   font-family:'Cinzel', serif;
-
   color:#f5e6c8;
-
   font-size:16px;
-
-  text-shadow:
-    2px 2px 6px rgba(0,0,0,0.9);
+  text-shadow:2px 2px 6px rgba(0,0,0,0.9);
 }
 
 /* PLAYERS */
-
 #players-container{
   width:100%;
   max-width:950px;
-
   margin:auto;
-
   display:flex;
   flex-direction:column;
-
   gap:20px;
-
   padding:20px 20px 60px;
 }
 
 /* CARD */
-
 .card{
-  position:relative; /* IMPORTANTE pro badge */
-
+  position:relative;
   display:flex;
   align-items:center;
-
   gap:20px;
-
   background:rgba(0,0,0,0.45);
-
   border:1px solid rgba(255,215,120,0.2);
-
   border-radius:18px;
-
   padding:18px;
-
   backdrop-filter:blur(6px);
-
   cursor:pointer;
-
   transition:0.3s;
-
-  box-shadow:
-    0 8px 20px rgba(0,0,0,0.35);
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
 }
 
 .card:hover{
-  transform:
-    translateY(-2px)
-    scale(1.01);
-
+  transform:translateY(-2px) scale(1.01);
   border-color:#f6d365;
 }
 
-/* IMAGEM */
-
-.character-img{
+/* IMAGEM WRAP (IMPORTANTE PRO LEVEL) */
+.img-wrap{
+  position:relative;
   width:90px;
   height:90px;
-
   min-width:90px;
+}
 
+/* IMAGEM */
+.character-img{
+  width:100%;
+  height:100%;
   object-fit:cover;
-
   border-radius:12px;
-
   border:2px solid #c89b3c;
-
-  box-shadow:
-    0 0 12px rgba(255,215,120,0.25);
+  box-shadow:0 0 12px rgba(255,215,120,0.25);
 }
 
-/* INFO */
-
-.info h2{
-  font-family:'Cinzel', serif;
-
-  font-size:24px;
-
-  margin-bottom:10px;
-
-  color:#f6d365;
-
-  text-shadow:
-    2px 2px 4px rgba(0,0,0,0.8);
-}
-
-.info p{
-  color:#ddd;
-
-  font-size:16px;
-
-  margin-bottom:6px;
-
-  text-shadow:
-    1px 1px 3px rgba(0,0,0,0.8);
-}
-
-/* ESCONDER EXP E SALDO NOS CARDS */
-
-.info p:nth-child(3),
-.info p:nth-child(4){
-  display:none;
-}
-
-/* =========================
-   🔥 NIVEL BADGE (EDITADO)
-========================= */
-
+/* NIVEL BADGE (PNG + NÚMERO) */
 .nivel-badge{
   position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
+  top:-10px;
+  right:-10px;
 
-  width:78px;
-  height:78px;
+  width:60px;
+  height:60px;
 
   background-image:url('https://res.cloudinary.com/djh45admn/image/upload/v1778336779/nivelglrpg.png');
   background-size:cover;
@@ -294,28 +199,39 @@ nav a:hover{
   justify-content:center;
 
   font-family:'Cinzel', serif;
-  font-size:24px;
+  font-size:18px;
   font-weight:700;
 
   color:#f6d365;
+  text-shadow:0 0 6px rgba(0,0,0,0.9);
+}
 
-  text-shadow:0 0 8px rgba(0,0,0,0.8);
+/* INFO */
+.info h2{
+  font-family:'Cinzel', serif;
+  font-size:24px;
+  margin-bottom:6px;
+  color:#f6d365;
+  text-shadow:2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* UID ABAIXO DO NOME */
+.uid-name{
+  font-size:14px;
+  color:#bbb;
+  margin-top:4px;
+  font-family:Arial, sans-serif;
 }
 
 /* MODAL */
-
 .modal{
   position:fixed;
   inset:0;
-
   display:none;
   justify-content:center;
   align-items:center;
-
   background:rgba(0,0,0,0.75);
-
   z-index:9999;
-
   padding:20px;
 }
 
@@ -325,75 +241,52 @@ body.modal-open{
 
 .modal-box{
   position:relative;
-
   background:rgba(0,0,0,0.92);
-
   border:1px solid #c89b3c;
   border-radius:18px;
-
   padding:25px;
-
   width:100%;
   max-width:340px;
-
   text-align:center;
-
   animation:pop 0.2s ease-out;
-
-  box-shadow:
-    0 0 25px rgba(0,0,0,0.6);
+  box-shadow:0 0 25px rgba(0,0,0,0.6);
 }
 
 @keyframes pop{
-  from{ transform:scale(0.85); opacity:0; }
-  to{ transform:scale(1); opacity:1; }
+  from{transform:scale(0.85); opacity:0;}
+  to{transform:scale(1); opacity:1;}
 }
 
 .modal-img{
   width:120px;
   height:120px;
-
   object-fit:cover;
-
   border-radius:12px;
   border:2px solid #c89b3c;
-
   margin-bottom:15px;
-
-  box-shadow:
-    0 0 15px rgba(255,215,120,0.25);
 }
 
 .modal-box h2{
   font-family:'Cinzel', serif;
-
   color:#f6d365;
-
   margin-bottom:14px;
-
   font-size:28px;
 }
 
 .modal-box p{
   color:#ddd;
-
   margin:8px 0;
-
   font-size:17px;
 }
 
+/* CLOSE */
 .close{
   position:absolute;
-
   top:10px;
   right:15px;
-
   font-size:30px;
-
   cursor:pointer;
-
   color:#f6d365;
-
   transition:0.3s;
 }
 
@@ -403,7 +296,6 @@ body.modal-open{
 }
 
 /* RESPONSIVO */
-
 @media(max-width:950px){
   .navbar{
     flex-direction:column;
@@ -423,18 +315,12 @@ body.modal-open{
     align-items:flex-start;
   }
 
-  .character-img{
-    width:75px;
-    height:75px;
-    min-width:75px;
-  }
-
   .info h2{
     font-size:20px;
   }
 
-  .info p{
-    font-size:14px;
+  .uid-name{
+    font-size:13px;
   }
 }
 

@@ -6,9 +6,6 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// ======================
-// FIREBASE CONFIG (SEU)
-// ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -19,45 +16,30 @@ const firebaseConfig = {
   measurementId: "G-1H48YJSFXQ"
 };
 
-// ======================
-// INIT FIREBASE
-// ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// botão da home
-const area = document.getElementById("home-button-area");
-
-// ======================
-// VERIFICAR LOGIN
-// ======================
 async function init() {
 
-  // salva login no navegador
   await setPersistence(auth, browserLocalPersistence);
 
   onAuthStateChanged(auth, (user) => {
 
     if (user) {
+      // 🔥 JÁ LOGADO → manda direto pro perfil
+      window.location.href = "perfil.html";
+      return;
+    }
 
-      area.innerHTML = `
-        <a href="perfil.html" class="hero-btn">
-          👤 MEU PERFIL
-        </a>
-      `;
+    // não logado → fica na home
+    const area = document.getElementById("home-button-area");
 
-      console.log("Logado como:", user.email);
-
-    } else {
-
+    if (area) {
       area.innerHTML = `
         <a href="auth.html" class="hero-btn">
           ⚓ COMEÇAR JORNADA
         </a>
       `;
-
-      console.log("Não logado");
-
     }
 
   });

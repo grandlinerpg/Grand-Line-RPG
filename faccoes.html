@@ -138,12 +138,12 @@
 
           <div class="stat">
             <span>FORÇA</span>
-            <strong>134.200</strong>
+            <strong>0</strong>
           </div>
 
           <div class="stat">
             <span>ARMAZÉM</span>
-            <strong>90.000</strong>
+            <strong>0</strong>
           </div>
         </div>
 
@@ -160,74 +160,52 @@
 
   <script type="module">
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-  import {
-    getAuth,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
-    authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-    projectId: "grand-line-rpg-dcda9",
-    storageBucket: "grand-line-rpg-dcda9.appspot.com",
-    messagingSenderId: "172042779786",
-    appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-    databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+      projectId: "grand-line-rpg-dcda9",
+      storageBucket: "grand-line-rpg-dcda9.appspot.com",
+      messagingSenderId: "172042779786",
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
 
-  function go(page){
-    window.location.href = page;
-  }
+    const auth = getAuth(app);
 
-  window.go = go;
-
-  const voltarBtn = document.getElementById("voltarBtn");
-
-  onAuthStateChanged(auth, (user) => {
-
-    if (!voltarBtn) return;
-
-    if (user) {
-      voltarBtn.textContent = "PERFIL";
-      voltarBtn.href = "perfil.html";
-    } else {
-      voltarBtn.textContent = "INÍCIO";
-      voltarBtn.href = "index.html";
+    function go(page){
+      window.location.href = page;
     }
 
-  });
+    window.go = go;
 
-  window.openMembers = async function (faction) {
+    const voltarBtn = document.getElementById("voltarBtn");
 
-    const container = document.getElementById("members-container");
+    onAuthStateChanged(auth, (user) => {
 
-    const html = await fetch("faccoes/membros.html").then(r => r.text());
+      if (user) {
 
-    container.innerHTML = html;
+        voltarBtn.textContent = "PERFIL";
+        voltarBtn.href = "perfil.html";
 
-    if (!document.getElementById("members-css")) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "faccoes/membros.css";
-      link.id = "members-css";
-      document.head.appendChild(link);
-    }
+      } else {
 
-    window.currentFaction = faction;
+        voltarBtn.textContent = "INÍCIO";
+        voltarBtn.href = "index.html";
 
-    const script = document.createElement("script");
-    script.type = "module";
-    script.src = "faccoes/membros.js";
+      }
 
-    container.appendChild(script);
-  };
+    });
 
-</script>
+  </script>
 
 </body>
 </html>

@@ -250,8 +250,8 @@ nav a:hover::after{
   position: absolute;
   font-weight: bold;
   font-size: 22px;
-  color: #fff;
-  text-shadow: 0 0 5px rgba(0,0,0,0.8);
+  color:#f6d365;
+  text-shadow: 0 0 6px rgba(0,0,0,0.9);
 }
 
 /* =========================

@@ -78,7 +78,7 @@ window.register = async function () {
 
       character: {
         faction: "Governo Mundial",
-        charName: "Novo Personagem",
+        charName: "Sem Personagem",
         style: "—",
         race: "Humano",
         fruit: "—"
@@ -144,7 +144,7 @@ window.login = async function () {
     const temPersonagem =
       data.character &&
       data.character.charName &&
-      data.character.charName !== "Novo Personagem";
+      data.character.charName !== "Sem Personagem";
 
     if (temPersonagem) {
       window.location.href = "perfil.html";

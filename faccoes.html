@@ -184,32 +184,34 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-function go(page) {
+function go(page){
   window.location.href = page;
 }
 
 window.go = go;
 
-window.addEventListener("DOMContentLoaded", () => {
+const voltarBtn = document.getElementById("voltarBtn");
 
-  const voltarBtn = document.getElementById("voltarBtn");
+onAuthStateChanged(auth, (user) => {
 
-  onAuthStateChanged(auth, (user) => {
-
-    if (user) {
-      voltarBtn.textContent = "PERFIL";
-      voltarBtn.href = "perfil.html";
-    } else {
-      voltarBtn.textContent = "INÍCIO";
-      voltarBtn.href = "index.html";
-    }
-
-  });
+  if (user) {
+    voltarBtn.textContent = "PERFIL";
+    voltarBtn.href = "perfil.html";
+  } else {
+    voltarBtn.textContent = "INÍCIO";
+    voltarBtn.href = "index.html";
+  }
 
 });
+
+
+// =========================
+// SISTEMA DE FACÇÕES
+// =========================
 
 function contarFaccao() {
 
@@ -266,6 +268,8 @@ function contarFaccao() {
 }
 
 contarFaccao();
+
+</script>
 
 </script>
 

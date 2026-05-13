@@ -1,65 +1,52 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
-  authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-  databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com",
-  projectId: "grand-line-rpg-dcda9",
-  storageBucket: "grand-line-rpg-dcda9.appspot.com",
-  messagingSenderId: "172042779786",
-  appId: "1:172042779786:web:ecdff9eaf4fee36eca8173"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const modal = document.querySelector(".members-modal");
-const list = document.getElementById("members-list");
-const closeBtn = document.querySelector(".close-members");
-
-const faction = window.currentFaction;
-
-async function load() {
-
-  modal.style.display = "flex";
-
-  const snap = await get(ref(db, "players"));
-  if (!snap.exists()) return;
-
-  const data = snap.val();
-
-  list.innerHTML = "";
-
-  let count = 0;
-
-  Object.values(data).forEach(p => {
-
-    if (faction && p.character?.faction !== faction) return;
-
-    count++;
-
-    const card = document.createElement("div");
-    card.className = "member-card";
-
-    card.innerHTML = `
-      <div>
-        <div class="member-name">${p.nome || "Desconhecido"}</div>
-        <div class="member-info">${p.character?.charName || "-"}</div>
-      </div>
-      <div class="member-info">Lv ${p.info?.level || 1}</div>
-    `;
-
-    list.appendChild(card);
-  });
-
-  const countEl = document.getElementById(`count-${faction}`);
-  if (countEl) countEl.textContent = count;
+.members-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
 }
 
-closeBtn.onclick = () => {
-  modal.style.display = "none";
-  document.getElementById("members-container").innerHTML = "";
-};
+.members-window{
+  width:520px;
+  max-height:80vh;
+  background:#111;
+  border-radius:16px;
+  border:1px solid rgba(255,215,120,0.3);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
 
-load();
+.members-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:#1a1a1a;
+  color:#f6d365;
+  font-family:'Cinzel', serif;
+}
+
+.members-top button{
+  background:none;
+  border:none;
+  color:white;
+  font-size:22px;
+  cursor:pointer;
+}
+
+#members-list{
+  padding:15px;
+  overflow-y:auto;
+}
+
+.member-card{
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  margin-bottom:10px;
+  background:rgba(255,255,255,0.05);
+  border-radius:10px;
+}

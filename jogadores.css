@@ -156,6 +156,8 @@ nav a:hover{
   cursor:pointer;
   transition:0.3s;
   box-shadow:0 8px 20px rgba(0,0,0,0.35);
+
+  overflow:hidden; /* 🔥 garante que nada "vaze" errado */
 }
 
 .card:hover{
@@ -182,17 +184,18 @@ nav a:hover{
 }
 
 /* =========================
-   🔥 NIVEL (AGORA CORRETO NO CARD)
+   🔥 NIVEL FIXO NO CANTO DIREITO DO CARD
 ========================= */
 
 .nivel-badge{
   position:absolute;
-  right:18px;
+
+  right:12px;   /* canto direito REAL do card */
   top:50%;
   transform:translateY(-50%);
 
-  width:60px;
-  height:60px;
+  width:64px;
+  height:64px;
 
   background-image:url('https://res.cloudinary.com/djh45admn/image/upload/v1778336779/nivelglrpg.png');
   background-size:cover;
@@ -208,6 +211,9 @@ nav a:hover{
 
   color:#f6d365;
   text-shadow:0 0 6px rgba(0,0,0,0.9);
+
+  z-index:10; /* 🔥 garante que fica acima de tudo */
+  pointer-events:none;
 }
 
 /* INFO */

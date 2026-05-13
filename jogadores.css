@@ -182,7 +182,7 @@ nav a:hover{
 }
 
 /* NIVEL BADGE (PNG + NÚMERO) */
-.nivel-badge{
+.level-badge{
   position:absolute;
   top:-10px;
   right:-10px;

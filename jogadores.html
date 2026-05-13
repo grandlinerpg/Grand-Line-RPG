@@ -107,25 +107,27 @@
 
     const app = initializeApp(firebaseConfig);
 
-    const db = getDatabase(app);
     const auth = getAuth(app);
 
-    const container = document.getElementById("players-container");
+    function go(page){
+      window.location.href = page;
+    }
 
-    // 🔥 TROCA INÍCIO POR PERFIL SE ESTIVER LOGADO
+    window.go = go;
+
+    const voltarBtn = document.getElementById("voltarBtn");
+
     onAuthStateChanged(auth, (user) => {
-
-      const homeLink = document.getElementById("home-link");
 
       if (user) {
 
-        homeLink.innerText = "PERFIL";
-        homeLink.href = "perfil.html";
+        voltarBtn.textContent = "PERFIL";
+        voltarBtn.href = "perfil.html";
 
       } else {
 
-        homeLink.innerText = "INÍCIO";
-        homeLink.href = "index.html";
+        voltarBtn.textContent = "INÍCIO";
+        voltarBtn.href = "index.html";
 
       }
 

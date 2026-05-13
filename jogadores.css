@@ -148,16 +148,21 @@ nav a:hover{
   display:flex;
   align-items:center;
   gap:20px;
+
   background:rgba(0,0,0,0.45);
+
   border:1px solid rgba(255,215,120,0.2);
   border-radius:18px;
-  padding:18px;
-  backdrop-filter:blur(6px);
-  cursor:pointer;
-  transition:0.3s;
-  box-shadow:0 8px 20px rgba(0,0,0,0.35);
 
-  overflow:hidden; /* 🔥 garante que nada "vaze" errado */
+  padding:18px 95px 18px 18px; /* 🔥 espaço pro level */
+
+  backdrop-filter:blur(6px);
+
+  cursor:pointer;
+
+  transition:0.3s;
+
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
 }
 
 .card:hover{
@@ -167,7 +172,6 @@ nav a:hover{
 
 /* IMAGEM WRAP */
 .img-wrap{
-  position:relative;
   width:90px;
   height:90px;
   min-width:90px;
@@ -184,13 +188,13 @@ nav a:hover{
 }
 
 /* =========================
-   🔥 NIVEL FIXO NO CANTO DIREITO DO CARD
+   🔥 NIVEL NO CANTO DIREITO DO CARD
 ========================= */
 
 .nivel-badge{
   position:absolute;
 
-  right:12px;   /* canto direito REAL do card */
+  right:18px;
   top:50%;
   transform:translateY(-50%);
 
@@ -200,6 +204,7 @@ nav a:hover{
   background-image:url('https://res.cloudinary.com/djh45admn/image/upload/v1778336779/nivelglrpg.png');
   background-size:cover;
   background-position:center;
+  background-repeat:no-repeat;
 
   display:flex;
   align-items:center;
@@ -210,13 +215,17 @@ nav a:hover{
   font-weight:700;
 
   color:#f6d365;
+
   text-shadow:0 0 6px rgba(0,0,0,0.9);
 
-  z-index:10; /* 🔥 garante que fica acima de tudo */
-  pointer-events:none;
+  z-index:999;
 }
 
 /* INFO */
+.info{
+  flex:1;
+}
+
 .info h2{
   font-family:'Cinzel', serif;
   font-size:24px;

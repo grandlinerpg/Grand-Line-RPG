@@ -64,12 +64,12 @@
 
           <div class="stat">
             <span>FORÇA</span>
-            <strong id="force-governo">0</strong>
+            <strong>92.450</strong>
           </div>
 
           <div class="stat">
             <span>ARMAZÉM</span>
-            <strong>0</strong>
+            <strong>95.000</strong>
           </div>
         </div>
 
@@ -101,12 +101,12 @@
 
           <div class="stat">
             <span>FORÇA</span>
-            <strong id="force-revolucionario">0</strong>
+            <strong>71.900</strong>
           </div>
 
           <div class="stat">
             <span>ARMAZÉM</span>
-            <strong>0</strong>
+            <strong>80.000</strong>
           </div>
         </div>
 
@@ -138,7 +138,7 @@
 
           <div class="stat">
             <span>FORÇA</span>
-            <strong id="force-piratas">0</strong>
+            <strong>0</strong>
           </div>
 
           <div class="stat">
@@ -167,14 +167,8 @@
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    import {
-      getDatabase,
-      ref,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuZBfqG4AGTVUQ",
+      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
       projectId: "grand-line-rpg-dcda9",
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
@@ -184,10 +178,10 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
 
-    function go(page) {
+    const auth = getAuth(app);
+
+    function go(page){
       window.location.href = page;
     }
 
@@ -198,70 +192,18 @@
     onAuthStateChanged(auth, (user) => {
 
       if (user) {
+
         voltarBtn.textContent = "PERFIL";
         voltarBtn.href = "perfil.html";
+
       } else {
+
         voltarBtn.textContent = "INÍCIO";
         voltarBtn.href = "index.html";
+
       }
 
     });
-
-    function contarFaccao() {
-
-      const playersRef = ref(db, "players");
-
-      onValue(playersRef, (snapshot) => {
-
-        const data = snapshot.val();
-
-        let governo = 0;
-        let revolucionario = 0;
-        let piratas = 0;
-
-        let forceGoverno = 0;
-        let forceRevolucionario = 0;
-        let forcePiratas = 0;
-
-        if (data) {
-
-          Object.values(data).forEach(user => {
-
-            const faction = user?.character?.faction;
-            const level = Number(user?.info?.level || 0);
-
-            if (faction === "Governo Mundial") {
-              governo++;
-              forceGoverno += level;
-            }
-
-            if (faction === "Exército Revolucionário") {
-              revolucionario++;
-              forceRevolucionario += level;
-            }
-
-            if (faction === "Piratas") {
-              piratas++;
-              forcePiratas += level;
-            }
-
-          });
-
-        }
-
-        document.getElementById("count-governo").textContent = governo;
-        document.getElementById("count-revolucionario").textContent = revolucionario;
-        document.getElementById("count-piratas").textContent = piratas;
-
-        document.getElementById("force-governo").textContent = forceGoverno;
-        document.getElementById("force-revolucionario").textContent = forceRevolucionario;
-        document.getElementById("force-piratas").textContent = forcePiratas;
-
-      });
-
-    }
-
-    contarFaccao();
 
   </script>
 

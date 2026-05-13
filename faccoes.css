@@ -401,8 +401,9 @@ nav a:hover::after{
     height:180px;
   }
 
+  /* 🔥 ALTERAÇÃO AQUI (mantém igual desktop) */
   .stats{
-    grid-template-columns:1fr;
+    grid-template-columns:repeat(3, 1fr);
   }
 
   .buttons{

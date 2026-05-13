@@ -12,14 +12,13 @@
 
 <body>
 
-  <!-- FUNDO -->
   <div class="bg"></div>
   <div class="overlay"></div>
 
-  <!-- HUD (pode evoluir pra turno depois) -->
+  <!-- HUD -->
   <div class="hud">
-    <div>⚔️ Combate</div>
-    <div>HP SYSTEM TEST</div>
+    <div>⚔️ Turno: <span id="turn">1</span></div>
+    <div>⏱️ Tempo: <span id="time">30</span>s</div>
   </div>
 
   <!-- ARENA -->
@@ -29,7 +28,7 @@
     <div class="player">
 
       <div class="avatar">
-        <img src="https://i.imgur.com/8Km9tLL.png" alt="player1">
+        <img src="https://i.imgur.com/8Km9tLL.png">
       </div>
 
       <div class="name">Jogador 1</div>
@@ -40,7 +39,6 @@
 
       <div class="hp-text" id="p1-hp-text">100 / 100</div>
 
-      <!-- CARTAS / AÇÕES -->
       <div class="cards">
         <div class="card" onclick="atacar()">ATACAR</div>
         <div class="card" onclick="defender()">DEFENDER</div>
@@ -56,7 +54,7 @@
     <div class="player">
 
       <div class="avatar">
-        <img src="https://i.imgur.com/3ZQ3Z4H.png" alt="player2">
+        <img src="https://i.imgur.com/3ZQ3Z4H.png">
       </div>
 
       <div class="name">Adversário</div>
@@ -67,7 +65,6 @@
 
       <div class="hp-text" id="p2-hp-text">100 / 100</div>
 
-      <!-- CARTAS (visual apenas por enquanto) -->
       <div class="cards">
         <div class="card">???</div>
         <div class="card">???</div>
@@ -78,7 +75,6 @@
 
   </div>
 
-  <!-- JS -->
   <script src="combate.js"></script>
 
 </body>

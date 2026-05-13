@@ -181,23 +181,21 @@
     }
     window.go = go;
 
-    window.addEventListener("DOMContentLoaded", () => {
+    const voltarBtn = document.getElementById("voltarBtn");
 
-      const voltarBtn = document.getElementById("voltarBtn");
+    onAuthStateChanged(auth, (user) => {
 
-      onAuthStateChanged(auth, (user) => {
+      if (user) {
 
-        if (!voltarBtn) return;
+        voltarBtn.textContent = "PERFIL";
+        voltarBtn.href = "perfil.html";
 
-        if (user) {
-          voltarBtn.textContent = "PERFIL";
-          voltarBtn.href = "perfil.html";
-        } else {
-          voltarBtn.textContent = "INÍCIO";
-          voltarBtn.href = "index.html";
-        }
+      } else {
 
-      });
+        voltarBtn.textContent = "INÍCIO";
+        voltarBtn.href = "index.html";
+
+      }
 
     });
 
@@ -223,10 +221,4 @@
       script.type = "module";
       script.src = "faccoes/membros.js";
 
-      container.appendChild(script);
-    };
-
-  </script>
-
-</body>
-</html>
+      container.appendChild(scri

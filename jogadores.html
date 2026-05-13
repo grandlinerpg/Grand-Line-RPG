@@ -91,6 +91,18 @@
 
     const container = document.getElementById("players-container");
 
+    function buildImage(charName) {
+
+      const personagem = (charName || "default")
+        .toLowerCase()
+        .replaceAll(" ", "-")
+        .replaceAll(".", "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png?v=${Date.now()}`;
+    }
+
     async function loadPlayers() {
 
       const snap = await get(ref(db, "players"));
@@ -107,7 +119,7 @@
         card.classList.add("card");
 
         const nome = player.character?.charName || "Desconhecido";
-        const foto = player.foto || "";
+        const foto = buildImage(player.character?.charName);
         const nivel = player.info?.nivel || 1;
         const exp = player.info?.exp || 0;
         const dinheiro = player.info?.dinheiro || 0;

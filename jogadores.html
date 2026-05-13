@@ -50,7 +50,7 @@
 
       <h2 id="modal-nome"></h2>
 
-      <p id="modal-level"></p>
+      <p id="modal-nivel"></p>
       <p id="modal-exp"></p>
       <p id="modal-dinheiro"></p>
     </div>
@@ -101,11 +101,11 @@
         const card = document.createElement("div");
         card.classList.add("card");
 
-        const nome = player.character?.charName || "Desconhecido";
-        const uidNome = player.nome || "Sem nome";
+        const nome = player.nome || "Desconhecido";
+        const uidNome = player.uid?.nome || "Sem nome";
         const foto = buildImage(nome);
 
-        const level = player.info?.level || 1;
+        const nivel = player.info?.level || 1;
         const exp = player.info?.exp || 0;
         const dinheiro = player.info?.dinheiro || 0;
 
@@ -113,8 +113,8 @@
           <div class="img-wrap">
             <img src="${foto}" class="character-img" alt="${nome}">
 
-            <div class="level-badge">
-              ${level}
+            <div class="nivel-badge">
+              ${nivel}
             </div>
           </div>
 
@@ -124,7 +124,7 @@
           </div>
         `;
 
-        card.onclick = () => openModal(foto, nome, level, exp, dinheiro);
+        card.onclick = () => openModal(foto, nome, nivel, exp, dinheiro);
 
         container.appendChild(card);
       });
@@ -132,11 +132,11 @@
 
     loadPlayers();
 
-    function openModal(img, nome, level, exp, dinheiro) {
+    function openModal(img, nome, nivel, exp, dinheiro) {
       document.getElementById("modal").style.display = "flex";
       document.getElementById("modal-img").src = img;
       document.getElementById("modal-nome").innerText = nome;
-      document.getElementById("modal-level").innerText = "⭐ Nível: " + level;
+      document.getElementById("modal-nivel").innerText = "⭐ Nível: " + nivel;
       document.getElementById("modal-exp").innerText = "⚡ EXP: " + exp;
       document.getElementById("modal-dinheiro").innerText = "💰 Saldo: " + dinheiro;
 

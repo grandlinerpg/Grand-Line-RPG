@@ -47,16 +47,35 @@
   <!-- MODAL -->
   <div id="modal" class="modal">
     <div class="modal-box">
+
       <span class="close" onclick="closeModal()">×</span>
 
       <img id="modal-img" class="modal-img">
 
+      <!-- LEVEL IGUAL DA LISTA -->
+      <div id="modal-nivel" class="modal-level-badge">
+        1
+      </div>
+
       <h2 id="modal-charname"></h2>
 
       <p id="modal-nome"></p>
-      <p id="modal-nivel"></p>
-      <p id="modal-exp"></p>
-      <p id="modal-dinheiro"></p>
+
+      <!-- STATS -->
+      <div class="modal-stats">
+
+        <div class="stat-box">
+          <span>EXP</span>
+          <strong id="modal-exp"></strong>
+        </div>
+
+        <div class="stat-box">
+          <span>SALDO</span>
+          <strong id="modal-dinheiro"></strong>
+        </div>
+
+      </div>
+
     </div>
   </div>
 
@@ -206,10 +225,10 @@
 
       document.getElementById("modal-nivel").innerText = level;
 
-      document.getElementById("modal-exp").innerText = "⚡ EXP: " + exp;
+      document.getElementById("modal-exp").innerText = exp;
 
       document.getElementById("modal-dinheiro").innerText =
-        "💰 Saldo: " + dinheiro;
+        dinheiro + " ฿";
 
       document.body.classList.add("modal-open");
     }

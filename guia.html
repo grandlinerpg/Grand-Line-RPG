@@ -5,26 +5,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Facções - Grand Line RPG</title>
+  <title>Guia - Grand Line RPG</title>
 
-  <link rel="stylesheet" href="faccoes.css">
+  <link rel="stylesheet" href="guia.css">
+
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
+  <!-- FUNDO -->
   <div class="background"></div>
   <div class="overlay"></div>
 
+  <!-- NAVBAR -->
   <header class="navbar">
 
     <div class="logo-area">
+
       <img src="https://i.imgur.com/aBJrsQt.png" class="logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
         <p>— RPG —</p>
       </div>
+
     </div>
 
     <nav>
@@ -36,190 +41,168 @@
 
   </header>
 
+  <!-- TÍTULO -->
   <section class="guide-title">
-    <h1>FACÇÕES DO MUNDO</h1>
-    <p>Escolha seu lado no mundo de Grand Line.</p>
+
+    <h1>GUIA DO RPG</h1>
+
+    <p>Conheça os principais sistemas do Grand Line RPG.</p>
+
   </section>
 
-  <main class="faccao-container">
+  <!-- CONTEÚDO -->
+  <main class="guide-container">
 
-    <!-- GOVERNO -->
-    <div class="faccao-card governo">
-      <div class="faccao-banner">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778450635/Governo_Mundial.IMAGEM.093555_tgzieg.jpg">
-      </div>
+    <!-- 1 MANUAL -->
+    <div class="guide-card">
 
-      <div class="faccao-content">
-        <h2>Governo Mundial</h2>
+      <h2>Sistema de Combate</h2>
 
-        <p class="descricao">
-          A maior autoridade dos mares. Controla leis, reinos e mantém a ordem mundial.
-        </p>
+      <div class="card-emoji">📖</div>
 
-        <div class="stats">
-          <div class="stat">
-            <span>MEMBROS</span>
-            <strong id="count-governo">0</strong>
-          </div>
+      <p>
+        Aprenda como funcionam os combates, regras básicas e ações do sistema.
+      </p>
 
-          <div class="stat">
-            <span>FORÇA</span>
-            <strong>92.450</strong>
-          </div>
+      <button onclick="go('guia/sistema-combate.html')">
+        VER SISTEMA
+      </button>
 
-          <div class="stat">
-            <span>ARMAZÉM</span>
-            <strong>95.000</strong>
-          </div>
-        </div>
-
-        <div class="buttons">
-          <button onclick="go('faccoes/governo.html')">ENTRAR</button>
-          <button class="secondary" onclick="openMembers('governo')">VER MEMBROS</button>
-        </div>
-      </div>
     </div>
 
-    <!-- REVOLUCIONÁRIOS -->
-    <div class="faccao-card revolucionario">
-      <div class="faccao-banner">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778450634/Ex%C3%A9rcito_Revolucion%C3%A1rio.IMAGEM.093650_owlnwb.jpg">
-      </div>
+    <!-- 2 ESTILO -->
+    <div class="guide-card">
 
-      <div class="faccao-content">
-        <h2>Exército Revolucionário</h2>
+      <h2>Estilo de Luta</h2>
 
-        <p class="descricao">
-          Rebeldes que lutam contra o Governo Mundial pela liberdade dos povos.
-        </p>
+      <div class="card-emoji">⚔️</div>
 
-        <div class="stats">
-          <div class="stat">
-            <span>MEMBROS</span>
-            <strong id="count-revolucionario">0</strong>
-          </div>
+      <p>
+        Um estilo de luta define a forma como o personagem combate.
+      </p>
 
-          <div class="stat">
-            <span>FORÇA</span>
-            <strong>71.900</strong>
-          </div>
+      <button onclick="go('guia/estilo-luta.html')">
+        VER SISTEMA
+      </button>
 
-        <div class="buttons">
-          <button onclick="go('faccoes/revolucionario.html')">ENTRAR</button>
-          <button class="secondary" onclick="openMembers('revolucionario')">VER MEMBROS</button>
-        </div>
-      </div>
     </div>
 
-    <!-- PIRATAS -->
-    <div class="faccao-card piratas">
-      <div class="faccao-banner">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778450634/CHAP%C3%89US_DE_PALHA.IMAGEM.161956_qitqkk.jpg">
-      </div>
+    <!-- 3 RAÇAS -->
+    <div class="guide-card">
 
-      <div class="faccao-content">
-        <h2>Piratas</h2>
+      <h2>Raças e Tribos</h2>
 
-        <p class="descricao">
-          Exploradores dos mares em busca de liberdade, riqueza e o One Piece.
-        </p>
+      <div class="card-emoji">🧬</div>
 
-        <div class="stats">
-          <div class="stat">
-            <span>MEMBROS</span>
-            <strong id="count-piratas">0</strong>
-          </div>
+      <p>
+        O mundo possui diferentes raças e tribos com características únicas.
+      </p>
 
-          <div class="stat">
-            <span>FORÇA</span>
-            <strong>134.200</strong>
-          </div>
+      <button onclick="go('guia/racas.html')">
+        VER SISTEMA
+      </button>
 
-          <div class="stat">
-            <span>ARMAZÉM</span>
-            <strong>90.000</strong>
-          </div>
-        </div>
+    </div>
 
-        <div class="buttons">
-          <button onclick="go('faccoes/piratas.html')">ENTRAR</button>
-          <button class="secondary" onclick="openMembers('piratas')">VER BANDOS</button>
-        </div>
-      </div>
+    <!-- 4 AKUMA -->
+    <div class="guide-card">
+
+      <h2>Akuma no Mi</h2>
+
+      <div class="card-emoji">🍎</div>
+
+      <p>
+        Frutas do diabo concedem poderes únicos ao usuário.
+      </p>
+
+      <button onclick="go('guia/akuma-no-mi.html')">
+        VER SISTEMA
+      </button>
+
+    </div>
+
+    <!-- 5 BAÚS -->
+    <div class="guide-card">
+
+      <h2>Baús do Tesouro</h2>
+
+      <div class="card-emoji">🪙</div>
+
+      <p>
+        Encontre baús escondidos pelo mundo e obtenha recompensas raras.
+      </p>
+
+      <button onclick="go('guia/baus.html')">
+        VER SISTEMA
+      </button>
+
+    </div>
+
+    <!-- 6 EFEITOS -->
+    <div class="guide-card">
+
+      <h2>Efeitos</h2>
+
+      <div class="card-emoji">💥</div>
+
+      <p>
+        Status como burn, stun e bleed que alteram batalhas.
+      </p>
+
+      <button onclick="go('guia/efeitos.html')">
+        VER SISTEMA
+      </button>
+
     </div>
 
   </main>
 
-  <div id="members-container"></div>
-
-  <!-- FIREBASE + LOGIN FIX -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
+      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com",
       projectId: "grand-line-rpg-dcda9",
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
       messagingSenderId: "172042779786",
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173"
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
     };
 
     const app = initializeApp(firebaseConfig);
+
     const auth = getAuth(app);
 
-    function go(page) {
+    function go(page){
       window.location.href = page;
     }
+
     window.go = go;
 
-    window.addEventListener("DOMContentLoaded", () => {
+    const voltarBtn = document.getElementById("voltarBtn");
 
-      const voltarBtn = document.getElementById("voltarBtn");
+    onAuthStateChanged(auth, (user) => {
 
-      onAuthStateChanged(auth, (user) => {
+      if (user) {
 
-        if (!voltarBtn) return;
+        voltarBtn.textContent = "PERFIL";
+        voltarBtn.href = "perfil.html";
 
-        if (user) {
-          voltarBtn.textContent = "PERFIL";
-          voltarBtn.href = "perfil.html";
-        } else {
-          voltarBtn.textContent = "INÍCIO";
-          voltarBtn.href = "index.html";
-        }
+      } else {
 
-      });
+        voltarBtn.textContent = "INÍCIO";
+        voltarBtn.href = "index.html";
 
-    });
-
-    window.openMembers = async function (faction) {
-
-      const container = document.getElementById("members-container");
-
-      const html = await fetch("faccoes/membros.html").then(r => r.text());
-
-      container.innerHTML = html;
-
-      if (!document.getElementById("members-css")) {
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = "faccoes/membros.css";
-        link.id = "members-css";
-        document.head.appendChild(link);
       }
 
-      window.currentFaction = faction;
-
-      const script = document.createElement("script");
-      script.type = "module";
-      script.src = "faccoes/membros.js";
-
-      container.appendChild(script);
-    };
+    });
 
   </script>
 

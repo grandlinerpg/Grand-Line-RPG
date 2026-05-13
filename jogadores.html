@@ -106,7 +106,7 @@
         const card = document.createElement("div");
         card.classList.add("card");
 
-        const nome = player.nome || "Desconhecido";
+        const nome = player.character?.charName || "Desconhecido";
         const foto = player.foto || "";
         const nivel = player.info?.nivel || 1;
         const exp = player.info?.exp || 0;
@@ -128,7 +128,6 @@
 
     loadPlayers();
 
-    // MODAL
     function openModal(img, nome, nivel, exp, dinheiro) {
 
       document.getElementById("modal").style.display = "flex";

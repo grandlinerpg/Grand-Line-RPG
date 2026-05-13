@@ -12,67 +12,73 @@
 
 <body>
 
-  <div class="battle-screen">
+  <!-- FUNDO -->
+  <div class="bg"></div>
+  <div class="overlay"></div>
 
-    <!-- HUD -->
-    <div class="hud">
-      <div class="turn-info">
-        Turno: <span id="turn">1</span>
+  <!-- HUD (pode evoluir pra turno depois) -->
+  <div class="hud">
+    <div>⚔️ Combate</div>
+    <div>HP SYSTEM TEST</div>
+  </div>
+
+  <!-- ARENA -->
+  <div class="arena">
+
+    <!-- PLAYER 1 -->
+    <div class="player">
+
+      <div class="avatar">
+        <img src="https://i.imgur.com/8Km9tLL.png" alt="player1">
       </div>
 
-      <div class="timer">
-        Tempo: <span id="time">30</span>s
+      <div class="name">Jogador 1</div>
+
+      <div class="hp-bar">
+        <div class="hp-fill" id="p1-hp"></div>
       </div>
+
+      <div class="hp-text" id="p1-hp-text">100 / 100</div>
+
+      <!-- CARTAS / AÇÕES -->
+      <div class="cards">
+        <div class="card" onclick="atacar()">ATACAR</div>
+        <div class="card" onclick="defender()">DEFENDER</div>
+        <div class="card" onclick="skill()">SKILL</div>
+      </div>
+
     </div>
 
-    <!-- ARENA DESKTOP -->
-    <div class="arena">
+    <!-- VS -->
+    <div class="vs">VS</div>
 
-      <!-- PLAYER 1 -->
-      <div class="player player-1">
+    <!-- PLAYER 2 -->
+    <div class="player">
 
-        <div class="player-info">
-          <h2>Jogador 1</h2>
-          <div class="hp-bar">
-            <div class="hp-fill" id="hp1"></div>
-          </div>
-        </div>
-
-        <div class="cards" id="cards-p1">
-          <div class="card">Carta 1</div>
-          <div class="card">Carta 2</div>
-          <div class="card">Carta 3</div>
-        </div>
-
+      <div class="avatar">
+        <img src="https://i.imgur.com/3ZQ3Z4H.png" alt="player2">
       </div>
 
-      <!-- VS -->
-      <div class="vs">
-        VS
+      <div class="name">Adversário</div>
+
+      <div class="hp-bar">
+        <div class="hp-fill" id="p2-hp"></div>
       </div>
 
-      <!-- PLAYER 2 -->
-      <div class="player player-2">
+      <div class="hp-text" id="p2-hp-text">100 / 100</div>
 
-        <div class="player-info">
-          <h2>Adversário</h2>
-          <div class="hp-bar">
-            <div class="hp-fill" id="hp2"></div>
-          </div>
-        </div>
-
-        <div class="cards" id="cards-p2">
-          <div class="card">Carta A</div>
-          <div class="card">Carta B</div>
-          <div class="card">Carta C</div>
-        </div>
-
+      <!-- CARTAS (visual apenas por enquanto) -->
+      <div class="cards">
+        <div class="card">???</div>
+        <div class="card">???</div>
+        <div class="card">???</div>
       </div>
 
     </div>
 
   </div>
 
+  <!-- JS -->
   <script src="combate.js"></script>
 
 </body>

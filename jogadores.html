@@ -97,7 +97,15 @@
       const data = snap.val();
       container.innerHTML = "";
 
-      Object.values(data).forEach(player => {
+      // 🔥 ORDENA PELO MAIOR EXP
+      const playersArray = Object.values(data).sort((a, b) => {
+        const expA = a.info?.exp || 0;
+        const expB = b.info?.exp || 0;
+
+        return expB - expA;
+      });
+
+      playersArray.forEach(player => {
 
         const card = document.createElement("div");
         card.classList.add("card");
@@ -111,17 +119,15 @@
         const dinheiro = player.info?.dinheiro || 0;
 
         card.innerHTML = `
-          <div class="img-wrap">
-            <img src="${foto}" class="character-img" alt="${charName}">
-
-            <div class="nivel-badge">
-              ${level}
-            </div>
-          </div>
+          <img src="${foto}" class="character-img" alt="${charName}">
 
           <div class="info">
             <h2>${charName}</h2>
             <p class="player-name">${playerName}</p>
+          </div>
+
+          <div class="nivel-badge">
+            ${level}
           </div>
         `;
 
@@ -140,7 +146,7 @@
       document.getElementById("modal-charname").innerText = charName;
       document.getElementById("modal-nome").innerText = playerName;
 
-      document.getElementById("modal-nivel").innerText = "⭐ Nível: " + level;
+      document.getElementById("modal-nivel").innerText = level;
       document.getElementById("modal-exp").innerText = "⚡ EXP: " + exp;
       document.getElementById("modal-dinheiro").innerText = "💰 Saldo: " + dinheiro;
 

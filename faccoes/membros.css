@@ -1,7 +1,7 @@
 .members-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(6px);
   display: none;
   justify-content: center;
@@ -9,25 +9,23 @@
   z-index: 9999;
 }
 
-/* JANELA PRINCIPAL */
+/* JANELA */
 .members-window {
   width: 650px;
   max-height: 80vh;
-  background: linear-gradient(180deg, #121212, #0b0b0b);
-  border: 1px solid rgba(255, 215, 0, 0.6);
+  background: linear-gradient(180deg, #111, #0a0a0a);
+  border: 1px solid gold;
   border-radius: 14px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-
   box-shadow: 0 0 25px rgba(255, 215, 0, 0.15);
-  animation: popIn 0.25s ease;
+  animation: popIn 0.2s ease;
 }
 
-/* ANIMAÇÃO DE ENTRADA */
 @keyframes popIn {
   from {
-    transform: scale(0.92);
+    transform: scale(0.9);
     opacity: 0;
   }
   to {
@@ -41,22 +39,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 18px;
-
+  padding: 14px 16px;
   background: rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(255, 215, 0, 0.15);
 }
 
 .members-top h1 {
   font-size: 16px;
-  letter-spacing: 3px;
-  font-weight: 600;
+  letter-spacing: 2px;
   color: gold;
 }
 
-/* BOTÃO FECHAR */
+/* FECHAR */
 .close-members {
-  background: transparent;
+  background: none;
   border: none;
   color: white;
   font-size: 22px;
@@ -76,12 +72,9 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-
-  scrollbar-width: thin;
-  scrollbar-color: gold transparent;
 }
 
-/* SCROLL (Chrome) */
+/* SCROLL */
 .members-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -96,31 +89,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  padding: 12px 14px;
+  padding: 12px;
   border-radius: 10px;
-
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-
-  transition: 0.2s ease;
+  transition: 0.2s;
 }
 
 .member-card:hover {
   border-color: gold;
   transform: translateY(-2px);
-  background: rgba(255, 215, 0, 0.05);
 }
 
-/* TEXTO */
 .member-name {
   font-weight: 600;
   color: white;
-  font-size: 14px;
 }
 
 .member-info {
   font-size: 12px;
   opacity: 0.7;
-  color: #ddd;
 }

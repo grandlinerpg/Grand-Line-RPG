@@ -165,10 +165,11 @@
 
   </main>
 
-  <!-- CONTAINER DO MODAL (IMPORTANTE) -->
+  <!-- MODAL CONTAINER -->
   <div id="members-container"></div>
 
   <script type="module">
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getAuth,
@@ -193,7 +194,7 @@
     }
     window.go = go;
 
-    // LOGIN BUTTON CORRIGIDO
+    // LOGIN
     const voltarBtn = document.getElementById("voltarBtn");
 
     onAuthStateChanged(auth, (user) => {
@@ -206,7 +207,7 @@
       }
     });
 
-    // MODAL
+    // MODAL (CORRIGIDO)
     window.openMembers = async function (faction) {
 
       const container = document.getElementById("members-container");
@@ -216,13 +217,20 @@
 
       container.innerHTML = html;
 
+      // evita duplicar script
+      const oldScript = document.getElementById("members-script");
+      if (oldScript) oldScript.remove();
+
       const script = document.createElement("script");
       script.type = "module";
       script.src = "faccoes/membros.js";
+      script.id = "members-script";
+
       container.appendChild(script);
 
       window.currentFaction = faction;
     };
+
   </script>
 
 </body>

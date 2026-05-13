@@ -1,0 +1,141 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Cinzel', serif;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: black;
+  color: white;
+}
+
+/* FUNDO */
+.bg {
+  position: fixed;
+  inset: 0;
+  background: url("https://i.imgur.com/pKx1Cvd.png") center/cover no-repeat;
+  filter: brightness(0.4);
+  z-index: -2;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0,0,0,0.2), rgba(0,0,0,0.9));
+  z-index: -1;
+}
+
+/* ARENA */
+.arena {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 40px;
+}
+
+/* PLAYER */
+.player {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  text-align: center;
+}
+
+.avatar {
+  width: 180px;
+  height: 180px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid #f6d365;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f6d365;
+}
+
+/* HP */
+.hp-bar {
+  width: 70%;
+  height: 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hp-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #ff3b3b, #ffb300);
+  transition: 0.3s;
+}
+
+.hp-text {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* VS */
+.vs {
+  font-size: 40px;
+  font-weight: bold;
+  color: #f6d365;
+}
+
+/* AÇÕES */
+.actions {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+}
+
+.actions button {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid #f6d365;
+  background: linear-gradient(to bottom, #8f1408, #5e0800);
+  color: #f6d365;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.actions button:hover {
+  transform: scale(1.05);
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+  .arena {
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .vs {
+    font-size: 30px;
+  }
+
+  .avatar {
+    width: 140px;
+    height: 140px;
+  }
+}

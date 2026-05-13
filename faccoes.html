@@ -69,7 +69,7 @@
 
           <div class="stat">
             <span>ARMAZÉM</span>
-            <strong>0</strong>
+            <strong>95.000</strong>
           </div>
         </div>
 
@@ -106,7 +106,7 @@
 
           <div class="stat">
             <span>ARMAZÉM</span>
-            <strong>0</strong>
+            <strong>80.000</strong>
           </div>
         </div>
 
@@ -167,8 +167,14 @@
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuZBfqG4AGTVUQ",
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
       projectId: "grand-line-rpg-dcda9",
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
@@ -180,6 +186,7 @@
     const app = initializeApp(firebaseConfig);
 
     const auth = getAuth(app);
+    const db = getDatabase(app);
 
     function go(page){
       window.location.href = page;
@@ -192,23 +199,21 @@
     onAuthStateChanged(auth, (user) => {
 
       if (user) {
-
         voltarBtn.textContent = "PERFIL";
         voltarBtn.href = "perfil.html";
-
       } else {
-
         voltarBtn.textContent = "INÍCIO";
         voltarBtn.href = "index.html";
-
       }
 
     });
 
     function contarFaccao() {
+
       const playersRef = ref(db, "players");
 
       onValue(playersRef, (snapshot) => {
+
         const data = snapshot.val();
 
         let governo = 0;
@@ -220,6 +225,7 @@
         let forcaPiratas = 0;
 
         if (data) {
+
           Object.values(data).forEach(user => {
 
             const faction = user?.character?.faction;
@@ -241,6 +247,7 @@
             }
 
           });
+
         }
 
         document.getElementById("count-governo").textContent = governo;
@@ -252,6 +259,7 @@
         document.getElementById("forca-piratas").textContent = forcaPiratas;
 
       });
+
     }
 
     contarFaccao();

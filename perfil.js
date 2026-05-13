@@ -116,10 +116,11 @@ async function startAuth() {
       // INFO / LEVEL / EXP
       // ======================
       const level = data.info?.level || 1;
-      const exp = data.info?.exp || 0;
+      const exptotal = data.info?.exp || 0;
+      const exp = exptotal % 1000;
       const saldo = data.info?.saldo || 0;
 
-      const expMax = level * 1000;
+      const expMax = 1000;
 
       document.getElementById("level").innerText = level;
       document.getElementById("exp").innerText = exp;

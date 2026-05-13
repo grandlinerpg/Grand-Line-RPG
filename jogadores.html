@@ -28,7 +28,7 @@
     </div>
 
     <nav>
-      <a href="index.html">INÍCIO</a>
+      <a id="home-link" href="index.html">INÍCIO</a>
       <a href="faccoes.html">FACCÕES</a>
       <a href="jogadores.html">JOGADORES</a>
       <a href="mapa.html">MAPA</a>
@@ -64,7 +64,17 @@
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    import {
+      getDatabase,
+      ref,
+      get
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
@@ -77,11 +87,33 @@
     };
 
     const app = initializeApp(firebaseConfig);
+
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
     const container = document.getElementById("players-container");
 
+    // 🔥 TROCA INÍCIO POR PERFIL SE ESTIVER LOGADO
+    onAuthStateChanged(auth, (user) => {
+
+      const homeLink = document.getElementById("home-link");
+
+      if (user) {
+
+        homeLink.innerText = "PERFIL";
+        homeLink.href = "perfil.html";
+
+      } else {
+
+        homeLink.innerText = "INÍCIO";
+        homeLink.href = "index.html";
+
+      }
+
+    });
+
     function buildImage(charName) {
+
       const personagem = (charName || "default")
         .toLowerCase()
         .replaceAll(" ", "-")
@@ -95,9 +127,11 @@
     async function loadPlayers() {
 
       const snap = await get(ref(db, "players"));
+
       if (!snap.exists()) return;
 
       const data = snap.val();
+
       container.innerHTML = "";
 
       // 🔥 ORDENA PELO MAIOR EXP
@@ -108,10 +142,12 @@
       playersOrdenados.forEach(player => {
 
         const card = document.createElement("div");
+
         card.classList.add("card");
 
         const charName = player.character?.charName || "Desconhecido";
         const playerName = player.nome || "Sem nome";
+
         const foto = buildImage(charName);
 
         const level = player.info?.level || 1;
@@ -133,39 +169,72 @@
           </div>
         `;
 
-        card.onclick = () => openModal(foto, charName, playerName, level, exp, dinheiro);
+        card.onclick = () =>
+          openModal(
+            foto,
+            charName,
+            playerName,
+            level,
+            exp,
+            dinheiro
+          );
 
         container.appendChild(card);
+
       });
+
     }
 
     loadPlayers();
 
-    function openModal(img, charName, playerName, level, exp, dinheiro) {
+    function openModal(
+      img,
+      charName,
+      playerName,
+      level,
+      exp,
+      dinheiro
+    ) {
+
       document.getElementById("modal").style.display = "flex";
+
       document.getElementById("modal-img").src = img;
 
       document.getElementById("modal-charname").innerText = charName;
+
       document.getElementById("modal-nome").innerText = playerName;
 
       document.getElementById("modal-nivel").innerText = level;
+
       document.getElementById("modal-exp").innerText = "⚡ EXP: " + exp;
-      document.getElementById("modal-dinheiro").innerText = "💰 Saldo: " + dinheiro;
+
+      document.getElementById("modal-dinheiro").innerText =
+        "💰 Saldo: " + dinheiro;
 
       document.body.classList.add("modal-open");
     }
 
     function closeModal() {
+
       document.getElementById("modal").style.display = "none";
+
       document.body.classList.remove("modal-open");
+
     }
 
     window.openModal = openModal;
     window.closeModal = closeModal;
 
     window.onclick = function (event) {
+
       const modal = document.getElementById("modal");
-      if (event.target === modal) closeModal();
+
+      if (event.target === modal) {
+
+        closeModal();
+
+      }
+
     };
 
   </script>

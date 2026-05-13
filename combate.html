@@ -7,75 +7,222 @@
 
   <title>Combate - Grand Line RPG</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="combate.css">
 </head>
 
 <body>
 
+  <!-- FUNDO -->
   <div class="bg"></div>
   <div class="overlay"></div>
 
-  <!-- HUD -->
-  <div class="hud">
-    <div>⚔️ Turno: <span id="turn">1</span></div>
-    <div>⏱️ Tempo: <span id="time">30</span>s</div>
-  </div>
+  <!-- HUD SUPERIOR -->
+  <header class="top-hud">
 
-  <!-- ARENA -->
-  <div class="arena">
+    <!-- INIMIGO -->
+    <div class="fighter enemy">
 
-    <!-- PLAYER 1 -->
-    <div class="player">
-
-      <div class="avatar">
+      <div class="fighter-avatar">
         <img src="https://i.imgur.com/8Km9tLL.png">
       </div>
 
-      <div class="name">Jogador 1</div>
+      <div class="fighter-info">
 
-      <div class="hp-bar">
-        <div class="hp-fill" id="p1-hp"></div>
-      </div>
+        <div class="fighter-name enemy-name">
+          ☠ ADVERSÁRIO
+        </div>
 
-      <div class="hp-text" id="p1-hp-text">100 / 100</div>
+        <div class="fighter-hp-text">
+          100 / 100
+        </div>
 
-      <div class="cards">
-        <div class="card" onclick="atacar()">ATACAR</div>
-        <div class="card" onclick="defender()">DEFENDER</div>
-        <div class="card" onclick="skill()">SKILL</div>
+        <div class="fighter-hp">
+          <div class="hp-fill enemy-fill"></div>
+        </div>
+
       </div>
 
     </div>
 
-    <!-- VS -->
-    <div class="vs">VS</div>
+    <!-- CENTRO -->
+    <div class="battle-info">
 
-    <!-- PLAYER 2 -->
-    <div class="player">
+      <div class="battle-box">
+        ⏳ TURNO: 1
+      </div>
 
-      <div class="avatar">
+      <div class="battle-box">
+        🕒 TEMPO: 30s
+      </div>
+
+      <div class="battle-box active-turn">
+        VEZ DO JOGADOR 1
+      </div>
+
+    </div>
+
+    <!-- BOTÃO -->
+    <button class="end-turn">
+      ENCERRAR TURNO
+    </button>
+
+  </header>
+
+  <!-- CAMPO -->
+  <main class="battlefield">
+
+    <!-- CARTAS INIMIGO -->
+    <section class="enemy-field">
+
+      <div class="card-slot"></div>
+
+      <div class="battle-card attack">
+        <div class="card-cost">2</div>
+
+        <img src="https://i.imgur.com/8Km9tLL.png">
+
+        <div class="card-content">
+          <h3>CORTE DEMÔNIO</h3>
+          <p>Causa dano massivo.</p>
+        </div>
+      </div>
+
+      <div class="battle-card defense">
+        <div class="card-cost">1</div>
+
+        <img src="https://i.imgur.com/8Km9tLL.png">
+
+        <div class="card-content">
+          <h3>PAREDE DE AÇO</h3>
+          <p>Reduz dano recebido.</p>
+        </div>
+      </div>
+
+      <div class="battle-card support">
+        <div class="card-cost">1</div>
+
+        <img src="https://i.imgur.com/3ZQ3Z4H.png">
+
+        <div class="card-content">
+          <h3>RESPIRO</h3>
+          <p>Recupera energia.</p>
+        </div>
+      </div>
+
+      <div class="card-slot"></div>
+
+    </section>
+
+    <!-- CENTRO -->
+    <div class="battle-center">
+
+      <div class="center-line"></div>
+
+      <div class="vs-icon">
+        ⚔
+      </div>
+
+    </div>
+
+    <!-- PLAYER -->
+    <section class="player-field">
+
+      <div class="card-slot"></div>
+
+      <div class="battle-card attack">
+        <div class="card-cost">3</div>
+
+        <img src="https://i.imgur.com/3ZQ3Z4H.png">
+
+        <div class="card-content">
+          <h3>GOMU GOMU</h3>
+          <p>Causa dano pesado.</p>
+        </div>
+      </div>
+
+      <div class="battle-card defense">
+        <div class="card-cost">1</div>
+
+        <img src="https://i.imgur.com/3ZQ3Z4H.png">
+
+        <div class="card-content">
+          <h3>DEFESA</h3>
+          <p>Bloqueia ataques.</p>
+        </div>
+      </div>
+
+      <div class="battle-card support">
+        <div class="card-cost">1</div>
+
+        <img src="https://i.imgur.com/3ZQ3Z4H.png">
+
+        <div class="card-content">
+          <h3>HAKI</h3>
+          <p>Aumenta ataque.</p>
+        </div>
+      </div>
+
+      <div class="card-slot"></div>
+
+    </section>
+
+  </main>
+
+  <!-- HUD INFERIOR -->
+  <footer class="bottom-ui">
+
+    <!-- PLAYER -->
+    <div class="player-panel">
+
+      <div class="fighter-avatar">
         <img src="https://i.imgur.com/3ZQ3Z4H.png">
       </div>
 
-      <div class="name">Adversário</div>
+      <div class="fighter-info">
 
-      <div class="hp-bar">
-        <div class="hp-fill" id="p2-hp"></div>
-      </div>
+        <div class="fighter-name player-name">
+          ☠ JOGADOR 1
+        </div>
 
-      <div class="hp-text" id="p2-hp-text">100 / 100</div>
+        <div class="fighter-hp-text">
+          100 / 100
+        </div>
 
-      <div class="cards">
-        <div class="card">???</div>
-        <div class="card">???</div>
-        <div class="card">???</div>
+        <div class="fighter-hp">
+          <div class="hp-fill player-fill"></div>
+        </div>
+
       </div>
 
     </div>
 
-  </div>
+    <!-- BOTÕES -->
+    <div class="action-buttons">
 
-  <script src="combate.js"></script>
+      <button class="action-btn attack-btn">
+        ⚔ ATAQUE
+      </button>
+
+      <button class="action-btn defense-btn">
+        🛡 DEFESA
+      </button>
+
+      <button class="action-btn support-btn">
+        ✦ SUPLEMENTAR
+      </button>
+
+    </div>
+
+    <!-- TEXTO -->
+    <div class="battle-message">
+      Escolha uma categoria para visualizar suas cartas.
+    </div>
+
+  </footer>
 
 </body>
+
 </html>

@@ -285,13 +285,10 @@ body.modal-open{
 
 /* LEVEL MODAL */
 .modal-level-badge{
-  position:absolute;
-
-  top:105px;
-  right:95px;
-
   width:64px;
   height:64px;
+
+  margin:8px auto 14px;
 
   background-image:url('https://res.cloudinary.com/djh45admn/image/upload/v1778336779/nivelglrpg.png');
   background-size:cover;
@@ -309,8 +306,6 @@ body.modal-open{
   color:#f6d365;
 
   text-shadow:0 0 6px rgba(0,0,0,0.9);
-
-  z-index:20;
 }
 
 /* TITULO MODAL */

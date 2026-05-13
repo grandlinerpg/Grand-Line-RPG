@@ -184,14 +184,19 @@
 
     const voltarBtn = document.getElementById("voltarBtn");
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        voltarBtn.textContent = "PERFIL";
-        voltarBtn.href = "perfil.html";
-      } else {
-        voltarBtn.textContent = "INÍCIO";
-        voltarBtn.href = "index.html";
-      }
+    // 🔧 CORREÇÃO: garante que o DOM esteja pronto antes de alterar o botão
+    window.addEventListener("DOMContentLoaded", () => {
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          voltarBtn.textContent = "PERFIL";
+          voltarBtn.href = "perfil.html";
+        } else {
+          voltarBtn.textContent = "INÍCIO";
+          voltarBtn.href = "index.html";
+        }
+      });
+
     });
 
     window.openMembers = async function (faction) {
@@ -202,7 +207,6 @@
 
       container.innerHTML = html;
 
-      // CSS do modal
       if (!document.getElementById("members-css")) {
         const link = document.createElement("link");
         link.rel = "stylesheet";

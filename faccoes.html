@@ -13,11 +13,9 @@
 
 <body>
 
-  <!-- FUNDO -->
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -38,13 +36,11 @@
 
   </header>
 
-  <!-- TÍTULO -->
   <section class="guide-title">
     <h1>FACÇÕES DO MUNDO</h1>
     <p>Escolha seu lado no mundo de Grand Line.</p>
   </section>
 
-  <!-- FACÇÕES -->
   <main class="faccao-container">
 
     <!-- GOVERNO -->
@@ -65,7 +61,7 @@
         <div class="stats">
           <div class="stat">
             <span>MEMBROS</span>
-            <strong>24</strong>
+            <strong id="count-governo">0</strong>
           </div>
 
           <div class="stat">
@@ -80,13 +76,8 @@
         </div>
 
         <div class="buttons">
-
           <button onclick="go('faccoes/governo.html')">ENTRAR</button>
-
-          <button class="secondary" onclick="openMembers('governo')">
-            VER MEMBROS
-          </button>
-
+          <button class="secondary" onclick="openMembers('governo')">VER MEMBROS</button>
         </div>
 
       </div>
@@ -110,7 +101,7 @@
         <div class="stats">
           <div class="stat">
             <span>MEMBROS</span>
-            <strong>17</strong>
+            <strong id="count-revolucionario">0</strong>
           </div>
 
           <div class="stat">
@@ -125,13 +116,8 @@
         </div>
 
         <div class="buttons">
-
           <button onclick="go('faccoes/revolucionario.html')">ENTRAR</button>
-
-          <button class="secondary" onclick="openMembers('revolucionario')">
-            VER MEMBROS
-          </button>
-
+          <button class="secondary" onclick="openMembers('revolucionario')">VER MEMBROS</button>
         </div>
 
       </div>
@@ -155,7 +141,7 @@
         <div class="stats">
           <div class="stat">
             <span>MEMBROS</span>
-            <strong>53</strong>
+            <strong id="count-piratas">0</strong>
           </div>
 
           <div class="stat">
@@ -170,13 +156,8 @@
         </div>
 
         <div class="buttons">
-
           <button onclick="go('faccoes/piratas.html')">ENTRAR</button>
-
-          <button class="secondary" onclick="openMembers('piratas')">
-            VER BANDOS
-          </button>
-
+          <button class="secondary" onclick="openMembers('piratas')">VER BANDOS</button>
         </div>
 
       </div>
@@ -184,8 +165,10 @@
 
   </main>
 
-  <script type="module">
+  <!-- CONTAINER DO MODAL (IMPORTANTE) -->
+  <div id="members-container"></div>
 
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
       getAuth,
@@ -197,9 +180,9 @@
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
       projectId: "grand-line-rpg-dcda9",
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com",
       messagingSenderId: "172042779786",
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -208,53 +191,12 @@
     function go(page) {
       window.location.href = page;
     }
-
     window.go = go;
 
-    // ======================
-    // MODAL MEMBROS
-    // ======================
-    async function openMembers(faccao) {
-
-      const old = document.getElementById("members-container");
-      if (old) old.remove();
-
-      const res = await fetch("faccoes/membros.html");
-      const html = await res.text();
-
-      const container = document.createElement("div");
-      container.id = "members-container";
-      container.innerHTML = html;
-
-      document.body.appendChild(container);
-
-      const closeBtn = container.querySelector(".close-members");
-      if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
-          container.remove();
-        });
-      }
-
-      window.currentFaction = faccao;
-
-      if (!document.getElementById("members-script")) {
-        const script = document.createElement("script");
-        script.src = "faccoes/membros.js";
-        script.type = "module";
-        script.id = "members-script";
-        document.body.appendChild(script);
-      }
-    }
-
-    window.openMembers = openMembers;
-
-    // ======================
-    // LOGIN CHECK
-    // ======================
+    // LOGIN BUTTON CORRIGIDO
     const voltarBtn = document.getElementById("voltarBtn");
 
     onAuthStateChanged(auth, (user) => {
-
       if (user) {
         voltarBtn.textContent = "PERFIL";
         voltarBtn.href = "perfil.html";
@@ -262,9 +204,25 @@
         voltarBtn.textContent = "INÍCIO";
         voltarBtn.href = "index.html";
       }
-
     });
 
+    // MODAL
+    window.openMembers = async function (faction) {
+
+      const container = document.getElementById("members-container");
+
+      const res = await fetch("faccoes/membros.html");
+      const html = await res.text();
+
+      container.innerHTML = html;
+
+      const script = document.createElement("script");
+      script.type = "module";
+      script.src = "faccoes/membros.js";
+      container.appendChild(script);
+
+      window.currentFaction = faction;
+    };
   </script>
 
 </body>

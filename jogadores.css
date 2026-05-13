@@ -154,7 +154,7 @@ nav a:hover{
   border:1px solid rgba(255,215,120,0.2);
   border-radius:18px;
 
-  padding:18px 95px 18px 18px; /* 🔥 espaço pro level */
+  padding:18px 95px 18px 18px;
 
   backdrop-filter:blur(6px);
 
@@ -187,10 +187,7 @@ nav a:hover{
   box-shadow:0 0 12px rgba(255,215,120,0.25);
 }
 
-/* =========================
-   🔥 NIVEL NO CANTO DIREITO DO CARD
-========================= */
-
+/* NIVEL */
 .nivel-badge{
   position:absolute;
 
@@ -234,7 +231,7 @@ nav a:hover{
   text-shadow:2px 2px 4px rgba(0,0,0,0.8);
 }
 
-/* UID ABAIXO DO NOME */
+/* UID */
 .uid-name{
   font-size:14px;
   color:#bbb;
@@ -276,6 +273,7 @@ body.modal-open{
   to{transform:scale(1); opacity:1;}
 }
 
+/* IMAGEM MODAL */
 .modal-img{
   width:120px;
   height:120px;
@@ -285,6 +283,37 @@ body.modal-open{
   margin-bottom:15px;
 }
 
+/* LEVEL MODAL */
+.modal-level-badge{
+  position:absolute;
+
+  top:105px;
+  right:95px;
+
+  width:64px;
+  height:64px;
+
+  background-image:url('https://res.cloudinary.com/djh45admn/image/upload/v1778336779/nivelglrpg.png');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-family:'Cinzel', serif;
+  font-size:18px;
+  font-weight:700;
+
+  color:#f6d365;
+
+  text-shadow:0 0 6px rgba(0,0,0,0.9);
+
+  z-index:20;
+}
+
+/* TITULO MODAL */
 .modal-box h2{
   font-family:'Cinzel', serif;
   color:#f6d365;
@@ -296,6 +325,48 @@ body.modal-open{
   color:#ddd;
   margin:8px 0;
   font-size:17px;
+}
+
+/* STATS */
+.modal-stats{
+  margin-top:18px;
+
+  display:flex;
+  gap:12px;
+}
+
+.stat-box{
+  flex:1;
+
+  background:rgba(255,255,255,0.05);
+
+  border:1px solid rgba(255,215,120,0.18);
+
+  border-radius:14px;
+
+  padding:12px;
+
+  backdrop-filter:blur(4px);
+}
+
+.stat-box span{
+  display:block;
+
+  font-size:12px;
+
+  color:#aaa;
+
+  margin-bottom:4px;
+
+  letter-spacing:1px;
+}
+
+.stat-box strong{
+  font-size:18px;
+
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
 }
 
 /* CLOSE */

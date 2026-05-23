@@ -13,10 +13,14 @@
   z-index:9999;
 }
 
+/* =========================
+   JANELA (FIX DE CENTRALIZAÇÃO REAL)
+========================= */
+
 .inventory-window,
 .item-window{
   width:90%;
-  max-width:520px;
+  max-width:500px;
 
   background:rgba(10,10,10,0.96);
 
@@ -27,6 +31,8 @@
   padding:22px;
 
   position:relative;
+
+  margin:auto;
 }
 
 /* =========================
@@ -38,7 +44,7 @@
   justify-content:center;
   align-items:center;
 
-  margin-bottom:15px;
+  margin-bottom:12px;
 }
 
 .inventory-header h2{
@@ -67,10 +73,12 @@
   display:flex;
   align-items:center;
   justify-content:center;
+
+  z-index:10;
 }
 
 /* =========================
-   LISTA INVENTÁRIO (SEM SCROLL + ALTURA FIXA 10 ITENS)
+   LISTA INVENTÁRIO (8 ITENS)
 ========================= */
 
 .inventory-list{
@@ -79,11 +87,11 @@
 
   gap:8px;
 
-  height:500px; /* espaço fixo para ~10 itens */
-  overflow:hidden; /* remove scroll */
+  height:400px; /* espaço exato para ~8 itens */
+  overflow:hidden;
 }
 
-/* cada item ocupa altura fixa */
+/* ITEM FIXO */
 .inventory-item{
   background:rgba(255,255,255,0.05);
 
@@ -91,7 +99,7 @@
 
   border-radius:10px;
 
-  height:46px;
+  height:44px;
 
   padding:0 12px;
 

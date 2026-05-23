@@ -36,6 +36,7 @@ const db = getDatabase(app);
 // ======================
 const selectPersonagem = document.getElementById("personagem");
 const selectEstilo = document.getElementById("estilo");
+const grupoEstilo = document.getElementById("grupo-estilo");
 const img = document.getElementById("preview-img");
 
 // ======================
@@ -59,19 +60,23 @@ function atualizarImagem() {
   img.src = gerarUrl(selectPersonagem.value);
 }
 
-selectPersonagem.addEventListener("change", atualizarImagem);
+selectPersonagem.addEventListener("change", () => {
+  atualizarImagem();
+  controlarEstilo("—"); // força mostrar estilo ao trocar personagem
+});
+
 atualizarImagem();
 
 // ======================
-// CONTROLAR ESTILO
+// CONTROLAR ESTILO (CORRIGIDO)
 // ======================
 function controlarEstilo(style) {
   const semEstilo = style === "—" || style === "-" || !style;
 
   if (semEstilo) {
-    selectEstilo.style.display = "block";
+    grupoEstilo.style.display = "block"; // <- CORRETO
   } else {
-    selectEstilo.style.display = "none";
+    grupoEstilo.style.display = "none"; // <- CORRETO
   }
 }
 
@@ -90,10 +95,15 @@ window.criarPersonagem = async function () {
   const personagem = selectPersonagem.options[selectPersonagem.selectedIndex].text;
   const estilo = selectEstilo.value;
 
+  if (grupoEstilo.style.display === "block" && !estilo) {
+    alert("Escolha um estilo de luta!");
+    return;
+  }
+
   try {
     await update(ref(db, `players/${user.uid}/character`), {
       charName: personagem,
-      style: estilo,
+      style: estilo || "—",
       image: gerarUrl(selectPersonagem.value),
       faction: "Governo Mundial"
     });
@@ -108,7 +118,7 @@ window.criarPersonagem = async function () {
 };
 
 // ======================
-// PROTEÇÃO + LOAD DADOS
+// AUTH + LOAD DADOS
 // ======================
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -121,13 +131,11 @@ onAuthStateChanged(auth, async (user) => {
   if (snap.exists()) {
     const data = snap.val();
 
-    // preview personagem
     if (data.charName) {
       selectPersonagem.value = data.charName;
       atualizarImagem();
     }
 
-    // controla estilo de luta
     controlarEstilo(data.style);
   } else {
     controlarEstilo("—");

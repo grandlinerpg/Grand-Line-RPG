@@ -40,7 +40,7 @@ const grupoEstilo = document.getElementById("grupo-estilo");
 const img = document.getElementById("preview-img");
 
 // ======================
-// IMAGEM
+// FUNÇÃO IMAGEM
 // ======================
 function gerarUrl(nome) {
   return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${
@@ -62,20 +62,26 @@ function atualizarImagem() {
 
 selectPersonagem.addEventListener("change", () => {
   atualizarImagem();
-  controlarEstilo("—"); // sempre libera ao trocar personagem
+  controlarEstilo("—"); // sempre mostra ao trocar personagem
 });
 
 atualizarImagem();
 
 // ======================
-// CONTROLAR ESTILO (CORRETO)
+// CONTROLAR ESTILO (CORRIGIDO)
 // ======================
 function controlarEstilo(style) {
+
+  // FORÇA STRING SEGURA
   const valor = (style ?? "").toString().trim();
 
   const semEstilo = valor === "—" || valor === "-" || valor === "";
 
-  grupoEstilo.style.display = semEstilo ? "block" : "none";
+  if (semEstilo) {
+    grupoEstilo.style.display = "block";
+  } else {
+    grupoEstilo.style.display = "none";
+  }
 }
 
 // ======================
@@ -116,7 +122,7 @@ window.criarPersonagem = async function () {
 };
 
 // ======================
-// LOAD DADOS
+// AUTH + LOAD DADOS
 // ======================
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -134,7 +140,8 @@ onAuthStateChanged(auth, async (user) => {
       atualizarImagem();
     }
 
-    controlarEstilo(data.style);
+    // 🔥 REGRA PRINCIPAL: SÓ ESCONDE SE FOR DIFERENTE DE "—"
+    controlarEstilo(data.style || "—");
   } else {
     controlarEstilo("—");
   }

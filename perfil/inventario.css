@@ -70,7 +70,7 @@
    BOTÃO X (CORRIGIDO SEM AFETAR OUTROS MODAIS)
 ========================= */
 
-.inventory-modal .close-btn{
+.inventory-modal .inventory-close-btn{
   position:absolute;
 
   top:12px;

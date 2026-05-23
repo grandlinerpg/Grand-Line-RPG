@@ -60,25 +60,23 @@ function atualizarImagem() {
   img.src = gerarUrl(selectPersonagem.value);
 }
 
-selectPersonagem.addEventListener("change", () => {
-  atualizarImagem();
-  controlarEstilo("—");
-});
-
+selectPersonagem.addEventListener("change", atualizarImagem);
 atualizarImagem();
 
 // ======================
-// CONTROLAR ESTILO (FIX DEFINITIVO)
+// MOSTRAR / ESCONDER ESTILO
 // ======================
-function controlarEstilo(style) {
-  const valor = (style ?? "").toString().trim();
-  const semEstilo = valor === "—" || valor === "-" || valor === "";
+function controlarEstilo(valor) {
+  const v = (valor || "").trim();
 
-  if (semEstilo) {
-    grupoEstilo.style.display = "block";
-    selectEstilo.style.display = "block"; // 🔥 garante o select visível
-  } else {
+  // REGRA SIMPLES:
+  // só ESCONDE se tiver um estilo REAL salvo
+  const temEstiloSalvo = v !== "" && v !== "—";
+
+  if (temEstiloSalvo) {
     grupoEstilo.style.display = "none";
+  } else {
+    grupoEstilo.style.display = "block";
   }
 }
 
@@ -94,19 +92,14 @@ window.criarPersonagem = async function () {
     return;
   }
 
-  const personagem = selectPersonagem.options[selectPersonagem.selectedIndex].text;
+  const personagem = selectPersonagem.value;
   const estilo = selectEstilo.value;
-
-  if (grupoEstilo.style.display === "block" && !estilo) {
-    alert("Escolha um estilo de luta!");
-    return;
-  }
 
   try {
     await update(ref(db, `players/${user.uid}/character`), {
       charName: personagem,
-      style: estilo || "—",
-      image: gerarUrl(selectPersonagem.value),
+      style: estilo,
+      image: gerarUrl(personagem),
       faction: "Governo Mundial"
     });
 
@@ -120,7 +113,7 @@ window.criarPersonagem = async function () {
 };
 
 // ======================
-// AUTH + LOAD
+// LOAD
 // ======================
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -138,7 +131,7 @@ onAuthStateChanged(auth, async (user) => {
       atualizarImagem();
     }
 
-    controlarEstilo(data.style);
+    controlarEstilo(data.style || "—");
   } else {
     controlarEstilo("—");
   }

@@ -3,26 +3,6 @@ import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/10.
 
 const db = getDatabase();
 
-/* =========================
-   NORMALIZE (limpa value)
-========================= */
-
-function normalize(value) {
-  if (!value) return "";
-
-  return value
-    .toLowerCase()
-    .replace(/fator de linhagem:/g, "")
-    .replace(/pergaminho de ensinamento:/g, "")
-    .replace(/akuma no mi:/g, "")
-    .replace(/personagem:/g, "")
-    .trim();
-}
-
-/* =========================
-   USAR ITEM
-========================= */
-
 export async function usarItem(item) {
   if (!item) return;
 
@@ -31,27 +11,26 @@ export async function usarItem(item) {
 
   const uid = user.uid;
 
-  const type = item.category; // já vem separado pelas tuas abas
-  const value = normalize(item.value);
+  const type = (item.category || "").toLowerCase();
 
   const charRef = ref(db, "players/" + uid + "/character");
 
   try {
 
     // =========================
-    // PERSONAGEM (TROCA DE PÁGINA)
+    // PERSONAGEM (troca de página)
     // =========================
     if (type === "personagem") {
-      window.location.href = item.value; // aqui NÃO normaliza
+      window.location.href = item.value; // ex: criacao-personagem.html
       return;
     }
 
     // =========================
-    // LINHAGEM (FATOR DE LINHAGEM)
+    // FATOR DE LINHAGEM
     // =========================
-    if (type === "fator de linhagem" || type === "linhagem") {
+    if (type === "fator de linhagem") {
       await update(charRef, {
-        race: value
+        race: item.name // "Fator de Linhagem: Gigante"
       });
       return;
     }
@@ -59,27 +38,27 @@ export async function usarItem(item) {
     // =========================
     // AKUMA NO MI
     // =========================
-    if (type === "akuma no mi" || type === "akuma") {
+    if (type === "akuma no mi") {
       await update(charRef, {
-        fruit: value
+        fruit: item.name // "Gomu Gomu no Mi"
       });
       return;
     }
 
     // =========================
-    // PERGAMINHO DE ENSINAMENTO (ESTILO DE LUTA)
+    // PERGAMINHO DE ENSINAMENTO
     // =========================
-    if (type === "pergaminho de ensinamento" || type === "pergaminho") {
+    if (type === "pergaminho de ensinamento") {
       await update(charRef, {
-        style: value
+        style: item.name
       });
       return;
     }
 
     // =========================
-    // BAÚS (itens genéricos / futuros efeitos)
+    // BAÚS
     // =========================
-    if (type === "baus" || type === "baú") {
+    if (type === "baus") {
       console.log("Item de baú usado:", item.name);
       return;
     }

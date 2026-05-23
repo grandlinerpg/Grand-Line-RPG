@@ -128,6 +128,10 @@ body{
   text-align:left;
 
   margin-bottom:20px;
+
+  /* 🔥 FIX IMPORTANTE: evita “reflow bug” visual */
+  min-height: 80px;
+  transition: 0.25s ease;
 }
 
 .input-group label{
@@ -149,6 +153,9 @@ body{
   outline:none;
 
   border:1px solid rgba(255,215,120,0.10);
+
+  /* 🔥 FIX VISUAL SELECT BUG */
+  font-size: 14px;
 }
 
 /* BOTÃO */
@@ -189,5 +196,4 @@ button:hover{
     width:150px;
     height:150px;
   }
-
 }

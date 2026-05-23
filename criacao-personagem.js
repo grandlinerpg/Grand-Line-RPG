@@ -98,12 +98,12 @@ window.criarPersonagem = async function () {
       faction: "Governo Mundial"
     });
 
-    alert("Personagem criado!");
+    alert("Sucesso!");
     window.location.href = "perfil.html";
 
   } catch (err) {
     console.error(err);
-    alert("Erro ao criar personagem");
+    alert("Erro ao escolher personagem");
   }
 };
 

@@ -1,15 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getAuth, 
-  onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  getDatabase,
-  ref,
-  update,
-  get
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
 // FIREBASE
@@ -57,11 +48,15 @@ function atualizarImagem() {
   img.src = gerarUrl(selectPersonagem.value);
 }
 
-selectPersonagem.addEventListener("change", atualizarImagem);
+selectPersonagem.addEventListener("change", () => {
+  atualizarImagem();
+  controlarEstilo("—"); // força aparecer ao trocar personagem
+});
+
 atualizarImagem();
 
 // ======================
-// MOSTRAR ESTILO (SEM BUG VISUAL)
+// CONTROLAR ESTILO (SEM BUG VISUAL)
 // ======================
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
@@ -69,12 +64,13 @@ function controlarEstilo(valor) {
   const container = grupoEstilo;
 
   if (!v || v === "—") {
-    // MOSTRA
-    container.style.display = "flex";   // 👈 evita “encolhimento”
+    // MOSTRAR SEM QUEBRAR LAYOUT
+    container.style.display = "flex";
     container.style.flexDirection = "column";
     container.style.opacity = "1";
+    container.style.height = "auto";
   } else {
-    // ESCONDE
+    // ESCONDER
     container.style.display = "none";
   }
 }
@@ -130,7 +126,6 @@ onAuthStateChanged(auth, async (user) => {
       atualizarImagem();
     }
 
-    // REGRA CORRETA
     controlarEstilo(data.style || "—");
   } else {
     controlarEstilo("—");

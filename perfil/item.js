@@ -24,7 +24,7 @@ export async function usarItem(item) {
     // =========================
     // TROCA DE PÁGINA (PERSONAGEM)
     // =========================
-    if (type === "personagem") {
+    if (type === "personagem" || type === "page") {
       window.location.href = item.value;
       return;
     }
@@ -32,7 +32,7 @@ export async function usarItem(item) {
     // =========================
     // RAÇA / LINHAGEM
     // =========================
-    if (type === "linhagem") {
+    if (type === "linhagem" || type === "raca" || type === "race") {
       await update(charRef, {
         race: item.value
       });
@@ -52,12 +52,14 @@ export async function usarItem(item) {
     // =========================
     // ESTILO DE LUTA
     // =========================
-    if (type === "pergaminho") {
+    if (type === "pergaminho" || type === "style" || type === "estilo") {
       await update(charRef, {
         style: item.value
       });
       return;
     }
+
+    console.warn("Categoria de item desconhecida:", type);
 
   } catch (err) {
     console.error("Erro ao usar item:", err);

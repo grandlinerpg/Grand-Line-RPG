@@ -84,6 +84,10 @@ window.register = async function () {
         fruit: "—"
       },
 
+      inventory: {
+        trocadepersonagem: 1
+      }
+
       stats: {
         str: 1,
         res: 1,

@@ -86,7 +86,7 @@ window.register = async function () {
 
       inventory: {
         trocadepersonagem: 1
-      }
+      },
 
       stats: {
         str: 1,

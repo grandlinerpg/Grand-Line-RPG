@@ -45,13 +45,12 @@
   position:relative;
 
   display:grid;
-  grid-template-columns: 1fr auto 1fr; /* 🔥 equilíbrio perfeito */
+  grid-template-columns: 1fr auto 1fr;
   align-items:center;
 
   margin-bottom:12px;
 }
 
-/* título REALMENTE central */
 .inventory-header h2{
   grid-column:2;
 
@@ -63,17 +62,33 @@
   margin:0;
 }
 
-/* espaço vazio esquerda */
 .inventory-header::before{
   content:"";
 }
 
 /* =========================
-   BOTÃO X (FORA DO FLUXO VISUAL)
+   BOTÃO X (CORRIGIDO SEM AFETAR OUTROS MODAIS)
 ========================= */
 
-.inventory-modal .close-btn,
-.close-item-x{
+.inventory-modal .close-btn{
+  position:absolute;
+
+  top:12px;
+  right:12px;
+
+  width:36px;
+  height:36px;
+
+  padding:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  z-index:10;
+}
+
+.item-modal .close-item-x{
   position:absolute;
 
   top:12px;

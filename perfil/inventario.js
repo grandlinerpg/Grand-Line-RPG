@@ -3,8 +3,6 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import { usarItem } from "./item.js"; // 🔥 INTEGRAÇÃO
-
 const modalContainer = document.getElementById("modal-container");
 
 let currentItem = null;
@@ -163,13 +161,13 @@ function initInventory(){
   });
 
   // =========================
-  // USAR ITEM (AGORA COM item.js)
+  // USAR ITEM (SEM item.js)
   // =========================
 
-  useBtn.addEventListener("click", async () => {
+  useBtn.addEventListener("click", () => {
     if (!currentItem) return;
 
-    await usarItem(currentItem);
+    console.log("USAR ITEM:", currentItem);
 
     itemModal.style.display = "none";
   });

@@ -72,7 +72,7 @@
    BOTÃO X (FORA DO FLUXO VISUAL)
 ========================= */
 
-.close-btn,
+.inventory-modal .close-btn,
 .close-item-x{
   position:absolute;
 

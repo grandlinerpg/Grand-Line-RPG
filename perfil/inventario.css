@@ -1,3 +1,4 @@
+```css id="mjx0io"
 .inventory-modal,
 .item-modal{
   position:fixed;
@@ -19,7 +20,7 @@
 
 .inventory-window{
   width:90%;
-  max-width:500px;
+  max-width:430px;
 
   background:rgba(10,10,10,0.96);
 
@@ -27,14 +28,14 @@
 
   border-radius:16px;
 
-  padding:22px;
+  padding:20px;
 
   position:relative;
 }
 
 .item-window{
   width:90%;
-  max-width:400px;
+  max-width:380px;
 
   background:rgba(10,10,10,0.96);
 
@@ -56,7 +57,7 @@
   justify-content:center;
   align-items:center;
 
-  margin-bottom:18px;
+  margin-bottom:15px;
 }
 
 .inventory-header h2{
@@ -74,8 +75,8 @@
 .close-item-x{
   position:absolute;
 
-  top:12px;
-  right:12px;
+  top:10px;
+  right:10px;
 
   width:34px;
   height:34px;
@@ -85,20 +86,17 @@
   display:flex;
   align-items:center;
   justify-content:center;
-
-  z-index:999;
 }
 
 /* =========================
-   INVENTÁRIO
+   LISTA INVENTÁRIO
 ========================= */
 
 .inventory-list{
-  display:grid;
+  display:flex;
+  flex-direction:column;
 
-  grid-template-columns:1fr 1fr;
-
-  gap:10px;
+  gap:8px;
 }
 
 .inventory-item{
@@ -106,32 +104,34 @@
 
   border:1px solid rgba(255,215,120,0.15);
 
-  border-radius:12px;
+  border-radius:10px;
 
-  padding:12px;
+  height:48px;
+
+  padding:0 12px;
 
   cursor:pointer;
 
   transition:0.2s;
-
-  min-height:82px;
 
   display:flex;
   align-items:center;
 }
 
 .inventory-item:hover{
-  transform:scale(1.02);
+  transform:scale(1.01);
 }
 
 .inventory-item-top{
   display:flex;
   align-items:center;
   gap:10px;
+
+  width:100%;
 }
 
 .inventory-emoji{
-  font-size:26px;
+  font-size:22px;
 }
 
 .inventory-name{
@@ -142,6 +142,8 @@
 }
 
 .inventory-qty{
+  margin-left:auto;
+
   color:#ccc;
   font-size:12px;
 }
@@ -198,3 +200,4 @@
 .item-actions button{
   flex:1;
 }
+```

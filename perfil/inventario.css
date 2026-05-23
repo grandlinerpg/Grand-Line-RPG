@@ -1,3 +1,4 @@
+```css id="yyv57m"
 .inventory-modal,
 .item-modal{
   position:fixed;
@@ -13,10 +14,9 @@
   z-index:9999;
 }
 
-.inventory-window,
-.item-window{
+.inventory-window{
   width:90%;
-  max-width:700px;
+  max-width:430px;
 
   background:rgba(10,10,10,0.96);
 
@@ -24,7 +24,22 @@
 
   border-radius:16px;
 
-  padding:25px;
+  padding:20px;
+
+  position:relative;
+}
+
+.item-window{
+  width:90%;
+  max-width:380px;
+
+  background:rgba(10,10,10,0.96);
+
+  border:1px solid rgba(255,215,120,0.2);
+
+  border-radius:16px;
+
+  padding:22px;
 
   position:relative;
 }
@@ -38,7 +53,7 @@
   justify-content:center;
   align-items:center;
 
-  margin-bottom:20px;
+  margin-bottom:15px;
 }
 
 .inventory-header h2{
@@ -56,11 +71,11 @@
 .close-item-x{
   position:absolute;
 
-  top:15px;
-  right:15px;
+  top:12px;
+  right:12px;
 
-  width:40px;
-  height:40px;
+  width:36px;
+  height:36px;
 
   padding:0;
 
@@ -77,10 +92,9 @@
   display:flex;
   flex-direction:column;
 
-  gap:10px;
+  gap:8px;
 
-  max-height:500px;
-  overflow-y:auto;
+  height:560px;
 }
 
 .inventory-item{
@@ -88,37 +102,48 @@
 
   border:1px solid rgba(255,215,120,0.15);
 
-  border-radius:12px;
+  border-radius:10px;
 
-  padding:14px;
+  height:48px;
+
+  padding:0 12px;
 
   cursor:pointer;
 
   transition:0.2s;
+
+  display:flex;
+  align-items:center;
 }
 
 .inventory-item:hover{
-  transform:scale(1.02);
+  transform:scale(1.01);
 }
 
 .inventory-item-top{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
+
+  width:100%;
 }
 
 .inventory-emoji{
-  font-size:30px;
+  font-size:22px;
 }
 
 .inventory-name{
   color:#f6d365;
   font-family:'Cinzel', serif;
+
+  font-size:14px;
 }
 
 .inventory-qty{
+  margin-left:auto;
+
   color:#ccc;
-  font-size:14px;
+  font-size:12px;
 }
 
 /* =========================
@@ -167,3 +192,8 @@
 
   margin-top:25px;
 }
+
+.item-actions button{
+  flex:1;
+}
+```

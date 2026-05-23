@@ -63,7 +63,7 @@
 
 /* FECHAR */
 
-.close-btn{
+.points-modal .close-btn{
   width:30px;
   height:30px;
 
@@ -97,7 +97,7 @@
   transition:0.3s;
 }
 
-.close-btn:hover{
+.points-modal .close-btn:hover{
   transform:translateY(-50%) scale(1.05);
 }
 

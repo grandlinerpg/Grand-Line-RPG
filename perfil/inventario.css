@@ -1,4 +1,3 @@
-```css id="73my1j"
 .inventory-modal,
 .item-modal{
   position:fixed;
@@ -20,7 +19,7 @@
 
 .inventory-window{
   width:90%;
-  max-width:520px;
+  max-width:500px;
 
   background:rgba(10,10,10,0.96);
 
@@ -35,7 +34,7 @@
 
 .item-window{
   width:90%;
-  max-width:420px;
+  max-width:400px;
 
   background:rgba(10,10,10,0.96);
 
@@ -68,7 +67,7 @@
 }
 
 /* =========================
-   BOTÕES X
+   BOTÃO X
 ========================= */
 
 .close-btn,
@@ -195,4 +194,7 @@
 
   margin-top:22px;
 }
-```
+
+.item-actions button{
+  flex:1;
+}

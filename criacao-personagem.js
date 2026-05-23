@@ -40,7 +40,7 @@ const grupoEstilo = document.getElementById("grupo-estilo");
 const img = document.getElementById("preview-img");
 
 // ======================
-// FUNÇÃO IMAGEM
+// IMAGEM
 // ======================
 function gerarUrl(nome) {
   return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${
@@ -62,22 +62,20 @@ function atualizarImagem() {
 
 selectPersonagem.addEventListener("change", () => {
   atualizarImagem();
-  controlarEstilo("—"); // força mostrar estilo ao trocar personagem
+  controlarEstilo("—"); // sempre libera ao trocar personagem
 });
 
 atualizarImagem();
 
 // ======================
-// CONTROLAR ESTILO (CORRIGIDO)
+// CONTROLAR ESTILO (CORRETO)
 // ======================
 function controlarEstilo(style) {
-  const semEstilo = style === "—" || style === "-" || !style;
+  const valor = (style ?? "").toString().trim();
 
-  if (semEstilo) {
-    grupoEstilo.style.display = "block"; // <- CORRETO
-  } else {
-    grupoEstilo.style.display = "none"; // <- CORRETO
-  }
+  const semEstilo = valor === "—" || valor === "-" || valor === "";
+
+  grupoEstilo.style.display = semEstilo ? "block" : "none";
 }
 
 // ======================
@@ -118,7 +116,7 @@ window.criarPersonagem = async function () {
 };
 
 // ======================
-// AUTH + LOAD DADOS
+// LOAD DADOS
 // ======================
 onAuthStateChanged(auth, async (user) => {
   if (!user) {

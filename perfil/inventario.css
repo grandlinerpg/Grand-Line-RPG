@@ -38,7 +38,7 @@
 }
 
 /* =========================
-   HEADER (CORREÇÃO REAL)
+   HEADER
 ========================= */
 
 .inventory-header{
@@ -67,7 +67,7 @@
 }
 
 /* =========================
-   BOTÃO X (CORRIGIDO SEM AFETAR OUTROS MODAIS)
+   BOTÃO X (AJUSTE REAL DE POSIÇÃO)
 ========================= */
 
 .inventory-modal .inventory-close-btn{
@@ -86,8 +86,13 @@
   justify-content:center;
 
   z-index:10;
+
+  /* 🔥 FIX DO PROBLEMA (centralização vertical perfeita do X) */
+  line-height:1;
+  transform: none;
 }
 
+/* ITEM X */
 .item-modal .close-item-x{
   position:absolute;
 
@@ -104,6 +109,9 @@
   justify-content:center;
 
   z-index:10;
+
+  line-height:1;
+  transform: none;
 }
 
 /* =========================

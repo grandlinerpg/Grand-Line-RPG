@@ -1,4 +1,3 @@
-```css id="mjx0io"
 .inventory-modal,
 .item-modal{
   position:fixed;
@@ -14,28 +13,10 @@
   z-index:9999;
 }
 
-/* =========================
-   JANELAS
-========================= */
-
-.inventory-window{
-  width:90%;
-  max-width:430px;
-
-  background:rgba(10,10,10,0.96);
-
-  border:1px solid rgba(255,215,120,0.2);
-
-  border-radius:16px;
-
-  padding:20px;
-
-  position:relative;
-}
-
+.inventory-window,
 .item-window{
   width:90%;
-  max-width:380px;
+  max-width:700px;
 
   background:rgba(10,10,10,0.96);
 
@@ -43,7 +24,7 @@
 
   border-radius:16px;
 
-  padding:22px;
+  padding:25px;
 
   position:relative;
 }
@@ -57,7 +38,7 @@
   justify-content:center;
   align-items:center;
 
-  margin-bottom:15px;
+  margin-bottom:20px;
 }
 
 .inventory-header h2{
@@ -75,11 +56,11 @@
 .close-item-x{
   position:absolute;
 
-  top:10px;
-  right:10px;
+  top:15px;
+  right:15px;
 
-  width:34px;
-  height:34px;
+  width:40px;
+  height:40px;
 
   padding:0;
 
@@ -96,7 +77,10 @@
   display:flex;
   flex-direction:column;
 
-  gap:8px;
+  gap:10px;
+
+  max-height:500px;
+  overflow-y:auto;
 }
 
 .inventory-item{
@@ -104,48 +88,37 @@
 
   border:1px solid rgba(255,215,120,0.15);
 
-  border-radius:10px;
+  border-radius:12px;
 
-  height:48px;
-
-  padding:0 12px;
+  padding:14px;
 
   cursor:pointer;
 
   transition:0.2s;
-
-  display:flex;
-  align-items:center;
 }
 
 .inventory-item:hover{
-  transform:scale(1.01);
+  transform:scale(1.02);
 }
 
 .inventory-item-top{
   display:flex;
   align-items:center;
-  gap:10px;
-
-  width:100%;
+  gap:12px;
 }
 
 .inventory-emoji{
-  font-size:22px;
+  font-size:30px;
 }
 
 .inventory-name{
   color:#f6d365;
   font-family:'Cinzel', serif;
-
-  font-size:14px;
 }
 
 .inventory-qty{
-  margin-left:auto;
-
   color:#ccc;
-  font-size:12px;
+  font-size:14px;
 }
 
 /* =========================
@@ -159,11 +132,11 @@
   align-items:center;
   text-align:center;
 
-  gap:12px;
+  gap:15px;
 }
 
 .item-emoji{
-  font-size:60px;
+  font-size:70px;
 }
 
 .item-info{
@@ -174,7 +147,7 @@
   color:#f6d365;
   font-family:'Cinzel', serif;
 
-  margin-bottom:8px;
+  margin-bottom:10px;
 }
 
 .item-info p{
@@ -182,8 +155,6 @@
   line-height:1.5;
 
   text-align:center;
-
-  font-size:14px;
 }
 
 /* =========================
@@ -194,10 +165,5 @@
   display:flex;
   gap:10px;
 
-  margin-top:22px;
+  margin-top:25px;
 }
-
-.item-actions button{
-  flex:1;
-}
-```

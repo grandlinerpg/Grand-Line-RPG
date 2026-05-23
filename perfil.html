@@ -130,12 +130,16 @@
 
   </main>
 
+  <!-- 🔥 CORREÇÃO IMPORTANTE -->
+  <!-- antes os dois lutavam pelo mesmo container sem controle -->
   <div id="modal-container"></div>
 
   <!-- FIREBASE SCRIPT -->
   <script type="module" src="perfil.js"></script>
-  <script type="module" src="perfil/distribuir.js"></script>
+
+  <!-- ⚠️ ordem corrigida (evita sobrescrever DOM no mesmo instante) -->
   <script type="module" src="perfil/inventario.js"></script>
+  <script type="module" src="perfil/distribuir.js"></script>
 
 </body>
 </html>

@@ -329,8 +329,12 @@ button {
   font-family: 'Cinzel', serif;
 }
 
-.gold-btn{
+.profile-card button{
   margin-bottom:10px;
+}
+
+.profile-card button:last-child{
+  margin-bottom:0;
 }
 
 /* =========================

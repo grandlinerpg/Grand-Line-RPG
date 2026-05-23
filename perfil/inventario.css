@@ -14,7 +14,7 @@
 }
 
 /* =========================
-   JANELA (FIX DE CENTRALIZAÇÃO REAL)
+   JANELA
 ========================= */
 
 .inventory-window,
@@ -34,19 +34,22 @@
 
   margin:auto;
 
-  overflow:hidden; /* 🔥 impede o X de “vazar visualmente” */
+  overflow:hidden;
 }
 
 /* =========================
-   HEADER
+   HEADER (FIX REAL DO CENTRALIZADO)
 ========================= */
 
 .inventory-header{
+  position:relative; /* 🔥 necessário pro X não interferir */
   display:flex;
   justify-content:center;
   align-items:center;
 
   margin-bottom:12px;
+
+  width:100%;
 }
 
 .inventory-header h2{
@@ -54,6 +57,9 @@
   font-family:'Cinzel', serif;
 
   text-align:center;
+
+  width:100%; /* 🔥 garante centralização REAL */
+  pointer-events:none; /* evita conflito com botão */
 }
 
 /* =========================
@@ -64,8 +70,8 @@
 .close-item-x{
   position:absolute;
 
-  top:10px;
-  right:10px;
+  top:12px;
+  right:12px;
 
   width:36px;
   height:36px;
@@ -89,11 +95,11 @@
 
   gap:8px;
 
-  height:400px; /* espaço exato para ~8 itens */
+  height:400px;
   overflow:hidden;
 }
 
-/* ITEM FIXO */
+/* ITEM */
 .inventory-item{
   background:rgba(255,255,255,0.05);
 

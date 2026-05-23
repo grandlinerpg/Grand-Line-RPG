@@ -7,63 +7,62 @@ const modalContainer = document.getElementById("modal-container");
 
 let currentItem = null;
 
-async function loadInventoryHTML(){
+async function loadInventoryHTML() {
 
   const response = await fetch("perfil/inventario.html");
   const html = await response.text();
 
+  // limpa antes (evita restos de outros modais)
+  modalContainer.innerHTML = "";
+
   modalContainer.innerHTML = html;
 
-  initInventory();
+  // garante DOM pronto
+  requestAnimationFrame(() => {
+    initInventory();
+  });
 }
 
-function initInventory(){
+function initInventory() {
 
   const auth = window.auth;
   const db = window.db;
 
   const openBtn = document.getElementById("open-inventory");
+  const inventoryModal = document.getElementById("inventory-modal");
+  const closeInventory = document.getElementById("close-inventory");
 
-  const inventoryModal =
-    document.getElementById("inventory-modal");
+  const itemModal = document.getElementById("item-modal");
+  const closeItem = document.getElementById("close-item");
 
-  const closeInventory =
-    document.getElementById("close-inventory");
+  const inventoryList = document.getElementById("inventory-list");
 
-  const itemModal =
-    document.getElementById("item-modal");
+  const useBtn = document.getElementById("use-item");
+  const sellBtn = document.getElementById("sell-item");
 
-  const closeItem =
-    document.getElementById("close-item");
+  if (!openBtn || !inventoryModal || !inventoryList) {
+    console.error("Inventário não carregou corretamente no DOM");
+    return;
+  }
 
-  const inventoryList =
-    document.getElementById("inventory-list");
+  // evita duplicar evento se reinjetar HTML
+  const newOpenBtn = openBtn.cloneNode(true);
+  openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
-  const useBtn =
-    document.getElementById("use-item");
-
-  const sellBtn =
-    document.getElementById("sell-item");
-
-  // =========================
-  // ABRIR INVENTÁRIO
-  // =========================
-
-  openBtn.addEventListener("click", async () => {
+  newOpenBtn.addEventListener("click", async () => {
 
     inventoryModal.style.display = "flex";
 
     inventoryList.innerHTML = "Carregando...";
 
     const user = auth.currentUser;
-
-    if(!user) return;
+    if (!user) return;
 
     const inventorySnap = await get(
       ref(db, `players/${user.uid}/inventory`)
     );
 
-    if(!inventorySnap.exists()){
+    if (!inventorySnap.exists()) {
       inventoryList.innerHTML = "Inventário vazio.";
       return;
     }
@@ -71,32 +70,28 @@ function initInventory(){
     const inventory = inventorySnap.val();
 
     const itensSnap = await get(ref(db, "itens"));
-
-    if(!itensSnap.exists()) return;
+    if (!itensSnap.exists()) return;
 
     const categorias = itensSnap.val();
 
     inventoryList.innerHTML = "";
 
-    for(const itemId in inventory){
+    for (const itemId in inventory) {
 
       const quantidade = inventory[itemId];
 
       let itemData = null;
 
-      for(const categoria in categorias){
-
-        if(categorias[categoria][itemId]){
-
+      for (const categoria in categorias) {
+        if (categorias[categoria][itemId]) {
           itemData = categorias[categoria][itemId];
           break;
         }
       }
 
-      if(!itemData) continue;
+      if (!itemData) continue;
 
       const div = document.createElement("div");
-
       div.className = "inventory-item";
 
       const itemObj = {
@@ -144,41 +139,33 @@ function initInventory(){
     }
   });
 
-  // =========================
-  // FECHAR INVENTÁRIO
-  // =========================
+  if (closeInventory) {
+    closeInventory.addEventListener("click", () => {
+      inventoryModal.style.display = "none";
+    });
+  }
 
-  closeInventory.addEventListener("click", () => {
-    inventoryModal.style.display = "none";
-  });
+  if (closeItem) {
+    closeItem.addEventListener("click", () => {
+      itemModal.style.display = "none";
+    });
+  }
 
-  // =========================
-  // FECHAR ITEM
-  // =========================
+  if (useBtn) {
+    useBtn.addEventListener("click", () => {
+      if (!currentItem) return;
 
-  closeItem.addEventListener("click", () => {
-    itemModal.style.display = "none";
-  });
+      console.log("USAR ITEM:", currentItem);
 
-  // =========================
-  // USAR ITEM (SEM item.js)
-  // =========================
+      itemModal.style.display = "none";
+    });
+  }
 
-  useBtn.addEventListener("click", () => {
-    if (!currentItem) return;
-
-    console.log("USAR ITEM:", currentItem);
-
-    itemModal.style.display = "none";
-  });
-
-  // =========================
-  // VENDER (FUTURO)
-  // =========================
-
-  sellBtn.addEventListener("click", () => {
-    console.log("Vender item ainda não implementado");
-  });
+  if (sellBtn) {
+    sellBtn.addEventListener("click", () => {
+      console.log("Vender item ainda não implementado");
+    });
+  }
 }
 
 loadInventoryHTML();

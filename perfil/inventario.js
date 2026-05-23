@@ -3,7 +3,11 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+import { usarItem } from "./item.js"; // 🔥 IMPORT DO ITEM SYSTEM
+
 const modalContainer = document.getElementById("modal-container");
+
+let currentItem = null; // 🔥 item selecionado
 
 async function loadInventoryHTML(){
 
@@ -36,6 +40,16 @@ function initInventory(){
 
   const inventoryList =
     document.getElementById("inventory-list");
+
+  const useBtn =
+    document.getElementById("use-item"); // 🔥 BOTÃO USAR
+
+  const sellBtn =
+    document.getElementById("sell-item"); // (futuro)
+
+  // =========================
+  // ABRIR INVENTÁRIO
+  // =========================
 
   openBtn.addEventListener("click", async () => {
 
@@ -87,6 +101,16 @@ function initInventory(){
 
       div.className = "inventory-item";
 
+      // =========================
+      // ITEM SALVO PRA USO
+      // =========================
+      const itemObj = {
+        id: itemId,
+        name: itemData.nome,
+        category: itemData.category, // IMPORTANTE
+        value: itemData.value,       // IMPORTANTE
+      };
+
       div.innerHTML = `
         <div class="inventory-item-top">
           <span class="inventory-emoji">
@@ -107,6 +131,8 @@ function initInventory(){
 
       div.addEventListener("click", () => {
 
+        currentItem = itemObj; // 🔥 salva item selecionado
+
         document.getElementById("item-emoji").innerText =
           itemData.item || "📦";
 
@@ -123,12 +149,40 @@ function initInventory(){
     }
   });
 
+  // =========================
+  // FECHAR INVENTÁRIO
+  // =========================
+
   closeInventory.addEventListener("click", () => {
     inventoryModal.style.display = "none";
   });
 
+  // =========================
+  // FECHAR ITEM
+  // =========================
+
   closeItem.addEventListener("click", () => {
     itemModal.style.display = "none";
+  });
+
+  // =========================
+  // USAR ITEM (🔥 AQUI USA item.js)
+  // =========================
+
+  useBtn.addEventListener("click", async () => {
+    if (!currentItem) return;
+
+    await usarItem(currentItem);
+
+    itemModal.style.display = "none";
+  });
+
+  // =========================
+  // VENDER (FUTURO)
+  // =========================
+
+  sellBtn.addEventListener("click", () => {
+    console.log("Vender item ainda não implementado");
   });
 }
 

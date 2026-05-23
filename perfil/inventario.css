@@ -67,7 +67,7 @@
 }
 
 /* =========================
-   BOTÃO X (AJUSTE REAL DE POSIÇÃO)
+   BOTÃO X (FIX REAL)
 ========================= */
 
 .inventory-modal .inventory-close-btn{
@@ -87,9 +87,9 @@
 
   z-index:10;
 
-  /* 🔥 FIX DO PROBLEMA (centralização vertical perfeita do X) */
+  /* 🔥 FIX PRINCIPAL */
   line-height:1;
-  transform: none;
+  transform: translateY(0);
 }
 
 /* ITEM X */
@@ -111,7 +111,7 @@
   z-index:10;
 
   line-height:1;
-  transform: none;
+  transform: translateY(0);
 }
 
 /* =========================

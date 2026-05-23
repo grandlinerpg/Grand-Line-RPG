@@ -38,32 +38,38 @@
 }
 
 /* =========================
-   HEADER (FIX REAL DO CENTRALIZADO)
+   HEADER (CORREÇÃO REAL)
 ========================= */
 
 .inventory-header{
-  position:relative; /* 🔥 necessário pro X não interferir */
-  display:flex;
-  justify-content:center;
+  position:relative;
+
+  display:grid;
+  grid-template-columns: 1fr auto 1fr; /* 🔥 equilíbrio perfeito */
   align-items:center;
 
   margin-bottom:12px;
-
-  width:100%;
 }
 
+/* título REALMENTE central */
 .inventory-header h2{
+  grid-column:2;
+
   color:#f6d365;
   font-family:'Cinzel', serif;
 
   text-align:center;
 
-  width:100%; /* 🔥 garante centralização REAL */
-  pointer-events:none; /* evita conflito com botão */
+  margin:0;
+}
+
+/* espaço vazio esquerda */
+.inventory-header::before{
+  content:"";
 }
 
 /* =========================
-   BOTÃO X
+   BOTÃO X (FORA DO FLUXO VISUAL)
 ========================= */
 
 .close-btn,

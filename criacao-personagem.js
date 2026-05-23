@@ -7,7 +7,8 @@ import {
 import {
   getDatabase,
   ref,
-  update
+  update,
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
@@ -62,6 +63,19 @@ selectPersonagem.addEventListener("change", atualizarImagem);
 atualizarImagem();
 
 // ======================
+// CONTROLAR ESTILO
+// ======================
+function controlarEstilo(style) {
+  const semEstilo = style === "—" || style === "-" || !style;
+
+  if (semEstilo) {
+    selectEstilo.style.display = "block";
+  } else {
+    selectEstilo.style.display = "none";
+  }
+}
+
+// ======================
 // CRIAR PERSONAGEM
 // ======================
 window.criarPersonagem = async function () {
@@ -77,8 +91,6 @@ window.criarPersonagem = async function () {
   const estilo = selectEstilo.value;
 
   try {
-
-    // 🔥 SÓ ATUALIZA O QUE MUDOU (NÃO APAGA race, fruit, etc)
     await update(ref(db, `players/${user.uid}/character`), {
       charName: personagem,
       style: estilo,
@@ -96,10 +108,28 @@ window.criarPersonagem = async function () {
 };
 
 // ======================
-// PROTEÇÃO
+// PROTEÇÃO + LOAD DADOS
 // ======================
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "auth.html";
+    return;
+  }
+
+  const snap = await get(ref(db, `players/${user.uid}/character`));
+
+  if (snap.exists()) {
+    const data = snap.val();
+
+    // preview personagem
+    if (data.charName) {
+      selectPersonagem.value = data.charName;
+      atualizarImagem();
+    }
+
+    // controla estilo de luta
+    controlarEstilo(data.style);
+  } else {
+    controlarEstilo("—");
   }
 });

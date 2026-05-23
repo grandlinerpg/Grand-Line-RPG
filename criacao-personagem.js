@@ -12,7 +12,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
-// FIREBASE CONFIG
+// FIREBASE
 // ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -24,9 +24,6 @@ const firebaseConfig = {
   databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
-// ======================
-// INIT
-// ======================
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -64,19 +61,21 @@ selectPersonagem.addEventListener("change", atualizarImagem);
 atualizarImagem();
 
 // ======================
-// MOSTRAR / ESCONDER ESTILO
+// MOSTRAR ESTILO (SEM BUG VISUAL)
 // ======================
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
 
-  // REGRA SIMPLES:
-  // só ESCONDE se tiver um estilo REAL salvo
-  const temEstiloSalvo = v !== "" && v !== "—";
+  const container = grupoEstilo;
 
-  if (temEstiloSalvo) {
-    grupoEstilo.style.display = "none";
+  if (!v || v === "—") {
+    // MOSTRA
+    container.style.display = "flex";   // 👈 evita “encolhimento”
+    container.style.flexDirection = "column";
+    container.style.opacity = "1";
   } else {
-    grupoEstilo.style.display = "block";
+    // ESCONDE
+    container.style.display = "none";
   }
 }
 
@@ -131,6 +130,7 @@ onAuthStateChanged(auth, async (user) => {
       atualizarImagem();
     }
 
+    // REGRA CORRETA
     controlarEstilo(data.style || "—");
   } else {
     controlarEstilo("—");

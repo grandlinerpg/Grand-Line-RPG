@@ -103,6 +103,7 @@ function initInventory() {
         nome: itemData.nome,
         tipo: itemData.tipo,
         tier: itemData.tier,
+        value: itemData.value,
         categoria: itemCategoria,
         quantidade: quantidade
       };

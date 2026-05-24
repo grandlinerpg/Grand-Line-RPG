@@ -266,6 +266,8 @@ async function usarTipo2(item) {
 // =========================
 function usarTipo3(item) {
 
+  if (!item.value) return;
+
   window.location.href =
-    `item.html?id=${item.id}`;
+    `${item.value}.html`;
 }

@@ -82,10 +82,8 @@
 .inventory-modal .inventory-close-btn{
   position:absolute;
 
-  top:50%;
+  top:12px;
   right:12px;
-
-  transform:translateY(-50%);
 
   width:36px;
   height:36px;
@@ -105,10 +103,8 @@
 .item-modal .close-item-x{
   position:absolute;
 
-  top:50%;
+  top:12px;
   right:12px;
-
-  transform:translateY(-50%);
 
   width:36px;
   height:36px;

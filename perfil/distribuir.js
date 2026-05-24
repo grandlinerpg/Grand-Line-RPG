@@ -146,8 +146,6 @@ fetch("perfil/distribuir.html")
 
         modal.style.display = "none";
 
-        // opcional: refresh
-        window.location.reload();
       });
 
     }, 0);

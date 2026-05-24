@@ -3,7 +3,7 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const modalContainer = document.getElementById("modal-container");
+const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
 

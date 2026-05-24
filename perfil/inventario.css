@@ -49,6 +49,9 @@
   align-items:center;
 
   margin-bottom:12px;
+
+  /* 🔥 FIX IMPORTANTE: garante alinhamento visual perfeito */
+  min-height:40px;
 }
 
 .inventory-header h2{
@@ -60,6 +63,12 @@
   text-align:center;
 
   margin:0;
+
+  /* 🔥 FIX: evita parecer “mais baixo” */
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .inventory-header::before{
@@ -73,8 +82,10 @@
 .inventory-modal .inventory-close-btn{
   position:absolute;
 
-  top:12px;
+  top:50%;
   right:12px;
+
+  transform:translateY(-50%);
 
   width:36px;
   height:36px;
@@ -87,17 +98,17 @@
 
   z-index:10;
 
-  /* 🔥 FIX DO PROBLEMA (centralização vertical perfeita do X) */
   line-height:1;
-  transform: none;
 }
 
 /* ITEM X */
 .item-modal .close-item-x{
   position:absolute;
 
-  top:12px;
+  top:50%;
   right:12px;
+
+  transform:translateY(-50%);
 
   width:36px;
   height:36px;
@@ -111,7 +122,6 @@
   z-index:10;
 
   line-height:1;
-  transform: none;
 }
 
 /* =========================

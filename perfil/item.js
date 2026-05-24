@@ -2,7 +2,8 @@ import {
   ref,
   get,
   set,
-  update
+  update,
+  remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // =========================
@@ -72,9 +73,13 @@ async function removerItem(itemId) {
 
   const atual = snap.val();
 
+  // 🔥 REMOVE DO FIREBASE
   if (atual <= 1) {
-    await set(itemRef, 0);
+
+    await remove(itemRef);
+
   } else {
+
     await set(itemRef, atual - 1);
   }
 }
@@ -103,6 +108,18 @@ async function adicionarItem(itemId) {
   }
 
   await set(itemRef, atual + 1);
+}
+
+// =========================
+// LIMPA PREFIXO
+// =========================
+function limparNome(nome) {
+
+  if (!nome.includes(":")) {
+    return nome.trim();
+  }
+
+  return nome.split(":")[1].trim();
 }
 
 // =========================
@@ -215,25 +232,27 @@ async function usarTipo2(item) {
 
   const updates = {};
 
+  const nomeLimpo = limparNome(item.nome);
+
   // =====================
   // AKUMA NO MI
   // =====================
   if (item.categoria === "akuma no mi") {
-    updates.fruit = item.nome;
+    updates.fruit = nomeLimpo;
   }
 
   // =====================
   // RAÇA
   // =====================
   if (item.categoria === "fator de linhagem") {
-    updates.race = item.nome;
+    updates.race = nomeLimpo;
   }
 
   // =====================
   // ESTILO
   // =====================
   if (item.categoria === "pergaminho de ensinamento") {
-    updates.style = item.nome;
+    updates.style = nomeLimpo;
   }
 
   await update(charRef, updates);

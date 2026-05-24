@@ -27,7 +27,7 @@ fetch("perfil/distribuir.html")
   .then(res => res.text())
   .then(html => {
 
-    document.getElementById("modal-container").innerHTML = html;
+    document.getElementById("distribuir-container").innerHTML = html;
 
     // ⚠️ garante DOM pronto após inject
     setTimeout(() => {

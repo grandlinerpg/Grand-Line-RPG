@@ -1,6 +1,7 @@
 import {
   ref,
-  get
+  get,
+  set
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const modalContainer = document.getElementById("inventory-container");
@@ -45,7 +46,6 @@ function initInventory() {
     return;
   }
 
-  // evita duplicar evento se reinjetar HTML
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
@@ -99,6 +99,7 @@ function initInventory() {
         name: itemData.nome,
         category: itemData.category,
         value: itemData.value,
+        quantidade: quantidade
       };
 
       div.innerHTML = `
@@ -151,13 +152,34 @@ function initInventory() {
     });
   }
 
+  // =========================
+  // 🔥 USAR ITEM (SEM LOG)
+  // =========================
   if (useBtn) {
-    useBtn.addEventListener("click", () => {
+    useBtn.addEventListener("click", async () => {
       if (!currentItem) return;
 
-      console.log("USAR ITEM:", currentItem);
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const itemRef = ref(db, `players/${user.uid}/inventory/${currentItem.id}`);
+
+      const snap = await get(itemRef);
+
+      if (!snap.exists()) return;
+
+      let atual = snap.val();
+
+      if (atual <= 1) {
+        await set(itemRef, 0);
+      } else {
+        await set(itemRef, atual - 1);
+      }
 
       itemModal.style.display = "none";
+      inventoryModal.style.display = "none";
+
+      loadInventoryHTML(); // atualiza inventário
     });
   }
 

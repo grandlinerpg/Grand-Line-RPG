@@ -46,6 +46,7 @@
 
   display:grid;
   grid-template-columns: 1fr auto 1fr;
+  align-items:center;
   align-items:start;
 
   margin-bottom:12px;
@@ -83,6 +84,7 @@
 .inventory-modal .inventory-close-btn{
   position:absolute;
 
+  top:12px;
   top:0;
   right:12px;
 

@@ -136,7 +136,7 @@ function initInventory() {
 
         // 🔥 SÓ ISSO FOI ADICIONADO
         document.getElementById("item-description").innerText =
-          ${itemData.tier || "-"}\n` +
+          Tier: ${itemData.tier || "-"}\n` +
           (itemData.description || "Sem descrição.");
 
         itemModal.style.display = "flex";

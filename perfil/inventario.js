@@ -120,7 +120,7 @@ function initInventory() {
             </div>
 
             <div class="inventory-qty">
-              Quantidade: ${quantidade}
+              ${quantidade}
             </div>
           </div>
         </div>

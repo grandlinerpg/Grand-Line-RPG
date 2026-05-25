@@ -46,12 +46,10 @@
 
   display:grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items:center;
   align-items:start;
 
   margin-bottom:12px;
 
-  /* 🔥 FIX IMPORTANTE: garante alinhamento visual perfeito */
   min-height:40px;
 }
 
@@ -66,25 +64,19 @@
   margin:0;
   margin-top:2px;
 
-  /* 🔥 FIX: evita parecer “mais baixo” */
   line-height:1;
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
-.inventory-header::before{
-  content:"";
-}
-
 /* =========================
-   BOTÃO X (AJUSTE REAL DE POSIÇÃO)
+   BOTÃO X
 ========================= */
 
 .inventory-modal .inventory-close-btn{
   position:absolute;
 
-  top:12px;
   top:0;
   right:12px;
 
@@ -102,7 +94,6 @@
   line-height:1;
 }
 
-/* ITEM X */
 .item-modal .close-item-x{
   position:absolute;
 
@@ -124,7 +115,7 @@
 }
 
 /* =========================
-   LISTA INVENTÁRIO (8 ITENS)
+   LISTA INVENTÁRIO
 ========================= */
 
 .inventory-list{
@@ -173,6 +164,13 @@
   font-size:22px;
 }
 
+/* 🔥 NOVO: container do nome + qty na mesma linha */
+.inventory-text{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
 .inventory-name{
   color:#f6d365;
   font-family:'Cinzel', serif;
@@ -180,9 +178,8 @@
   font-size:14px;
 }
 
+/* 🔥 quantidade em círculo */
 .inventory-qty{
-  margin-left:auto;
-
   width:20px;
   height:20px;
 

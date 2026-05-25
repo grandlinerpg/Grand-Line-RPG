@@ -44,24 +44,34 @@
 .inventory-header{
   position:relative;
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display:grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items:start;
 
-  margin-bottom:14px;
+  margin-bottom:12px;
 
-  min-height:32px;
+  min-height:40px;
 }
 
 .inventory-header h2{
+  grid-column:2;
+
   color:#f6d365;
   font-family:'Cinzel', serif;
 
   text-align:center;
 
   margin:0;
+  margin-top:2px;
 
   line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.inventory-header::before{
+  content:"";
 }
 
 /* =========================
@@ -71,8 +81,8 @@
 .inventory-modal .inventory-close-btn{
   position:absolute;
 
-  top:-2px;
-  right:0;
+  top:0;
+  right:12px;
 
   width:36px;
   height:36px;
@@ -88,7 +98,6 @@
   line-height:1;
 }
 
-/* ITEM X */
 .item-modal .close-item-x{
   position:absolute;
 
@@ -110,7 +119,7 @@
 }
 
 /* =========================
-   LISTA INVENTÁRIO (8 ITENS)
+   LISTA INVENTÁRIO
 ========================= */
 
 .inventory-list{
@@ -150,9 +159,15 @@
 .inventory-item-top{
   display:flex;
   align-items:center;
-  gap:10px;
+  justify-content:space-between;
 
   width:100%;
+}
+
+.inventory-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
 .inventory-emoji{
@@ -164,30 +179,26 @@
   font-family:'Cinzel', serif;
 
   font-size:14px;
-
-  display:flex;
-  align-items:center;
-  gap:8px;
 }
 
+/* 🔥 CÍRCULO DA QUANTIDADE */
 .inventory-qty{
-  min-width:20px;
-  height:20px;
+  width:22px;
+  height:22px;
 
   border-radius:50%;
 
-  background:rgba(255,255,255,0.08);
-
-  border:1px solid rgba(255,215,120,0.25);
+  background:rgba(255,215,120,0.15);
+  border:1px solid rgba(255,215,120,0.35);
 
   display:flex;
   align-items:center;
   justify-content:center;
 
-  color:#ccc;
   font-size:11px;
+  color:#fff;
 
-  padding:0 6px;
+  margin-left:8px;
 }
 
 /* =========================
@@ -216,9 +227,8 @@
   color:#f6d365;
   font-family:'Cinzel', serif;
 
-  margin-bottom:10px;
-
-  font-size:24px;
+  margin-bottom:6px;
+  font-size:18px;
 }
 
 .item-info p{

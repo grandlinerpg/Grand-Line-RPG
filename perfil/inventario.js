@@ -114,13 +114,15 @@ function initInventory() {
             ${itemData.item || "📦"}
           </span>
 
-          <div>
-            <div class="inventory-name">
-              ${itemData.nome || itemId}
-            </div>
+          <div class="inventory-text">
+            <div class="inventory-name-qty">
+              <span class="inventory-name">
+                ${itemData.nome || itemId}
+              </span>
 
-            <div class="inventory-qty">
-              ${quantidade}
+              <span class="inventory-qty">
+                x${quantidade}
+              </span>
             </div>
           </div>
         </div>

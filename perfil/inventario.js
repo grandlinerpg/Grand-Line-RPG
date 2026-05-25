@@ -121,7 +121,7 @@ function initInventory() {
               </span>
 
               <span class="inventory-qty">
-                x${quantidade}
+                ${quantidade}
               </span>
             </div>
           </div>

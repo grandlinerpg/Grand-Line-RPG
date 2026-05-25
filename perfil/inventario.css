@@ -71,7 +71,7 @@
 }
 
 /* =========================
-   BOTÃO X
+   BOTÃO X (CORRIGIDO)
 ========================= */
 
 .inventory-modal .inventory-close-btn{
@@ -92,6 +92,7 @@
   z-index:10;
 
   line-height:1;
+  cursor:pointer;
 }
 
 .item-modal .close-item-x{
@@ -112,6 +113,7 @@
   z-index:10;
 
   line-height:1;
+  cursor:pointer;
 }
 
 /* =========================
@@ -164,11 +166,12 @@
   font-size:22px;
 }
 
-/* 🔥 NOVO: container do nome + qty na mesma linha */
+/* 🔥 NOVO: nome + quantidade lado a lado */
 .inventory-text{
   display:flex;
   align-items:center;
   gap:8px;
+  flex:1;
 }
 
 .inventory-name{
@@ -176,9 +179,10 @@
   font-family:'Cinzel', serif;
 
   font-size:14px;
+  white-space:nowrap;
 }
 
-/* 🔥 quantidade em círculo */
+/* quantidade agora ao lado do nome */
 .inventory-qty{
   width:20px;
   height:20px;

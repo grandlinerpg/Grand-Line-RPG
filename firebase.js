@@ -153,7 +153,7 @@ window.login = async function () {
     if (temPersonagem) {
       window.location.href = "perfil.html";
     } else {
-      window.location.href = "criacao-personagem.html";
+      window.location.href = "selecao-de-personagem.html";
     }
 
   } catch (error) {

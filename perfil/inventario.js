@@ -138,11 +138,18 @@ function initInventory() {
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
 
-        /* 🔥 NOVO: TIER ENTRE NOME E DESCRIÇÃO */
+        /* 🔥 NOVO: TIER AGORA COMO IMAGEM */
+        const tier = Number(itemData.tier) || 1;
+
+        const tierImgUrl =
+          `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
+
         document.getElementById("item-description").innerHTML =
-          `<div style="color:#f6d365; font-weight:bold; margin-bottom:6px;">
-            Tier: ${itemData.tier || "Comum"}
-          </div>
+          `<img src="${tierImgUrl}" style="
+              width:120px;
+              display:block;
+              margin:0 auto 8px auto;
+            "/>
           <div>
             ${itemData.description || "Sem descrição."}
           </div>`;
@@ -166,9 +173,6 @@ function initInventory() {
     });
   }
 
-  // =========================
-  // USAR ITEM VIA item.js
-  // =========================
   if (useBtn) {
 
     useBtn.addEventListener("click", async () => {

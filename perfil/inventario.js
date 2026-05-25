@@ -12,10 +12,12 @@ async function loadInventoryHTML() {
   const response = await fetch("perfil/inventario.html");
   const html = await response.text();
 
+  // limpa antes (evita restos de outros modais)
   modalContainer.innerHTML = "";
 
   modalContainer.innerHTML = html;
 
+  // garante DOM pronto
   requestAnimationFrame(() => {
     initInventory();
   });
@@ -100,7 +102,7 @@ function initInventory() {
         id: itemId,
         nome: itemData.nome,
         tipo: itemData.tipo,
-        tier: itemData.tier,   // 🔥 já existe aqui
+        tier: itemData.tier,
         value: itemData.value,
         categoria: itemCategoria,
         quantidade: quantidade
@@ -118,7 +120,7 @@ function initInventory() {
             </div>
 
             <div class="inventory-qty">
-              ${quantidade}
+              Quantidade: ${quantidade}
             </div>
           </div>
         </div>
@@ -134,10 +136,8 @@ function initInventory() {
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
 
-        // 🔥 SÓ ISSO FOI ADICIONADO
         document.getElementById("item-description").innerText =
-          Tier: ${itemData.tier || "-"}\n` +
-          (itemData.description || "Sem descrição.");
+          itemData.description || "Sem descrição.";
 
         itemModal.style.display = "flex";
       });
@@ -158,6 +158,9 @@ function initInventory() {
     });
   }
 
+  // =========================
+  // USAR ITEM VIA item.js
+  // =========================
   if (useBtn) {
 
     useBtn.addEventListener("click", async () => {

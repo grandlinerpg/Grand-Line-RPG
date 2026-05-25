@@ -138,8 +138,14 @@ function initInventory() {
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
 
-        document.getElementById("item-description").innerText =
-          itemData.description || "Sem descrição.";
+        /* 🔥 NOVO: TIER ENTRE NOME E DESCRIÇÃO */
+        document.getElementById("item-description").innerHTML =
+          `<div style="color:#f6d365; font-weight:bold; margin-bottom:6px;">
+            Tier: ${itemData.tier || "Comum"}
+          </div>
+          <div>
+            ${itemData.description || "Sem descrição."}
+          </div>`;
 
         itemModal.style.display = "flex";
       });

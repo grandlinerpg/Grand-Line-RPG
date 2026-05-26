@@ -138,21 +138,24 @@ function initInventory() {
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
 
-        /* 🔥 NOVO: TIER AGORA COMO IMAGEM */
+        /* 🔥 TIER AGORA APARECE DEPOIS DA DESCRIÇÃO */
         const tier = Number(itemData.tier) || 1;
 
         const tierImgUrl =
           `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
 
         document.getElementById("item-description").innerHTML =
-          `<img src="${tierImgUrl}" style="
-              width:120px;
-              display:block;
-              margin:0 auto 8px auto;
-            "/>
+          `
           <div>
             ${itemData.description || "Sem descrição."}
-          </div>`;
+          </div>
+
+          <img src="${tierImgUrl}" style="
+              width:120px;
+              display:block;
+              margin:12px auto 0 auto;
+            "/>
+          `;
 
         itemModal.style.display = "flex";
       });

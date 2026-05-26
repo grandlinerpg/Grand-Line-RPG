@@ -91,11 +91,9 @@
 .inventory-modal .inventory-close-btn{
   position:absolute;
 
-  top:50%;
   top:2px;
   right:0;
 
-  transform:translateY(-50%);
   transform:none;
 
   width:36px;

@@ -106,6 +106,7 @@ function initInventory() {
         value: itemData.value,
         categoria: itemCategoria,
         quantidade: quantidade
+        img: itemData.img
       };
 
       div.innerHTML = `

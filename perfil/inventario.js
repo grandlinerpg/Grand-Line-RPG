@@ -12,12 +12,10 @@ async function loadInventoryHTML() {
   const response = await fetch("perfil/inventario.html");
   const html = await response.text();
 
-  // limpa antes (evita restos de outros modais)
   modalContainer.innerHTML = "";
 
   modalContainer.innerHTML = html;
 
-  // garante DOM pronto
   requestAnimationFrame(() => {
     initInventory();
   });
@@ -105,13 +103,13 @@ function initInventory() {
         tier: itemData.tier,
         value: itemData.value,
         categoria: itemCategoria,
-        quantidade: quantidade
+        quantidade: quantidade,
+        img: itemData.img
       };
 
       div.innerHTML = `
         <div class="inventory-item-top">
           <span class="inventory-emoji">
-
             ${
               itemData.img
                 ? `<img 
@@ -120,7 +118,6 @@ function initInventory() {
                 >`
               : (itemData.item || "📦")
             }
-
           </span>
 
           <div class="inventory-text">
@@ -141,13 +138,18 @@ function initInventory() {
 
         currentItem = itemObj;
 
-        document.getElementById("item-emoji").innerText =
-          itemData.item || "📦";
+        /* 🔥 CORREÇÃO AQUI (ANTES ERA innerText) */
+        document.getElementById("item-emoji").innerHTML =
+          itemData.img
+            ? `<img 
+                src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                class="item-open-img"
+              >`
+            : (itemData.item || "📦");
 
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
 
-        /* 🔥 TIER AGORA APARECE DEPOIS DA DESCRIÇÃO */
         const tier = Number(itemData.tier) || 1;
 
         const tierImgUrl =

@@ -91,9 +91,11 @@
 .inventory-modal .inventory-close-btn{
   position:absolute;
 
+  top:50%;
   top:2px;
   right:0;
 
+  transform:translateY(-50%);
   transform:none;
 
   width:36px;
@@ -164,8 +166,6 @@
 
   display:flex;
   align-items:center;
-
-  overflow:hidden;
 }
 
 .inventory-item:hover{
@@ -178,21 +178,9 @@
   gap:10px;
 
   width:100%;
-
-  min-width:0;
 }
 
-/* 🔥 ÁREA DO ÍCONE */
 .inventory-emoji{
-  width:28px;
-  height:28px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  flex-shrink:0;
-
   font-size:22px;
 }
 
@@ -202,16 +190,12 @@
   align-items:center;
   gap:8px;
   flex:1;
-
-  min-width:0;
 }
 
 .inventory-name-qty{
   display:flex;
   align-items:center;
   gap:6px;
-
-  min-width:0;
 }
 
 .inventory-name{
@@ -220,9 +204,6 @@
 
   font-size:12px;
   white-space:nowrap;
-
-  overflow:hidden;
-  text-overflow:ellipsis;
 }
 
 /* quantidade agora ao lado do nome */
@@ -244,8 +225,6 @@
   font-weight:bold;
 
   line-height:1;
-
-  flex-shrink:0;
 }
 
 /* =========================
@@ -264,10 +243,6 @@
 
 .item-emoji{
   font-size:70px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
 }
 
 .item-info{
@@ -301,32 +276,4 @@
 
 .item-actions button{
   flex:1;
-}
-
-/* =========================
-   IMAGENS DOS ITENS
-========================= */
-
-.inventory-item-img{
-  width:26px;
-  height:26px;
-
-  object-fit:contain;
-
-  display:block;
-
-  max-width:100%;
-  max-height:100%;
-}
-
-.item-open-img{
-  width:90px;
-  height:90px;
-
-  object-fit:contain;
-
-  display:block;
-
-  max-width:100%;
-  max-height:100%;
 }

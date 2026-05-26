@@ -111,7 +111,16 @@ function initInventory() {
       div.innerHTML = `
         <div class="inventory-item-top">
           <span class="inventory-emoji">
-            ${itemData.item || "📦"}
+
+            ${
+              itemData.img
+                ? `<img 
+                  src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                  class="inventory-item-img"
+                >`
+              : (itemData.item || "📦")
+            }
+
           </span>
 
           <div class="inventory-text">

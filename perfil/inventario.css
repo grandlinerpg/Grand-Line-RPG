@@ -180,6 +180,21 @@
 
 .inventory-emoji{
   font-size:22px;
+
+  /* 🔥 garante centralização da imagem */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* 🔥 IMAGEM DO ITEM NA LISTA */
+.inventory-item-img{
+  width:26px;
+  height:26px;
+
+  object-fit:contain;
+
+  display:block;
 }
 
 /* 🔥 NOVO: nome + quantidade lado a lado */
@@ -241,6 +256,21 @@
 
 .item-emoji{
   font-size:70px;
+
+  /* 🔥 evita imagem gigante no card aberto */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* 🔥 IMAGEM NO ITEM ABERTO */
+.item-open-img{
+  width:90px;
+  height:90px;
+
+  object-fit:contain;
+
+  display:block;
 }
 
 .item-info{

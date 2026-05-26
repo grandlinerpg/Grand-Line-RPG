@@ -106,7 +106,6 @@ function initInventory() {
         value: itemData.value,
         categoria: itemCategoria,
         quantidade: quantidade
-        img: itemData.img
       };
 
       div.innerHTML = `
@@ -142,13 +141,8 @@ function initInventory() {
 
         currentItem = itemObj;
 
-        document.getElementById("item-emoji").innerHTML =
-          itemData.img
-            ? `<img
-              src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-              class="item-open-img"
-            >`
-          : (itemData.item || "📦");
+        document.getElementById("item-emoji").innerText =
+          itemData.item || "📦";
 
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;

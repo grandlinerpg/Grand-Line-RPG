@@ -24,6 +24,8 @@ window.usarItem = async function(item) {
 
   if (!item) return;
 
+  console.log("TIPO ITEM:", item.tipo, item);
+
   switch (Number(item.tipo)) {
 
     // =====================
@@ -55,6 +57,7 @@ window.usarItem = async function(item) {
     // BAÚ
     // =====================
     case 4:
+      console.log("ENTROU NO TIPO 4");
       await usarTipo4(item);
       break;
   }
@@ -286,6 +289,8 @@ function usarTipo3(item) {
 // =========================
 async function usarTipo4(item) {
 
+  console.log("USANDO BAÚ", item);
+
   const auth = window.auth;
   const db = window.db;
 
@@ -300,6 +305,8 @@ async function usarTipo4(item) {
     ref(db, `itens/baus/${item.id}`);
 
   const snap = await get(bauRef);
+
+  console.log("SNAP:", snap.exists(), snap.val());
 
   if (!snap.exists()) return;
 
@@ -330,6 +337,8 @@ async function usarTipo4(item) {
       Math.random() * (max - min + 1)
     ) + min;
 
+  console.log("DINHEIRO:", dinheiro);
+
   await set(
     saldoRef,
     saldoAtual + dinheiro
@@ -342,6 +351,8 @@ async function usarTipo4(item) {
 
   const prob =
     Number(bau.prob) || 0;
+
+  console.log("PROB:", prob);
 
   const rngProb =
     Math.random() * 100;
@@ -380,6 +391,8 @@ async function usarTipo4(item) {
           break;
         }
       }
+
+      console.log("DROP:", itemRecebido);
 
       if (itemRecebido) {
         await adicionarItem(itemRecebido);

@@ -275,3 +275,21 @@
 .item-actions button{
   flex:1;
 }
+
+.inventory-item-img{
+  width:26px;
+  height:26px;
+
+  object-fit:contain;
+
+  display:block;
+}
+
+.item-open-img{
+  width:90px;
+  height:90px;
+
+  object-fit:contain;
+
+  display:block;
+}

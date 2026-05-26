@@ -49,6 +49,14 @@ window.usarItem = async function(item) {
     case 3:
       usarTipo3(item);
       break;
+
+    // =====================
+    // TIPO 4
+    // BAÚ
+    // =====================
+    case 4:
+      await usarTipo4(item);
+      break;
   }
 };
 
@@ -270,4 +278,133 @@ function usarTipo3(item) {
 
   window.location.href =
     `${item.value}.html`;
+}
+
+// =========================
+// TIPO 4
+// BAÚ
+// =========================
+async function usarTipo4(item) {
+
+  const auth = window.auth;
+  const db = window.db;
+
+  const user = auth.currentUser;
+
+  if (!user) return;
+
+  // =====================
+  // PEGA BAÚ
+  // =====================
+  const bauRef =
+    ref(db, `itens/baus/${item.id}`);
+
+  const snap = await get(bauRef);
+
+  if (!snap.exists()) return;
+
+  const bau = snap.val();
+
+  // =====================
+  // DINHEIRO
+  // =====================
+  const saldoRef =
+    ref(db, `players/${user.uid}/info/saldo`);
+
+  const saldoSnap = await get(saldoRef);
+
+  let saldoAtual = 0;
+
+  if (saldoSnap.exists()) {
+    saldoAtual = Number(saldoSnap.val()) || 0;
+  }
+
+  const min =
+    Number(bau.dinheiro?.min) || 0;
+
+  const max =
+    Number(bau.dinheiro?.max) || 0;
+
+  const dinheiro =
+    Math.floor(
+      Math.random() * (max - min + 1)
+    ) + min;
+
+  await set(
+    saldoRef,
+    saldoAtual + dinheiro
+  );
+
+  // =====================
+  // CHANCE DE ITEM
+  // =====================
+  let itemRecebido = null;
+
+  const prob =
+    Number(bau.prob) || 0;
+
+  const rngProb =
+    Math.random() * 100;
+
+  if (rngProb <= prob) {
+
+    const drops =
+      bau.drops || {};
+
+    const lista =
+      Object.entries(drops);
+
+    if (lista.length) {
+
+      const totalChance =
+        lista.reduce(
+          (acc, [, chance]) =>
+            acc + (Number(chance) || 0),
+          0
+        );
+
+      let rng =
+        Math.random() * totalChance;
+
+      let acumulado = 0;
+
+      for (const [itemId, chance] of lista) {
+
+        acumulado +=
+          Number(chance) || 0;
+
+        if (rng <= acumulado) {
+
+          itemRecebido = itemId;
+
+          break;
+        }
+      }
+
+      if (itemRecebido) {
+        await adicionarItem(itemRecebido);
+      }
+    }
+  }
+
+  // =====================
+  // REMOVE BAÚ
+  // =====================
+  await removerItem(item.id);
+
+  // =====================
+  // ALERTA
+  // =====================
+  if (itemRecebido) {
+
+    alert(
+      `Você recebeu ${dinheiro} Berries e um item!`
+    );
+
+  } else {
+
+    alert(
+      `Você recebeu ${dinheiro} Berries!`
+    );
+  }
 }

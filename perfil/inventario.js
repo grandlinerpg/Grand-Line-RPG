@@ -107,21 +107,24 @@ function initInventory() {
         img: itemData.img
       };
 
+      /* 🔥 SÓ AQUI FOI ALTERADO (ORDEM CORRIGIDA) */
       div.innerHTML = `
         <div class="inventory-item-top">
+
           <span class="inventory-emoji">
             ${
               itemData.img
                 ? `<img 
-                  src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                  class="inventory-item-img"
-                >`
-              : (itemData.item || "📦")
+                    src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                    class="inventory-item-img"
+                  >`
+                : (itemData.item || "📦")
             }
           </span>
 
           <div class="inventory-text">
             <div class="inventory-name-qty">
+
               <span class="inventory-name">
                 ${itemData.nome || itemId}
               </span>
@@ -129,8 +132,10 @@ function initInventory() {
               <span class="inventory-qty">
                 ${quantidade}
               </span>
+
             </div>
           </div>
+
         </div>
       `;
 
@@ -138,7 +143,6 @@ function initInventory() {
 
         currentItem = itemObj;
 
-        /* 🔥 CORREÇÃO AQUI (ANTES ERA innerText) */
         document.getElementById("item-emoji").innerHTML =
           itemData.img
             ? `<img 

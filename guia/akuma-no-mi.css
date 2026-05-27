@@ -168,9 +168,9 @@ body{
 .item{
   display:flex;
   align-items:center;
-  gap:15px;
+  gap:14px;
 
-  padding:14px 18px;
+  padding:12px 16px;
   margin:4px 0;
 
   background:rgba(0,0,0,0.45);
@@ -192,15 +192,17 @@ body{
   border-color:#f6d365;
 }
 
-/* IMAGEM SEM MOLDURA */
+/* IMAGEM AJUSTADA */
 
 .item img{
-  width:70px;
-  height:46px;
+  width:58px;
+  height:58px;
 
-  object-fit:cover;
+  object-fit:contain;
 
   border-radius:8px;
+
+  flex-shrink:0;
 }
 
 /* TEXTO */
@@ -209,6 +211,8 @@ body{
   font-family:'Cinzel', serif;
 
   color:#f6d365;
+
+  font-size:15px;
 }
 
 /* MODAL */
@@ -242,13 +246,13 @@ body{
   text-align:center;
 }
 
-/* IMAGEM MODAL SEM MOLDURA */
+/* IMAGEM MODAL AJUSTADA */
 
 .modal-img{
-  width:280px;
-  height:180px;
+  width:220px;
+  height:220px;
 
-  object-fit:cover;
+  object-fit:contain;
 
   border-radius:10px;
 

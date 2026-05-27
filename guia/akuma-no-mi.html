@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Akuma no Mi - Grand Line RPG</title>
+
+  <link rel="stylesheet" href="estilo-luta.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <!-- NAVBAR -->
+
+  <header class="navbar">
+
+    <div class="logo-area">
+
+      <img
+        src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
+        class="logo"
+      >
+
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+
+    </div>
+
+    <nav>
+      <a href="#" onclick="voltar()">VOLTAR</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
+
+  </header>
+
+  <!-- TÍTULO -->
+
+  <section class="guide-title">
+
+    <h1>AKUMA NO MI</h1>
+
+    <p>
+      Frutas misteriosas capazes de conceder poderes sobrenaturais.
+    </p>
+
+  </section>
+
+  <!-- LISTA -->
+
+  <main id="list"></main>
+
+  <!-- MODAL -->
+
+  <div id="modal" class="modal">
+
+    <div class="modal-content">
+
+      <img id="m-img" class="modal-img">
+
+      <h2 id="m-title"></h2>
+
+      <p id="m-desc"></p>
+
+      <img id="m-tier-img" class="modal-tier-img">
+
+      <button onclick="closeModal()">
+        FECHAR
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- FIREBASE -->
+
+  <script type="module">
+
+    import { initializeApp }
+
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import {
+      getDatabase,
+      ref,
+      get
+    }
+
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    /* FIREBASE CONFIG */
+
+    const firebaseConfig = {
+
+      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+
+      projectId: "grand-line-rpg-dcda9",
+
+      storageBucket: "grand-line-rpg-dcda9.appspot.com",
+
+      messagingSenderId: "172042779786",
+
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+
+      databaseURL:
+      "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    const db = getDatabase(app);
+
+    /* CLOUDINARY BASE */
+
+    const CLOUD =
+      "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/";
+
+    /* IMAGENS DOS TIERS */
+
+    const tiersImg = {
+
+      1:
+      "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
+
+      2:
+      "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
+
+      3:
+      "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
+
+      4:
+      "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
+
+      5:
+      "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
+
+    };
+
+    const list = document.getElementById("list");
+
+    /* CARREGAR AKUMA NO MI */
+
+    async function loadAkumas(){
+
+      const snap = await get(
+        ref(db, "itens/akuma-no-mi")
+      );
+
+      if(!snap.exists()) return;
+
+      const data = snap.val();
+
+      for(let t = 1; t <= 5; t++){
+
+        /* SEPARADOR */
+
+        const sep = document.createElement("div");
+
+        sep.className = "tier-sep";
+
+        sep.innerHTML =
+          `<img src="${tiersImg[t]}">`;
+
+        list.appendChild(sep);
+
+        /* ITENS */
+
+        Object.values(data)
+
+        .filter(a => Number(a.tier) === t)
+
+        .forEach(a => {
+
+          const item = document.createElement("div");
+
+          item.className = "item";
+
+          item.innerHTML = `
+
+            <img src="${CLOUD + a.img}.jpg">
+
+            <span>${a.nome}</span>
+
+          `;
+
+          item.onclick = () => openModal(a);
+
+          list.appendChild(item);
+
+        });
+
+      }
+
+    }
+
+    loadAkumas();
+
+    /* MODAL */
+
+    function openModal(a){
+
+      document.getElementById("modal")
+      .style.display = "flex";
+
+      document.getElementById("m-title")
+      .innerText = a.nome;
+
+      document.getElementById("m-desc")
+      .innerText = a.description;
+
+      document.getElementById("m-tier-img")
+      .src = tiersImg[a.tier];
+
+      document.getElementById("m-img")
+      .src = CLOUD + a.img + ".jpg";
+
+    }
+
+    /* FECHAR MODAL */
+
+    window.closeModal = function(){
+
+      document.getElementById("modal")
+      .style.display = "none";
+
+    }
+
+    /* VOLTAR */
+
+    window.voltar = function(){
+
+      history.back();
+
+    }
+
+  </script>
+
+</body>
+</html>

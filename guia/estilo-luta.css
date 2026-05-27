@@ -124,7 +124,7 @@ body{
 .tier-sep::after{
   content:"";
   position:absolute;
-  bottom:-6px;
+  top:-6px;
   left:10%;
   width:80%;
   height:1px;

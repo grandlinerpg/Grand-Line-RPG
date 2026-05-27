@@ -101,10 +101,19 @@ body{
   padding:5px 20px 60px;
 
   display:grid;
-  grid-template-columns:1fr;
+  grid-template-columns:repeat(2, 1fr);
   gap:10px;
 }
 
+/* CELULAR */
+
+@media(max-width:700px){
+
+  #list{
+    grid-template-columns:1fr;
+  }
+
+}
 /* TIER SEPARADOR */
 
 .tier-sep{

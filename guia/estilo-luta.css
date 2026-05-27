@@ -110,7 +110,7 @@ body{
 }
 
 .tier-sep img{
-  width:290px;
+  width:340px;
 }
 
 /* ITEM */
@@ -177,8 +177,8 @@ body{
 
 /* IMAGEM PRINCIPAL (MAIOR + MOLDURA 3:2) */
 .modal-img{
-  width:230px;
-  height:150px;
+  width:280px;
+  height:180px;
   object-fit:cover;
 
   border-radius:10px;

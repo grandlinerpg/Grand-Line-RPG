@@ -35,13 +35,11 @@
 
   </header>
 
-  <!-- TÍTULO -->
   <section class="guide-title">
     <h1>ESTILOS DE LUTA</h1>
     <p>Escolha seu estilo de combate</p>
   </section>
 
-  <!-- LISTA -->
   <main id="list"></main>
 
   <!-- MODAL -->
@@ -51,7 +49,8 @@
       <img id="m-img" class="modal-img">
 
       <h2 id="m-title"></h2>
-      <p id="m-tier"></p>
+      <p id="m-tier-text"></p>
+      <img id="m-tier-img" class="modal-tier-img">
       <p id="m-desc"></p>
 
       <button id="m-btn">VER HABILIDADES</button>
@@ -113,6 +112,7 @@
         item.innerHTML = `
           <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${slug(s.n)}.png">
           <span>${s.n}</span>
+          <img class="tier-badge" src="${tiersImg[t]}">
         `;
 
         item.onclick = () => openModal(s);
@@ -124,7 +124,8 @@
     function openModal(s){
       document.getElementById("modal").style.display = "flex";
       document.getElementById("m-title").innerText = s.n;
-      document.getElementById("m-tier").innerText = "Tier " + s.t;
+      document.getElementById("m-tier-text").innerText = "Tier " + s.t;
+      document.getElementById("m-tier-img").src = tiersImg[s.t];
       document.getElementById("m-desc").innerText = s.d;
       document.getElementById("m-img").src =
         "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".png";

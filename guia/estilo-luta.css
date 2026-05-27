@@ -101,17 +101,16 @@ body{
   padding:5px 20px 60px;
 }
 
-/* TIER SEPARADOR (MENOR ESPAÇO ENTRE BLOCOS) */
+/* TIER SEPARADOR */
 
 .tier-sep{
   display:flex;
   justify-content:center;
-  margin:14px 0 6px;
+  margin:18px 0 10px;
 }
 
 .tier-sep img{
-  width:260px;
-  filter:drop-shadow(0 0 10px rgba(255,215,120,0.2));
+  width:290px;
 }
 
 /* ITEM */
@@ -130,17 +129,23 @@ body{
 
   cursor:pointer;
   transition:0.25s;
+
+  overflow:hidden;
+}
+
+/* MOLDURA 3:2 LISTA */
+.item img{
+  width:70px;
+  height:46px;
+  object-fit:cover;
+
+  border-radius:8px;
+  border:1px solid rgba(246,211,101,0.35);
 }
 
 .item:hover{
   transform:translateX(6px);
   border-color:#f6d365;
-}
-
-.item img{
-  width:40px;
-  height:40px;
-  object-fit:contain;
 }
 
 .item span{
@@ -170,21 +175,25 @@ body{
   text-align:center;
 }
 
-/* IMAGEM PRINCIPAL (MAIOR AINDA) */
-
+/* IMAGEM PRINCIPAL (MAIOR + MOLDURA 3:2) */
 .modal-img{
-  width:200px;
+  width:230px;
+  height:150px;
+  object-fit:cover;
+
+  border-radius:10px;
+  border:1px solid rgba(246,211,101,0.4);
+
   margin-bottom:10px;
 }
 
-/* TIER IMG DO MODAL */
-
+/* TIER IMG DO MODAL (SEM BRANCO + MAIS LIMPO) */
 .modal-tier-img{
-  width:160px;
+  width:180px;
   margin:10px 0;
-  filter:drop-shadow(0 0 8px rgba(255,215,120,0.25));
 }
 
+/* TEXTO */
 .modal-content h2{
   color:#f6d365;
 }
@@ -193,6 +202,7 @@ body{
   margin:6px 0;
 }
 
+/* BOTÕES */
 .modal-content button{
   width:100%;
   margin-top:10px;

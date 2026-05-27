@@ -35,7 +35,7 @@ body{
   z-index:-1;
 }
 
-/* NAVBAR */
+/* NAVBAR (SEU ORIGINAL - NÃO MEXI) */
 
 .navbar{
   width:100%;
@@ -75,7 +75,7 @@ body{
   letter-spacing:6px;
 }
 
-/* TÍTULO */
+/* TÍTULO (REDUZIDO ESPAÇO) */
 
 .guide-title{
   text-align:center;
@@ -93,22 +93,15 @@ body{
   color:#f5e6c8;
 }
 
-/* =========================
-   LISTA (MOBILE DEFAULT)
-========================= */
+/* LISTA */
 
 #list{
-  max-width:1200px;
+  max-width:900px;
   margin:auto;
   padding:5px 20px 60px;
-
-  display:flex;
-  flex-direction:column;
 }
 
-/* =========================
-   TIER SEPARADOR
-========================= */
+/* TIER SEPARADOR (MENOR ESPAÇO ENTRE BLOCOS) */
 
 .tier-sep{
   display:flex;
@@ -155,30 +148,6 @@ body{
   color:#f6d365;
 }
 
-/* =========================
-   DESKTOP: 5 COLUNAS
-========================= */
-
-@media (min-width: 900px){
-
-  #list{
-    display:grid;
-    grid-template-columns:repeat(5, 1fr);
-    gap:20px;
-    align-items:start;
-  }
-
-  /* cada tier vira uma coluna visual */
-  .tier-sep{
-    grid-column:auto;
-    margin:10px 0 10px;
-  }
-
-  .item{
-    margin:6px 0;
-  }
-}
-
 /* MODAL */
 
 .modal{
@@ -201,7 +170,7 @@ body{
   text-align:center;
 }
 
-/* IMAGEM PRINCIPAL */
+/* IMAGEM PRINCIPAL (MAIOR AINDA) */
 
 .modal-img{
   width:200px;

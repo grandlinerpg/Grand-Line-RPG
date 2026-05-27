@@ -1,196 +1,148 @@
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+<!DOCTYPE html>
+<html lang="pt-br">
 
-body{
-  font-family:Arial, sans-serif;
-  overflow-x:hidden;
-  color:white;
-}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-/* FUNDO */
+  <title>Estilos de Luta - Grand Line RPG</title>
 
-.background{
-  position:fixed;
-  inset:0;
+  <link rel="stylesheet" href="estilo-luta.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+</head>
 
-  background-image:url('https://i.imgur.com/pKx1Cvd.png');
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
+<body>
 
-  transform:scale(1.03);
+  <div class="background"></div>
+  <div class="overlay"></div>
 
-  z-index:-2;
-}
+  <!-- NAVBAR (SEM ALTERAÇÃO) -->
+  <header class="navbar">
 
-.overlay{
-  position:fixed;
-  inset:0;
+    <div class="logo-area">
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
 
-  background:linear-gradient(to bottom,rgba(0,0,0,0.70),rgba(0,0,0,0.55));
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+    </div>
 
-  z-index:-1;
-}
+    <nav>
+      <a href="#" onclick="voltar()">VOLTAR</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
 
-/* NAVBAR (SEU ORIGINAL - NÃO MEXI) */
+  </header>
 
-.navbar{
-  width:100%;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px 50px;
-  background:linear-gradient(to bottom,rgba(0,0,0,0.65),rgba(0,0,0,0.35));
-  backdrop-filter:blur(8px);
-  border-bottom:1px solid rgba(255,215,120,0.15);
-}
+  <!-- TÍTULO -->
+  <section class="guide-title">
+    <h1>ESTILOS DE LUTA</h1>
+    <p>Escolha seu estilo de combate</p>
+  </section>
 
-.logo-area{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
+  <!-- LISTA -->
+  <main id="list"></main>
 
-.logo{ width:65px; }
+  <!-- MODAL -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
 
-.logo-text{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
+      <img id="m-img" class="modal-img">
 
-.logo-text h1{
-  font-family:'Cinzel', serif;
-  color:#f4d089;
-  font-size:28px;
-}
+      <h2 id="m-title"></h2>
+      <p id="m-tier"></p>
+      <p id="m-desc"></p>
 
-.logo-text p{
-  font-family:'Cinzel', serif;
-  color:#f4d089;
-  font-size:12px;
-  letter-spacing:6px;
-}
+      <button id="m-btn">VER HABILIDADES</button>
+      <button onclick="closeModal()">FECHAR</button>
 
-/* TÍTULO */
+    </div>
+  </div>
 
-.guide-title{
-  text-align:center;
-  margin:60px 0 40px;
-}
+  <script>
 
-.guide-title h1{
-  font-family:'Cinzel', serif;
-  font-size:42px;
-  color:#f6d365;
-}
+    const tiersImg = {
+      1: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
+      2: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
+      3: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
+      4: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
+      5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
+    };
 
-.guide-title p{
-  font-family:'Cinzel', serif;
-  color:#f5e6c8;
-}
+    const styles = [
+      { n:"Arte do Clima", t:4, d:"Manipula o clima com o Clima-Tact", l:"arte-do-clima.html" },
+      { n:"Atirador", t:3, d:"Armas de longo alcance", l:"atirador.html" },
+      { n:"Black Leg", t:3, d:"Chutes poderosos", l:"black-leg.html" },
+      { n:"Boxeador", t:2, d:"Punhos e força bruta", l:"boxeador.html" },
+      { n:"Ciborgue", t:4, d:"Tecnologia e armas mecânicas", l:"ciborgue.html" },
+      { n:"Circense", t:2, d:"Acrobacias e lâminas", l:"circense.html" },
+      { n:"Espadachim", t:5, d:"Mestre das espadas", l:"espadachim.html" },
+      { n:"Hashoken", t:4, d:"Ondas de choque", l:"hashoken.html" },
+      { n:"Hipnotizador", t:3, d:"Controle mental", l:"hipnotizador.html" },
+      { n:"Jao Kun Do", t:3, d:"Chutes rápidos", l:"jao-kun-do.html" },
+      { n:"Jio-Ken", t:2, d:"Golpes brutais", l:"jio-ken.html" },
+      { n:"Lanceiro", t:3, d:"Armas de longo alcance", l:"lanceiro.html" },
+      { n:"Ninjutsu", t:4, d:"Furtividade extrema", l:"ninjutsu.html" },
+      { n:"Okama Kenpo", t:2, d:"Dança de combate", l:"okama-kenpo.html" },
+      { n:"Punho de Ferro", t:4, d:"Força máxima", l:"punho-de-ferro.html" },
+      { n:"Rokushiki", t:5, d:"Técnicas da Marinha", l:"rokushiki.html" },
+      { n:"Ryusoken", t:4, d:"Garras de dragão", l:"ryusoken.html" },
+      { n:"Shuron Hakke", t:3, d:"Luta bêbada", l:"shuron-hakke.html" },
+      { n:"Yamagurai", t:3, d:"Machados pesados", l:"yamagurai.html" }
+    ];
 
-/* LISTA */
+    const list = document.getElementById("list");
 
-#list{
-  max-width:900px;
-  margin:auto;
-  padding:20px;
-}
+    function slug(name){
+      return name.toLowerCase().replace(/ /g,'-');
+    }
 
-/* TIER SEPARADOR */
+    for(let t=5;t>=1;t--){
 
-.tier-sep{
-  display:flex;
-  justify-content:center;
-  margin:40px 0 20px;
-}
+      const sep = document.createElement("div");
+      sep.className = "tier-sep";
+      sep.innerHTML = `<img src="${tiersImg[t]}">`;
+      list.appendChild(sep);
 
-.tier-sep img{
-  width:260px;
-  filter:drop-shadow(0 0 10px rgba(255,215,120,0.2));
-}
+      styles.filter(s => s.t === t).forEach(s => {
 
-/* ITEM */
+        const item = document.createElement("div");
+        item.className = "item";
 
-.item{
-  display:flex;
-  align-items:center;
-  gap:15px;
+        item.innerHTML = `
+          <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${slug(s.n)}.png">
+          <span>${s.n}</span>
+        `;
 
-  padding:14px 18px;
-  margin:10px 0;
+        item.onclick = () => openModal(s);
 
-  background:rgba(0,0,0,0.45);
-  border:1px solid rgba(255,215,120,0.15);
-  border-radius:12px;
+        list.appendChild(item);
+      });
+    }
 
-  cursor:pointer;
-  transition:0.25s;
-}
+    function openModal(s){
+      document.getElementById("modal").style.display = "flex";
+      document.getElementById("m-title").innerText = s.n;
+      document.getElementById("m-tier").innerText = "Tier " + s.t;
+      document.getElementById("m-desc").innerText = s.d;
+      document.getElementById("m-img").src =
+        "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".png";
 
-.item:hover{
-  transform:translateX(6px);
-  border-color:#f6d365;
-}
+      document.getElementById("m-btn").onclick = () => {
+        window.location.href = s.l;
+      };
+    }
 
-.item img{
-  width:40px;
-  height:40px;
-  object-fit:contain;
-}
+    function closeModal(){
+      document.getElementById("modal").style.display = "none";
+    }
 
-.item span{
-  font-family:'Cinzel', serif;
-  color:#f6d365;
-}
+    function voltar(){
+      history.back();
+    }
 
-/* MODAL */
+  </script>
 
-.modal{
-  position:fixed;
-  inset:0;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  background:rgba(0,0,0,0.8);
-  z-index:9999;
-}
-
-.modal-content{
-  width:90%;
-  max-width:420px;
-  background:rgba(10,10,10,0.95);
-  border:1px solid rgba(255,215,120,0.2);
-  padding:25px;
-  border-radius:16px;
-  text-align:center;
-}
-
-.modal-img{
-  width:90px;
-  margin-bottom:10px;
-}
-
-.modal-content h2{
-  color:#f6d365;
-}
-
-.modal-content p{
-  margin:6px 0;
-}
-
-.modal-content button{
-  width:100%;
-  margin-top:10px;
-  padding:12px;
-
-  border:none;
-  cursor:pointer;
-
-  background:linear-gradient(to bottom,#8f1408,#5e0800);
-  color:#f6d365;
-}
+</body>
+</html>

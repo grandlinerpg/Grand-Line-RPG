@@ -138,7 +138,6 @@ function initInventory() {
 
         currentItem = itemObj;
 
-        /* 🔥 CORREÇÃO AQUI (ANTES ERA innerText) */
         document.getElementById("item-emoji").innerHTML =
           itemData.img
             ? `<img 
@@ -155,14 +154,27 @@ function initInventory() {
         const tierImgUrl =
           `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
 
+        /* 🔥 ALTERAÇÃO FEITA AQUI (ORDEM DO CARD) */
         document.getElementById("item-description").innerHTML =
           `
-          <div>
+          <div style="
+            font-size:18px;
+            color:#f6d365;
+            font-family:'Cinzel', serif;
+            margin-bottom:8px;
+          ">
+            ${itemData.nome || itemId}
+          </div>
+
+          <div style="
+            color:#ddd;
+            line-height:1.5;
+          ">
             ${itemData.description || "Sem descrição."}
           </div>
 
           <img src="${tierImgUrl}" style="
-              width:180px;
+              width:220px;
               display:block;
               margin:12px auto 0 auto;
             "/>

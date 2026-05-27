@@ -1,398 +1,196 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Estilos de Luta - Grand Line RPG</title>
-
-  <link rel="stylesheet" href="estilo-luta.css">
-
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
-</head>
-
-<body>
-
-  <!-- FUNDO -->
-  <div class="background"></div>
-  <div class="overlay"></div>
-
-  <!-- NAVBAR -->
-  <header class="navbar">
-
-    <div class="logo-area">
-
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
-
-      <div class="logo-text">
-        <h1>GRAND LINE</h1>
-        <p>— RPG —</p>
-      </div>
-
-    </div>
-
-    <nav>
-      <a href="#" onclick="voltar()">VOLTAR</a>
-      <a href="guia.html">GUIA</a>
-    </nav>
-
-  </header>
-
-  <!-- TÍTULO -->
-  <section class="guide-title">
-
-    <h1>ESTILOS DE LUTA</h1>
-
-    <p>
-      Escolha a forma como seu personagem enfrentará os combates.
-    </p>
-
-  </section>
-
-  <!-- CONTEÚDO -->
-  <main class="guide-container">
-
-    <!-- ARTE DO CLIMA -->
-    <div class="guide-card">
-
-      <h2>Arte do Clima</h2>
-
-      <div class="card-emoji">⛈️</div>
-
-      <p>
-        Manipula o clima utilizando o Clima-Tact e conhecimento climático.
-      </p>
-
-      <button onclick="go('arte-do-clima.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- ATIRADOR -->
-    <div class="guide-card">
-
-      <h2>Atirador</h2>
-
-      <div class="card-emoji">🎯</div>
-
-      <p>
-        Especialista em armas de longo alcance e ataques surpresa.
-      </p>
-
-      <button onclick="go('atirador.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- BLACK LEG -->
-    <div class="guide-card">
-
-      <h2>Black Leg</h2>
-
-      <div class="card-emoji">🦵</div>
-
-      <p>
-        Técnicas de combate focadas em chutes poderosos e acrobacias.
-      </p>
-
-      <button onclick="go('black-leg.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- BOXEADOR -->
-    <div class="guide-card">
-
-      <h2>Boxeador</h2>
-
-      <div class="card-emoji">🥊</div>
-
-      <p>
-        Estilo baseado em força, velocidade e golpes com os punhos.
-      </p>
-
-      <button onclick="go('boxeador.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- CIBORGUE -->
-    <div class="guide-card">
-
-      <h2>Ciborgue</h2>
-
-      <div class="card-emoji">⚙️</div>
-
-      <p>
-        Combate aprimorado com partes mecânicas e armamentos.
-      </p>
-
-      <button onclick="go('ciborgue.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- CIRCENSE -->
-    <div class="guide-card">
-
-      <h2>Circense</h2>
-
-      <div class="card-emoji">🎪</div>
-
-      <p>
-        Acrobacias e truques perigosos combinados com lâminas.
-      </p>
-
-      <button onclick="go('circense.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- ESPADACHIM -->
-    <div class="guide-card">
-
-      <h2>Espadachim</h2>
-
-      <div class="card-emoji">⚔️</div>
-
-      <p>
-        Mestres no uso da espada e técnicas avançadas de corte.
-      </p>
-
-      <button onclick="go('espadachim.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- HASHOKEN -->
-    <div class="guide-card">
-
-      <h2>Hashoken</h2>
-
-      <div class="card-emoji">💥</div>
-
-      <p>
-        Utiliza vibrações corporais para criar ondas de choque.
-      </p>
-
-      <button onclick="go('hashoken.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- HIPNOTIZADOR -->
-    <div class="guide-card">
-
-      <h2>Hipnotizador</h2>
-
-      <div class="card-emoji">🌀</div>
-
-      <p>
-        Manipula inimigos utilizando hipnose e movimentos pendulares.
-      </p>
-
-      <button onclick="go('hipnotizador.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- JAO KUN DO -->
-    <div class="guide-card">
-
-      <h2>Jao Kun Do</h2>
-
-      <div class="card-emoji">⚡</div>
-
-      <p>
-        Chutes extremamente rápidos e imprevisíveis em combate.
-      </p>
-
-      <button onclick="go('jao-kun-do.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- JIO-KEN -->
-    <div class="guide-card">
-
-      <h2>Jio-Ken</h2>
-
-      <div class="card-emoji">🔥</div>
-
-      <p>
-        Arte marcial focada em resistência física e golpes brutais.
-      </p>
-
-      <button onclick="go('jio-ken.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- LANCEIRO -->
-    <div class="guide-card">
-
-      <h2>Lanceiro</h2>
-
-      <div class="card-emoji">🗡️</div>
-
-      <p>
-        Especialistas em lanças e alabardas de grande alcance.
-      </p>
-
-      <button onclick="go('lanceiro.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- NINJUTSU -->
-    <div class="guide-card">
-
-      <h2>Ninjutsu</h2>
-
-      <div class="card-emoji">🥷</div>
-
-      <p>
-        Técnicas furtivas focadas em velocidade e infiltração.
-      </p>
-
-      <button onclick="go('ninjutsu.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- OKAMA KENPO -->
-    <div class="guide-card">
-
-      <h2>Okama Kenpo</h2>
-
-      <div class="card-emoji">🩰</div>
-
-      <p>
-        Estilo derivado da dança clássica com golpes elegantes.
-      </p>
-
-      <button onclick="go('okama-kenpo.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- PUNHO DE FERRO -->
-    <div class="guide-card">
-
-      <h2>Punho de Ferro</h2>
-
-      <div class="card-emoji">👊</div>
-
-      <p>
-        Força extrema e impactos devastadores com os punhos.
-      </p>
-
-      <button onclick="go('punho-de-ferro.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- ROKUSHIKI -->
-    <div class="guide-card">
-
-      <h2>Rokushiki</h2>
-
-      <div class="card-emoji">🐆</div>
-
-      <p>
-        Técnica marcial que transforma o corpo em uma arma letal.
-      </p>
-
-      <button onclick="go('rokushiki.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- RYUSOKEN -->
-    <div class="guide-card">
-
-      <h2>Ryusoken</h2>
-
-      <div class="card-emoji">🐉</div>
-
-      <p>
-        Técnicas destrutivas inspiradas nas garras de um dragão.
-      </p>
-
-      <button onclick="go('ryusoken.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- SHURON HAKKE -->
-    <div class="guide-card">
-
-      <h2>Shuron Hakke</h2>
-
-      <div class="card-emoji">🍶</div>
-
-      <p>
-        Estilo imprevisível baseado em embriaguez e combate bruto.
-      </p>
-
-      <button onclick="go('shuron-hakke.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-    <!-- YAMAGURAI -->
-    <div class="guide-card">
-
-      <h2>Yamagurai</h2>
-
-      <div class="card-emoji">🪓</div>
-
-      <p>
-        Especialistas em machados de batalha e destruição pesada.
-      </p>
-
-      <button onclick="go('yamagurai.html')">
-        VER HABILIDADES
-      </button>
-
-    </div>
-
-  </main>
-
-  <script>
-
-    function go(page){
-      window.location.href = page;
-    }
-
-    function voltar(){
-      if (document.referrer) {
-        window.history.back();
-      } else {
-        window.location.href = "guia.html";
-      }
-    }
-
-  </script>
-
-</body>
-</html>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial, sans-serif;
+  overflow-x:hidden;
+  color:white;
+}
+
+/* FUNDO */
+
+.background{
+  position:fixed;
+  inset:0;
+
+  background-image:url('https://i.imgur.com/pKx1Cvd.png');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+
+  transform:scale(1.03);
+
+  z-index:-2;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+
+  background:linear-gradient(to bottom,rgba(0,0,0,0.70),rgba(0,0,0,0.55));
+
+  z-index:-1;
+}
+
+/* NAVBAR (SEU ORIGINAL - NÃO MEXI) */
+
+.navbar{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 50px;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.65),rgba(0,0,0,0.35));
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(255,215,120,0.15);
+}
+
+.logo-area{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.logo{ width:65px; }
+
+.logo-text{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.logo-text h1{
+  font-family:'Cinzel', serif;
+  color:#f4d089;
+  font-size:28px;
+}
+
+.logo-text p{
+  font-family:'Cinzel', serif;
+  color:#f4d089;
+  font-size:12px;
+  letter-spacing:6px;
+}
+
+/* TÍTULO */
+
+.guide-title{
+  text-align:center;
+  margin:60px 0 40px;
+}
+
+.guide-title h1{
+  font-family:'Cinzel', serif;
+  font-size:42px;
+  color:#f6d365;
+}
+
+.guide-title p{
+  font-family:'Cinzel', serif;
+  color:#f5e6c8;
+}
+
+/* LISTA */
+
+#list{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+/* TIER SEPARADOR */
+
+.tier-sep{
+  display:flex;
+  justify-content:center;
+  margin:40px 0 20px;
+}
+
+.tier-sep img{
+  width:260px;
+  filter:drop-shadow(0 0 10px rgba(255,215,120,0.2));
+}
+
+/* ITEM */
+
+.item{
+  display:flex;
+  align-items:center;
+  gap:15px;
+
+  padding:14px 18px;
+  margin:10px 0;
+
+  background:rgba(0,0,0,0.45);
+  border:1px solid rgba(255,215,120,0.15);
+  border-radius:12px;
+
+  cursor:pointer;
+  transition:0.25s;
+}
+
+.item:hover{
+  transform:translateX(6px);
+  border-color:#f6d365;
+}
+
+.item img{
+  width:40px;
+  height:40px;
+  object-fit:contain;
+}
+
+.item span{
+  font-family:'Cinzel', serif;
+  color:#f6d365;
+}
+
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  background:rgba(0,0,0,0.8);
+  z-index:9999;
+}
+
+.modal-content{
+  width:90%;
+  max-width:420px;
+  background:rgba(10,10,10,0.95);
+  border:1px solid rgba(255,215,120,0.2);
+  padding:25px;
+  border-radius:16px;
+  text-align:center;
+}
+
+.modal-img{
+  width:90px;
+  margin-bottom:10px;
+}
+
+.modal-content h2{
+  color:#f6d365;
+}
+
+.modal-content p{
+  margin:6px 0;
+}
+
+.modal-content button{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+
+  border:none;
+  cursor:pointer;
+
+  background:linear-gradient(to bottom,#8f1408,#5e0800);
+  color:#f6d365;
+}

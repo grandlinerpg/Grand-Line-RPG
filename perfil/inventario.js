@@ -162,7 +162,7 @@ function initInventory() {
           </div>
 
           <img src="${tierImgUrl}" style="
-              width:120px;
+              width:180px;
               display:block;
               margin:12px auto 0 auto;
             "/>

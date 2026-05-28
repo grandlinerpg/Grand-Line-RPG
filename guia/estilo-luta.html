@@ -77,7 +77,11 @@
 
   </div>
 
-  <script>
+  <script type="module">
+
+    import { abrirHabilidades, fecharHabilidades } from "./habilidades.js";
+
+    window.fecharHabilidades = fecharHabilidades;
 
     const tiersImg = {
       1: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
@@ -144,7 +148,7 @@
           <span>${s.n}</span>
         `;
 
-        item.onclick = () => openModal(s);
+        item.onclick = () => abrirHabilidades(s.n);
 
         list.appendChild(item);
       });
@@ -162,34 +166,6 @@
 
       document.getElementById("m-img").src =
         "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
-
-      document.getElementById("m-btn").onclick = async () => {
-
-        const modal =
-          document.getElementById("habilidades-modal");
-
-        const container =
-          document.getElementById("habilidades-container");
-
-        modal.style.display = "flex";
-
-        const html =
-          await fetch("habilidades.html")
-          .then(r => r.text());
-
-        container.innerHTML = html;
-
-        if(!document.getElementById("habilidades-css")){
-
-          const link = document.createElement("link");
-
-          link.id = "habilidades-css";
-          link.rel = "stylesheet";
-          link.href = "habilidades.css";
-
-          document.head.appendChild(link);
-        }
-      };
     }
 
     function closeModal(){
@@ -197,12 +173,7 @@
     }
 
     function closeHabilidades(){
-
-      document.getElementById("habilidades-modal")
-      .style.display = "none";
-
-      document.getElementById("habilidades-container")
-      .innerHTML = "";
+      fecharHabilidades();
     }
 
     function voltar(){

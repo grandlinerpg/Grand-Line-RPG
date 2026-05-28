@@ -229,18 +229,6 @@ button {
 ========================= */
 @media(max-width:700px) {
 
-  .navbar{
-    flex-direction:column;
-    gap:25px;
-    padding:20px;
-  }
-
-  nav{
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:25px;
-  }
-
   .profile-grid,
   .stats {
     grid-template-columns: 1fr;

@@ -10,7 +10,7 @@ import {
 
 /* 🔥 FIREBASE CONFIG (SEU PROJETO REAL) */
 const firebaseConfig = {
-  apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+  apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
   projectId: "grand-line-rpg-dcda9",
   storageBucket: "grand-line-rpg-dcda9.appspot.com",
@@ -38,24 +38,7 @@ function slug(name){
   return name.toLowerCase().replace(/ /g,'-');
 }
 
-/* 🔥 BUSCA ESTILO */
-async function getEstilo(key){
-
-  const snap = await get(ref(db, `habilidades/estilo-de-luta/${key}`));
-
-  if(!snap.exists()){
-    return { skills: [], heranca: null };
-  }
-
-  const data = snap.val();
-
-  return {
-    skills: Object.values(data).filter(v => typeof v === "object" && v.nome),
-    heranca: data.heranca || null
-  };
-}
-
-/* 🔥 ABRIR JANELA COM HERANÇA */
+/* 🔥 ABRIR JANELA */
 export async function abrirHabilidades(estiloNome){
 
   const modal = document.getElementById("habilidades-modal");
@@ -73,28 +56,14 @@ export async function abrirHabilidades(estiloNome){
 
     const key = estiloNome.toLowerCase();
 
-    let todasSkills = [];
+    const path = ref(
+      db,
+      `habilidades/estilo-de-luta/${key}`
+    );
 
-    let visitados = new Set();
-    let fila = [key];
+    const snapshot = await get(path);
 
-    /* 🔥 HERANÇA EM CADEIA */
-    while(fila.length > 0){
-
-      const atual = fila.shift();
-      if(visitados.has(atual)) continue;
-      visitados.add(atual);
-
-      const estilo = await getEstilo(atual);
-
-      todasSkills = todasSkills.concat(estilo.skills);
-
-      if(estilo.heranca){
-        fila.push(estilo.heranca);
-      }
-    }
-
-    if(todasSkills.length === 0){
+    if(!snapshot.exists()){
       container.innerHTML = `
         <div class="habilidade-item">
           Nenhuma habilidade encontrada
@@ -103,11 +72,13 @@ export async function abrirHabilidades(estiloNome){
       return;
     }
 
+    const data = Object.values(snapshot.val());
+
     container.innerHTML = "";
 
     for(let tier = 1; tier <= 5; tier++){
 
-      const group = todasSkills.filter(h => Number(h.rank) === tier);
+      const group = data.filter(h => Number(h.rank) === tier);
 
       if(group.length === 0) continue;
 
@@ -126,7 +97,9 @@ export async function abrirHabilidades(estiloNome){
         `;
 
         container.appendChild(item);
+
       });
+
     }
 
   } catch (err) {

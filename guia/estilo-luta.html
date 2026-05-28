@@ -8,8 +8,6 @@
   <title>Estilo de Luta - Grand Line RPG</title>
 
   <link rel="stylesheet" href="estilo-luta.css">
-  <link rel="stylesheet" href="habilidades.css">
-
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
@@ -18,7 +16,7 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR -->
+  <!-- NAVBAR (SEM ALTERAÇÃO) -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -44,38 +42,26 @@
 
   <main id="list"></main>
 
-  <!-- MODAL DO ESTILO -->
+  <!-- MODAL -->
   <div id="modal" class="modal">
     <div class="modal-content">
 
       <img id="m-img" class="modal-img">
 
       <h2 id="m-title"></h2>
+      <p id="m-tier-text"></p>
 
       <p id="m-desc"></p>
 
       <img id="m-tier-img" class="modal-tier-img">
 
       <button id="m-btn">VER HABILIDADES</button>
+
+      <div id="habilidades-container"></div>
+
       <button onclick="closeModal()">FECHAR</button>
 
     </div>
-  </div>
-
-  <!-- MODAL DAS HABILIDADES -->
-  <div id="habilidades-modal" class="habilidades-modal">
-
-    <div class="habilidades-window">
-
-      <button class="habilidades-close" onclick="closeHabilidades()">
-        ✕
-      </button>
-
-      <!-- CONTEÚDO VINDO DO habilidades.html -->
-      <div id="habilidades-content"></div>
-
-    </div>
-
   </div>
 
   <script>
@@ -90,94 +76,54 @@
 
     const styles = [
       { n:"Arte do Clima", t:2, d:"O estilo é focado na manipulação do clima ao seu redor com o Clima-Tact. Combinado com o conhecimento de oceanografia e sistemas climáticos, esse estilo pode ser usado com efeitos devastadores." },
-
       { n:"Atirador", t:1, d:"Armas de longo alcance" },
-
       { n:"Black Leg", t:3, d:"Chutes poderosos" },
-
       { n:"Boxeador", t:1, d:"Punhos e força bruta" },
-
       { n:"Ciborgue (Battle Franky)", t:3, d:"Tecnologia e armas mecânicas" },
-
       { n:"Ciborgue (Pacifista)", t:3, d:"Tecnologia e armas mecânicas" },
-
       { n:"Ciborgue (Queen)", t:3, d:"Tecnologia e armas mecânicas" },
-
       { n:"Circense", t:1, d:"Acrobacias e lâminas" },
-
       { n:"Espadachim", t:1, d:"Mestre das espadas" },
-
       { n:"Hakuba", t:3, d:"Garras de dragão" },
-
       { n:"Hashoken", t:3, d:"Ondas de choque" },
-
       { n:"Hipnotizador", t:3, d:"Controle mental" },
-
       { n:"Jao Kun Do", t:2, d:"Chutes rápidos" },
-
       { n:"Jio-Ken", t:2, d:"Golpes brutais" },
-
       { n:"Lanceiro", t:1, d:"Armas de longo alcance" },
-
       { n:"Lenhador", t:1, d:"Machados pesados" },
-
       { n:"Ninjutsu", t:2, d:"Furtividade extrema" },
-
       { n:"Okama Kenpo", t:1, d:"Dança de combate" },
-
       { n:"Punho de Ferro", t:5, d:"Um estilo de combate brutal baseado em força física extrema e domínio avançado de Haki. O usuário canaliza sua energia nos punhos, desferindo golpes devastadores capazes de causar impactos em área." },
-
       { n:"Rokushiki", t:3, d:"Técnicas da Marinha" },
-
       { n:"Rokushiki (Geppo)", t:4, d:"Técnicas da Marinha" },
-
       { n:"Rokushiki (Kami-e)", t:4, d:"Técnicas da Marinha" },
-
       { n:"Rokushiki (Rankyaku)", t:4, d:"Técnicas da Marinha" },
-
       { n:"Rokushiki (Shigan)", t:4, d:"Técnicas da Marinha" },
-
       { n:"Rokushiki (Soru)", t:4, d:"Técnicas da Marinha" },
-
       { n:"Rokushiki (Tekkai)", t:4, d:"Técnicas da Marinha" },
-
       { n:"Rokushiki (Rokuogan)", t:5, d:"Técnicas da Marinha" },
-
       { n:"Ryusoken", t:1, d:"Garras de dragão" },
-
       { n:"Saikyō no Kenshi", t:4, d:"Garras de dragão" },
-
       { n:"Santōryū", t:4, d:"Garras de dragão" },
-
       { n:"Shuron Hakke", t:5, d:"Luta bêbada" }
     ];
 
     const list = document.getElementById("list");
 
     function slug(name){
-      return name
-        .toLowerCase()
-        .replace(/[()]/g,'')
-        .replace(/ō/g,'o')
-        .replace(/ /g,'-');
+      return name.toLowerCase().replace(/ /g,'-');
     }
 
     for(let t=1;t<=5;t++){
 
       const sep = document.createElement("div");
-
       sep.className = "tier-sep";
-
-      sep.innerHTML = `
-        <img src="${tiersImg[t]}">
-      `;
-
+      sep.innerHTML = `<img src="${tiersImg[t]}">`;
       list.appendChild(sep);
 
       styles.filter(s => s.t === t).forEach(s => {
 
         const item = document.createElement("div");
-
         item.className = "item";
 
         item.innerHTML = `
@@ -204,41 +150,37 @@
       document.getElementById("m-img").src =
         "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
 
-      document.getElementById("m-btn").onclick = () => {
-        openHabilidades();
+      document.getElementById("habilidades-container").innerHTML = "";
+
+      document.getElementById("m-btn").onclick = async () => {
+
+        const container = document.getElementById("habilidades-container");
+
+        if(container.innerHTML !== ""){
+          container.innerHTML = "";
+          return;
+        }
+
+        const html = await fetch("habilidades.html").then(r => r.text());
+
+        container.innerHTML = html;
+
+        if(!document.getElementById("habilidades-css")){
+
+          const link = document.createElement("link");
+
+          link.id = "habilidades-css";
+          link.rel = "stylesheet";
+          link.href = "habilidades.css";
+
+          document.head.appendChild(link);
+        }
       };
-    }
-
-    async function openHabilidades(){
-
-      const modal = document.getElementById("habilidades-modal");
-
-      const content = document.getElementById("habilidades-content");
-
-      modal.style.display = "flex";
-
-      try{
-
-        const response = await fetch("habilidades.html");
-
-        const html = await response.text();
-
-        content.innerHTML = html;
-
-      }catch(err){
-
-        content.innerHTML = `
-          <p>Erro ao carregar habilidades.</p>
-        `;
-      }
-    }
-
-    function closeHabilidades(){
-      document.getElementById("habilidades-modal").style.display = "none";
     }
 
     function closeModal(){
       document.getElementById("modal").style.display = "none";
+      document.getElementById("habilidades-container").innerHTML = "";
     }
 
     function voltar(){

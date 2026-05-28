@@ -63,6 +63,8 @@ body{
   border-bottom:1px solid rgba(255,215,120,0.15);
 
   position:relative;
+
+  z-index:9999;
 }
 
 /* LOGO */
@@ -328,6 +330,8 @@ nav a:hover::after{
     left:0;
 
     width:100%;
+
+    z-index:9999;
 
     background:rgba(10,10,10,0.96);
 

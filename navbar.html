@@ -13,7 +13,6 @@
 
   <nav id="nav-menu">
 
-    <!-- INÍCIO (deslogado) -->
     <a href="/index.html" id="nav-home">INÍCIO</a>
 
     <a href="/faccoes.html">FACÇÕES</a>
@@ -21,46 +20,8 @@
     <a href="/mapa.html">MAPA</a>
     <a href="/guia.html">GUIA</a>
 
-    <!-- PERFIL (logado) -->
     <a href="/perfil.html" id="nav-profile" style="display:none;">PERFIL</a>
 
   </nav>
 
 </header>
-
-<script type="module">
-import { getAuth, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-function initNavbar() {
-
-  const menuToggle = document.getElementById("menu-toggle");
-  const navMenu = document.getElementById("nav-menu");
-
-  if (menuToggle && navMenu) {
-    menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-    });
-  }
-
-  const auth = getAuth();
-
-  const home = document.getElementById("nav-home");
-  const profile = document.getElementById("nav-profile");
-
-  onAuthStateChanged(auth, (user) => {
-
-    if (user) {
-      if (home) home.style.display = "none";
-      if (profile) profile.style.display = "block";
-    } else {
-      if (home) home.style.display = "block";
-      if (profile) profile.style.display = "none";
-    }
-
-  });
-}
-
-// permite rodar depois do fetch
-window.initNavbar = initNavbar;
-</script>

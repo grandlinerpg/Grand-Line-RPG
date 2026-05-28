@@ -8,7 +8,7 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* 🔥 FIREBASE CONFIG (SEU PROJETO REAL) */
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -33,12 +33,28 @@ const habilidadeTiers = {
   5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
 };
 
-/* slug helper */
 function slug(name){
   return name.toLowerCase().replace(/ /g,'-');
 }
 
-/* 🔥 ABRIR JANELA */
+/* 🔥 BUSCA UM ESTILO */
+async function getEstilo(key){
+  const snap = await get(ref(db, `habilidades/estilo-de-luta/${key}`));
+  if(!snap.exists()) return { skills: [], heranca: [] };
+
+  const data = snap.val();
+
+  return {
+    skills: data.skills ? Object.values(data.skills) : [],
+    heranca: data.heranca
+      ? Array.isArray(data.heranca)
+        ? data.heranca
+        : [data.heranca]
+      : []
+  };
+}
+
+/* 🔥 ABRIR JANELA COM HERANÇA */
 export async function abrirHabilidades(estiloNome){
 
   const modal = document.getElementById("habilidades-modal");
@@ -56,14 +72,26 @@ export async function abrirHabilidades(estiloNome){
 
     const key = estiloNome.toLowerCase();
 
-    const path = ref(
-      db,
-      `habilidades/estilo-de-luta/${key}`
-    );
+    let estilosVisitados = new Set();
+    let fila = [key];
+    let todasSkills = [];
 
-    const snapshot = await get(path);
+    while(fila.length > 0){
 
-    if(!snapshot.exists()){
+      const atual = fila.shift();
+      if(estilosVisitados.has(atual)) continue;
+      estilosVisitados.add(atual);
+
+      const estilo = await getEstilo(atual);
+
+      todasSkills = todasSkills.concat(estilo.skills);
+
+      if(estilo.heranca.length > 0){
+        fila.push(...estilo.heranca);
+      }
+    }
+
+    if(todasSkills.length === 0){
       container.innerHTML = `
         <div class="habilidade-item">
           Nenhuma habilidade encontrada
@@ -72,13 +100,11 @@ export async function abrirHabilidades(estiloNome){
       return;
     }
 
-    const data = Object.values(snapshot.val());
-
     container.innerHTML = "";
 
     for(let tier = 1; tier <= 5; tier++){
 
-      const group = data.filter(h => Number(h.rank) === tier);
+      const group = todasSkills.filter(h => Number(h.rank) === tier);
 
       if(group.length === 0) continue;
 
@@ -91,15 +117,10 @@ export async function abrirHabilidades(estiloNome){
 
         const item = document.createElement("div");
         item.className = "habilidade-item";
-
-        item.innerHTML = `
-          <span>${h.nome}</span>
-        `;
+        item.innerHTML = `<span>${h.nome}</span>`;
 
         container.appendChild(item);
-
       });
-
     }
 
   } catch (err) {

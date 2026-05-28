@@ -194,12 +194,16 @@ body{
 
 .modal-content{
   width:90%;
-  max-width:420px;
-  background:rgba(10,10,10,0.95);
+  max-width:500px;
+  background:rgba(10,10,10,0.96);
   border:1px solid rgba(255,215,120,0.2);
-  padding:25px;
   border-radius:16px;
+  padding:22px;
+  position:relative;
+  margin:auto;
+  overflow:hidden;
   text-align:center;
+  box-shadow:0 0 30px rgba(0,0,0,0.6);
 }
 
 /* IMAGEM PRINCIPAL (MAIOR + MOLDURA 3:2) */

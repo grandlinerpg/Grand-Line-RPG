@@ -42,25 +42,54 @@ body{
   z-index:-1;
 }
 
-/* NAVBAR */
-.navbar{
-  width:100%;
+/* MENU */
 
+nav{
   display:flex;
-  justify-content:space-between;
-  align-items:center;
+  gap:36px;
+}
 
-  padding:15px 50px;
+nav a{
+  position:relative;
 
-  background:linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.65),
-    rgba(0,0,0,0.35)
-  );
+  font-family:'Cinzel', serif;
+  font-size:16px;
+  font-weight:600;
 
-  backdrop-filter:blur(8px);
+  color:#f1d08a;
 
-  border-bottom:1px solid rgba(255,215,120,0.15);
+  text-decoration:none;
+
+  letter-spacing:1px;
+
+  transition:0.3s;
+
+  text-shadow:0 2px 4px rgba(0,0,0,0.8);
+}
+
+nav a::after{
+  content:"";
+
+  position:absolute;
+  left:50%;
+  bottom:-8px;
+
+  width:0%;
+  height:2px;
+
+  background:#c89b3c;
+
+  transform:translateX(-50%);
+  transition:0.3s;
+}
+
+nav a:hover{
+  color:#ffe6a7;
+  text-shadow:0 0 8px rgba(255,215,120,0.6);
+}
+
+nav a:hover::after{
+  width:100%;
 }
 
 /* LOGO */

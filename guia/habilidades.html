@@ -1,0 +1,104 @@
+<div class="habilidades-window">
+
+  <div id="habilidades-list"></div>
+
+</div>
+
+<script type="module">
+
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+  import {
+    getDatabase,
+    ref,
+    get
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    /* SUA CONFIG FIREBASE */
+  };
+
+  const app = initializeApp(firebaseConfig);
+
+  const db = getDatabase(app);
+
+  const habilidadeTiers = {
+    1: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
+    2: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
+    3: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
+    4: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
+    5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
+  };
+
+  const estiloAtual =
+    document.getElementById("m-title")
+    .innerText
+    .toLowerCase();
+
+  const container =
+    document.getElementById("habilidades-list");
+
+  async function carregarHabilidades(){
+
+    container.innerHTML = "";
+
+    const habilidadesRef = ref(
+      db,
+      `matriz/habilidades/estilo-de-luta/${estiloAtual}`
+    );
+
+    const snapshot = await get(habilidadesRef);
+
+    if(!snapshot.exists()){
+
+      container.innerHTML = `
+        <div class="habilidade-item">
+          <span>Nenhuma habilidade encontrada.</span>
+        </div>
+      `;
+
+      return;
+    }
+
+    const dados = snapshot.val();
+
+    const lista = Object.values(dados);
+
+    for(let tier = 1; tier <= 5; tier++){
+
+      const habilidadesTier =
+        lista.filter(h => Number(h.rank) === tier);
+
+      if(habilidadesTier.length <= 0) continue;
+
+      const sep = document.createElement("div");
+
+      sep.className = "habilidade-tier-sep";
+
+      sep.innerHTML = `
+        <img src="${habilidadeTiers[tier]}">
+      `;
+
+      container.appendChild(sep);
+
+      habilidadesTier.forEach(h => {
+
+        const item = document.createElement("div");
+
+        item.className = "habilidade-item";
+
+        item.innerHTML = `
+          <span>${h.nome}</span>
+        `;
+
+        container.appendChild(item);
+
+      });
+    }
+  }
+
+  carregarHabilidades();
+
+</script>

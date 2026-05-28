@@ -254,9 +254,11 @@ nav a:hover::after{
   }
 
   nav{
+    flex-wrap:wrap;
+    justify-content:center;
     gap:25px;
   }
-
+  
   .main-logo{
     width:380px;
   }

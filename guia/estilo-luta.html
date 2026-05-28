@@ -8,6 +8,7 @@
   <title>Estilo de Luta - Grand Line RPG</title>
 
   <link rel="stylesheet" href="estilo-luta.css">
+  <link rel="stylesheet" href="habilidades.css">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
@@ -16,7 +17,6 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR (SEM ALTERAÇÃO) -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -42,7 +42,6 @@
 
   <main id="list"></main>
 
-  <!-- MODAL -->
   <div id="modal" class="modal">
     <div class="modal-content">
 
@@ -62,7 +61,6 @@
     </div>
   </div>
 
-  <!-- MODAL HABILIDADES -->
   <div id="habilidades-modal" class="habilidades-modal">
 
     <div class="habilidades-content">
@@ -161,13 +159,12 @@
       document.getElementById("m-img").src =
         "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
 
-      document.getElementById("m-btn").onclick = () => {
-        document.getElementById("habilidades-modal").style.display = "flex";
+      // 🔥 SÓ ISSO FOI CORRIGIDO
+      document.getElementById("m-btn").onclick = async () => {
 
-        // AQUI você chama o JS depois
-        import("./habilidades.js").then(m => {
-          m.abrirHabilidades(s.n);
-        });
+        const mod = await import("./habilidades.js");
+        mod.abrirHabilidades(s.n);
+
       };
     }
 

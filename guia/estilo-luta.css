@@ -182,34 +182,52 @@ body{
 
 /* MODAL */
 
+/* MODAL */
+
 .modal{
   position:fixed;
   inset:0;
+
   display:none;
   justify-content:center;
   align-items:center;
+
   background:rgba(0,0,0,0.8);
+
   z-index:9999;
 }
+
+/* JANELA */
 
 .modal-content{
   width:90%;
   max-width:500px;
+
   background:rgba(10,10,10,0.96);
+
   border:1px solid rgba(255,215,120,0.2);
+
   border-radius:16px;
+
   padding:22px;
+
   position:relative;
+
   margin:auto;
+
   overflow:hidden;
+
   text-align:center;
+
   box-shadow:0 0 30px rgba(0,0,0,0.6);
 }
 
-/* IMAGEM PRINCIPAL (MAIOR + MOLDURA 3:2) */
+/* IMAGEM (NÃO MEXI) */
+
 .modal-img{
   width:280px;
   height:180px;
+
   object-fit:cover;
 
   border-radius:10px;
@@ -218,30 +236,70 @@ body{
   margin-bottom:10px;
 }
 
-/* TIER IMG DO MODAL (SEM BRANCO + MAIS LIMPO) */
+/* TIER */
+
 .modal-tier-img{
   width:210px;
   margin:10px 0;
 }
 
-/* TEXTO */
+/* NOME */
+
 .modal-content h2{
   color:#f6d365;
+
+  font-family:'Cinzel', serif;
+
+  font-size:28px;
+
+  margin-bottom:10px;
+
+  letter-spacing:1px;
 }
 
+/* DESCRIÇÃO */
+
 .modal-content p{
-  margin:6px 0;
+  color:#ddd;
+
+  line-height:1.5;
+
+  text-align:center;
+
+  font-size:14px;
+
+  margin:8px 0;
 }
 
 /* BOTÕES */
+
 .modal-content button{
   width:100%;
-  margin-top:10px;
+
+  margin-top:12px;
+
   padding:12px;
 
   border:none;
+  border-radius:10px;
+
   cursor:pointer;
 
   background:linear-gradient(to bottom,#8f1408,#5e0800);
+
+  border:1px solid rgba(246,211,101,0.2);
+
   color:#f6d365;
+
+  font-family:'Cinzel', serif;
+
+  font-size:14px;
+
+  transition:0.2s;
+}
+
+.modal-content button:hover{
+  transform:scale(1.01);
+
+  border-color:#f6d365;
 }

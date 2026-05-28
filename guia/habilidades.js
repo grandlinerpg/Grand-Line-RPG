@@ -8,7 +8,7 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* 🔥 FIREBASE CONFIG */
+/* 🔥 FIREBASE CONFIG (SEU PROJETO REAL) */
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -33,6 +33,7 @@ const habilidadeTiers = {
   5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
 };
 
+/* slug helper */
 function slug(name){
   return name.toLowerCase().replace(/ /g,'-');
 }
@@ -48,19 +49,13 @@ async function getEstilo(key){
 
   const data = snap.val();
 
-  const heranca = data.heranca || null;
-
-  const skills = Object.entries(data)
-    .filter(([k]) => k !== "heranca")
-    .map(([_, v]) => v);
-
   return {
-    skills,
-    heranca
+    skills: Object.values(data).filter(v => typeof v === "object" && v.nome),
+    heranca: data.heranca || null
   };
 }
 
-/* 🔥 ABRIR JANELA COM HERANÇA EM CADEIA */
+/* 🔥 ABRIR JANELA COM HERANÇA */
 export async function abrirHabilidades(estiloNome){
 
   const modal = document.getElementById("habilidades-modal");
@@ -79,14 +74,14 @@ export async function abrirHabilidades(estiloNome){
     const key = estiloNome.toLowerCase();
 
     let todasSkills = [];
-    let fila = [key];
-    let visitados = new Set();
 
-    /* 🔥 CADEIA DE HERANÇA */
+    let visitados = new Set();
+    let fila = [key];
+
+    /* 🔥 HERANÇA EM CADEIA */
     while(fila.length > 0){
 
       const atual = fila.shift();
-
       if(visitados.has(atual)) continue;
       visitados.add(atual);
 
@@ -125,7 +120,10 @@ export async function abrirHabilidades(estiloNome){
 
         const item = document.createElement("div");
         item.className = "habilidade-item";
-        item.innerHTML = `<span>${h.nome}</span>`;
+
+        item.innerHTML = `
+          <span>${h.nome}</span>
+        `;
 
         container.appendChild(item);
       });

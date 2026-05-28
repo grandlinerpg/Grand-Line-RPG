@@ -1,0 +1,341 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial, sans-serif;
+  overflow-x:hidden;
+  color:white;
+}
+
+/* FUNDO */
+
+.background{
+  position:fixed;
+  inset:0;
+
+  background-image:url('https://i.imgur.com/pKx1Cvd.png');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+
+  transform:scale(1.03);
+
+  z-index:-2;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.72),
+      rgba(0,0,0,0.60)
+    );
+
+  z-index:-1;
+}
+
+/* NAVBAR */
+
+.navbar{
+  width:100%;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:15px 50px;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.65),
+      rgba(0,0,0,0.35)
+    );
+
+  backdrop-filter:blur(8px);
+
+  border-bottom:1px solid rgba(255,215,120,0.15);
+}
+
+/* LOGO */
+
+.logo-area{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.logo{
+  width:65px;
+
+  filter:drop-shadow(0 0 8px rgba(255,215,120,0.35));
+}
+
+.logo-text{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.logo-text h1{
+  font-family:'Cinzel', serif;
+  color:#f4d089;
+  font-size:28px;
+  font-weight:700;
+  letter-spacing:2px;
+}
+
+.logo-text p{
+  font-family:'Cinzel', serif;
+  color:#f4d089;
+  font-size:12px;
+  letter-spacing:6px;
+  margin-top:-3px;
+}
+
+/* MENU */
+
+nav{
+  display:flex;
+  gap:36px;
+}
+
+nav a{
+  position:relative;
+
+  font-family:'Cinzel', serif;
+  font-size:16px;
+  font-weight:600;
+
+  color:#f1d08a;
+
+  text-decoration:none;
+
+  letter-spacing:1px;
+
+  transition:0.3s;
+}
+
+nav a::after{
+  content:"";
+
+  position:absolute;
+  left:50%;
+  bottom:-8px;
+
+  width:0%;
+  height:2px;
+
+  background:#c89b3c;
+
+  transform:translateX(-50%);
+  transition:0.3s;
+}
+
+nav a:hover{
+  color:#ffe6a7;
+}
+
+nav a:hover::after{
+  width:100%;
+}
+
+/* TITULO */
+
+.page-title{
+  text-align:center;
+
+  padding:70px 20px 40px;
+}
+
+.page-title h1{
+  font-family:'Cinzel', serif;
+
+  font-size:48px;
+
+  color:#f6d365;
+
+  margin-bottom:14px;
+
+  letter-spacing:2px;
+
+  text-shadow:0 0 12px rgba(0,0,0,0.8);
+}
+
+.page-title p{
+  color:#f0e2c2;
+
+  font-size:17px;
+
+  line-height:1.7;
+
+  max-width:700px;
+
+  margin:auto;
+}
+
+/* CONTAINER */
+
+.combat-container{
+  width:100%;
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:20px 20px 120px;
+
+  display:flex;
+  flex-direction:column;
+  gap:70px;
+}
+
+/* CAPITULO */
+
+.combat-section{
+  display:flex;
+  align-items:center;
+  gap:40px;
+
+  background:rgba(0,0,0,0.35);
+
+  border:1px solid rgba(255,215,120,0.12);
+
+  border-radius:24px;
+
+  overflow:hidden;
+
+  backdrop-filter:blur(5px);
+
+  box-shadow:0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* INVERTER */
+
+.combat-section.reverse{
+  flex-direction:row-reverse;
+}
+
+/* IMAGEM */
+
+.combat-image{
+  width:42%;
+  min-height:320px;
+}
+
+.combat-image img{
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+
+  display:block;
+}
+
+/* TEXTO */
+
+.combat-content{
+  flex:1;
+
+  padding:40px;
+}
+
+.chapter{
+  display:inline-block;
+
+  font-family:'Cinzel', serif;
+
+  color:#f6d365;
+
+  letter-spacing:2px;
+
+  font-size:14px;
+
+  margin-bottom:14px;
+}
+
+.combat-content h2{
+  font-family:'Cinzel', serif;
+
+  font-size:34px;
+
+  color:#fff0c5;
+
+  margin-bottom:18px;
+}
+
+/* LISTRA */
+
+.divider{
+  width:100%;
+  max-width:180px;
+  height:2px;
+
+  background:
+    linear-gradient(
+      to right,
+      #f6d365,
+      transparent
+    );
+
+  margin-bottom:24px;
+}
+
+.combat-content p{
+  color:#ddd;
+
+  font-size:17px;
+
+  line-height:1.9;
+}
+
+/* RESPONSIVO */
+
+@media(max-width:950px){
+
+  .navbar{
+    flex-direction:column;
+    gap:25px;
+    padding:20px;
+  }
+
+  nav{
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:22px;
+  }
+
+  .combat-section,
+  .combat-section.reverse{
+    flex-direction:column;
+  }
+
+  .combat-image{
+    width:100%;
+    min-height:260px;
+  }
+
+  .combat-content{
+    padding:30px;
+  }
+}
+
+@media(max-width:700px){
+
+  .page-title h1{
+    font-size:36px;
+  }
+
+  .combat-content h2{
+    font-size:28px;
+  }
+
+  .combat-content p{
+    font-size:15px;
+  }
+}

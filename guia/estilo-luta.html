@@ -57,11 +57,24 @@
 
       <button id="m-btn">VER HABILIDADES</button>
 
-      <div id="habilidades-container"></div>
-
       <button onclick="closeModal()">FECHAR</button>
 
     </div>
+  </div>
+
+  <!-- MODAL HABILIDADES -->
+  <div id="habilidades-modal" class="habilidades-modal">
+
+    <div class="habilidades-content">
+
+      <button class="habilidades-close" onclick="closeHabilidades()">
+        ✕
+      </button>
+
+      <div id="habilidades-container"></div>
+
+    </div>
+
   </div>
 
   <script>
@@ -150,18 +163,19 @@
       document.getElementById("m-img").src =
         "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
 
-      document.getElementById("habilidades-container").innerHTML = "";
-
       document.getElementById("m-btn").onclick = async () => {
 
-        const container = document.getElementById("habilidades-container");
+        const modal =
+          document.getElementById("habilidades-modal");
 
-        if(container.innerHTML !== ""){
-          container.innerHTML = "";
-          return;
-        }
+        const container =
+          document.getElementById("habilidades-container");
 
-        const html = await fetch("habilidades.html").then(r => r.text());
+        modal.style.display = "flex";
+
+        const html =
+          await fetch("habilidades.html")
+          .then(r => r.text());
 
         container.innerHTML = html;
 
@@ -180,7 +194,15 @@
 
     function closeModal(){
       document.getElementById("modal").style.display = "none";
-      document.getElementById("habilidades-container").innerHTML = "";
+    }
+
+    function closeHabilidades(){
+
+      document.getElementById("habilidades-modal")
+      .style.display = "none";
+
+      document.getElementById("habilidades-container")
+      .innerHTML = "";
     }
 
     function voltar(){

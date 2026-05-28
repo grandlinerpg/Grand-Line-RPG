@@ -1,98 +1,128 @@
-.habilidades-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.75);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:99999;
+/* =========================
+   FUNDO DO MODAL
+========================= */
+.habilidades-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
   backdrop-filter: blur(6px);
 }
 
-.habilidades-content{
-  width:90%;
-  max-width:750px;
-  max-height:85vh;
-  overflow-y:auto;
+/* =========================
+   JANELA PRINCIPAL
+========================= */
+.habilidades-content {
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
 
-  background:rgba(10,10,10,0.96);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:18px;
+  background: rgba(15, 15, 15, 0.95);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 14px;
 
-  padding:25px;
-  position:relative;
+  padding: 20px;
+  overflow-y: auto;
 
-  box-shadow:0 0 25px rgba(0,0,0,0.6);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+  position: relative;
+
+  animation: popIn 0.2s ease;
 }
 
-.habilidades-close{
-  position:absolute;
-  top:15px;
-  right:15px;
-
-  width:40px;
-  height:40px;
-
-  border:none;
-  border-radius:50%;
-  cursor:pointer;
-
-  font-size:18px;
-  color:white;
-
-  background:rgba(255,255,255,0.08);
-  transition:0.2s;
+/* animação de entrada */
+@keyframes popIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.habilidades-close:hover{
-  background:rgba(255,255,255,0.18);
-  transform:scale(1.05);
+/* =========================
+   BOTÃO FECHAR
+========================= */
+.habilidades-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  width: 32px;
+  height: 32px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: rgba(255, 0, 0, 0.2);
+  color: white;
+
+  font-size: 18px;
+  cursor: pointer;
+
+  transition: 0.2s;
 }
 
-/* TIER SEPARADOR */
-.habilidade-tier-sep{
-  display:flex;
-  justify-content:center;
-  margin:18px 0;
+.habilidades-close:hover {
+  background: rgba(255, 0, 0, 0.5);
 }
 
-.habilidade-tier-sep img{
-  width:170px;
-  max-width:90%;
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.15));
+/* =========================
+   LISTA
+========================= */
+#habilidades-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  margin-top: 10px;
 }
 
-/* ITEM HABILIDADE */
-.habilidade-item{
-  margin:10px 0;
-  padding:14px;
-
-  text-align:center;
-
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:12px;
-
-  color:white;
-  font-family:'Cinzel', serif;
-  font-size:15px;
-
-  cursor:pointer;
-  transition:0.2s;
+/* =========================
+   SEPARADOR DE TIER
+========================= */
+.habilidade-tier-sep {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
 }
 
-.habilidade-item:hover{
-  transform:scale(1.03);
-  background:rgba(255,255,255,0.10);
-  border-color:rgba(255,255,255,0.2);
+.habilidade-tier-sep img {
+  width: 120px;
+  opacity: 0.9;
 }
 
-/* SCROLL mais bonito */
-.habilidades-content::-webkit-scrollbar{
-  width:6px;
+/* =========================
+   ITEM DE HABILIDADE
+========================= */
+.habilidade-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  padding: 10px 12px;
+  border-radius: 8px;
+
+  color: #fff;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+
+  transition: 0.2s;
 }
 
-.habilidades-content::-webkit-scrollbar-thumb{
-  background:rgba(255,255,255,0.2);
-  border-radius:10px;
+.habilidade-item:hover {
+  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(255, 215, 0, 0.3);
+  transform: translateX(4px);
+}
+
+/* =========================
+   TEXTO DE VAZIO
+========================= */
+.habilidade-item span {
+  opacity: 0.9;
 }

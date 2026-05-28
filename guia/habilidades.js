@@ -40,21 +40,17 @@ function slug(name){
 /* 🔥 BUSCA UM ESTILO */
 async function getEstilo(key){
   const snap = await get(ref(db, `habilidades/estilo-de-luta/${key}`));
-  if(!snap.exists()) return { skills: [], heranca: [] };
+  if(!snap.exists()) return { skills: [], heranca: null };
 
   const data = snap.val();
 
   return {
     skills: data.skills ? Object.values(data.skills) : [],
-    heranca: data.heranca
-      ? Array.isArray(data.heranca)
-        ? data.heranca
-        : [data.heranca]
-      : []
+    heranca: data.heranca || null
   };
 }
 
-/* 🔥 ABRIR JANELA COM HERANÇA */
+/* 🔥 ABRIR JANELA COM HERANÇA SIMPLES */
 export async function abrirHabilidades(estiloNome){
 
   const modal = document.getElementById("habilidades-modal");
@@ -72,23 +68,17 @@ export async function abrirHabilidades(estiloNome){
 
     const key = estiloNome.toLowerCase();
 
-    let estilosVisitados = new Set();
-    let fila = [key];
     let todasSkills = [];
 
-    while(fila.length > 0){
+    /* 🔥 estilo principal */
+    const estilo = await getEstilo(key);
+    todasSkills = todasSkills.concat(estilo.skills);
 
-      const atual = fila.shift();
-      if(estilosVisitados.has(atual)) continue;
-      estilosVisitados.add(atual);
+    /* 🔥 UMA herança só (string simples) */
+    if(estilo.heranca){
 
-      const estilo = await getEstilo(atual);
-
-      todasSkills = todasSkills.concat(estilo.skills);
-
-      if(estilo.heranca.length > 0){
-        fila.push(...estilo.heranca);
-      }
+      const herancaEstilo = await getEstilo(estilo.heranca);
+      todasSkills = todasSkills.concat(herancaEstilo.skills);
     }
 
     if(todasSkills.length === 0){

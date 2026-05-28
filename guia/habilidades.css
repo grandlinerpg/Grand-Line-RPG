@@ -1,0 +1,67 @@
+/* habilidades.css */
+
+.habilidades-window{
+  width:100%;
+  margin-top:25px;
+}
+
+#habilidades-list{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.habilidade-tier-sep{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin-top:14px;
+}
+
+.habilidade-tier-sep img{
+  width:180px;
+  max-width:90%;
+  object-fit:contain;
+}
+
+.habilidade-item{
+  width:100%;
+
+  padding:14px 18px;
+
+  border:1px solid rgba(255,255,255,0.12);
+
+  background:rgba(255,255,255,0.04);
+
+  border-radius:12px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transition:0.25s;
+  cursor:pointer;
+
+  backdrop-filter:blur(4px);
+}
+
+.habilidade-item:hover{
+  transform:scale(1.02);
+
+  border-color:rgba(255,255,255,0.25);
+
+  background:rgba(255,255,255,0.08);
+}
+
+.habilidade-item span{
+  color:white;
+
+  font-size:15px;
+  font-weight:700;
+
+  text-align:center;
+
+  letter-spacing:1px;
+
+  font-family:'Cinzel', serif;
+}

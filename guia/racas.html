@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Estilo de Luta - Grand Line RPG</title>
+
+  <link rel="stylesheet" href="estilo-luta.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <!-- NAVBAR (SEM ALTERAÇÃO) -->
+  <header class="navbar">
+
+    <div class="logo-area">
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#" onclick="voltar()">VOLTAR</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
+
+  </header>
+
+  <section class="guide-title">
+    <h1>ESTILO DE LUTA</h1>
+    <p>O estilo de luta é a maneira como o personagem enfrenta o combate.</p>
+  </section>
+
+  <main id="list"></main>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+
+      <img id="m-img" class="modal-img">
+
+      <h2 id="m-title"></h2>
+      <p id="m-tier-text"></p>
+
+      <p id="m-desc"></p>
+
+      <img id="m-tier-img" class="modal-tier-img">
+
+      <button id="m-btn">VER HABILIDADES</button>
+      <button onclick="closeModal()">FECHAR</button>
+
+    </div>
+  </div>
+
+  <script>
+
+    const tiersImg = {
+      1: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
+      2: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
+      3: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
+      4: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
+      5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
+    };
+
+    const styles = [
+
+  {
+    n:"Humano",
+    t:1,
+    d:"Esquecidos e abandonados pela criação, tiveram de se adaptar às circunstâncias e acabaram, inesperadamente, se tornando a mais numerosa raça do planeta.",
+    l:"humano.html"
+  },
+
+  {
+    n:"Anão",
+    t:2,
+    d:"Os anões são uma raça extremamente pequena. Em comparação com um humano de tamanho médio, a diferença de altura entre eles é aproximadamente a mesma que entre um humano de tamanho normal e um gigante de tamanho médio.",
+    l:"anao.html"
+  },
+
+  {
+    n:"Braços Longos",
+    t:2,
+    d:"Indivíduos que possuem braços com duas juntas que tornam seus braços muito mais longos que o normal.",
+    l:"bracos-longos.html"
+  },
+
+  {
+    n:"Pernas Longas",
+    t:2,
+    d:"Indivíduos que possuem pernas com duas juntas, tornando-as muito mais longas que o normal.",
+    l:"pernas-longas.html"
+  },
+
+  {
+    n:"Bucaneiro",
+    t:3,
+    d:"Uma raça abençoada pela natureza, mas amaldiçoada pela História. Acusados de haver cometido um pecado terrível em seu passado, foram forçados a viver ocultos do mundo.",
+    l:"bucaneiro.html"
+  },
+
+  {
+    n:"Gigante",
+    t:3,
+    d:"Uma temida raça conhecida por seu principal ofício: a Arte da Guerra. Gigantes possuem tamanho extraordinário, garantindo-lhes força e resistência fora do comum.",
+    l:"gigante.html"
+  },
+
+  {
+    n:"Humano Modificado",
+    t:3,
+    d:"Humanos biologicamente aprimorados por meio de melhorias genéticas para terem características físicas incríveis.",
+    l:"humano-modificado.html"
+  },
+
+  {
+    n:"Skypiean",
+    t:2,
+    d:"Os Skypieans são a raça que se estabeleceu nas ilhas do céu, sendo conhecidos como o Povo do Céu.",
+    l:"skypiean.html"
+  },
+
+  {
+    n:"Mink",
+    t:3,
+    d:"A Tribo Mink é uma raça de humanoides com características mamíferas peludas que vive isolada no topo de Zou.",
+    l:"mink.html"
+  },
+
+  {
+    n:"Tritão",
+    t:3,
+    d:"Raça humanoide capaz de sobreviver tanto em terra quanto no mar. São excelentes nadadores e possuem força e resistência superiores.",
+    l:"tritao.html"
+  },
+
+  {
+    n:"Wotan",
+    t:4,
+    d:"Os Wotans são um híbrido entre gigantes e homens-peixe.",
+    l:"wotan.html"
+  },
+
+  {
+    n:"Gigante Ancestral",
+    t:5,
+    d:"Uma forma ancestral dos gigantes, possuindo tamanho e força monstruosos acima dos gigantes comuns.",
+    l:"gigante-ancestral.html"
+  },
+
+  {
+    n:"Lunarian",
+    t:5,
+    d:"Uma tribo de indivíduos alados capazes de criar e controlar fogo, conhecidos como monstros capazes de sobreviver em qualquer ambiente natural.",
+    l:"lunarian.html"
+  },
+
+  {
+    n:"Membros Longos",
+    t:4,
+    d:"Uma raça híbrida nascida da união entre uma Perna Longa e um Braço Longo, possuindo os atributos de ambos.",
+    l:"membros-longos.html"
+  }
+
+];
+
+    const list = document.getElementById("list");
+
+    function slug(name){
+      return name.toLowerCase().replace(/ /g,'-');
+    }
+
+    /* ALTERAÇÃO SÓ AQUI */
+    for(let t=1;t<=5;t++){
+
+      const sep = document.createElement("div");
+      sep.className = "tier-sep";
+      sep.innerHTML = `<img src="${tiersImg[t]}">`;
+      list.appendChild(sep);
+
+      styles.filter(s => s.t === t).forEach(s => {
+
+        const item = document.createElement("div");
+        item.className = "item";
+
+        item.innerHTML = `
+          <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${slug(s.n)}.jpg">
+          <span>${s.n}</span>
+        `;
+
+        item.onclick = () => openModal(s);
+
+        list.appendChild(item);
+      });
+    }
+
+    function openModal(s){
+      document.getElementById("modal").style.display = "flex";
+      document.getElementById("m-title").innerText = s.n;
+      document.getElementById("m-tier-img").src = tiersImg[s.t];
+      document.getElementById("m-desc").innerText = s.d;
+      document.getElementById("m-img").src =
+        "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
+
+      document.getElementById("m-btn").onclick = () => {
+        window.location.href = s.l;
+      };
+    }
+
+    function closeModal(){
+      document.getElementById("modal").style.display = "none";
+    }
+
+    function voltar(){
+      history.back();
+    }
+
+  </script>
+
+</body>
+</html>

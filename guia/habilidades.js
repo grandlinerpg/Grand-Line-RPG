@@ -1,5 +1,4 @@
 import {
-  getApps,
   initializeApp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
@@ -9,16 +8,15 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+/* FIREBASE */
 const firebaseConfig = {
   /* SUA CONFIG FIREBASE */
 };
 
-const app = getApps().length
-  ? getApps()[0]
-  : initializeApp(firebaseConfig);
-
+const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+/* TIERS IMAGEM */
 const habilidadeTiers = {
   1: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
   2: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
@@ -27,26 +25,26 @@ const habilidadeTiers = {
   5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
 };
 
+/* slug padrão */
 function slug(name){
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[()]/g, "");
+  return name.toLowerCase().replace(/ /g,'-');
 }
 
+/* 🔥 FUNÇÃO PRINCIPAL DA JANELA */
 export async function abrirHabilidades(estiloNome){
 
   const modal = document.getElementById("habilidades-modal");
   const container = document.getElementById("habilidades-container");
 
-  if(!modal || !container) return;
+  if(!modal || !container){
+    console.error("Modal de habilidades não encontrado no HTML");
+    return;
+  }
 
   modal.style.display = "flex";
   container.innerHTML = "Carregando...";
 
-  const estiloKey = slug(estiloNome);
+  const estiloKey = estiloNome.toLowerCase();
 
   const habilidadesRef = ref(
     db,
@@ -65,7 +63,6 @@ export async function abrirHabilidades(estiloNome){
   }
 
   const lista = Object.values(snapshot.val());
-
   container.innerHTML = "";
 
   for(let tier = 1; tier <= 5; tier++){
@@ -84,14 +81,14 @@ export async function abrirHabilidades(estiloNome){
       const item = document.createElement("div");
       item.className = "habilidade-item";
       item.innerHTML = `<span>${h.nome}</span>`;
-      container.appendChild(item);
 
+      container.appendChild(item);
     });
   }
 }
 
+/* 🔥 FECHAR JANELA */
 export function fecharHabilidades(){
-
   const modal = document.getElementById("habilidades-modal");
   const container = document.getElementById("habilidades-container");
 

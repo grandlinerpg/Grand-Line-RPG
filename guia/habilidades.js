@@ -38,6 +38,25 @@ function slug(name){
   return name.toLowerCase().replace(/ /g,'-');
 }
 
+/* 🔥 BUSCA ESTILO LIMPO */
+async function getEstilo(key){
+
+  const snap = await get(ref(db, `habilidades/estilo-de-luta/${key}`));
+
+  if(!snap.exists()) return null;
+
+  const data = snap.val();
+
+  return {
+    skills: Object.values(data).filter(v => v && typeof v === "object" && v.nome),
+    heranca: {
+      heranca: data.heranca || null,
+      heranca2: data.heranca2 || null,
+      heranca3: data.heranca3 || null
+    }
+  };
+}
+
 /* 🔥 ABRIR JANELA */
 export async function abrirHabilidades(estiloNome){
 
@@ -56,45 +75,36 @@ export async function abrirHabilidades(estiloNome){
 
     const key = estiloNome.toLowerCase();
 
-    const path = ref(
-      db,
-      `habilidades/estilo-de-luta/${key}`
-    );
+    let todasSkills = [];
+    let visitados = new Set();
+    let fila = [key];
 
-    const snapshot = await get(path);
+    /* 🔥 HERANÇA CORRIGIDA */
+    while(fila.length > 0){
 
-    if(!snapshot.exists()){
+      const atual = fila.shift();
+      if(!atual || visitados.has(atual)) continue;
+
+      visitados.add(atual);
+
+      const estilo = await getEstilo(atual);
+
+      if(!estilo) continue;
+
+      todasSkills = todasSkills.concat(estilo.skills);
+
+      if(estilo.heranca.heranca) fila.push(estilo.heranca.heranca);
+      if(estilo.heranca.heranca2) fila.push(estilo.heranca.heranca2);
+      if(estilo.heranca.heranca3) fila.push(estilo.heranca.heranca3);
+    }
+
+    if(todasSkills.length === 0){
       container.innerHTML = `
         <div class="habilidade-item">
           Nenhuma habilidade encontrada
         </div>
       `;
       return;
-    }
-
-    const data = snapshot.val();
-
-    let estilosParaBuscar = [key];
-
-    /* 🔥 HERANCIAS FIXAS */
-    if(data.heranca) estilosParaBuscar.push(data.heranca.toLowerCase());
-    if(data.heranca2) estilosParaBuscar.push(data.heranca2.toLowerCase());
-    if(data.heranca3) estilosParaBuscar.push(data.heranca3.toLowerCase());
-
-    let todasSkills = [];
-
-    for(const estilo of estilosParaBuscar){
-
-      const snap = await get(
-        ref(db, `habilidades/estilo-de-luta/${estilo}`)
-      );
-
-      if(!snap.exists()) continue;
-
-      const d = snap.val();
-      const skills = Object.values(d).filter(v => v && typeof v === "object");
-
-      todasSkills = todasSkills.concat(skills);
     }
 
     container.innerHTML = "";
@@ -115,14 +125,10 @@ export async function abrirHabilidades(estiloNome){
         const item = document.createElement("div");
         item.className = "habilidade-item";
 
-        item.innerHTML = `
-          <span>${h.nome}</span>
-        `;
+        item.innerHTML = `<span>${h.nome}</span>`;
 
         container.appendChild(item);
-
       });
-
     }
 
   } catch (err) {

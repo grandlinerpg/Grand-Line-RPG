@@ -58,7 +58,7 @@ export async function abrirHabilidades(estiloNome){
 
     const path = ref(
       db,
-      `matriz/habilidades/estilo-de-luta/${key}`
+      `habilidades/estilo-de-luta/${key}`
     );
 
     const snapshot = await get(path);

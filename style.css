@@ -40,7 +40,7 @@ body{
   z-index:-1;
 }
 
-/* NAVBAR (IGUAL GUIA) */
+/* NAVBAR */
 
 .navbar{
   width:100%;
@@ -61,6 +61,8 @@ body{
   backdrop-filter:blur(8px);
 
   border-bottom:1px solid rgba(255,215,120,0.15);
+
+  position:relative;
 }
 
 /* LOGO */
@@ -151,7 +153,25 @@ nav a:hover::after{
   width:100%;
 }
 
+/* BOTÃO MENU MOBILE */
+
+.menu-toggle{
+  display:none;
+
+  background:none;
+  border:none;
+
+  color:#f6d365;
+
+  font-size:34px;
+
+  cursor:pointer;
+
+  font-family:'Cinzel', serif;
+}
+
 /* HERO */
+
 .hero{
   width:100%;
   min-height:calc(100vh - 100px);
@@ -167,6 +187,7 @@ nav a:hover::after{
 }
 
 /* LOGO CENTRAL */
+
 .main-logo{
   width:300px;
   max-width:90%;
@@ -177,6 +198,7 @@ nav a:hover::after{
 }
 
 /* TEXTO */
+
 .hero p{
   font-family:'Cinzel', serif;
 
@@ -197,6 +219,7 @@ nav a:hover::after{
 }
 
 /* BOTÃO CENTRAL */
+
 #home-button-area{
   display:flex;
   justify-content:center;
@@ -204,6 +227,7 @@ nav a:hover::after{
 }
 
 /* BOTÃO PRINCIPAL */
+
 .hero-btn{
   display:inline-flex;
   justify-content:center;
@@ -245,6 +269,7 @@ nav a:hover::after{
 }
 
 /* RESPONSIVO */
+
 @media(max-width:950px){
 
   .navbar{
@@ -270,12 +295,59 @@ nav a:hover::after{
 
 @media(max-width:600px){
 
+  .navbar{
+    flex-direction:row;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:15px 20px;
+  }
+
   .logo{
     width:60px;
   }
 
   .logo-text h1{
     font-size:22px;
+  }
+
+  /* BOTÃO MENU */
+
+  .menu-toggle{
+    display:block;
+  }
+
+  /* MENU ESCONDIDO */
+
+  nav{
+    display:none;
+
+    position:absolute;
+
+    top:100%;
+    left:0;
+
+    width:100%;
+
+    background:rgba(10,10,10,0.96);
+
+    border-bottom:1px solid rgba(255,215,120,0.15);
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:22px;
+
+    padding:25px 0;
+
+    backdrop-filter:blur(10px);
+  }
+
+  /* MENU ABERTO */
+
+  nav.active{
+    display:flex;
   }
 
   nav a{
@@ -290,7 +362,9 @@ nav a:hover::after{
   .hero-btn{
     width:100%;
     max-width:320px;
+
     font-size:20px;
+
     padding:18px 20px;
   }
 }

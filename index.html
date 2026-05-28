@@ -29,7 +29,13 @@
       </div>
     </div>
 
-    <nav>
+    <!-- BOTÃO MENU MOBILE -->
+    <button class="menu-toggle" id="menu-toggle">
+      ☰
+    </button>
+
+    <!-- MENU -->
+    <nav id="nav-menu">
       <a href="index.html">INÍCIO</a>
       <a href="faccoes.html">FACÇÕES</a>
       <a href="jogadores.html">JOGADORES</a>
@@ -58,6 +64,16 @@
 
   <!-- JS -->
   <script type="module" src="index.js"></script>
+
+  <!-- MENU MOBILE -->
+  <script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    menuToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+  </script>
 
 </body>
 </html>

@@ -48,11 +48,16 @@ async function getEstilo(key){
 
   const data = snap.val();
 
-  return {
-    skills: data.skills ? Object.values(data.skills) : [],
-    heranca: data.heranca || null
-  };
-}
+const heranca = data.heranca || null;
+
+const skills = Object.entries(data)
+  .filter(([k]) => k !== "heranca")
+  .map(([_, v]) => v);
+
+return {
+  skills,
+  heranca
+};
 
 /* 🔥 ABRIR JANELA COM HERANÇA EM CADEIA */
 export async function abrirHabilidades(estiloNome){

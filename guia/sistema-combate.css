@@ -1,3 +1,39 @@
+/* TÍTULO */
+
+.guide-title{
+  text-align:center;
+
+  margin-top:60px;
+  margin-bottom:35px;
+
+  padding:0 20px;
+}
+
+.guide-title h1{
+  font-family:'Cinzel', serif;
+
+  font-size:44px;
+  font-weight:700;
+
+  color:#f6d365;
+
+  letter-spacing:2px;
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
+
+  margin-bottom:12px;
+}
+
+.guide-title p{
+  font-family:'Cinzel', serif;
+
+  color:#f5e6c8;
+
+  font-size:16px;
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.9);
+}
+
 /* CONTAINER */
 
 .combat-container{

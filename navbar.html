@@ -29,7 +29,8 @@
 </header>
 
 <script type="module">
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 function initNavbar() {
 
@@ -60,6 +61,6 @@ function initNavbar() {
   });
 }
 
-// expõe globalmente pra poder chamar depois do fetch
+// permite rodar depois do fetch
 window.initNavbar = initNavbar;
 </script>

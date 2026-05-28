@@ -1,6 +1,5 @@
-// habilidades.js
-
 import {
+  getApps,
   initializeApp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
@@ -14,7 +13,10 @@ const firebaseConfig = {
   /* SUA CONFIG FIREBASE */
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length
+  ? getApps()[0]
+  : initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
 
 const habilidadeTiers = {
@@ -26,7 +28,12 @@ const habilidadeTiers = {
 };
 
 function slug(name){
-  return name.toLowerCase().replace(/ /g,'-');
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[()]/g, "");
 }
 
 export async function abrirHabilidades(estiloNome){
@@ -34,10 +41,12 @@ export async function abrirHabilidades(estiloNome){
   const modal = document.getElementById("habilidades-modal");
   const container = document.getElementById("habilidades-container");
 
+  if(!modal || !container) return;
+
   modal.style.display = "flex";
   container.innerHTML = "Carregando...";
 
-  const estiloKey = estiloNome.toLowerCase();
+  const estiloKey = slug(estiloNome);
 
   const habilidadesRef = ref(
     db,
@@ -47,7 +56,11 @@ export async function abrirHabilidades(estiloNome){
   const snapshot = await get(habilidadesRef);
 
   if(!snapshot.exists()){
-    container.innerHTML = `<div class="habilidade-item">Nenhuma habilidade encontrada.</div>`;
+    container.innerHTML = `
+      <div class="habilidade-item">
+        Nenhuma habilidade encontrada.
+      </div>
+    `;
     return;
   }
 
@@ -78,6 +91,10 @@ export async function abrirHabilidades(estiloNome){
 }
 
 export function fecharHabilidades(){
-  document.getElementById("habilidades-modal").style.display = "none";
-  document.getElementById("habilidades-container").innerHTML = "";
+
+  const modal = document.getElementById("habilidades-modal");
+  const container = document.getElementById("habilidades-container");
+
+  if(modal) modal.style.display = "none";
+  if(container) container.innerHTML = "";
 }

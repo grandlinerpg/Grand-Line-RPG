@@ -72,13 +72,36 @@ export async function abrirHabilidades(estiloNome){
       return;
     }
 
-    const data = Object.values(snapshot.val());
+    const data = snapshot.val();
+
+    let estilosParaBuscar = [key];
+
+    /* 🔥 HERANCIAS FIXAS */
+    if(data.heranca) estilosParaBuscar.push(data.heranca.toLowerCase());
+    if(data.heranca2) estilosParaBuscar.push(data.heranca2.toLowerCase());
+    if(data.heranca3) estilosParaBuscar.push(data.heranca3.toLowerCase());
+
+    let todasSkills = [];
+
+    for(const estilo of estilosParaBuscar){
+
+      const snap = await get(
+        ref(db, `habilidades/estilo-de-luta/${estilo}`)
+      );
+
+      if(!snap.exists()) continue;
+
+      const d = snap.val();
+      const skills = Object.values(d).filter(v => v && typeof v === "object");
+
+      todasSkills = todasSkills.concat(skills);
+    }
 
     container.innerHTML = "";
 
     for(let tier = 1; tier <= 5; tier++){
 
-      const group = data.filter(h => Number(h.rank) === tier);
+      const group = todasSkills.filter(h => Number(h.rank) === tier);
 
       if(group.length === 0) continue;
 

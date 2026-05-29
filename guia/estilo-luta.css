@@ -1,21 +1,3 @@
-/* TÍTULO (REDUZIDO ESPAÇO) */
-
-.guide-title{
-  text-align:center;
-  margin:35px 0 10px;
-}
-
-.guide-title h1{
-  font-family:'Cinzel', serif;
-  font-size:42px;
-  color:#f6d365;
-}
-
-.guide-title p{
-  font-family:'Cinzel', serif;
-  color:#f5e6c8;
-}
-
 /* LISTA */
 
 #list{

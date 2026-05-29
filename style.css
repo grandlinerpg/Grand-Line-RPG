@@ -172,6 +172,38 @@ nav a:hover::after{
   font-family:'Cinzel', serif;
 }
 
+.title{
+  text-align:center;
+
+  margin-top:60px;
+  margin-bottom:40px;
+}
+
+.title h1{
+  font-family:'Cinzel', serif;
+
+  font-size:42px;
+  font-weight:700;
+
+  color:#f6d365;
+
+  letter-spacing:2px;
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.8);
+
+  margin-bottom:12px;
+}
+
+.title p{
+  font-family:'Cinzel', serif;
+
+  color:#f5e6c8;
+
+  font-size:16px;
+
+  text-shadow:2px 2px 6px rgba(0,0,0,0.9);
+}
+
 /* HERO */
 
 .hero{

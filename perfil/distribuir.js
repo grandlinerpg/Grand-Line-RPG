@@ -34,7 +34,7 @@ fetch("perfil/distribuir.html")
 
       const modal = document.querySelector(".points-modal");
       const openBtn = document.getElementById("open-points");
-      const closeBtn = document.querySelector(".distribuir-close-btn");
+      const closeBtn = document.querySelector(".inventory-close-btn");
       const confirmBtn = document.querySelector(".save-btn");
 
       if (!modal || !openBtn || !closeBtn || !confirmBtn) {
@@ -100,7 +100,7 @@ fetch("perfil/distribuir.html")
       // ======================
       document.addEventListener("click", (e) => {
 
-        const btn = e.target.closest(".plus-btn");
+        const btn = e.target.st(".plus-btn");
         if (!btn) return;
 
         if ((tempPoints.available || 0) <= 0) return;

@@ -279,6 +279,19 @@
    BOTÕES ITEM
 ========================= */
 
+/* =========================
+   BOTÕES ITEM
+========================= */
+
+.item-actions{
+  display:flex;
+  width:100%;
+
+  gap:10px;
+
+  margin-top:25px;
+}
+
 .item-actions button{
   flex:1;
 
@@ -300,6 +313,5 @@
 }
 
 .item-actions button:hover{
-  border-color:#f6d365;
   transform:scale(1.01);
 }

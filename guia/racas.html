@@ -5,9 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Raças e Tribos - Grand Line RPG</title>
-
+  <title>Estilo de Luta - Grand Line RPG</title>
+  
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../guia.css">
   <link rel="stylesheet" href="estilo-luta.css">
+  <link rel="stylesheet" href="habilidades.css">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
@@ -16,7 +19,6 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR (SEM ALTERAÇÃO) -->
   <header class="navbar">
 
     <div class="logo-area">
@@ -36,13 +38,12 @@
   </header>
 
   <section class="guide-title">
-    <h1>RAÇAS E TRIBOS</h1>
-    <p> Diferentes povos espalhados pelos mares do mundo de One Piece.</p>
+    <h1>ESTILO DE LUTA</h1>
+    <p>O estilo de luta é a maneira como o personagem enfrenta o combate.</p>
   </section>
 
   <main id="list"></main>
 
-  <!-- MODAL -->
   <div id="modal" class="modal">
     <div class="modal-content">
 
@@ -56,9 +57,24 @@
       <img id="m-tier-img" class="modal-tier-img">
 
       <button id="m-btn">VER HABILIDADES</button>
+
       <button onclick="closeModal()">FECHAR</button>
 
     </div>
+  </div>
+
+  <div id="habilidades-modal" class="habilidades-modal">
+
+    <div class="habilidades-content">
+
+      <button class="habilidades-close" onclick="closeHabilidades()">
+        ✕
+      </button>
+
+      <div id="habilidades-container"></div>
+
+    </div>
+
   </div>
 
   <script>
@@ -76,99 +92,85 @@
   {
     n:"Humano",
     t:1,
-    d:"Esquecidos e abandonados pela criação, tiveram de se adaptar às circunstâncias e acabaram, inesperadamente, se tornando a mais numerosa raça do planeta.",
-    l:"humano.html"
+    d:"Esquecidos e abandonados pela criação, tiveram de se adaptar às circunstâncias e acabaram, inesperadamente, se tornando a mais numerosa raça do planeta."
   },
 
   {
     n:"Anão",
     t:2,
-    d:"Em comparação com um humano de tamanho médio, a diferença de altura entre eles é aproximadamente a mesma que entre um humano de tamanho normal e um gigante de tamanho médio.",
-    l:"anao.html"
+    d:"Em comparação com um humano de tamanho médio, a diferença de altura entre eles é aproximadamente a mesma que entre um humano de tamanho normal e um gigante de tamanho médio."
   },
 
   {
     n:"Braços Longos",
     t:1,
-    d:"Indivíduos que possuem braços com duas juntas, os tornando muito mais longos que o normal.",
-    l:"bracos-longos.html"
+    d:"Indivíduos que possuem braços com duas juntas, os tornando muito mais longos que o normal."
   },
 
   {
     n:"Pernas Longas",
     t:1,
-    d:"Indivíduos que possuem pernas com duas juntas, tornando-as muito mais longas que o normal.",
-    l:"pernas-longas.html"
+    d:"Indivíduos que possuem pernas com duas juntas, tornando-as muito mais longas que o normal."
   },
 
   {
     n:"Bucaneiro",
     t:2,
-    d:"Uma raça abençoada pela natureza, mas amaldiçoada pela História. Acusados de haver cometido um pecado terrível em seu passado, foram forçados a viver ocultos do mundo.",
-    l:"bucaneiro.html"
+    d:"Uma raça abençoada pela natureza, mas amaldiçoada pela História. Acusados de haver cometido um pecado terrível em seu passado, foram forçados a viver ocultos do mundo."
   },
 
   {
     n:"Gigante",
     t:3,
-    d:"Uma temida raça conhecida por seu principal ofício: a Arte da Guerra. Gigantes possuem tamanho extraordinário, garantindo-lhes força e resistência fora do comum.",
-    l:"gigante.html"
+    d:"Uma temida raça conhecida por seu principal ofício: a Arte da Guerra. Gigantes possuem tamanho extraordinário, garantindo-lhes força e resistência fora do comum."
   },
 
   {
     n:"Humano Modificado",
     t:4,
-    d:"Humanos biologicamente aprimorados por meio de melhorias genéticas para terem características físicas incríveis.",
-    l:"humano-modificado.html"
+    d:"Humanos biologicamente aprimorados por meio de melhorias genéticas para terem características físicas incríveis."
   },
 
   {
     n:"Skypiean",
     t:3,
-    d:"Os Skypieans são a raça que se estabeleceu nas ilhas do céu, sendo conhecidos como o Povo do Céu.",
-    l:"skypiean.html"
+    d:"Os Skypieans são a raça que se estabeleceu nas ilhas do céu, sendo conhecidos como o Povo do Céu."
   },
 
   {
     n:"Mink",
     t:3,
-    d:"A Tribo Mink é uma raça de humanoides com características mamíferas peludas que vive isolada no topo de Zou.",
-    l:"mink.html"
+    d:"A Tribo Mink é uma raça de humanoides com características mamíferas peludas que vive isolada no topo de Zou."
   },
 
   {
     n:"Homem-Peixe",
     t:3,
-    d:"Raça humanoide capaz de sobreviver tanto em terra quanto no mar. São excelentes nadadores e possuem força e resistência superiores.",
-    l:"tritao.html"
+    d:"Raça humanoide capaz de sobreviver tanto em terra quanto no mar. São excelentes nadadores e possuem força e resistência superiores."
   },
 
   {
     n:"Wotan",
     t:4,
-    d:"Os Wotans são um híbrido entre gigantes e homens-peixe.",
-    l:"wotan.html"
+    d:"Os Wotans são um híbrido entre gigantes e homens-peixe."
   },
 
   {
     n:"Gigante Ancestral",
     t:5,
-    d:"Uma forma ancestral dos gigantes, possuindo tamanho e força monstruosos acima dos gigantes comuns.",
-    l:"gigante-ancestral.html"
+    d:"Uma forma ancestral dos gigantes, possuindo tamanho e força monstruosos acima dos gigantes comuns."
   },
 
   {
     n:"Lunarian",
     t:5,
-    d:"Uma tribo de indivíduos alados capazes de criar e controlar fogo, conhecidos como monstros capazes de sobreviver em qualquer ambiente natural.",
-    l:"lunarian.html"
+    d:"Uma tribo de indivíduos alados capazes de criar e controlar fogo, conhecidos como monstros capazes de sobreviver em qualquer ambiente natural."
   },
 
   {
     n:"Membros Longos",
     t:2,
-    d:"Uma raça híbrida nascida da união entre uma Perna Longa e um Braço Longo, possuindo os atributos de ambos.",
-    l:"membros-longos.html"
+    d:"Uma raça híbrida nascida da união entre uma Perna Longa e um Braço Longo, possuindo os atributos de ambos."
   }
 
 ];
@@ -179,7 +181,6 @@
       return name.toLowerCase().replace(/ /g,'-');
     }
 
-    /* ALTERAÇÃO SÓ AQUI */
     for(let t=1;t<=5;t++){
 
       const sep = document.createElement("div");
@@ -204,20 +205,32 @@
     }
 
     function openModal(s){
+
       document.getElementById("modal").style.display = "flex";
+
       document.getElementById("m-title").innerText = s.n;
       document.getElementById("m-tier-img").src = tiersImg[s.t];
       document.getElementById("m-desc").innerText = s.d;
+
       document.getElementById("m-img").src =
         "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
 
-      document.getElementById("m-btn").onclick = () => {
-        window.location.href = s.l;
+      // 🔥 SÓ ISSO FOI CORRIGIDO
+      document.getElementById("m-btn").onclick = async () => {
+
+        const mod = await import("./habilidades.js");
+        mod.abrirHabilidades(s.n);
+
       };
     }
 
     function closeModal(){
       document.getElementById("modal").style.display = "none";
+    }
+
+    function closeHabilidades(){
+      document.getElementById("habilidades-modal").style.display = "none";
+      document.getElementById("habilidades-container").innerHTML = "";
     }
 
     function voltar(){

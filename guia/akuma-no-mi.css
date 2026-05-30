@@ -38,6 +38,8 @@
   border-radius:8px;
 
   flex-shrink:0;
+
+  border:none;
 }
 
 /* IMAGEM MODAL AJUSTADA */
@@ -51,4 +53,6 @@
   border-radius:10px;
 
   margin-bottom:10px;
+
+  border:none;
 }

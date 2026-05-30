@@ -125,7 +125,14 @@ export async function abrirHabilidades(estiloNome){
         const item = document.createElement("div");
         item.className = "habilidade-item";
 
-        item.innerHTML = `<span>${h.nome}</span>`;
+        const imgUrl = h.img
+          ? `https://res.cloudinary.com/djh45admn/image/upload/v1780157980/${h.img}.jpg`
+          : "";
+
+        item.innerHTML = `
+          ${imgUrl ? `<img class="habilidade-icon" src="${imgUrl}" alt="${h.nome}">` : ""}
+          <span>${h.nome}</span>
+        `;
 
         container.appendChild(item);
       });

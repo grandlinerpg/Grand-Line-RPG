@@ -34,7 +34,7 @@ fetch("perfil/distribuir.html")
 
       const modal = document.querySelector(".points-modal");
       const openBtn = document.getElementById("open-points");
-      const closeBtn = document.querySelector(".inventory-close-btn");
+      const closeBtn = document.querySelector(".distribuir-close-btn");
       const confirmBtn = document.querySelector(".save-btn");
 
       if (!modal || !openBtn || !closeBtn || !confirmBtn) {

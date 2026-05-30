@@ -88,8 +88,8 @@
    BOTÃO X (CORRIGIDO)
 ========================= */
 
-.inventory-modal .inventory-close-btn,
-.item-modal .close-item-x{
+.inventory-close-btn,
+.close-item-x{
   position:absolute;
 
   top:10px;
@@ -110,8 +110,8 @@
   transition:0.2s;
 }
 
-.inventory-modal .inventory-close-btn:hover,
-.item-modal .close-item-x:hover{
+.inventory-close-btn:hover,
+.close-item-x:hover{
   background:rgba(255,0,0,0.5);
 }
 

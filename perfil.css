@@ -159,7 +159,7 @@
 }
 
 /* BOTÃO */
-.profile-card button {
+.glrpg-button {
   width: 100%;
   padding: 14px;
   border: none;
@@ -169,11 +169,11 @@
   font-family: 'Cinzel', serif;
 }
 
-.profile-card button{
+.glrpg-button{
   margin-bottom:10px;
 }
 
-.profile-card button:last-child{
+.glrpg-button:last-child{
   margin-bottom:0;
 }
 

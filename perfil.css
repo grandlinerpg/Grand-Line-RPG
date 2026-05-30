@@ -159,7 +159,7 @@
 }
 
 /* BOTÃO */
-button {
+.profile-card button {
   width: 100%;
   padding: 14px;
   border: none;

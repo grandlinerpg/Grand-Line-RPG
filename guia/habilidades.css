@@ -124,6 +124,18 @@
   transform: translateX(4px);
 }
 
+.habilidade-icon{
+  width:90px;
+  height:60px;
+
+  object-fit:cover;
+
+  border-radius:8px;
+  border:1px solid rgba(246,211,101,0.35);
+
+  flex-shrink:0;
+}
+
 /* =========================
    TEXTO DE VAZIO
 ========================= */

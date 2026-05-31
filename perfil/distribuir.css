@@ -279,7 +279,7 @@
   .distribuir-close-btn:hover{
     transform:translateY(-50%) scale(1.05);
   }
-
+  
   .points-footer{
     grid-template-columns:1fr;
   }

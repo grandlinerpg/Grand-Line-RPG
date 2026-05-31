@@ -83,6 +83,8 @@
 
       <img id="m-tier-img" class="modal-tier-img">
 
+      <button id="m-btn">VER HABILIDADES</button>
+
     </div>
 
   </div>
@@ -232,6 +234,15 @@
       document.getElementById("m-img")
       .src = CLOUD + a.img + ".png";
 
+    }
+
+          // 🔥 SÓ ISSO FOI CORRIGIDO
+      document.getElementById("m-btn").onclick = async () => {
+
+        const mod = await import("./habilidades.js");
+        mod.abrirHabilidades(s.n);
+
+      };
     }
 
     /* FECHAR MODAL */

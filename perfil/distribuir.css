@@ -16,6 +16,7 @@
 /* JANELA */
 
 .points-window{
+  position:relative;
   width:88%;
   max-width:340px;
 

@@ -90,26 +90,29 @@
   position:absolute;
 
   top:10px;
-  right:10px;
+  right:15px;
 
-  width:32px;
-  height:32px;
-
+  background:none;
   border:none;
-  border-radius:6px;
+  padding:0;
 
-  background:rgba(255,0,0,0.2);
-  color:white;
+  width:auto;
+  height:auto;
 
-  font-size:18px;
+  color:#f6d365;
+
+  font-size:30px;
+  line-height:1;
+
   cursor:pointer;
 
-  transition:0.2s;
+  transition:0.3s;
 }
 
 .inventory-close-btn:hover,
 .close-item-x:hover{
-  background:rgba(255,0,0,0.5);
+  transform:scale(1.1);
+  color:#fff;
 }
 
 /* =========================
@@ -271,10 +274,6 @@
   text-align:center;
   font-size:14px;
 }
-
-/* =========================
-   BOTÕES ITEM
-========================= */
 
 /* =========================
    BOTÕES ITEM

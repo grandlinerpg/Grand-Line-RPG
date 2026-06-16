@@ -158,23 +158,27 @@
   font-family: 'Cinzel', serif;
 }
 
-/* BOTÃO */
-.glrpg-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(to bottom, #8f1408, #5e0800);
-  color: #f6d365;
-  font-family: 'Cinzel', serif;
+/* =========================
+   BOTÕES COM IMAGEM
+========================= */
+
+.profile-buttons{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:15px;
 }
 
-.glrpg-button{
-  margin-bottom:10px;
+.image-button{
+  padding:0;
+  border:none;
+  background:none;
+  cursor:pointer;
 }
 
-.glrpg-button:last-child{
-  margin-bottom:0;
+.image-button img{
+  display:block;
+  width:100%;
 }
 
 /* =========================

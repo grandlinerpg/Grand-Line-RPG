@@ -164,8 +164,10 @@
 
 .profile-buttons{
   display:flex;
-  flex-direction:column;
+  justify-content:center;
+  align-items:center;
   gap:10px;
+  flex-wrap:wrap;
   margin-top:15px;
 }
 
@@ -178,7 +180,8 @@
 
 .image-button img{
   display:block;
-  width:100%;
+  width:140px; /* ajuste conforme necessário */
+  height:auto;
 }
 
 /* =========================

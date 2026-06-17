@@ -12,9 +12,6 @@ const app = getApp();
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// ======================
-// LOAD HTML
-// ======================
 fetch("perfil/atributos.html")
   .then(res => res.text())
   .then(html => {
@@ -23,16 +20,13 @@ fetch("perfil/atributos.html")
 
     setTimeout(() => {
 
-      // ======================
-      // ELEMENTOS (CORRIGIDOS)
-      // ======================
-      const modal = document.querySelector(".points-modal");
+      const modal = document.querySelector(".attributes-modal");
       const openBtn = document.getElementById("open-attributes");
-      const closeBtn = document.querySelector(".distribuir-close-btn");
-      const distributeBtn = document.getElementById("open-points");
+      const closeBtn = document.querySelector(".attributes-close-btn");
+      const distributeBtn = document.getElementById("open-distribute-points");
 
       if (!modal) {
-        console.error("points-modal não encontrada");
+        console.error("attributes-modal não encontrada");
         return;
       }
 
@@ -75,7 +69,7 @@ fetch("perfil/atributos.html")
       }
 
       // ======================
-      // FECHAR MODAL
+      // FECHAR
       // ======================
       if (closeBtn) {
 
@@ -86,7 +80,7 @@ fetch("perfil/atributos.html")
       }
 
       // ======================
-      // ABRIR DISTRIBUIR PONTOS
+      // ABRIR DISTRIBUIR
       // ======================
       if (distributeBtn) {
 
@@ -94,9 +88,12 @@ fetch("perfil/atributos.html")
 
           modal.style.display = "none";
 
-          const btn = document.getElementById("open-points");
+          const distribuirBtn =
+            document.getElementById("open-points");
 
-          if (btn) btn.click();
+          if (distribuirBtn) {
+            distribuirBtn.click();
+          }
 
         });
 

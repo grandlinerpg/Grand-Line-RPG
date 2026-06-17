@@ -133,20 +133,6 @@ async function startAuth() {
         document.getElementById("saldo").innerText =
           saldo.toLocaleString("pt-BR");
 
-        // ======================
-        // ATRIBUTOS
-        // ======================
-        const stats = data.stats || {};
-
-        document.getElementById("str").innerText = stats.str || 0;
-        document.getElementById("res").innerText = stats.res || 0;
-        document.getElementById("dex").innerText = stats.dex || 0;
-        document.getElementById("agi").innerText = stats.agi || 0;
-        document.getElementById("sta").innerText = stats.sta || 0;
-        document.getElementById("hp").innerText = stats.hp || 0;
-
-      });
-
     } catch (err) {
       console.error("Erro ao carregar perfil:", err);
     }

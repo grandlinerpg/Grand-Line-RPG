@@ -25,67 +25,79 @@ fetch("perfil/atributos.html")
       const closeBtn = document.querySelector(".attributes-close-btn");
       const distributeBtn = document.getElementById("open-distribute-points");
 
-      if (!modal || !openBtn || !closeBtn || !distributeBtn) {
-        console.error("Modal de atributos não carregou corretamente");
+      if (!modal) {
+        console.error("attributes-modal não encontrada");
         return;
       }
 
       modal.style.display = "none";
 
       // ======================
-      // ABRIR
+      // ABRIR ATRIBUTOS
       // ======================
-      openBtn.addEventListener("click", async () => {
+      if (openBtn) {
 
-        const user = auth.currentUser;
-        if (!user) return;
+        openBtn.addEventListener("click", async () => {
 
-        const userRef = ref(db, `players/${user.uid}`);
+          const user = auth.currentUser;
+          if (!user) return;
 
-        const snap = await get(userRef);
-        if (!snap.exists()) return;
+          const userRef = ref(db, `players/${user.uid}`);
 
-        const data = snap.val();
-        const stats = data.stats || {};
+          const snap = await get(userRef);
+          if (!snap.exists()) return;
 
-        const set = (id, val) => {
-          const el = document.getElementById(id);
-          if (el) el.innerText = val;
-        };
+          const data = snap.val();
+          const stats = data.stats || {};
 
-        set("attr-str", stats.str || 0);
-        set("attr-res", stats.res || 0);
-        set("attr-dex", stats.dex || 0);
-        set("attr-agi", stats.agi || 0);
-        set("attr-sta", stats.sta || 0);
-        set("attr-hp", stats.hp || 0);
+          const set = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = value;
+          };
 
-        modal.style.display = "flex";
+          set("attr-str", stats.str || 0);
+          set("attr-res", stats.res || 0);
+          set("attr-dex", stats.dex || 0);
+          set("attr-agi", stats.agi || 0);
+          set("attr-sta", stats.sta || 0);
+          set("attr-hp", stats.hp || 0);
 
-      });
+          modal.style.display = "flex";
+
+        });
+
+      }
 
       // ======================
       // FECHAR
       // ======================
-      closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-      });
+      if (closeBtn) {
+
+        closeBtn.addEventListener("click", () => {
+          modal.style.display = "none";
+        });
+
+      }
 
       // ======================
-      // ABRIR DISTRIBUIÇÃO
+      // ABRIR DISTRIBUIR
       // ======================
-      distributeBtn.addEventListener("click", () => {
+      if (distributeBtn) {
 
-        modal.style.display = "none";
+        distributeBtn.addEventListener("click", () => {
 
-        const distribuirBtn =
-          document.getElementById("open-points");
+          modal.style.display = "none";
 
-        if (distribuirBtn) {
-          distribuirBtn.click();
-        }
+          const distribuirBtn =
+            document.getElementById("open-points");
 
-      });
+          if (distribuirBtn) {
+            distribuirBtn.click();
+          }
+
+        });
+
+      }
 
     }, 0);
 

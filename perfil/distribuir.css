@@ -271,9 +271,5 @@
     width:100%;
     text-align:center;
   }
-  
-  .points-footer{
-    grid-template-columns:1fr;
-  }
 
 }

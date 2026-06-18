@@ -80,16 +80,18 @@ fetch("perfil/atributos.html")
       }
 
       // ======================
-      // ABRIR DISTRIBUIR
+      // ABRIR DISTRIBUIR (CORRETO)
       // ======================
       if (distributeBtn) {
 
         distributeBtn.addEventListener("click", () => {
 
-          const distribuirModal = document.querySelector(".points-modal");
+          modal.style.display = "none";
 
-          if (distribuirModal) {
-            distribuirModal.style.display = "flex";
+          const openPoints = document.getElementById("open-points");
+
+          if (openPoints) {
+            openPoints.click();
           }
 
         });

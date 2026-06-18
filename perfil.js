@@ -94,7 +94,6 @@ async function startAuth() {
 
         charImg.src = imagem;
 
-        // fallback
         charImg.onerror = function () {
           this.src =
             "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png?v=" + Date.now();
@@ -133,10 +132,13 @@ async function startAuth() {
         document.getElementById("saldo").innerText =
           saldo.toLocaleString("pt-BR");
 
+      });
+
     } catch (err) {
       console.error("Erro ao carregar perfil:", err);
     }
-  });
+
+  }); // 👈 FECHOU onAuthStateChanged
 }
 
 // ======================
@@ -150,9 +152,8 @@ window.logout = function () {
 
 startAuth();
 
-
 // ======================================================
-// 🔥 ADIÇÃO NECESSÁRIA PARA O MODAL (SEM MEXER NO RESTO)
+// 🔥 ADIÇÃO NECESSÁRIA PARA O MODAL
 // ======================================================
 window.auth = auth;
 window.db = db;

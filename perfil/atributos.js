@@ -86,13 +86,10 @@ fetch("perfil/atributos.html")
 
         distributeBtn.addEventListener("click", () => {
 
-          modal.style.display = "none";
+          const distribuirModal = document.querySelector(".points-modal");
 
-          const distribuirBtn =
-            document.getElementById("open-points");
-
-          if (distribuirBtn) {
-            distribuirBtn.click();
+          if (distribuirModal) {
+            distribuirModal.style.display = "flex";
           }
 
         });

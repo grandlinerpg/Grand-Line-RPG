@@ -427,13 +427,13 @@ imagem
 .skill-item{
   display:flex;
   align-items:center;
-  gap:10px;
-  padding:10px;
+  gap:8px;
+  padding:8px;
 }
 
 /* IMAGEM 3:2 */
 .skill-icon{
-  width:60px;
+  width:40px;
   aspect-ratio: 3 / 2;
   object-fit: cover;
 

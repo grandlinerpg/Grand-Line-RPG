@@ -1,41 +1,245 @@
+/* =========================
+   SKILLS MODAL
+========================= */
+
 .skills-modal{
   position:fixed;
   inset:0;
+
   background:rgba(0,0,0,0.7);
+
   display:none;
+
   justify-content:center;
   align-items:center;
+
+  z-index:2500;
 }
+
+/* =========================
+   JANELA
+========================= */
 
 .skills-window{
   width:90%;
   max-width:500px;
-  background:#0b0b0b;
-  border:1px solid #f6d365;
-  border-radius:12px;
-  padding:20px;
+
+  background:rgba(10,10,10,0.96);
+
+  border:1px solid rgba(255,215,120,0.2);
+
+  border-radius:16px;
+
+  padding:22px;
+
+  position:relative;
+
+  margin:auto;
+
+  overflow:hidden;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.skills-header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  margin-bottom:18px;
 }
 
 .skills-header h2{
   color:#f6d365;
+  font-family:'Cinzel', serif;
+
   text-align:center;
+
+  margin:0;
+
+  font-size:26px;
+}
+
+/* =========================
+   LISTA
+========================= */
+
+.skills-list{
+  display:flex;
+  flex-direction:column;
+
+  gap:10px;
+
+  height:360px;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding-right:5px;
+}
+
+/* scroll estilo market */
+.skills-list::-webkit-scrollbar{
+  width:6px;
+}
+
+.skills-list::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.skills-list::-webkit-scrollbar-thumb{
+  background:rgba(246,211,101,0.25);
+  border-radius:999px;
+}
+
+.skills-list::-webkit-scrollbar-thumb:hover{
+  background:rgba(246,211,101,0.45);
+}
+
+/* =========================
+   CATEGORIA DIVIDER
+========================= */
+
+.skills-category{
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
+  font-size:14px;
+
+  letter-spacing:1px;
+
+  margin-top:10px;
+  margin-bottom:5px;
+
+  padding:6px 10px;
+
+  border-left:2px solid rgba(246,211,101,0.4);
+
+  background:rgba(255,255,255,0.03);
+}
+
+/* =========================
+   ITEM SKILL
+========================= */
+
+.skill-item{
+  background:rgba(255,255,255,0.05);
+
+  border:1px solid rgba(255,215,120,0.15);
+
+  border-radius:10px;
+
+  padding:10px 12px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  cursor:pointer;
+
+  transition:0.2s;
+}
+
+.skill-item:hover{
+  transform:scale(1.01);
+}
+
+/* nome skill */
+.skill-name{
+  color:#f6d365;
+  font-family:'Cinzel', serif;
+
+  font-size:13px;
+  text-transform:uppercase;
+}
+
+/* status skill */
+.skill-status{
+  font-size:12px;
+
+  padding:4px 8px;
+  border-radius:8px;
+
+  border:1px solid rgba(246,211,101,0.3);
+
+  color:#f6d365;
+
+  background:rgba(0,0,0,0.4);
+}
+
+/* =========================
+   FOOTER PONTOS
+========================= */
+
+.skills-footer{
+  margin-top:15px;
+
+  padding-top:15px;
+
+  border-top:1px solid rgba(255,215,120,0.15);
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
 .skills-points{
   display:flex;
-  justify-content:space-between;
-  color:#fff;
-  margin:10px 0;
+  flex-direction:column;
 }
 
-.skill-category{
-  margin-top:15px;
-  padding:5px;
+.skills-points span{
+  font-family:'Cinzel', serif;
   color:#f6d365;
-  border-bottom:1px solid rgba(246,211,101,0.3);
 }
 
-.skill-item{
-  padding:8px;
+.skills-points small{
+  color:#aaa;
+  font-size:11px;
+}
+
+/* botão fechar igual padrão */
+.skills-close-btn{
+  position:absolute;
+
+  top:10px;
+  right:15px;
+
+  background:none;
+  border:none;
+
+  color:#f6d365;
+
+  font-size:30px;
+
+  cursor:pointer;
+
+  transition:0.2s;
+}
+
+.skills-close-btn:hover{
+  transform:scale(1.1);
   color:#fff;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:700px){
+
+  .skills-window{
+    padding:18px;
+  }
+
+  .skill-item{
+    padding:9px 10px;
+  }
+
+  .skill-name{
+    font-size:12px;
+  }
+
 }

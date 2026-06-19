@@ -530,5 +530,5 @@
   overflow-y:auto;
   overflow-x:hidden;
 
-  padding-right:6px; /* espaço entre itens e scrollbar */
+  padding-right:5px; /* espaço entre itens e scrollbar */
 }

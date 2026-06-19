@@ -117,7 +117,10 @@ function initInventory() {
         categoria: itemCategoria,
         quantidade: quantidade,
         img: itemData.img,
-        description: itemData.description
+        description: itemData.description,
+        item: itemData.item,
+        emoji: itemData.emoji,
+        icon: itemData.icon
       };
 
       div.innerHTML = `
@@ -128,7 +131,7 @@ function initInventory() {
               itemData.img
                 ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                      class="inventory-item-img">`
-                : "📦"
+                : (itemData.item || itemData.emoji || itemData.icon || "📦")
             }
           </span>
 
@@ -159,7 +162,7 @@ function initInventory() {
           itemData.img
             ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                    class="item-open-img">`
-            : "📦";
+            : (itemData.item || itemData.emoji || itemData.icon || "📦");
 
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
@@ -207,7 +210,7 @@ function initInventory() {
     });
   }
 
-  // 🔥 CONFIRMAÇÃO USAR ITEM (SÓ ISSO NOVO)
+  // CONFIRMAÇÃO USAR ITEM
   useBtn?.addEventListener("click", () => {
     if (!currentItem) return;
     if (confirmModal) confirmModal.style.display = "flex";
@@ -219,12 +222,12 @@ function initInventory() {
 
   confirmYes?.addEventListener("click", () => {
 
-    console.log("USAR ITEM:", currentItem);
-
     if (confirmModal) confirmModal.style.display = "none";
     if (itemModal) itemModal.style.display = "none";
 
-    // lógica real depois aqui
+    console.log("USAR ITEM:", currentItem);
+
+    // aqui entra tua lógica real depois
   });
 }
 

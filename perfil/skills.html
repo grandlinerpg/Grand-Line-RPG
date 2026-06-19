@@ -8,13 +8,6 @@
       <h2>HABILIDADES</h2>
     </div>
 
-    <!-- FILTRO -->
-    <div class="skills-filter">
-      <select id="skills-category">
-        <option value="all">Todas Categorias</option>
-      </select>
-    </div>
-
     <!-- PONTOS + ÁRVORE -->
     <div class="skills-top">
 
@@ -25,6 +18,14 @@
           <span id="skill-available">0</span>
         </div>
 
+        <button
+          id="open-skill-tree"
+          class="skill-tree-btn"
+          title="Árvore de Habilidades"
+        >
+          📖
+        </button>
+
         <div>
           Pontos Usados
           <span id="skill-used">0</span>
@@ -32,17 +33,16 @@
 
       </div>
 
-      <button
-        id="open-skill-tree"
-        class="skill-tree-btn"
-        title="Árvore de Habilidades"
-      >
-        📖
-      </button>
-
     </div>
 
     <div class="skills-divider"></div>
+    
+    <!-- FILTRO -->
+    <div class="skills-filter">
+      <select id="skills-category">
+        <option value="all">Todas Categorias</option>
+      </select>
+    </div>
 
     <!-- LISTA -->
     <div id="skills-list" class="skills-list"></div>

@@ -33,29 +33,15 @@ function initInventory() {
   const closeItem = document.getElementById("close-item");
 
   const inventoryList = document.getElementById("inventory-list");
-
   const saldoElement = document.getElementById("inventory-saldo");
   const marketBtn = document.getElementById("open-market");
 
-  const useBtn = document.getElementById("use-item");
-  const sellBtn = document.getElementById("sell-item");
-
-  // 🔥 NOVO: confirmação
-  let confirmBox = null;
-  let confirmYes = null;
-  let confirmNo = null;
-
-  if (!openBtn || !inventoryModal || !inventoryList) {
-    console.error("Inventário não carregou corretamente no DOM");
-    return;
-  }
+  if (!openBtn || !inventoryModal || !inventoryList) return;
 
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
   newOpenBtn.addEventListener("click", async () => {
-
-    window.itemMode = "inventory";
 
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
@@ -63,20 +49,14 @@ function initInventory() {
     const user = auth.currentUser;
     if (!user) return;
 
-    const playerSnap = await get(
-      ref(db, `players/${user.uid}/info`)
-    );
+    const playerSnap = await get(ref(db, `players/${user.uid}/info`));
 
     if (playerSnap.exists() && saldoElement) {
       const saldo = playerSnap.val().saldo || 0;
-      saldoElement.innerText =
-        "฿ " + saldo.toLocaleString("pt-BR");
+      saldoElement.innerText = "฿ " + saldo.toLocaleString("pt-BR");
     }
 
-    const inventorySnap = await get(
-      ref(db, `players/${user.uid}/inventory`)
-    );
-
+    const inventorySnap = await get(ref(db, `players/${user.uid}/inventory`));
     if (!inventorySnap.exists()) {
       inventoryList.innerHTML = "Inventário vazio.";
       return;
@@ -114,13 +94,8 @@ function initInventory() {
       const itemObj = {
         id: itemId,
         nome: itemData.nome,
-        tipo: itemData.tipo,
-        tier: itemData.tier,
-        value: itemData.value,
-        categoria: itemCategoria,
-        quantidade: quantidade,
-        img: itemData.img,
-        description: itemData.description
+        descricao: itemData.description,
+        img: itemData.img
       };
 
       div.innerHTML = `
@@ -131,19 +106,21 @@ function initInventory() {
               itemData.img
                 ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                      class="inventory-item-img">`
-                : (itemData.item || "📦")
+                : "📦"
             }
           </span>
 
           <div class="inventory-text">
             <div class="inventory-name-qty">
+
               <span class="inventory-name">
-                ${itemData.nome || itemId}
+                ${itemData.nome}
               </span>
 
               <span class="inventory-qty">
                 ${quantidade}
               </span>
+
             </div>
           </div>
 
@@ -152,35 +129,18 @@ function initInventory() {
 
       div.addEventListener("click", () => {
 
-        window.itemMode = "inventory";
-
         currentItem = itemObj;
 
         document.getElementById("item-emoji").innerHTML =
           itemData.img
             ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                    class="item-open-img">`
-            : (itemData.item || "📦");
+            : "📦";
 
-        document.getElementById("item-name").innerText =
-          itemData.nome || itemId;
+        document.getElementById("item-name").innerText = itemData.nome;
 
-        const tier = Number(itemData.tier) || 1;
-
-        const tierImgUrl =
-          `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
-
-        document.getElementById("item-description").innerHTML = `
-          <div>
-            ${itemData.description || "Sem descrição."}
-          </div>
-
-          <img src="${tierImgUrl}" style="
-            width:210px;
-            display:block;
-            margin:12px auto 0 auto;
-          "/>
-        `;
+        document.getElementById("item-description").innerHTML =
+          itemData.description || "Sem descrição.";
 
         itemModal.style.display = "flex";
 
@@ -206,87 +166,44 @@ function initInventory() {
   if (marketBtn) {
     marketBtn.addEventListener("click", () => {
       inventoryModal.style.display = "none";
-      if (window.openMarket) {
-        window.openMarket();
-      }
+      if (window.openMarket) window.openMarket();
     });
   }
 
-  // 🔥 NOVO: intercepta clique no USAR
+  // CONFIRMAÇÃO DE USO
   document.addEventListener("click", (e) => {
 
-    if (e.target && e.target.id === "use-item") {
+    const confirmBox = document.getElementById("use-confirm");
 
-      if (!currentItem) return;
-
-      confirmBox = document.getElementById("use-confirm");
-      confirmYes = document.getElementById("confirm-use-yes");
-      confirmNo = document.getElementById("confirm-use-no");
-
+    if (e.target.id === "use-item") {
       if (confirmBox) confirmBox.style.display = "flex";
     }
 
-    if (e.target && e.target.id === "confirm-use-no") {
+    if (e.target.id === "confirm-use-no") {
       if (confirmBox) confirmBox.style.display = "none";
     }
 
-    if (e.target && e.target.id === "confirm-use-yes") {
+    if (e.target.id === "confirm-use-yes") {
 
       console.log("USAR ITEM:", currentItem);
 
       if (confirmBox) confirmBox.style.display = "none";
       if (itemModal) itemModal.style.display = "none";
 
-      // aqui depois entra sua lógica real de uso
+      // lógica real depois
     }
   });
 }
 
-// 🔥 RENDER DOS BOTÕES DO INVENTÁRIO
-function renderInventoryActions() {
 function renderInventoryActions() {
 
   const actions = document.querySelector(".item-actions");
-
   if (!actions) return;
-
-  if (window.itemMode === "market") return;
 
   actions.innerHTML = `
     <button id="use-item">USAR</button>
     <button id="sell-item">VENDER</button>
   `;
-
-  // 🔥 AQUI: evento direto no botão (CORRETO)
-  const useBtn = document.getElementById("use-item");
-
-  const confirmBox = document.getElementById("use-confirm");
-  const confirmYes = document.getElementById("confirm-use-yes");
-  const confirmNo = document.getElementById("confirm-use-no");
-
-  if (useBtn) {
-    useBtn.addEventListener("click", () => {
-      if (!currentItem) return;
-      if (confirmBox) confirmBox.style.display = "flex";
-    });
-  }
-
-  if (confirmNo) {
-    confirmNo.addEventListener("click", () => {
-      if (confirmBox) confirmBox.style.display = "none";
-    });
-  }
-
-  if (confirmYes) {
-    confirmYes.addEventListener("click", () => {
-
-      console.log("USAR ITEM:", currentItem);
-
-      if (confirmBox) confirmBox.style.display = "none";
-      document.getElementById("item-modal").style.display = "none";
-
-      // lógica do uso depois
-    });
-  }
 }
+
 loadInventoryHTML();

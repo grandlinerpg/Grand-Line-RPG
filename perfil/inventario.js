@@ -244,6 +244,7 @@ function initInventory() {
 
 // 🔥 RENDER DOS BOTÕES DO INVENTÁRIO
 function renderInventoryActions() {
+function renderInventoryActions() {
 
   const actions = document.querySelector(".item-actions");
 
@@ -255,6 +256,37 @@ function renderInventoryActions() {
     <button id="use-item">USAR</button>
     <button id="sell-item">VENDER</button>
   `;
-}
 
+  // 🔥 AQUI: evento direto no botão (CORRETO)
+  const useBtn = document.getElementById("use-item");
+
+  const confirmBox = document.getElementById("use-confirm");
+  const confirmYes = document.getElementById("confirm-use-yes");
+  const confirmNo = document.getElementById("confirm-use-no");
+
+  if (useBtn) {
+    useBtn.addEventListener("click", () => {
+      if (!currentItem) return;
+      if (confirmBox) confirmBox.style.display = "flex";
+    });
+  }
+
+  if (confirmNo) {
+    confirmNo.addEventListener("click", () => {
+      if (confirmBox) confirmBox.style.display = "none";
+    });
+  }
+
+  if (confirmYes) {
+    confirmYes.addEventListener("click", () => {
+
+      console.log("USAR ITEM:", currentItem);
+
+      if (confirmBox) confirmBox.style.display = "none";
+      document.getElementById("item-modal").style.display = "none";
+
+      // lógica do uso depois
+    });
+  }
+}
 loadInventoryHTML();

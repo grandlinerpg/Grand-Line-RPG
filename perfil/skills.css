@@ -130,8 +130,6 @@
   grid-template-columns:1fr 1fr;
 
   gap:10px;
-
-  margin-bottom:15px;
 }
 
 .skills-points div{
@@ -163,6 +161,47 @@
 
   font-size:18px;
   font-weight:bold;
+}
+
+.skills-top{
+  display:flex;
+  align-items:stretch;
+  gap:10px;
+
+  margin-bottom:15px;
+}
+
+.skills-top .skills-points{
+  flex:1;
+  margin-bottom:0;
+}
+
+.skill-tree-btn{
+
+  width:60px;
+
+  border:none;
+  border-radius:10px;
+
+  cursor:pointer;
+
+  background:linear-gradient(
+    to bottom,
+    #8f1408,
+    #5e0800
+  );
+
+  border:1px solid rgba(246,211,101,0.2);
+
+  color:#f6d365;
+
+  font-size:26px;
+
+  transition:.2s;
+}
+
+.skill-tree-btn:hover{
+  transform:scale(1.03);
 }
 
 /* =========================

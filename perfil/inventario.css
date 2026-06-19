@@ -120,13 +120,18 @@
 ========================= */
 
 .inventory-list{
-  display:flex;
-  flex-direction:column;
-
-  gap:8px;
+  display:block;
 
   height:400px;
-  overflow:hidden;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  gap:8px; /* pode manter, mas só funciona se os itens forem block/flex */
+}
+
+.inventory-item{
+  flex-shrink:0;
 }
 
 /* ITEM */
@@ -518,4 +523,11 @@
 
 #market-list::-webkit-scrollbar-thumb:hover{
   background:rgba(246,211,101,0.45);
+}
+
+#market-list{
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding-right:6px; /* espaço entre itens e scrollbar */
 }

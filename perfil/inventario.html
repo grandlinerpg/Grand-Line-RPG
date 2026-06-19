@@ -2,9 +2,7 @@
 
   <div class="inventory-window">
 
-    <button id="close-inventory" class="inventory-close-btn">
-      ×
-    </button>
+    <button id="close-inventory" class="inventory-close-btn">×</button>
 
     <div class="inventory-header">
       <h2>INVENTÁRIO</h2>
@@ -12,7 +10,6 @@
 
     <div id="inventory-list" class="inventory-list"></div>
 
-    <!-- NOVO RODAPÉ -->
     <div class="inventory-footer">
 
       <div class="inventory-saldo">
@@ -30,13 +27,13 @@
 
 </div>
 
+
+<!-- ITEM MODAL -->
 <div id="item-modal" class="item-modal">
 
   <div class="item-window">
 
-    <button id="close-item" class="close-item-x">
-      ×
-    </button>
+    <button id="close-item" class="close-item-x">×</button>
 
     <div class="item-top">
       <span id="item-emoji" class="item-emoji">📦</span>
@@ -48,14 +45,36 @@
     </div>
 
     <div class="item-actions">
+      <button id="use-item">USAR</button>
+      <button id="sell-item">VENDER</button>
+    </div>
 
-      <button id="use-item">
-        USAR
-      </button>
+  </div>
 
-      <button id="sell-item">
-        VENDER
-      </button>
+</div>
+
+
+<!-- CONFIRMAÇÃO (FORA DO ITEM MODAL!) -->
+<div id="confirm-modal" class="item-modal">
+
+  <div class="item-window">
+
+    <div class="item-top">
+
+      <h2 style="color:#f6d365; font-family:'Cinzel', serif;">
+        TEM CERTEZA?
+      </h2>
+
+      <p style="color:#ddd; text-align:center;">
+        Você deseja usar este item?
+      </p>
+
+    </div>
+
+    <div class="item-actions">
+
+      <button id="confirm-yes">SIM</button>
+      <button id="confirm-no">NÃO</button>
 
     </div>
 

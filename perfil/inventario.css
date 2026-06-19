@@ -412,7 +412,7 @@
 .inventory-saldo{
   display:flex;
   flex-direction:column;
-  align-items:center;
+  align-items:flex-start;
 }
 
 .inventory-saldo div:first-child{

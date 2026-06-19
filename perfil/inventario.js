@@ -33,10 +33,21 @@ function initInventory() {
   const closeItem = document.getElementById("close-item");
 
   const inventoryList = document.getElementById("inventory-list");
+
   const saldoElement = document.getElementById("inventory-saldo");
   const marketBtn = document.getElementById("open-market");
 
-  if (!openBtn || !inventoryModal || !inventoryList) return;
+  const useBtn = document.getElementById("use-item");
+  const sellBtn = document.getElementById("sell-item");
+
+  const confirmModal = document.getElementById("confirm-modal");
+  const confirmYes = document.getElementById("confirm-yes");
+  const confirmNo = document.getElementById("confirm-no");
+
+  if (!openBtn || !inventoryModal || !inventoryList) {
+    console.error("Inventário não carregou corretamente no DOM");
+    return;
+  }
 
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
@@ -49,14 +60,20 @@ function initInventory() {
     const user = auth.currentUser;
     if (!user) return;
 
-    const playerSnap = await get(ref(db, `players/${user.uid}/info`));
+    const playerSnap = await get(
+      ref(db, `players/${user.uid}/info`)
+    );
 
     if (playerSnap.exists() && saldoElement) {
       const saldo = playerSnap.val().saldo || 0;
-      saldoElement.innerText = "฿ " + saldo.toLocaleString("pt-BR");
+      saldoElement.innerText =
+        "฿ " + saldo.toLocaleString("pt-BR");
     }
 
-    const inventorySnap = await get(ref(db, `players/${user.uid}/inventory`));
+    const inventorySnap = await get(
+      ref(db, `players/${user.uid}/inventory`)
+    );
+
     if (!inventorySnap.exists()) {
       inventoryList.innerHTML = "Inventário vazio.";
       return;
@@ -94,8 +111,13 @@ function initInventory() {
       const itemObj = {
         id: itemId,
         nome: itemData.nome,
-        descricao: itemData.description,
-        img: itemData.img
+        tipo: itemData.tipo,
+        tier: itemData.tier,
+        value: itemData.value,
+        categoria: itemCategoria,
+        quantidade: quantidade,
+        img: itemData.img,
+        description: itemData.description
       };
 
       div.innerHTML = `
@@ -111,10 +133,11 @@ function initInventory() {
           </span>
 
           <div class="inventory-text">
+
             <div class="inventory-name-qty">
 
               <span class="inventory-name">
-                ${itemData.nome}
+                ${itemData.nome || itemId}
               </span>
 
               <span class="inventory-qty">
@@ -122,6 +145,7 @@ function initInventory() {
               </span>
 
             </div>
+
           </div>
 
         </div>
@@ -137,14 +161,27 @@ function initInventory() {
                    class="item-open-img">`
             : "📦";
 
-        document.getElementById("item-name").innerText = itemData.nome;
+        document.getElementById("item-name").innerText =
+          itemData.nome || itemId;
 
-        document.getElementById("item-description").innerHTML =
-          itemData.description || "Sem descrição.";
+        const tier = Number(itemData.tier) || 1;
+
+        const tierImgUrl =
+          `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
+
+        document.getElementById("item-description").innerHTML = `
+          <div>
+            ${itemData.description || "Sem descrição."}
+          </div>
+
+          <img src="${tierImgUrl}" style="
+            width:210px;
+            display:block;
+            margin:12px auto 0 auto;
+          "/>
+        `;
 
         itemModal.style.display = "flex";
-
-        renderInventoryActions();
       });
 
       inventoryList.appendChild(div);
@@ -170,40 +207,25 @@ function initInventory() {
     });
   }
 
-  // CONFIRMAÇÃO DE USO
-  document.addEventListener("click", (e) => {
-
-    const confirmBox = document.getElementById("use-confirm");
-
-    if (e.target.id === "use-item") {
-      if (confirmBox) confirmBox.style.display = "flex";
-    }
-
-    if (e.target.id === "confirm-use-no") {
-      if (confirmBox) confirmBox.style.display = "none";
-    }
-
-    if (e.target.id === "confirm-use-yes") {
-
-      console.log("USAR ITEM:", currentItem);
-
-      if (confirmBox) confirmBox.style.display = "none";
-      if (itemModal) itemModal.style.display = "none";
-
-      // lógica real depois
-    }
+  // 🔥 CONFIRMAÇÃO USAR ITEM (SÓ ISSO NOVO)
+  useBtn?.addEventListener("click", () => {
+    if (!currentItem) return;
+    if (confirmModal) confirmModal.style.display = "flex";
   });
-}
 
-function renderInventoryActions() {
+  confirmNo?.addEventListener("click", () => {
+    if (confirmModal) confirmModal.style.display = "none";
+  });
 
-  const actions = document.querySelector(".item-actions");
-  if (!actions) return;
+  confirmYes?.addEventListener("click", () => {
 
-  actions.innerHTML = `
-    <button id="use-item">USAR</button>
-    <button id="sell-item">VENDER</button>
-  `;
+    console.log("USAR ITEM:", currentItem);
+
+    if (confirmModal) confirmModal.style.display = "none";
+    if (itemModal) itemModal.style.display = "none";
+
+    // lógica real depois aqui
+  });
 }
 
 loadInventoryHTML();

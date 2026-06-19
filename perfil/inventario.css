@@ -400,11 +400,15 @@
   flex:1;
 }
 
-.inventory-saldo div:first-child{
-  color:#aaa;
+#inventory-saldo{
+  margin-top:4px;
 
-  font-size:12px;
+  color:#f6d365;
+
   font-family:'Cinzel', serif;
+
+  font-size:20px;
+  font-weight:700;
 
   letter-spacing:1px;
 }
@@ -447,4 +451,35 @@
 
 .market-btn:hover{
   transform:scale(1.02);
+}
+
+/* =========================
+   PREÇO DO MERCADO
+========================= */
+
+#market-list .inventory-name-qty{
+  width:100%;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+#market-list .inventory-qty{
+  width:auto;
+  height:auto;
+
+  background:none;
+  border:none;
+  border-radius:0;
+
+  padding:0;
+
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
+  font-size:13px;
+  font-weight:bold;
+
+  margin-left:auto;
 }

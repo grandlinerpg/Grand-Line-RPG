@@ -99,7 +99,7 @@ function initSkills() {
       title.className = "skill-rank";
 
       title.innerText =
-        `────── ${nomesRank[rank]} ──────`;
+        `${nomesRank[rank]}`;
 
       list.appendChild(title);
 

@@ -498,9 +498,7 @@
   overflow-y:auto;
   overflow-x:hidden;
 
-  scrollbar-gutter: stable;
-
-  padding-right:4px;
+  padding-right:0;   /* remove o espaço extra */
   box-sizing:border-box;
 }
 

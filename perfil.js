@@ -65,6 +65,13 @@ async function startAuth() {
 
         const data = snap.val();
 
+          // 👇 COLOCA ISSO AQUI (NOVO BLOCO)
+        const skills = data.skills || {};
+        const points = data.points || {};
+
+        window.playerSkills = skills;
+        window.playerPoints = points;
+
         // ======================
         // INFO DO PLAYER
         // ======================
@@ -133,6 +140,7 @@ async function startAuth() {
           saldo.toLocaleString("pt-BR");
 
       });
+      
 
     } catch (err) {
       console.error("Erro ao carregar perfil:", err);

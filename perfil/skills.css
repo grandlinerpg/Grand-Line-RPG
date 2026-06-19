@@ -302,6 +302,23 @@
   text-transform:uppercase;
 }
 
+.skill-rank{
+
+  text-align:center;
+
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
+
+  font-size:13px;
+
+  letter-spacing:1px;
+
+  margin:12px 0 6px;
+
+  opacity:.9;
+}
+
 /* =========================
    MOBILE
 ========================= */

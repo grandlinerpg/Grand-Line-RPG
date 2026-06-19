@@ -483,3 +483,29 @@
 
   margin-left:auto;
 }
+
+/* =========================
+   SCROLL DO MERCADO
+========================= */
+
+#market-list{
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+#market-list::-webkit-scrollbar{
+  width:6px;
+}
+
+#market-list::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+#market-list::-webkit-scrollbar-thumb{
+  background:rgba(246,211,101,0.25);
+  border-radius:999px;
+}
+
+#market-list::-webkit-scrollbar-thumb:hover{
+  background:rgba(246,211,101,0.45);
+}

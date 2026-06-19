@@ -226,7 +226,13 @@ function initInventory() {
 
   if (marketBtn) {
     marketBtn.addEventListener("click", () => {
-      console.log("Abrir mercado");
+
+      inventoryModal.style.display = "none";
+
+      if (window.openMarket) {
+        window.openMarket();
+      }
+
     });
   }
 }

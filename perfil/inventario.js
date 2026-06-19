@@ -30,6 +30,8 @@ function initInventory() {
   const closeInventory = document.getElementById("close-inventory");
 
   const itemModal = document.getElementById("item-modal");
+  const confirmModal = document.getElementById("confirm-modal");
+
   const closeItem = document.getElementById("close-item");
 
   const inventoryList = document.getElementById("inventory-list");
@@ -40,17 +42,17 @@ function initInventory() {
   const useBtn = document.getElementById("use-item");
   const sellBtn = document.getElementById("sell-item");
 
-  if (!openBtn || !inventoryModal || !inventoryList) {
-    console.error("Inventário não carregou corretamente no DOM");
-    return;
-  }
+  const confirmYes = document.getElementById("confirm-yes");
+  const confirmNo = document.getElementById("confirm-no");
+
+  if (!openBtn || !inventoryModal || !inventoryList) return;
 
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
   newOpenBtn.addEventListener("click", async () => {
 
-    window.itemMode = "inventory"; // 🔥 MODO INVENTÁRIO
+    window.itemMode = "inventory";
 
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
@@ -113,7 +115,7 @@ function initInventory() {
         tier: itemData.tier,
         value: itemData.value,
         categoria: itemCategoria,
-        quantidade: quantidade,
+        quantidade,
         img: itemData.img,
         description: itemData.description
       };
@@ -128,7 +130,7 @@ function initInventory() {
                     src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                     class="inventory-item-img"
                   >`
-                : (itemData.item || "📦")
+                : "📦"
             }
           </span>
 
@@ -149,8 +151,6 @@ function initInventory() {
 
       div.addEventListener("click", () => {
 
-        window.itemMode = "inventory"; // 🔥 MODO INVENTÁRIO
-
         currentItem = itemObj;
 
         document.getElementById("item-emoji").innerHTML =
@@ -159,76 +159,74 @@ function initInventory() {
                 src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                 class="item-open-img"
               >`
-            : (itemData.item || "📦");
+            : "📦";
 
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
 
-        const tier = Number(itemData.tier) || 1;
-
-        const tierImgUrl =
-          `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
-
-        document.getElementById("item-description").innerHTML =
-          `
-          <div>
-            ${itemData.description || "Sem descrição."}
-          </div>
-
-          <img src="${tierImgUrl}" style="
-              width:210px;
-              display:block;
-              margin:12px auto 0 auto;
-            "/>
-          `;
+        document.getElementById("item-description").innerText =
+          itemData.description || "Sem descrição.";
 
         itemModal.style.display = "flex";
-
-        renderInventoryActions();
       });
 
       inventoryList.appendChild(div);
     }
   });
 
-  if (closeInventory) {
-    closeInventory.addEventListener("click", () => {
-      inventoryModal.style.display = "none";
-    });
-  }
-
+  // ❌ fechar item
   if (closeItem) {
     closeItem.addEventListener("click", () => {
       itemModal.style.display = "none";
     });
   }
 
-  if (marketBtn) {
-    marketBtn.addEventListener("click", () => {
-
+  // ❌ fechar inventário
+  if (closeInventory) {
+    closeInventory.addEventListener("click", () => {
       inventoryModal.style.display = "none";
-
-      if (window.openMarket) {
-        window.openMarket();
-      }
-
     });
   }
-}
 
-// 🔥 RENDER DOS BOTÕES DO INVENTÁRIO
-function renderInventoryActions() {
+  // 🟡 BOTÃO USAR → abre confirmação
+  if (useBtn) {
+    useBtn.addEventListener("click", () => {
+      if (!currentItem) return;
 
-  const actions = document.querySelector(".item-actions");
+      itemModal.style.display = "none";
+      confirmModal.style.display = "flex";
+    });
+  }
 
-  if (!actions) return;
+  // ✅ CONFIRMAR SIM
+  if (confirmYes) {
+    confirmYes.addEventListener("click", async () => {
 
-  if (window.itemMode === "market") return;
+      if (window.usarItem) {
+        await window.usarItem(currentItem);
+      }
 
-  actions.innerHTML = `
-    <button id="use-item">USAR</button>
-    <button id="sell-item">VENDER</button>
-  `;
+      confirmModal.style.display = "none";
+      inventoryModal.style.display = "none";
+
+      loadInventoryHTML();
+    });
+  }
+
+  // ❌ CONFIRMAR NÃO
+  if (confirmNo) {
+    confirmNo.addEventListener("click", () => {
+      confirmModal.style.display = "none";
+    });
+  }
+
+  // mercado
+  if (marketBtn) {
+    marketBtn.addEventListener("click", () => {
+      inventoryModal.style.display = "none";
+      if (window.openMarket) window.openMarket();
+    });
+  }
 }
 
 loadInventoryHTML();

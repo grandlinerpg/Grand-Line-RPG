@@ -60,8 +60,7 @@ function initSkills() {
 
       const skillPlayer = playerSkills[skillId];
 
-      const categoria =
-        skillPlayer.categoria;
+      const categoria = skillPlayer.categoria;
 
       const data =
         habilidadesDB[categoria]?.[skillId];
@@ -71,23 +70,19 @@ function initSkills() {
       const filtro =
         categorySelect?.value || "all";
 
-      if (
-        filtro !== "all" &&
-        categoria !== filtro
-      ) {
+      if (filtro !== "all" && categoria !== filtro) {
         continue;
       }
 
-      const rank =
-        Number(data.rank || 1);
+      const rank = Number(data.rank || 1);
 
       if (!ranks[rank]) {
         ranks[rank] = [];
       }
 
       ranks[rank].push({
-      nome: data.nome,
-      img: skillId
+        nome: data.nome,
+        img: skillId
       });
     }
 
@@ -95,39 +90,34 @@ function initSkills() {
 
     ordemRanks.forEach(rank => {
 
-      if (!ranks[rank]?.length) return;
+      if (!ranks[rank] || ranks[rank].length === 0) return;
 
       const title = document.createElement("div");
-
       title.className = "skill-rank";
-
-      title.innerText =
-        `${nomesRank[rank]}`;
+      title.innerText = nomesRank[rank];
 
       list.appendChild(title);
 
       ranks[rank].forEach(skill => {
 
         const div = document.createElement("div");
-
         div.className = "skill-item";
 
         div.innerHTML = `
-        <img 
-          src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
-          class="skill-icon"
-        />
+          <img 
+            src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
+            class="skill-icon"
+            alt="${skill.nome}"
+          />
+          <span>${skill.nome}</span>
+        `;
 
-        <span>${skill.nome}</span>
-      `;
-
-      list.appendChild(div);
-
+        list.appendChild(div);
+      });
     });
 
-    if (list.innerHTML === "") {
-      list.innerHTML =
-        "Nenhuma habilidade encontrada.";
+    if (!list.children.length) {
+      list.innerHTML = "Nenhuma habilidade encontrada.";
     }
   }
 
@@ -145,8 +135,7 @@ function initSkills() {
     const habSnap =
       await get(ref(db, `habilidades`));
 
-    if (!playerSnap.exists() || !habSnap.exists())
-      return;
+    if (!playerSnap.exists() || !habSnap.exists()) return;
 
     const player = playerSnap.val();
 
@@ -179,16 +168,11 @@ function initSkills() {
     renderSkills();
   });
 
-  categorySelect?.addEventListener(
-    "change",
-    renderSkills
-  );
+  categorySelect?.addEventListener("change", renderSkills);
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      modal.style.display = "none";
-    });
-  }
+  closeBtn?.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
 }
 
 loadSkillsHTML();

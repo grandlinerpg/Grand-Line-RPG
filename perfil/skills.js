@@ -85,7 +85,10 @@ function initSkills() {
         ranks[rank] = [];
       }
 
-      ranks[rank].push(data.nome);
+      ranks[rank].push({
+      nome: data.nome,
+      img: skillId
+      });
     }
 
     const ordemRanks = [1, 2, 3, 4, 5];
@@ -103,19 +106,22 @@ function initSkills() {
 
       list.appendChild(title);
 
-      ranks[rank].forEach(nome => {
+      ranks[rank].forEach(skill => {
 
         const div = document.createElement("div");
 
         div.className = "skill-item";
 
         div.innerHTML = `
-          <span>${nome}</span>
-        `;
+        <img 
+          src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
+          class="skill-icon"
+        />
 
-        list.appendChild(div);
+        <span>${skill.nome}</span>
+      `;
 
-      });
+      list.appendChild(div);
 
     });
 

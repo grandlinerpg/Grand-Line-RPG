@@ -375,3 +375,32 @@
   }
 
 }
+
+.attributes-list{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.attribute-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  background:rgba(255,255,255,0.04);
+
+  padding:8px 10px;
+
+  border-radius:10px;
+
+  color:#f6d365;
+
+  font-size:12px;
+}
+
+.attribute-row span:last-child{
+  color:#fff;
+
+  font-size:14px;
+  font-weight:700;
+}

@@ -35,6 +35,9 @@ function initInventory() {
 
   const inventoryList = document.getElementById("inventory-list");
 
+  const saldoElement = document.getElementById("inventory-saldo");
+  const marketBtn = document.getElementById("open-market");
+
   const useBtn = document.getElementById("use-item");
   const sellBtn = document.getElementById("sell-item");
 
@@ -54,6 +57,18 @@ function initInventory() {
 
     const user = auth.currentUser;
     if (!user) return;
+
+    const playerSnap = await get(
+      ref(db, `players/${user.uid}/info`)
+    );
+
+    if (playerSnap.exists() && saldoElement) {
+
+      const saldo = playerSnap.val().saldo || 0;
+
+      saldoElement.innerText =
+        "฿ " + saldo.toLocaleString("pt-BR");
+    }
 
     const inventorySnap = await get(
       ref(db, `players/${user.uid}/inventory`)
@@ -138,7 +153,6 @@ function initInventory() {
 
         currentItem = itemObj;
 
-        /* 🔥 CORREÇÃO AQUI (ANTES ERA innerText) */
         document.getElementById("item-emoji").innerHTML =
           itemData.img
             ? `<img 
@@ -207,6 +221,12 @@ function initInventory() {
   if (sellBtn) {
     sellBtn.addEventListener("click", () => {
       console.log("Vender item ainda não implementado");
+    });
+  }
+
+  if (marketBtn) {
+    marketBtn.addEventListener("click", () => {
+      console.log("Abrir mercado");
     });
   }
 }

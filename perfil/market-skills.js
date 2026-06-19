@@ -42,15 +42,9 @@ function initMarketSkills() {
     document.getElementById("market-skills-list");
 
   const categorySelect =
-    document.getElementById(
-      "market-skills-category"
-    );
+    document.getElementById("market-skills-category");
 
-  if (
-    !openBtn ||
-    !modal ||
-    !list
-  ) return;
+  if (!openBtn || !modal || !list) return;
 
   let habilidadesDB = {};
 
@@ -79,10 +73,7 @@ function initMarketSkills() {
 
     for (const categoria in habilidadesDB) {
 
-      if (
-        filtro !== "all" &&
-        categoria !== filtro
-      ) {
+      if (filtro !== "all" && categoria !== filtro) {
         continue;
       }
 
@@ -107,126 +98,97 @@ function initMarketSkills() {
 
     for (let rank = 1; rank <= 5; rank++) {
 
-      if (
-        !skillsPorRank[rank] ||
-        skillsPorRank[rank].length === 0
-      ) {
-        continue;
-      }
+      if (!skillsPorRank[rank]?.length) continue;
 
       const rankTitle =
         document.createElement("div");
 
-      rankTitle.className =
-        "skill-rank";
-
-      rankTitle.textContent =
-        rankNames[rank];
+      rankTitle.className = "skill-rank";
+      rankTitle.textContent = rankNames[rank];
 
       list.appendChild(rankTitle);
 
-      skillsPorRank[rank].forEach(
-        ({ skill, skillId }) => {
+      skillsPorRank[rank].forEach(({ skill, skillId }) => {
 
-          const div =
-            document.createElement("div");
+        const div =
+          document.createElement("div");
 
-          div.className =
-            "inventory-item";
+        div.className = "inventory-item";
 
-          div.innerHTML = `
-            <div class="inventory-item-top">
+        div.innerHTML = `
+          <div class="inventory-item-top">
 
-              <div class="inventory-text">
+            <img 
+              src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skillId}.jpg"
+              class="skill-icon"
+              alt="${skill.nome}"
+            />
 
-                <div
-                  class="inventory-name-qty"
-                  style="
-                    width:100%;
-                    justify-content:space-between;
-                  "
-                >
+            <div class="inventory-text">
 
-                  <span class="inventory-name">
-                    ${skill.nome || skillId}
-                  </span>
+              <div
+                class="inventory-name-qty"
+                style="width:100%; justify-content:space-between;"
+              >
 
-                  <span class="inventory-qty">
-                    ${skill.cost || 1} HA
-                  </span>
+                <span class="inventory-name">
+                  ${skill.nome || skillId}
+                </span>
 
-                </div>
+                <span class="inventory-qty">
+                  ${skill.cost || 1} HA
+                </span>
 
               </div>
 
             </div>
-          `;
 
-          list.appendChild(div);
-        }
-      );
+          </div>
+        `;
+
+        list.appendChild(div);
+      });
     }
 
     if (!list.children.length) {
-      list.innerHTML =
-        "Nenhuma habilidade encontrada.";
+      list.innerHTML = "Nenhuma habilidade encontrada.";
     }
   }
 
-  openBtn.addEventListener(
-    "click",
-    async () => {
+  openBtn.addEventListener("click", async () => {
 
-      modal.style.display = "flex";
+    modal.style.display = "flex";
+    list.innerHTML = "Carregando...";
 
-      list.innerHTML =
-        "Carregando...";
+    const snap =
+      await get(ref(db, "habilidades"));
 
-      const snap =
-        await get(
-          ref(db, "habilidades")
-        );
-
-      if (!snap.exists()) {
-
-        list.innerHTML =
-          "Nenhuma habilidade encontrada.";
-
-        return;
-      }
-
-      habilidadesDB =
-        snap.val();
-
-      categorySelect.innerHTML =
-        `<option value="all">
-          Todas Categorias
-        </option>`;
-
-      for (const categoria in habilidadesDB) {
-
-        categorySelect.innerHTML += `
-          <option value="${categoria}">
-            ${categoria}
-          </option>
-        `;
-      }
-
-      renderSkills();
+    if (!snap.exists()) {
+      list.innerHTML = "Nenhuma habilidade encontrada.";
+      return;
     }
-  );
 
-  categorySelect?.addEventListener(
-    "change",
-    renderSkills
-  );
+    habilidadesDB = snap.val();
 
-  closeBtn?.addEventListener(
-    "click",
-    () => {
-      modal.style.display = "none";
+    categorySelect.innerHTML =
+      `<option value="all">Todas Categorias</option>`;
+
+    for (const categoria in habilidadesDB) {
+      categorySelect.innerHTML += `
+        <option value="${categoria}">
+          ${categoria}
+        </option>
+      `;
     }
-  );
+
+    renderSkills();
+  });
+
+  categorySelect?.addEventListener("change", renderSkills);
+
+  closeBtn?.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
 }
 
 loadMarketSkillsHTML();

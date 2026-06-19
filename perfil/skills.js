@@ -46,7 +46,15 @@ function initSkills() {
 
     list.innerHTML = "";
 
-    const categorias = {};
+    const ranks = {};
+
+    const nomesRank = {
+      1: "INICIANTE",
+      2: "APRENDIZ",
+      3: "NOVATO",
+      4: "INTERMEDIÁRIO",
+      5: "VETERANO"
+    };
 
     for (const skillId in playerSkills) {
 
@@ -70,24 +78,32 @@ function initSkills() {
         continue;
       }
 
-      if (!categorias[categoria]) {
-        categorias[categoria] = [];
+      const rank =
+        Number(data.rank || 1);
+
+      if (!ranks[rank]) {
+        ranks[rank] = [];
       }
 
-      categorias[categoria].push(data.nome);
+      ranks[rank].push(data.nome);
     }
 
-    for (const categoria in categorias) {
+    const ordemRanks = [1, 2, 3, 4, 5];
+
+    ordemRanks.forEach(rank => {
+
+      if (!ranks[rank]?.length) return;
 
       const title = document.createElement("div");
 
-      title.className = "skill-category";
+      title.className = "skill-rank";
+
       title.innerText =
-        categoria.toUpperCase();
+        `────── ${nomesRank[rank]} ──────`;
 
       list.appendChild(title);
 
-      categorias[categoria].forEach(nome => {
+      ranks[rank].forEach(nome => {
 
         const div = document.createElement("div");
 
@@ -100,9 +116,10 @@ function initSkills() {
         list.appendChild(div);
 
       });
-    }
 
-    if (Object.keys(categorias).length === 0) {
+    });
+
+    if (list.innerHTML === "") {
       list.innerHTML =
         "Nenhuma habilidade encontrada.";
     }

@@ -420,3 +420,26 @@
 #market-skills-list::-webkit-scrollbar-thumb:hover{
   background:rgba(246,211,101,0.45);
 }
+/* =========================
+imagem
+========================= */
+
+.skill-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+}
+
+/* IMAGEM 3:2 */
+.skill-icon{
+  width:60px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+
+  border-radius:8px;
+
+  border:1px solid rgba(246,211,101,0.25);
+  box-shadow:0 0 8px rgba(0,0,0,0.4);
+  flex-shrink:0;
+}

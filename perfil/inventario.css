@@ -403,7 +403,7 @@
 
   font-family:'Cinzel', serif;
 
-  font-size:20px;
+  font-size:18px;
   font-weight:700;
 
   letter-spacing:1px;
@@ -511,4 +511,9 @@
 
 #market-list::-webkit-scrollbar-thumb:hover{
   background:rgba(246,211,101,0.45);
+}
+
+#market-list{
+  padding-right:10px;
+  box-sizing:border-box;
 }

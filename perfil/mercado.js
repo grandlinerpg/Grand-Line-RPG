@@ -6,6 +6,8 @@ import {
 const marketContainer =
   document.getElementById("market-container");
 
+let currentItem = null;
+
 async function loadMarketHTML() {
 
   const response =
@@ -36,6 +38,9 @@ function initMarket() {
 
   const marketList =
     document.getElementById("market-list");
+
+  const itemModal =
+    document.getElementById("item-modal");
 
   window.openMarket = async function () {
 
@@ -171,6 +176,20 @@ function renderMarket(
         </div>
       `;
 
+      // 🔥 CLIQUE NO ITEM (NOVO)
+      div.addEventListener("click", () => {
+
+        currentItem = {
+          id: itemId,
+          nome: itemData.nome,
+          descricao: itemData.description,
+          img: itemData.img,
+          value: itemData.value
+        };
+
+        openMarketItemModal(currentItem);
+      });
+
       marketList.appendChild(div);
     }
   }
@@ -181,6 +200,55 @@ function renderMarket(
       "Nenhum item encontrado.";
 
   }
+}
+
+// 🔥 MODAL DO ITEM NO MERCADO
+function openMarketItemModal(item) {
+
+  const itemModal =
+    document.getElementById("item-modal");
+
+  document.getElementById("item-emoji").innerHTML =
+    item.img
+      ? `<img 
+          src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+          class="item-open-img"
+        >`
+      : "📦";
+
+  document.getElementById("item-name").innerText =
+    item.nome;
+
+  document.getElementById("item-description").innerHTML =
+    `
+      <div>
+        ${item.descricao || "Sem descrição."}
+      </div>
+    `;
+
+  const actions =
+    document.querySelector(".item-actions");
+
+  actions.innerHTML = `
+    <div class="market-actions">
+
+      <div class="price-box">
+        ฿ ${Number(item.value || 0).toLocaleString("pt-BR")}
+      </div>
+
+      <button id="buy-item">
+        COMPRAR
+      </button>
+
+    </div>
+  `;
+
+  document.getElementById("buy-item").addEventListener("click", () => {
+    console.log("comprar item:", item.id);
+    // aqui depois entra lógica de compra
+  });
+
+  itemModal.style.display = "flex";
 }
 
 loadMarketHTML();

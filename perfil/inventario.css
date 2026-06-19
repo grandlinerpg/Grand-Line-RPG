@@ -532,3 +532,21 @@
 
   padding-right:5px; /* espaço entre itens e scrollbar */
 }
+
+.price-box{
+  flex:1;
+
+  background:rgba(0,0,0,0.6);
+  border:1px solid rgba(246,211,101,0.3);
+
+  color:#f6d365;
+
+  text-align:center;
+
+  padding:12px;
+  border-radius:10px;
+
+  font-family:'Cinzel', serif;
+  font-size:14px;
+  font-weight:bold;
+}

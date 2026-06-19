@@ -363,3 +363,88 @@
   }
 
 }
+
+.inventory-footer{
+  gap:10px;
+}
+
+#inventory-saldo{
+  font-size:16px;
+}
+
+.market-btn{
+  min-width:110px;
+  padding:10px 12px;
+  font-size:12px;
+}
+
+/* =========================
+   RODAPÉ INVENTÁRIO
+========================= */
+
+.inventory-footer{
+  margin-top:15px;
+
+  padding-top:15px;
+
+  border-top:1px solid rgba(255,215,120,0.15);
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  gap:15px;
+}
+
+.inventory-saldo{
+  flex:1;
+}
+
+.inventory-saldo div:first-child{
+  color:#aaa;
+
+  font-size:12px;
+  font-family:'Cinzel', serif;
+
+  letter-spacing:1px;
+}
+
+#inventory-saldo{
+  margin-top:4px;
+
+  color:#f6d365;
+
+  font-size:18px;
+  font-weight:bold;
+}
+
+.market-btn{
+  min-width:130px;
+
+  padding:12px 18px;
+
+  border:none;
+  border-radius:10px;
+
+  cursor:pointer;
+
+  background:linear-gradient(
+    to bottom,
+    #8f1408,
+    #5e0800
+  );
+
+  border:1px solid rgba(246,211,101,0.2);
+
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
+  font-size:14px;
+  font-weight:bold;
+
+  transition:.2s;
+}
+
+.market-btn:hover{
+  transform:scale(1.02);
+}

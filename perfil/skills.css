@@ -330,3 +330,37 @@
     font-size:11px;
   }
 }
+
+/* =========================
+   SCROLL SKILLS
+========================= */
+
+.skills-list,
+#market-skills-list{
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding-right:5px;
+  box-sizing:border-box;
+}
+
+.skills-list::-webkit-scrollbar,
+#market-skills-list::-webkit-scrollbar{
+  width:6px;
+}
+
+.skills-list::-webkit-scrollbar-track,
+#market-skills-list::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.skills-list::-webkit-scrollbar-thumb,
+#market-skills-list::-webkit-scrollbar-thumb{
+  background:rgba(246,211,101,0.25);
+  border-radius:999px;
+}
+
+.skills-list::-webkit-scrollbar-thumb:hover,
+#market-skills-list::-webkit-scrollbar-thumb:hover{
+  background:rgba(246,211,101,0.45);
+}

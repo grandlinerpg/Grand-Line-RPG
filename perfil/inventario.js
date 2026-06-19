@@ -40,6 +40,11 @@ function initInventory() {
   const useBtn = document.getElementById("use-item");
   const sellBtn = document.getElementById("sell-item");
 
+  // 🔥 NOVO: confirmação
+  let confirmBox = null;
+  let confirmYes = null;
+  let confirmNo = null;
+
   if (!openBtn || !inventoryModal || !inventoryList) {
     console.error("Inventário não carregou corretamente no DOM");
     return;
@@ -206,6 +211,35 @@ function initInventory() {
       }
     });
   }
+
+  // 🔥 NOVO: intercepta clique no USAR
+  document.addEventListener("click", (e) => {
+
+    if (e.target && e.target.id === "use-item") {
+
+      if (!currentItem) return;
+
+      confirmBox = document.getElementById("use-confirm");
+      confirmYes = document.getElementById("confirm-use-yes");
+      confirmNo = document.getElementById("confirm-use-no");
+
+      if (confirmBox) confirmBox.style.display = "flex";
+    }
+
+    if (e.target && e.target.id === "confirm-use-no") {
+      if (confirmBox) confirmBox.style.display = "none";
+    }
+
+    if (e.target && e.target.id === "confirm-use-yes") {
+
+      console.log("USAR ITEM:", currentItem);
+
+      if (confirmBox) confirmBox.style.display = "none";
+      if (itemModal) itemModal.style.display = "none";
+
+      // aqui depois entra sua lógica real de uso
+    }
+  });
 }
 
 // 🔥 RENDER DOS BOTÕES DO INVENTÁRIO

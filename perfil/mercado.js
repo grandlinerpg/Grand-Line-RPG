@@ -91,6 +91,13 @@ function initMarket() {
 
       marketModal.style.display = "none";
 
+      const inventoryModal =
+        document.getElementById("inventory-modal");
+
+      if (inventoryModal) {
+        inventoryModal.style.display = "flex";
+      }
+
     });
 
   }

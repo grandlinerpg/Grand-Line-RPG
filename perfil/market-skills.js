@@ -61,6 +61,22 @@ function initMarketSkills() {
     const filtro =
       categorySelect?.value || "all";
 
+    const rankNames = {
+      1: "INICIANTE",
+      2: "APRENDIZ",
+      3: "NOVATO",
+      4: "INTERMEDIÁRIO",
+      5: "VETERANO"
+    };
+
+    const skillsPorRank = {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+      5: []
+    };
+
     for (const categoria in habilidadesDB) {
 
       if (
@@ -70,58 +86,90 @@ function initMarketSkills() {
         continue;
       }
 
-      const divider =
-        document.createElement("div");
-
-      divider.className =
-        "skills-category";
-
-      divider.innerText =
-        categoria.toUpperCase();
-
-      list.appendChild(divider);
-
       for (const skillId in habilidadesDB[categoria]) {
 
         const skill =
           habilidadesDB[categoria][skillId];
 
-        const div =
-          document.createElement("div");
+        const rank =
+          Number(skill.rank) || 1;
 
-        div.className =
-          "inventory-item";
+        if (!skillsPorRank[rank]) {
+          skillsPorRank[rank] = [];
+        }
 
-        div.innerHTML = `
-          <div class="inventory-item-top">
+        skillsPorRank[rank].push({
+          skill,
+          skillId
+        });
+      }
+    }
 
-            <div class="inventory-text">
+    for (let rank = 1; rank <= 5; rank++) {
 
-              <div
-                class="inventory-name-qty"
-                style="
-                  width:100%;
-                  justify-content:space-between;
-                "
-              >
+      if (
+        !skillsPorRank[rank] ||
+        skillsPorRank[rank].length === 0
+      ) {
+        continue;
+      }
 
-                <span class="inventory-name">
-                  ${skill.nome || skillId}
-                </span>
+      const rankTitle =
+        document.createElement("div");
 
-                <span class="inventory-qty">
-                  ${skill.cost || 1} HA
-                </span>
+      rankTitle.className =
+        "skill-rank";
+
+      rankTitle.textContent =
+        rankNames[rank];
+
+      list.appendChild(rankTitle);
+
+      skillsPorRank[rank].forEach(
+        ({ skill, skillId }) => {
+
+          const div =
+            document.createElement("div");
+
+          div.className =
+            "inventory-item";
+
+          div.innerHTML = `
+            <div class="inventory-item-top">
+
+              <div class="inventory-text">
+
+                <div
+                  class="inventory-name-qty"
+                  style="
+                    width:100%;
+                    justify-content:space-between;
+                  "
+                >
+
+                  <span class="inventory-name">
+                    ${skill.nome || skillId}
+                  </span>
+
+                  <span class="inventory-qty">
+                    ${skill.cost || 1} HA
+                  </span>
+
+                </div>
 
               </div>
 
             </div>
+          `;
 
-          </div>
-        `;
+          list.appendChild(div);
+        }
+      );
+    }
 
-        list.appendChild(div);
-      }
+    if (!list.children.length) {
+      list.innerHTML =
+        "Nenhuma habilidade encontrada.";
     }
   }
 
@@ -140,8 +188,10 @@ function initMarketSkills() {
         );
 
       if (!snap.exists()) {
+
         list.innerHTML =
           "Nenhuma habilidade encontrada.";
+
         return;
       }
 

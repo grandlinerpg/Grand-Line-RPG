@@ -30,8 +30,6 @@ function initInventory() {
   const closeInventory = document.getElementById("close-inventory");
 
   const itemModal = document.getElementById("item-modal");
-  const confirmModal = document.getElementById("confirm-modal");
-
   const closeItem = document.getElementById("close-item");
 
   const inventoryList = document.getElementById("inventory-list");
@@ -42,10 +40,10 @@ function initInventory() {
   const useBtn = document.getElementById("use-item");
   const sellBtn = document.getElementById("sell-item");
 
-  const confirmYes = document.getElementById("confirm-yes");
-  const confirmNo = document.getElementById("confirm-no");
-
-  if (!openBtn || !inventoryModal || !inventoryList) return;
+  if (!openBtn || !inventoryModal || !inventoryList) {
+    console.error("Inventário não carregou corretamente no DOM");
+    return;
+  }
 
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
@@ -115,7 +113,7 @@ function initInventory() {
         tier: itemData.tier,
         value: itemData.value,
         categoria: itemCategoria,
-        quantidade,
+        quantidade: quantidade,
         img: itemData.img,
         description: itemData.description
       };
@@ -126,11 +124,9 @@ function initInventory() {
           <span class="inventory-emoji">
             ${
               itemData.img
-                ? `<img 
-                    src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                    class="inventory-item-img"
-                  >`
-                : "📦"
+                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                     class="inventory-item-img">`
+                : (itemData.item || "📦")
             }
           </span>
 
@@ -151,82 +147,80 @@ function initInventory() {
 
       div.addEventListener("click", () => {
 
+        window.itemMode = "inventory";
+
         currentItem = itemObj;
 
         document.getElementById("item-emoji").innerHTML =
           itemData.img
-            ? `<img 
-                src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                class="item-open-img"
-              >`
-            : "📦";
+            ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                   class="item-open-img">`
+            : (itemData.item || "📦");
 
         document.getElementById("item-name").innerText =
           itemData.nome || itemId;
 
-        document.getElementById("item-description").innerText =
-          itemData.description || "Sem descrição.";
+        const tier = Number(itemData.tier) || 1;
+
+        const tierImgUrl =
+          `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
+
+        document.getElementById("item-description").innerHTML = `
+          <div>
+            ${itemData.description || "Sem descrição."}
+          </div>
+
+          <img src="${tierImgUrl}" style="
+            width:210px;
+            display:block;
+            margin:12px auto 0 auto;
+          "/>
+        `;
 
         itemModal.style.display = "flex";
+
+        renderInventoryActions();
       });
 
       inventoryList.appendChild(div);
     }
   });
 
-  // ❌ fechar item
-  if (closeItem) {
-    closeItem.addEventListener("click", () => {
-      itemModal.style.display = "none";
-    });
-  }
-
-  // ❌ fechar inventário
   if (closeInventory) {
     closeInventory.addEventListener("click", () => {
       inventoryModal.style.display = "none";
     });
   }
 
-  // 🟡 BOTÃO USAR → abre confirmação
-  if (useBtn) {
-    useBtn.addEventListener("click", () => {
-      if (!currentItem) return;
-
+  if (closeItem) {
+    closeItem.addEventListener("click", () => {
       itemModal.style.display = "none";
-      confirmModal.style.display = "flex";
     });
   }
 
-  // ✅ CONFIRMAR SIM
-  if (confirmYes) {
-    confirmYes.addEventListener("click", async () => {
-
-      if (window.usarItem) {
-        await window.usarItem(currentItem);
-      }
-
-      confirmModal.style.display = "none";
-      inventoryModal.style.display = "none";
-
-      loadInventoryHTML();
-    });
-  }
-
-  // ❌ CONFIRMAR NÃO
-  if (confirmNo) {
-    confirmNo.addEventListener("click", () => {
-      confirmModal.style.display = "none";
-    });
-  }
-
-  // mercado
   if (marketBtn) {
     marketBtn.addEventListener("click", () => {
       inventoryModal.style.display = "none";
-      if (window.openMarket) window.openMarket();
+      if (window.openMarket) {
+        window.openMarket();
+      }
     });
   }
+}
+
+// 🔥 RENDER DOS BOTÕES DO INVENTÁRIO
+function renderInventoryActions() {
+
+  const actions = document.querySelector(".item-actions");
+
+  if (!actions) return;
+
+  if (window.itemMode === "market") return;
+
+  actions.innerHTML = `
+    <button id="use-item">USAR</button>
+    <button id="sell-item">VENDER</button>
+  `;
 }
 
 loadInventoryHTML();

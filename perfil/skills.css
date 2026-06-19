@@ -427,8 +427,8 @@ imagem
 .skill-item{
   display:flex;
   align-items:center;
-  gap:8px;
-  padding:8px;
+  gap:10px;
+  padding:10px;
 }
 
 /* IMAGEM 3:2 */

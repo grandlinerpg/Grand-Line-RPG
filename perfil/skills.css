@@ -201,7 +201,7 @@
 }
 
 /* botão fechar igual padrão */
-.skills-close-btn{
+.close-skills{
   position:absolute;
 
   top:10px;
@@ -219,7 +219,7 @@
   transition:0.2s;
 }
 
-.skills-close-btn:hover{
+.close-skills:hover{
   transform:scale(1.1);
   color:#fff;
 }

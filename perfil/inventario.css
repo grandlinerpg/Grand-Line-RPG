@@ -492,10 +492,18 @@
 ========================= */
 
 #market-list{
+  height:400px;
+
   overflow-y:auto;
   overflow-x:hidden;
+
+  scrollbar-gutter: stable;
+
+  padding-right:4px;
+  box-sizing:border-box;
 }
 
+/* SCROLL */
 #market-list::-webkit-scrollbar{
   width:6px;
 }
@@ -511,9 +519,4 @@
 
 #market-list::-webkit-scrollbar-thumb:hover{
   background:rgba(246,211,101,0.45);
-}
-
-#market-list{
-  padding-right:5px;
-  box-sizing:border-box;
 }

@@ -7,6 +7,7 @@ import {
 const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
+let inventoryListener = null; // 🔥 ADICIONADO (controle do listener)
 
 // 🔥 RESET GLOBAL DO ITEM MODAL (ADICIONADO)
 function resetItemModal() {
@@ -91,10 +92,15 @@ function initInventory() {
     }
 
     // =========================
-    // 🔥 INVENTÁRIO EM TEMPO REAL
+    // 🔥 REMOVE LISTENER ANTIGO (CORREÇÃO DO BUG)
     // =========================
+    if (inventoryListener) {
+      inventoryListener(); // desativa listener antigo
+    }
 
-    onValue(ref(db, `players/${user.uid}/inventory`), async (inventorySnap) => {
+    const inventoryRef = ref(db, `players/${user.uid}/inventory`);
+
+    inventoryListener = onValue(inventoryRef, async (inventorySnap) => {
 
       inventoryList.innerHTML = "";
 

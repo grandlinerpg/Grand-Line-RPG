@@ -15,7 +15,7 @@ const itemModal = document.getElementById("market-item-modal");
 const emoji = document.getElementById("market-item-emoji");
 const name = document.getElementById("market-item-name");
 const desc = document.getElementById("market-item-description");
-const actions = itemModal.querySelector(".item-actions");
+const actions = itemModal.querySelector("market.item-actions");
 
   if (emoji) emoji.innerHTML = "📦";
   if (name) name.innerText = "";

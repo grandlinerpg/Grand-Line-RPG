@@ -1,4 +1,35 @@
-console.log("venda.js ativo");
+
+
+// =========================
+// CARREGAR HTML DA VENDA
+// =========================
+
+const sellContainer =
+  document.getElementById("sell-container");
+
+async function loadVendaHTML() {
+
+  if (!sellContainer) {
+    console.error("❌ sell-container não encontrado");
+    return;
+  }
+
+  const response =
+    await fetch("perfil/venda.html");
+
+  const html =
+    await response.text();
+
+  sellContainer.innerHTML = html;
+
+  console.log("✅ venda.html carregado");
+}
+
+loadVendaHTML();
+
+// =========================
+// DEBUG EVENTO
+// =========================
 
 document.addEventListener("abrirVenda", (e) => {
   console.log("🔥 EVENTO CHEGOU:", e.detail);
@@ -7,6 +38,7 @@ document.addEventListener("abrirVenda", (e) => {
 // =========================
 // PREÇO MÍNIMO POR TIER
 // =========================
+
 function getMinPrice(tier) {
 
   switch (Number(tier)) {
@@ -22,15 +54,23 @@ function getMinPrice(tier) {
 // =========================
 // ABRIR MODAL DE VENDA
 // =========================
+
 window.abrirVendaItem = function(item) {
 
   console.log("🟢 abrirVendaItem chamada");
   console.log("📦 item:", item);
 
-  const modal = document.getElementById("sell-modal");
-  const imgBox = document.getElementById("sell-item-image");
-  const minText = document.getElementById("sell-min-price");
-  const input = document.getElementById("sell-price-input");
+  const modal =
+    document.getElementById("sell-modal");
+
+  const imgBox =
+    document.getElementById("sell-item-image");
+
+  const minText =
+    document.getElementById("sell-min-price");
+
+  const input =
+    document.getElementById("sell-price-input");
 
   console.log("📌 modal:", modal);
   console.log("📌 imgBox:", imgBox);
@@ -47,13 +87,22 @@ window.abrirVendaItem = function(item) {
     return;
   }
 
-  const minPrice = getMinPrice(item.tier);
+  const minPrice =
+    getMinPrice(item.tier);
 
   input.value = "";
 
   imgBox.innerHTML = item.img
-    ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-        style="width:120px;height:120px;object-fit:contain;">`
+    ? `
+      <img
+        src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+        style="
+          width:120px;
+          height:120px;
+          object-fit:contain;
+        "
+      >
+    `
     : "📦";
 
   minText.innerText =
@@ -69,32 +118,50 @@ window.abrirVendaItem = function(item) {
   );
 
   // CANCELAR
+
   document.getElementById("cancel-sell").onclick = () => {
     modal.style.display = "none";
   };
 
-  // CONFIRMAR VENDA
-  document.getElementById("confirm-sell").onclick = async () => {
+  // CONFIRMAR
 
-    const price = Number(input.value || 0);
+  document.getElementById("confirm-sell").onclick =
+    async () => {
 
-    if (price < minPrice) {
-      alert("Preço abaixo do mínimo!");
-      return;
-    }
+      const price =
+        Number(input.value || 0);
 
-    console.log("🟢 ITEM À VENDA:", item);
-    console.log("💰 PREÇO:", price);
+      if (price < minPrice) {
+        alert("Preço abaixo do mínimo!");
+        return;
+      }
 
-    modal.style.display = "none";
-  };
+      console.log(
+        "🟢 ITEM À VENDA:",
+        item
+      );
+
+      console.log(
+        "💰 PREÇO:",
+        price
+      );
+
+      modal.style.display = "none";
+    };
 };
 
 // =========================
 // PONTE DO EVENTO
 // =========================
-document.addEventListener("abrirVenda", (e) => {
-  console.log("🔥 evento abrirVenda recebido:", e.detail);
 
-  window.abrirVendaItem(e.detail);
+document.addEventListener("abrirVenda", (e) => {
+
+  console.log(
+    "🔥 evento abrirVenda recebido:",
+    e.detail
+  );
+
+  window.abrirVendaItem(
+    e.detail
+  );
 });

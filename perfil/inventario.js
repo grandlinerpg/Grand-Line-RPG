@@ -9,10 +9,7 @@ const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
 
-// 🔥 FIX GLOBAL: impede múltiplas inicializações
-let inventoryInitialized = false;
-
-// 🔥 listener controlado
+// 🔥 FIX GLOBAL: garante 1 listener só
 let inventoryRef = null;
 let inventoryListener = null;
 
@@ -42,10 +39,6 @@ async function loadInventoryHTML() {
 }
 
 function initInventory() {
-
-  // 🔥 EVITA DUPLO INIT (ESSA É A CORREÇÃO PRINCIPAL)
-  if (inventoryInitialized) return;
-  inventoryInitialized = true;
 
   const auth = window.auth;
   const db = window.db;
@@ -101,16 +94,16 @@ function initInventory() {
         "฿ " + saldo.toLocaleString("pt-BR");
     }
 
-    // 🔥 remove listener antigo corretamente
-    if (inventoryRef) {
-      off(inventoryRef);
+    // 🔥 REMOVE LISTENER ANTIGO CORRETAMENTE
+    if (inventoryRef && inventoryListener) {
+      off(inventoryRef, "value", inventoryListener);
     }
 
     inventoryRef = ref(db, `players/${user.uid}/inventory`);
 
     inventoryListener = onValue(inventoryRef, async (inventorySnap) => {
 
-      inventoryList.innerHTML = "";
+      inventoryList.innerHTML = ""; // LIMPA SEMPRE
 
       if (!inventorySnap.exists()) {
         inventoryList.innerHTML = "Inventário vazio.";
@@ -123,6 +116,8 @@ function initInventory() {
       if (!itensSnap.exists()) return;
 
       const categorias = itensSnap.val();
+
+      const fragment = document.createDocumentFragment();
 
       for (const itemId in inventory) {
 
@@ -151,7 +146,12 @@ function initInventory() {
           tier: itemData.tier,
           value: itemData.value,
           categoria: itemCategoria,
-          quantidade
+          quantidade: quantidade,
+          img: itemData.img,
+          description: itemData.description,
+          item: itemData.item,
+          emoji: itemData.emoji,
+          icon: itemData.icon
         };
 
         div.innerHTML = `
@@ -162,7 +162,7 @@ function initInventory() {
                 itemData.img
                   ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                        class="inventory-item-img">`
-                  : (itemData.item || "📦")
+                  : (itemData.item || itemData.emoji || itemData.icon || "📦")
               }
             </span>
 
@@ -195,13 +195,27 @@ function initInventory() {
             itemData.img
               ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                      class="item-open-img">`
-              : "📦";
+              : (itemData.item || itemData.emoji || itemData.icon || "📦");
 
           document.getElementById("item-name").innerText =
             itemData.nome || itemId;
 
-          document.getElementById("item-description").innerText =
-            itemData.description || "Sem descrição.";
+          const tier = Number(itemData.tier) || 1;
+
+          const tierImgUrl =
+            `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
+
+          document.getElementById("item-description").innerHTML = `
+            <div>
+              ${itemData.description || "Sem descrição."}
+            </div>
+
+            <img src="${tierImgUrl}" style="
+              width:210px;
+              display:block;
+              margin:12px auto 0 auto;
+            "/>
+          `;
 
           document.querySelector(".item-actions").innerHTML = `
             <button id="use-item">USAR</button>
@@ -209,6 +223,7 @@ function initInventory() {
           `;
 
           document.getElementById("use-item").onclick = () => {
+            if (!currentItem) return;
             if (confirmModal) confirmModal.style.display = "flex";
           };
 
@@ -219,31 +234,40 @@ function initInventory() {
           itemModal.style.display = "flex";
         });
 
-        inventoryList.appendChild(div);
+        fragment.appendChild(div);
       }
+
+      inventoryList.appendChild(fragment);
     });
   });
 
-  closeInventory?.addEventListener("click", () => {
-    inventoryModal.style.display = "none";
-  });
+  if (closeInventory) {
+    closeInventory.addEventListener("click", () => {
+      inventoryModal.style.display = "none";
+    });
+  }
 
-  closeItem?.addEventListener("click", () => {
-    itemModal.style.display = "none";
-  });
+  if (closeItem) {
+    closeItem.addEventListener("click", () => {
+      itemModal.style.display = "none";
+    });
+  }
 
-  marketBtn?.addEventListener("click", () => {
-    inventoryModal.style.display = "none";
-    window.openMarket?.();
-  });
+  if (marketBtn) {
+    marketBtn.addEventListener("click", () => {
+      inventoryModal.style.display = "none";
+      if (window.openMarket) window.openMarket();
+    });
+  }
 
   confirmNo?.addEventListener("click", () => {
-    confirmModal.style.display = "none";
+    if (confirmModal) confirmModal.style.display = "none";
   });
 
   confirmYes?.addEventListener("click", () => {
-    confirmModal.style.display = "none";
-    itemModal.style.display = "none";
+    if (confirmModal) confirmModal.style.display = "none";
+    if (itemModal) itemModal.style.display = "none";
+
     window.usarItem?.(currentItem);
   });
 }

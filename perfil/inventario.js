@@ -7,6 +7,19 @@ const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
 
+// 🔥 RESET GLOBAL DO ITEM MODAL (ADICIONADO)
+function resetItemModal() {
+  const emoji = document.getElementById("item-emoji");
+  const name = document.getElementById("item-name");
+  const desc = document.getElementById("item-description");
+  const actions = document.querySelector(".item-actions");
+
+  if (emoji) emoji.innerHTML = "📦";
+  if (name) name.innerText = "";
+  if (desc) desc.innerHTML = "";
+  if (actions) actions.innerHTML = "";
+}
+
 async function loadInventoryHTML() {
 
   const response = await fetch("perfil/inventario.html");
@@ -57,7 +70,6 @@ function initInventory() {
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
 
-    // 🔥 FIX: espera o Firebase Auth terminar de restaurar sessão
     const user = await new Promise(resolve => {
       const unsub = auth.onAuthStateChanged((u) => {
         unsub();
@@ -167,6 +179,9 @@ function initInventory() {
       div.addEventListener("click", () => {
 
         currentItem = itemObj;
+
+        // 🔥 IMPORTANTE: RESET ANTES DE ABRIR (CORREÇÃO)
+        resetItemModal();
 
         document.getElementById("item-emoji").innerHTML =
           itemData.img

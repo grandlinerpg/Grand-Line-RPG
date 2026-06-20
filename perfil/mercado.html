@@ -13,16 +13,69 @@
     <div class="market-filter">
 
       <select id="market-category">
-
-        <option value="all">
-          Todas as Categorias
-        </option>
-
+        <option value="all">Todas as Categorias</option>
       </select>
 
     </div>
 
     <div id="market-list" class="inventory-list"></div>
+
+  </div>
+
+</div>
+
+
+<!-- 🔥 ITEM MODAL (já existe no teu sistema) -->
+<div id="item-modal" class="item-modal">
+
+  <div class="item-window">
+
+    <button id="close-item" class="close-item-x">↩</button>
+
+    <div class="item-top">
+      <span id="item-emoji" class="item-emoji">📦</span>
+
+      <div class="item-info">
+        <h2 id="item-name">ITEM</h2>
+        <p id="item-description">Descrição...</p>
+      </div>
+    </div>
+
+    <div class="item-actions"></div>
+
+  </div>
+
+</div>
+
+
+<!-- 🔥 CONFIRMAR COMPRA -->
+<div id="confirm-modal" class="item-modal">
+
+  <div class="item-window">
+
+    <div class="item-top">
+
+      <h2 style="color:#f6d365; font-family:'Cinzel', serif;">
+        TEM CERTEZA?
+      </h2>
+
+      <p style="color:#ddd; text-align:center;">
+        Deseja comprar este item?
+      </p>
+
+    </div>
+
+    <div class="item-actions">
+
+      <button id="confirm-yes">
+        SIM
+      </button>
+
+      <button id="confirm-no">
+        NÃO
+      </button>
+
+    </div>
 
   </div>
 

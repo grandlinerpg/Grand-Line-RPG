@@ -10,10 +10,12 @@ let currentItem = null;
 
 // 🔥 RESET GLOBAL DO ITEM MODAL
 function resetItemModal() {
-  const emoji = document.getElementById("item-emoji");
-  const name = document.getElementById("item-name");
-  const desc = document.getElementById("item-description");
-  const actions = document.querySelector(".item-actions");
+const itemModal = document.getElementById("market-item-modal");
+
+const emoji = document.getElementById("market-item-emoji");
+const name = document.getElementById("market-item-name");
+const desc = document.getElementById("market-item-description");
+const actions = itemModal.querySelector(".item-actions");
 
   if (emoji) emoji.innerHTML = "📦";
   if (name) name.innerText = "";
@@ -223,7 +225,7 @@ function openMarketItemModal(item) {
   const tierImg =
     `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
 
-  document.getElementById("item-emoji").innerHTML =
+  document.getElementById("market-item-emoji").innerHTML =
     item.img
       ? `<img 
           src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
@@ -231,10 +233,10 @@ function openMarketItemModal(item) {
         >`
       : "📦";
 
-  document.getElementById("item-name").innerText =
+  document.getElementById("market-item-name").innerText =
     item.nome;
 
-  document.getElementById("item-description").innerHTML =
+  document.getElementById("market-item-description").innerHTML =
     `
       <div>${item.descricao || "Sem descrição."}</div>
 

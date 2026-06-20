@@ -33,34 +33,61 @@ function initMarket() {
   const closeMarket =
     document.getElementById("close-market");
 
+  const categorySelect =
+    document.getElementById("market-category");
+
   const marketList =
     document.getElementById("market-list");
 
   const itemModal =
     document.getElementById("item-modal");
 
+  let anuncios = {};
+  let itensDB = {};
+
   window.openMarket = async function () {
 
     marketModal.style.display = "flex";
 
+    // 🔥 1. mercado (anúncios)
     const marketSnap =
       await get(ref(db, "mercado/itens"));
 
-    const itensSnap =
-      await get(ref(db, "itens"));
-
-    if (!marketSnap.exists() || !itensSnap.exists()) {
+    if (!marketSnap.exists()) {
       marketList.innerHTML = "Nenhum item encontrado.";
       return;
     }
 
-    const anuncios =
-      marketSnap.val();
+    // 🔥 2. catálogo de itens
+    const itensSnap =
+      await get(ref(db, "itens"));
 
-    const itensDB =
-      itensSnap.val();
+    if (!itensSnap.exists()) {
+      marketList.innerHTML = "Nenhum item encontrado.";
+      return;
+    }
 
-    renderMarket(anuncios, itensDB, marketList);
+    anuncios = marketSnap.val();
+    itensDB = itensSnap.val();
+
+    // 🔥 monta select com categorias reais do catálogo
+    categorySelect.innerHTML = `
+      <option value="all">Todas as Categorias</option>
+    `;
+
+    for (const categoria in itensDB) {
+      categorySelect.innerHTML += `
+        <option value="${categoria}">
+          ${categoria}
+        </option>
+      `;
+    }
+
+    renderMarket("all");
+
+    categorySelect.onchange = () => {
+      renderMarket(categorySelect.value);
+    };
   };
 
   if (closeMarket) {
@@ -68,104 +95,103 @@ function initMarket() {
       marketModal.style.display = "none";
     });
   }
-}
 
-function renderMarket(anuncios, itensDB, marketList) {
+  function renderMarket(filtro) {
 
-  marketList.innerHTML = "";
+    marketList.innerHTML = "";
 
-  // 🔥 percorre CATEGORIAS (consumiveis, armas, etc)
-  for (const categoria in itensDB) {
+    // 🔥 loop em TODOS os anúncios
+    for (const anuncioId in anuncios) {
 
-    const categoriaDiv =
-      document.createElement("div");
+      const anuncio = anuncios[anuncioId];
 
-    categoriaDiv.className = "market-category-title";
-    categoriaDiv.innerText = categoria;
+      const itemId = anuncio.nome;
+      const value = anuncio.value;
 
-    marketList.appendChild(categoriaDiv);
+      let itemData = null;
+      let categoriaItem = null;
 
-    const itens = itensDB[categoria];
+      // 🔥 procura item no catálogo inteiro
+      for (const categoria in itensDB) {
 
-    let hasAny = false;
+        if (
+          filtro !== "all" &&
+          categoria !== filtro
+        ) continue;
 
-    // 🔥 percorre itens da categoria
-    for (const itemId in itens) {
+        const itens = itensDB[categoria];
 
-      const itemData = itens[itemId];
+        if (itens[itemId]) {
+          itemData = itens[itemId];
+          categoriaItem = categoria;
+          break;
+        }
+      }
 
-      // 🔥 procura anúncio correspondente no mercado
-      for (const anuncioId in anuncios) {
+      if (!itemData) continue;
 
-        const anuncio = anuncios[anuncioId];
+      const div = document.createElement("div");
 
-        if (anuncio.nome !== itemId) continue;
+      div.className = "inventory-item";
 
-        hasAny = true;
+      div.innerHTML = `
+        <div class="inventory-item-top">
 
-        const div = document.createElement("div");
+          <span class="inventory-emoji">
 
-        div.className = "inventory-item";
+            ${
+              itemData.img
+                ? `<img 
+                    src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                    class="inventory-item-img"
+                  >`
+                : "📦"
+            }
 
-        div.innerHTML = `
-          <div class="inventory-item-top">
+          </span>
 
-            <span class="inventory-emoji">
+          <div class="inventory-text">
 
-              ${
-                itemData.img
-                  ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                    class="inventory-item-img">`
-                  : "📦"
-              }
+            <div class="inventory-name-qty">
 
-            </span>
+              <span class="inventory-name">
+                ${itemData.nome || itemId}
+              </span>
 
-            <div class="inventory-text">
-
-              <div class="inventory-name-qty">
-
-                <span class="inventory-name">
-                  ${itemData.nome || itemId}
-                </span>
-
-                <span class="inventory-qty">
-                  ฿ ${Number(anuncio.value || 0).toLocaleString("pt-BR")}
-                </span>
-
-              </div>
+              <span class="inventory-qty">
+                ฿ ${Number(value || 0).toLocaleString("pt-BR")}
+              </span>
 
             </div>
 
           </div>
-        `;
 
-        div.addEventListener("click", () => {
+        </div>
+      `;
 
-          currentItem = {
-            id: anuncioId,
-            nome: itemData.nome,
-            descricao: itemData.description,
-            img: itemData.img,
-            value: anuncio.value
-          };
+      div.addEventListener("click", () => {
 
-          openMarketItemModal(currentItem);
-        });
+        currentItem = {
+          id: anuncioId,
+          nome: itemData.nome,
+          descricao: itemData.description,
+          img: itemData.img,
+          value
+        };
 
-        marketList.appendChild(div);
-      }
+        openMarketItemModal(currentItem);
+      });
+
+      marketList.appendChild(div);
     }
 
-    if (!hasAny) {
-      const empty = document.createElement("div");
-      empty.innerText = "Sem itens nessa categoria";
-      marketList.appendChild(empty);
+    if (!marketList.children.length) {
+      marketList.innerHTML = "Nenhum item encontrado.";
     }
   }
 }
 
-// 🔥 MODAL
+// 🔥 MODAL ITEM
 function openMarketItemModal(item) {
 
   const itemModal =
@@ -173,8 +199,10 @@ function openMarketItemModal(item) {
 
   document.getElementById("item-emoji").innerHTML =
     item.img
-      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-        class="item-open-img">`
+      ? `<img 
+          src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+          class="item-open-img"
+        >`
       : "📦";
 
   document.getElementById("item-name").innerText =
@@ -193,7 +221,9 @@ function openMarketItemModal(item) {
         ฿ ${Number(item.value || 0).toLocaleString("pt-BR")}
       </div>
 
-      <button id="buy-item">COMPRAR</button>
+      <button id="buy-item">
+        COMPRAR
+      </button>
 
     </div>
   `;

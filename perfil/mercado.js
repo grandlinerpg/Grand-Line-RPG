@@ -107,6 +107,7 @@ function initMarket() {
       const value = Number(anuncio.value || 0);
 
       let itemData = null;
+      let categoriaItem = null;
 
       for (const categoria in itensDB) {
 
@@ -119,6 +120,7 @@ function initMarket() {
 
         if (itens[itemId]) {
           itemData = itens[itemId];
+          categoriaItem = categoria;
           break;
         }
       }
@@ -139,15 +141,15 @@ function initMarket() {
 
       const { anuncioId, itemId, value, itemData } = data;
 
-      const tier = Number(itemData.tier) || 1;
-
       const div = document.createElement("div");
+
       div.className = "inventory-item";
 
       div.innerHTML = `
         <div class="inventory-item-top">
 
           <span class="inventory-emoji">
+
             ${
               itemData.img
                 ? `<img 
@@ -156,6 +158,7 @@ function initMarket() {
                 >`
               : (itemData.item || "📦")
             }
+
           </span>
 
           <div class="inventory-text">
@@ -172,15 +175,6 @@ function initMarket() {
 
             </div>
 
-            <img
-              src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png"
-              style="
-                width:60px;
-                display:block;
-                margin-top:4px;
-              "
-            />
-
           </div>
 
         </div>
@@ -193,7 +187,8 @@ function initMarket() {
           nome: itemData.nome,
           descricao: itemData.description,
           img: itemData.img,
-          value
+          value,
+          tier: itemData.tier
         };
 
         openMarketItemModal(currentItem);
@@ -208,11 +203,16 @@ function initMarket() {
   }
 }
 
-// 🔥 MODAL ITEM
+// 🔥 MODAL ITEM (COM TIER IGUAL INVENTÁRIO)
 function openMarketItemModal(item) {
 
   const itemModal =
     document.getElementById("item-modal");
+
+  const tier = Number(item.tier || 1);
+
+  const tierImgUrl =
+    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
 
   document.getElementById("item-emoji").innerHTML =
     item.img
@@ -226,7 +226,14 @@ function openMarketItemModal(item) {
     item.nome;
 
   document.getElementById("item-description").innerHTML =
-    `<div>${item.descricao || "Sem descrição."}</div>`;
+    `
+      <div>${item.descricao || "Sem descrição."}</div>
+
+      <img 
+        src="${tierImgUrl}"
+        class="inventory-item-img"
+      />
+    `;
 
   const actions =
     document.querySelector(".item-actions");

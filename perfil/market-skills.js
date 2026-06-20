@@ -47,7 +47,14 @@ function initMarketSkills() {
   if (!openBtn || !modal || !list) return;
 
   let habilidadesDB = {};
-  let allowedSubs = new Set(); // 🔥 NOVO
+  let allowedSubs = new Set();
+
+  function normalize(str) {
+    return (str || "")
+      .toString()
+      .trim()
+      .toLowerCase();
+  }
 
   function renderSkills() {
 
@@ -83,10 +90,13 @@ function initMarketSkills() {
         const skill =
           habilidadesDB[categoria][skillId];
 
-        const sub = skill.sub; // 🔥 NOVO FILTRO
+        const sub = normalize(skill.sub);
+        const categoriaNorm = normalize(categoria);
 
-        // 🔥 BLOQUEIA SE NÃO FOR DA SUBCATEGORIA DO PERSONAGEM
-        if (allowedSubs.size && !allowedSubs.has(sub)) {
+        // 🔥 "gerais" IGNORA TUDO
+        const isGerais = categoriaNorm === "gerais";
+
+        if (!isGerais && allowedSubs.size && !allowedSubs.has(sub)) {
           continue;
         }
 
@@ -166,11 +176,10 @@ function initMarketSkills() {
 
     const player = playerSnap.val();
 
-    // 🔥 PEGANDO SUBCATEGORIAS DO PERSONAGEM
     allowedSubs = new Set([
-      player?.character?.race,
-      player?.character?.fruit,
-      player?.character?.style
+      normalize(player?.character?.race),
+      normalize(player?.character?.fruit),
+      normalize(player?.character?.style)
     ].filter(Boolean));
 
     habilidadesDB = snap.val();

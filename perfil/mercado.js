@@ -43,7 +43,7 @@ function initMarket() {
     document.getElementById("item-modal");
 
   const buyConfirm =
-    document.getElementById("buy-confirm-modal");
+    document.getElementById("confirm-modal");
 
   let anuncios = {};
   let itensDB = {};

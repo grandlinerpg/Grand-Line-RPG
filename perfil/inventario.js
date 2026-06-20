@@ -9,18 +9,15 @@ const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
 
-// controla listener ativo
 let inventoryRef = null;
 let inventoryCallback = null;
-
-// controle anti-race-condition
 let renderVersion = 0;
 
 function resetItemModal() {
   const emoji = document.getElementById("item-emoji");
   const name = document.getElementById("item-name");
   const desc = document.getElementById("item-description");
-  const actions = document.querySelector(".item-actions");
+  const actions = document.querySelector("#item-modal .item-actions");
 
   if (emoji) emoji.innerHTML = "📦";
   if (name) name.innerText = "";
@@ -29,11 +26,9 @@ function resetItemModal() {
 }
 
 async function loadInventoryHTML() {
-
   const response = await fetch("perfil/inventario.html");
   const html = await response.text();
 
-  modalContainer.innerHTML = "";
   modalContainer.innerHTML = html;
 
   requestAnimationFrame(() => {
@@ -62,11 +57,6 @@ function initInventory() {
   const confirmYes = document.getElementById("confirm-yes");
   const confirmNo = document.getElementById("confirm-no");
 
-  if (!openBtn || !inventoryModal || !inventoryList) {
-    console.error("Inventário não carregou corretamente no DOM");
-    return;
-  }
-
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
@@ -82,24 +72,15 @@ function initInventory() {
       });
     });
 
-    if (!user) {
-      inventoryList.innerHTML = "Usuário não logado.";
-      return;
-    }
+    if (!user) return;
 
-    const playerSnap = await get(
-      ref(db, `players/${user.uid}/info`)
-    );
+    const playerSnap = await get(ref(db, `players/${user.uid}/info`));
 
     if (playerSnap.exists() && saldoElement) {
       const saldo = playerSnap.val().saldo || 0;
-      saldoElement.innerText =
-        "฿ " + saldo.toLocaleString("pt-BR");
+      saldoElement.innerText = "฿ " + saldo.toLocaleString("pt-BR");
     }
 
-    // =========================
-    // 🔥 REMOVE LISTENER ANTIGO (FORÇA LIMPEZA REAL)
-    // =========================
     if (inventoryRef && inventoryCallback) {
       off(inventoryRef, "value", inventoryCallback);
     }
@@ -111,22 +92,13 @@ function initInventory() {
 
     const categorias = itensSnap.val();
 
-    // =========================
-    // TEMPO REAL COM PROTEÇÃO
-    // =========================
     inventoryCallback = onValue(inventoryRef, (snapshot) => {
 
       const myVersion = ++renderVersion;
 
-      const inventoryList = document.getElementById("inventory-list");
-      if (!inventoryList) return;
-
       inventoryList.innerHTML = "";
 
-      if (!snapshot.exists()) {
-        inventoryList.innerHTML = "Inventário vazio.";
-        return;
-      }
+      if (!snapshot.exists()) return;
 
       const inventory = snapshot.val();
 
@@ -146,8 +118,6 @@ function initInventory() {
         }
 
         if (!itemData) continue;
-
-        // 🔥 se outro render começou, cancela esse
         if (myVersion !== renderVersion) return;
 
         const div = document.createElement("div");
@@ -156,50 +126,27 @@ function initInventory() {
         const itemObj = {
           id: itemId,
           nome: itemData.nome,
-          tipo: itemData.tipo,
-          tier: itemData.tier,
-          value: itemData.value,
-          categoria: itemCategoria,
-          quantidade: quantidade,
+          descricao: itemData.description,
           img: itemData.img,
-          description: itemData.description,
-          item: itemData.item,
-          emoji: itemData.emoji,
-          icon: itemData.icon
+          tier: itemData.tier
         };
 
         div.innerHTML = `
           <div class="inventory-item-top">
-
             <span class="inventory-emoji">
-              ${
-                itemData.img
-                  ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                       class="inventory-item-img">`
-                  : (itemData.item || itemData.emoji || itemData.icon || "📦")
-              }
+              ${itemData.img
+                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png" class="inventory-item-img">`
+                : "📦"}
             </span>
 
             <div class="inventory-text">
-
-              <div class="inventory-name-qty">
-
-                <span class="inventory-name">
-                  ${itemData.nome || itemId}
-                </span>
-
-                <span class="inventory-qty">
-                  ${quantidade}
-                </span>
-
-              </div>
-
+              <span>${itemData.nome}</span>
+              <span>${quantidade}</span>
             </div>
-
           </div>
         `;
 
-        div.addEventListener("click", () => {
+        div.onclick = () => {
 
           currentItem = itemObj;
 
@@ -207,35 +154,21 @@ function initInventory() {
 
           document.getElementById("item-emoji").innerHTML =
             itemData.img
-              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                     class="item-open-img">`
-              : (itemData.item || itemData.emoji || itemData.icon || "📦");
+              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png" class="item-open-img">`
+              : "📦";
 
-          document.getElementById("item-name").innerText =
-            itemData.nome || itemId;
+          document.getElementById("item-name").innerText = itemData.nome;
 
-          const tier = Number(itemData.tier) || 1;
+          document.getElementById("item-description").innerHTML =
+            itemData.description || "Sem descrição.";
 
-          const tierImgUrl =
-            `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
-
-          document.getElementById("item-description").innerHTML = `
-            <div>${itemData.description || "Sem descrição."}</div>
-
-            <img src="${tierImgUrl}" style="
-              width:210px;
-              display:block;
-              margin:12px auto 0 auto;
-            "/>
-          `;
-
-          document.querySelector(".item-actions").innerHTML = `
+          document.querySelector("#item-modal .item-actions").innerHTML = `
             <button id="use-item">USAR</button>
             <button id="sell-item">VENDER</button>
           `;
 
           document.getElementById("use-item").onclick = () => {
-            if (confirmModal) confirmModal.style.display = "flex";
+            confirmModal.style.display = "flex";
           };
 
           document.getElementById("sell-item").onclick = () => {
@@ -243,41 +176,30 @@ function initInventory() {
           };
 
           itemModal.style.display = "flex";
-        });
+        };
 
         inventoryList.appendChild(div);
       }
     });
   });
 
-  if (closeInventory) {
-    closeInventory.addEventListener("click", () => {
-      inventoryModal.style.display = "none";
-    });
-  }
-
-  if (closeItem) {
-    closeItem.addEventListener("click", () => {
-      itemModal.style.display = "none";
-    });
-  }
-
-  if (marketBtn) {
-    marketBtn.addEventListener("click", () => {
-      inventoryModal.style.display = "none";
-      window.openMarket?.();
-    });
-  }
-
-  confirmNo?.addEventListener("click", () => {
-    if (confirmModal) confirmModal.style.display = "none";
-  });
-
-  confirmYes?.addEventListener("click", () => {
+  confirmYes.onclick = () => {
     confirmModal.style.display = "none";
     itemModal.style.display = "none";
     window.usarItem?.(currentItem);
-  });
+  };
+
+  confirmNo.onclick = () => {
+    confirmModal.style.display = "none";
+  };
+
+  closeInventory.onclick = () => inventoryModal.style.display = "none";
+  closeItem.onclick = () => itemModal.style.display = "none";
+
+  marketBtn.onclick = () => {
+    inventoryModal.style.display = "none";
+    window.openMarket?.();
+  };
 }
 
 loadInventoryHTML();

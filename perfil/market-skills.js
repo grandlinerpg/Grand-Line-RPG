@@ -116,34 +116,19 @@ function initMarketSkills() {
         div.className = "skill-item";
 
         div.innerHTML = `
-          <div class="skill-item-top">
+          <img 
+            src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skillId}.jpg"
+            class="skill-icon"
+            alt="${skill.nome}"
+          />
 
-            <img 
-              src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skillId}.jpg"
-              class="skill-icon"
-              alt="${skill.nome}"
-            />
+          <span class="skill-name">
+            ${skill.nome || skillId}
+          </span>
 
-            <div class="skill-text">
-
-              <div
-                class="skill-name-qty"
-                style="width:100%; justify-content:space-between;"
-              >
-
-                <span class="skill-name">
-                  ${skill.nome || skillId}
-                </span>
-
-                <span class="skill-qty">
-                  ${skill.cost || 1} HA
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
+          <span class="skill-qty">
+            ${skill.cost || 1} HA
+          </span>
         `;
 
         list.appendChild(div);

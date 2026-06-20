@@ -216,8 +216,11 @@ function openMarketItemModal(item) {
 
       <img 
         src="${tierImg}"
-        class="inventory-item-img"
-        style="width:210px; display:block; margin:12px auto 0 auto;"
+        style="
+          width:210px;
+          display:block;
+          margin:12px auto 0 auto;
+        "
       />
     `;
 

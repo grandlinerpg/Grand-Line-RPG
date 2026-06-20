@@ -107,20 +107,15 @@ function initMarket() {
       const value = Number(anuncio.value || 0);
 
       let itemData = null;
-      let categoriaItem = null;
 
       for (const categoria in itensDB) {
 
-        if (
-          filtro !== "all" &&
-          categoria !== filtro
-        ) continue;
+        if (filtro !== "all" && categoria !== filtro) continue;
 
         const itens = itensDB[categoria];
 
         if (itens[itemId]) {
           itemData = itens[itemId];
-          categoriaItem = categoria;
           break;
         }
       }
@@ -203,16 +198,11 @@ function initMarket() {
   }
 }
 
-// 🔥 MODAL ITEM (COM TIER IGUAL INVENTÁRIO)
+// 🔥 ITEM MODAL (TIER IGUAL INVENTÁRIO, SEM HTML INVENTADO)
 function openMarketItemModal(item) {
 
   const itemModal =
     document.getElementById("item-modal");
-
-  const tier = Number(item.tier || 1);
-
-  const tierImgUrl =
-    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
 
   document.getElementById("item-emoji").innerHTML =
     item.img
@@ -225,14 +215,19 @@ function openMarketItemModal(item) {
   document.getElementById("item-name").innerText =
     item.nome;
 
+  // 🔥 AQUI O TIER SÓ USA O MESMO CSS DO INVENTÁRIO
   document.getElementById("item-description").innerHTML =
     `
       <div>${item.descricao || "Sem descrição."}</div>
 
-      <img 
-        src="${tierImgUrl}"
-        class="inventory-item-img"
-      />
+      ${
+        item.tier
+          ? `<img 
+              src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
+              class="inventory-item-img"
+            />`
+          : ""
+      }
     `;
 
   const actions =

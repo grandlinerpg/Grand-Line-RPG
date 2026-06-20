@@ -24,12 +24,28 @@ function getMinPrice(tier) {
 // =========================
 window.abrirVendaItem = function(item) {
 
+  console.log("🟢 abrirVendaItem chamada");
+  console.log("📦 item:", item);
+
   const modal = document.getElementById("sell-modal");
   const imgBox = document.getElementById("sell-item-image");
   const minText = document.getElementById("sell-min-price");
   const input = document.getElementById("sell-price-input");
 
-  if (!modal || !item) return;
+  console.log("📌 modal:", modal);
+  console.log("📌 imgBox:", imgBox);
+  console.log("📌 minText:", minText);
+  console.log("📌 input:", input);
+
+  if (!modal) {
+    console.error("❌ sell-modal NÃO encontrado");
+    return;
+  }
+
+  if (!item) {
+    console.error("❌ item inválido");
+    return;
+  }
 
   const minPrice = getMinPrice(item.tier);
 
@@ -43,7 +59,14 @@ window.abrirVendaItem = function(item) {
   minText.innerText =
     `Preço mínimo: ฿ ${minPrice.toLocaleString("pt-BR")}`;
 
+  console.log("🚀 tentando abrir modal");
+
   modal.style.display = "flex";
+
+  console.log(
+    "✅ display atual:",
+    getComputedStyle(modal).display
+  );
 
   // CANCELAR
   document.getElementById("cancel-sell").onclick = () => {
@@ -68,7 +91,7 @@ window.abrirVendaItem = function(item) {
 };
 
 // =========================
-// 🔥 PONTE DO EVENTO (ESSENCIAL)
+// PONTE DO EVENTO
 // =========================
 document.addEventListener("abrirVenda", (e) => {
   console.log("🔥 evento abrirVenda recebido:", e.detail);

@@ -61,11 +61,12 @@ function initSkills() {
       const skillPlayer = playerSkills[skillId];
 
       const categoria = skillPlayer.categoria;
-      const sub = skillPlayer.sub; // 🔥 NOVO
+      const sub = skillPlayer.sub;
 
-      // 🔥 ALTERAÇÃO PRINCIPAL: agora usa subcategoria
+      // 🔥 FIX: leitura segura da estrutura
       const data =
-        habilidadesDB[categoria]?.[sub]?.[skillId];
+        habilidadesDB?.[categoria]?.[sub]?.[skillId]
+        || habilidadesDB?.[categoria]?.[skillId];
 
       if (!data) continue;
 

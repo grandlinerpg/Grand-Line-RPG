@@ -55,7 +55,7 @@ function initMarket() {
     document.getElementById("market-list");
 
   const itemModal =
-    document.getElementById("item-modal");
+    document.getElementById("market-item-modal");
 
   let anuncios = {};
   let itensDB = {};
@@ -220,7 +220,7 @@ function openMarketItemModal(item) {
   resetItemModal();
 
   const itemModal =
-    document.getElementById("item-modal");
+    document.getElementById("market-item-modal");
 
   const tierImg =
     `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;

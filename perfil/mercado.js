@@ -39,12 +39,17 @@ function initMarket() {
   const itemModal = document.getElementById("market-item-modal");
   const confirmModal = document.getElementById("buy-confirm-modal");
 
+  const yesBtn = document.getElementById("buy-confirm-yes");
+  const noBtn = document.getElementById("buy-confirm-no");
+
   let anuncios = {};
   let itensDB = {};
 
+  // REMOVE listeners antigos (evita conflito)
+  let buyHandler = null;
+
   window.openMarket = async () => {
     resetItemModal();
-
     marketModal.style.display = "flex";
 
     const marketSnap = await get(ref(db, "mercado/itens"));
@@ -71,12 +76,7 @@ function initMarket() {
   };
 
   function getEmoji(itemData) {
-    return (
-      itemData.emoji ||
-      itemData.icon ||
-      itemData.item ||
-      "📦"
-    );
+    return itemData.emoji || itemData.icon || itemData.item || "📦";
   }
 
   function render(filter) {
@@ -105,14 +105,11 @@ function initMarket() {
 
       div.innerHTML = `
         <div class="inventory-item-top">
-
           <span class="inventory-emoji">
-            ${
-              itemData.img
-                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                    class="inventory-item-img">`
-                : getEmoji(itemData)
-            }
+            ${itemData.img
+              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                  class="inventory-item-img">`
+              : getEmoji(itemData)}
           </span>
 
           <div class="inventory-text">
@@ -121,23 +118,18 @@ function initMarket() {
               <span class="inventory-qty">฿ ${value.toLocaleString("pt-BR")}</span>
             </div>
           </div>
-
         </div>
       `;
 
-      div.onclick = () => {
-        currentItem = {
-          id,
-          nome: itemData.nome,
-          descricao: itemData.description,
-          img: itemData.img,
-          value,
-          tier: Number(itemData.tier || 1),
-          emoji: getEmoji(itemData)
-        };
-
-        openItem(currentItem);
-      };
+      div.onclick = () => openItem({
+        id,
+        nome: itemData.nome,
+        descricao: itemData.description,
+        img: itemData.img,
+        value,
+        tier: Number(itemData.tier || 1),
+        emoji: getEmoji(itemData)
+      });
 
       marketList.appendChild(div);
     }
@@ -145,6 +137,8 @@ function initMarket() {
 
   function openItem(item) {
     resetItemModal();
+
+    currentItem = item;
 
     document.getElementById("market-item-emoji").innerHTML =
       item.img
@@ -154,42 +148,41 @@ function initMarket() {
 
     document.getElementById("market-item-name").innerText = item.nome;
 
-    const tierImg = `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
+    const tierImg =
+      `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
 
     document.getElementById("market-item-description").innerHTML = `
       <div>${item.descricao || "Sem descrição."}</div>
-
-      <img src="${tierImg}" style="
-        width:210px;
-        display:block;
-        margin:12px auto 0 auto;
-      "/>
+      <div>Preço: ฿ ${item.value.toLocaleString("pt-BR")}</div>
+      <img src="${tierImg}" style="width:210px;display:block;margin:12px auto 0 auto;">
     `;
 
     const actions = itemModal.querySelector(".item-actions");
 
     actions.innerHTML = `
       <div class="market-actions">
-
-        <div class="price-box">
-          ฿ ${item.value.toLocaleString("pt-BR")}
-        </div>
-
+        <div class="price-box">฿ ${item.value.toLocaleString("pt-BR")}</div>
         <button id="buy-item">COMPRAR</button>
-
       </div>
     `;
 
-    actions.querySelector("#buy-item").onclick = () => {
+    // 🔥 remove conflito antigo
+    const buyBtn = actions.querySelector("#buy-item");
+
+    buyBtn.onclick = () => {
       confirmModal.style.display = "flex";
 
-      document.getElementById("buy-confirm-yes").onclick = () => {
+      // REMOVE antes de recriar
+      yesBtn.onclick = null;
+      noBtn.onclick = null;
+
+      yesBtn.onclick = () => {
         confirmModal.style.display = "none";
         itemModal.style.display = "none";
         console.log("COMPRADO:", item.id);
       };
 
-      document.getElementById("buy-confirm-no").onclick = () => {
+      noBtn.onclick = () => {
         confirmModal.style.display = "none";
       };
     };

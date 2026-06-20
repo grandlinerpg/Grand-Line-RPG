@@ -191,6 +191,22 @@ window.abrirVendaItem = function(item) {
 
       modal.style.display = "none";
 
+      // fecha janela do item
+      const itemModal =
+        document.getElementById("item-modal");
+
+      if (itemModal) {
+        itemModal.style.display = "none";
+      }
+  
+      // garante inventário aberto
+      const inventoryModal =
+        document.getElementById("inventory-modal");
+
+      if (inventoryModal) {
+        inventoryModal.style.display = "flex";
+      }
+
       alert("Item anunciado com sucesso!");
     };
 };

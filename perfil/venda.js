@@ -1,4 +1,8 @@
-alert("venda.js rodando");
+console.log("venda.js ativo");
+
+document.addEventListener("abrirVenda", (e) => {
+  console.log("🔥 EVENTO CHEGOU:", e.detail);
+});
 
 // =========================
 // PREÇO MÍNIMO POR TIER

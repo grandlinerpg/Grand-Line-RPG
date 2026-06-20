@@ -1,4 +1,4 @@
-console.log("🔥 venda.js CARREGOU");
+alert("venda.js rodando");
 
 // =========================
 // PREÇO MÍNIMO POR TIER

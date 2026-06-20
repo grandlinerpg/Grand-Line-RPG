@@ -148,10 +148,10 @@ function initMarket() {
             ${
               itemData.img
                 ? `<img 
-                  src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                  class="inventory-item-img"
-                >`
-              : (itemData.item || "📦")
+                    src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                    class="inventory-item-img"
+                  >`
+                : (itemData.item || "📦")
             }
 
           </span>
@@ -183,7 +183,7 @@ function initMarket() {
           descricao: itemData.description,
           img: itemData.img,
           value,
-          tier: itemData.tier
+          tier: Number(itemData.tier || 1)
         };
 
         openMarketItemModal(currentItem);
@@ -198,11 +198,16 @@ function initMarket() {
   }
 }
 
-// 🔥 ITEM MODAL (TIER IGUAL INVENTÁRIO, SEM HTML INVENTADO)
+// 🔥 ITEM MODAL (IGUAL INVENTÁRIO, SEM QUEBRAR CSS)
 function openMarketItemModal(item) {
 
   const itemModal =
     document.getElementById("item-modal");
+
+  const tier = Number(item.tier || 1);
+
+  const tierImg =
+    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
 
   document.getElementById("item-emoji").innerHTML =
     item.img
@@ -215,25 +220,17 @@ function openMarketItemModal(item) {
   document.getElementById("item-name").innerText =
     item.nome;
 
-  // 🔥 AQUI O TIER SÓ USA O MESMO CSS DO INVENTÁRIO
   document.getElementById("item-description").innerHTML =
     `
       <div>${item.descricao || "Sem descrição."}</div>
 
-      ${
-        item.tier
-          ? `<img 
-              src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
-              class="inventory-item-img"
-            />`
-          : ""
-      }
+      <img 
+        src="${tierImg}"
+        class="inventory-item-img"
+      />
     `;
 
-  const actions =
-    document.querySelector(".item-actions");
-
-  actions.innerHTML = `
+  document.querySelector(".item-actions").innerHTML = `
     <div class="market-actions">
 
       <div class="price-box">

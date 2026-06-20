@@ -739,7 +739,8 @@
 }
 
 /* INPUT */
-#sell-price-input {
+#sell-price-input,
+#sell-qty-input{
   width: 100%;
 
   padding: 10px;

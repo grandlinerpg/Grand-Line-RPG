@@ -43,22 +43,14 @@ function initInventory() {
 
   const itemModal = document.getElementById("item-modal");
   const inventoryList = document.getElementById("inventory-list");
-
   const saldoElement = document.getElementById("inventory-saldo");
   const marketBtn = document.getElementById("open-market");
 
   const confirmModal = document.getElementById("confirm-modal");
+  const confirmYes = document.getElementById("confirm-yes");
+  const confirmNo = document.getElementById("confirm-no");
 
-  const confirmYesOld = document.getElementById("confirm-yes");
-  const confirmNoOld = document.getElementById("confirm-no");
-
-  const confirmYes = confirmYesOld?.cloneNode(true);
-  const confirmNo = confirmNoOld?.cloneNode(true);
-
-  confirmYesOld?.replaceWith(confirmYes);
-  confirmNoOld?.replaceWith(confirmNo);
-
-  let userRef = null;
+  if (!openBtn || !inventoryModal || !inventoryList) return;
 
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
@@ -68,7 +60,7 @@ function initInventory() {
     inventoryList.innerHTML = "Carregando...";
 
     const user = await new Promise(resolve => {
-      const unsub = auth.onAuthStateChanged(u => {
+      const unsub = auth.onAuthStateChanged((u) => {
         unsub();
         resolve(u);
       });
@@ -93,12 +85,15 @@ function initInventory() {
 
     const categorias = itensSnap.val();
 
-    inventoryCallback = onValue(inventoryRef, snapshot => {
-      const version = ++renderVersion;
+    inventoryCallback = onValue(inventoryRef, (snapshot) => {
+      const myVersion = ++renderVersion;
 
       inventoryList.innerHTML = "";
 
-      if (!snapshot.exists()) return;
+      if (!snapshot.exists()) {
+        inventoryList.innerHTML = "Inventário vazio.";
+        return;
+      }
 
       const inventory = snapshot.val();
 
@@ -108,16 +103,16 @@ function initInventory() {
         let itemData = null;
         let itemCategoria = null;
 
-        for (const cat in categorias) {
-          if (categorias[cat][itemId]) {
-            itemData = categorias[cat][itemId];
-            itemCategoria = cat;
+        for (const categoria in categorias) {
+          if (categorias[categoria][itemId]) {
+            itemData = categorias[categoria][itemId];
+            itemCategoria = categoria;
             break;
           }
         }
 
         if (!itemData) continue;
-        if (version !== renderVersion) return;
+        if (myVersion !== renderVersion) return;
 
         const div = document.createElement("div");
         div.className = "inventory-item";
@@ -125,27 +120,33 @@ function initInventory() {
         const itemObj = {
           id: itemId,
           nome: itemData.nome,
-          descricao: itemData.description,
-          img: itemData.img,
+          tipo: itemData.tipo,
           tier: itemData.tier,
-          quantidade
+          value: itemData.value,
+          categoria: itemCategoria,
+          quantidade,
+          img: itemData.img,
+          description: itemData.description,
+          item: itemData.item,
+          emoji: itemData.emoji,
+          icon: itemData.icon
         };
 
         div.innerHTML = `
           <div class="inventory-item-top">
-
             <span class="inventory-emoji">
               ${itemData.img
                 ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                     class="inventory-item-img">`
-                : "📦"}
+                : (itemData.item || "📦")}
             </span>
 
             <div class="inventory-text">
-              <span class="inventory-name">${itemData.nome}</span>
-              <span class="inventory-qty">${quantidade}</span>
+              <div class="inventory-name-qty">
+                <span class="inventory-name">${itemData.nome}</span>
+                <span class="inventory-qty">${quantidade}</span>
+              </div>
             </div>
-
           </div>
         `;
 
@@ -153,8 +154,6 @@ function initInventory() {
           currentItem = itemObj;
 
           resetItemModal();
-
-          itemModal.style.display = "flex";
 
           itemModal.querySelector("#item-emoji").innerHTML =
             itemData.img
@@ -164,8 +163,12 @@ function initInventory() {
 
           itemModal.querySelector("#item-name").innerText = itemData.nome;
 
+          const tier = Number(itemData.tier) || 1;
+
           itemModal.querySelector("#item-description").innerHTML = `
-            ${itemData.description || "Sem descrição"}
+            <div>${itemData.description || "Sem descrição."}</div>
+            <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png"
+              style="width:210px;margin:12px auto 0;">
           `;
 
           const actions = itemModal.querySelector(".item-actions");
@@ -185,6 +188,8 @@ function initInventory() {
           sellBtn.onclick = () => {
             window.abrirVendaItem?.(currentItem);
           };
+
+          itemModal.style.display = "flex";
         };
 
         inventoryList.appendChild(div);
@@ -194,10 +199,14 @@ function initInventory() {
 
   closeInventory.onclick = () => inventoryModal.style.display = "none";
 
-  marketBtn.onclick = () => {
+  document.getElementById("close-item")?.addEventListener("click", () => {
+    itemModal.style.display = "none";
+  });
+
+  marketBtn?.addEventListener("click", () => {
     inventoryModal.style.display = "none";
     window.openMarket?.();
-  };
+  });
 
   confirmNo.onclick = () => {
     confirmModal.style.display = "none";

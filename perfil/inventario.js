@@ -49,6 +49,7 @@ function initInventory() {
   const closeItem = document.getElementById("close-item");
 
   const marketBtn = document.getElementById("open-market");
+
   const confirmYes = document.getElementById("confirm-yes");
   const confirmNo = document.getElementById("confirm-no");
 
@@ -57,9 +58,8 @@ function initInventory() {
     return;
   }
 
-  // ❌ remove clone bugado (isso estava quebrando eventos)
+  // 🔥 abrir inventário
   openBtn.onclick = async () => {
-
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
 
@@ -91,7 +91,6 @@ function initInventory() {
     const categorias = itensSnap.val();
 
     inventoryCallback = onValue(inventoryRef, (snapshot) => {
-
       const myVersion = ++renderVersion;
 
       inventoryList.innerHTML = "";
@@ -104,7 +103,6 @@ function initInventory() {
       const inventory = snapshot.val();
 
       for (const itemId in inventory) {
-
         const quantidade = inventory[itemId];
 
         let itemData = null;
@@ -178,16 +176,38 @@ function initInventory() {
               style="width:210px;margin:12px auto 0;">
           `;
 
-          itemModal.querySelector(".item-actions").innerHTML = `
+          const actions = itemModal.querySelector(".item-actions");
+
+          actions.innerHTML = `
             <button id="use-item">USAR</button>
             <button id="sell-item">VENDER</button>
           `;
 
-          itemModal.querySelector("#use-item").onclick = () => {
+          const useBtn = actions.querySelector("#use-item");
+          const sellBtn = actions.querySelector("#sell-item");
+
+          // 🔥 limpa conflitos
+          useBtn.onclick = null;
+          sellBtn.onclick = null;
+
+          useBtn.onclick = () => {
             confirmModal.style.display = "flex";
+
+            confirmYes.onclick = null;
+            confirmNo.onclick = null;
+
+            confirmYes.onclick = () => {
+              confirmModal.style.display = "none";
+              itemModal.style.display = "none";
+              window.usarItem?.(currentItem);
+            };
+
+            confirmNo.onclick = () => {
+              confirmModal.style.display = "none";
+            };
           };
 
-          itemModal.querySelector("#sell-item").onclick = () => {
+          sellBtn.onclick = () => {
             window.abrirVendaItem?.(currentItem);
           };
 
@@ -199,7 +219,7 @@ function initInventory() {
     });
   };
 
-  // 🔥 FECHAMENTOS ESTÁVEIS (SEM listener quebrando)
+  // 🔥 FECHAMENTOS FIXOS
   closeInventory.onclick = () => {
     inventoryModal.style.display = "none";
   };

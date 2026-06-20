@@ -39,9 +39,15 @@ function initMarket() {
   const itemModal = document.getElementById("market-item-modal");
   const confirmModal = document.getElementById("buy-confirm-modal");
 
-  const yesBtn = document.getElementById("buy-confirm-yes");
-  const noBtn = document.getElementById("buy-confirm-no");
+  const yesBtnOld = document.getElementById("buy-confirm-yes");
+  const noBtnOld = document.getElementById("buy-confirm-no");
 
+  const yesBtn = yesBtnOld.cloneNode(true);
+  const noBtn = noBtnOld.cloneNode(true);
+
+  yesBtnOld.replaceWith(yesBtn);
+  noBtnOld.replaceWith(noBtn);
+  
   let anuncios = {};
   let itensDB = {};
 

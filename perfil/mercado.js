@@ -70,6 +70,15 @@ function initMarket() {
     marketModal.style.display = "none";
   };
 
+  function getEmoji(itemData) {
+    return (
+      itemData.emoji ||
+      itemData.icon ||
+      itemData.item ||
+      "📦"
+    );
+  }
+
   function render(filter) {
     marketList.innerHTML = "";
 
@@ -96,11 +105,14 @@ function initMarket() {
 
       div.innerHTML = `
         <div class="inventory-item-top">
+
           <span class="inventory-emoji">
-            ${itemData.img
-              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                  class="inventory-item-img">`
-              : "📦"}
+            ${
+              itemData.img
+                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                    class="inventory-item-img">`
+                : getEmoji(itemData)
+            }
           </span>
 
           <div class="inventory-text">
@@ -109,6 +121,7 @@ function initMarket() {
               <span class="inventory-qty">฿ ${value.toLocaleString("pt-BR")}</span>
             </div>
           </div>
+
         </div>
       `;
 
@@ -119,7 +132,8 @@ function initMarket() {
           descricao: itemData.description,
           img: itemData.img,
           value,
-          tier: Number(itemData.tier || 1)
+          tier: Number(itemData.tier || 1),
+          emoji: getEmoji(itemData)
         };
 
         openItem(currentItem);
@@ -136,18 +150,34 @@ function initMarket() {
       item.img
         ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
             class="item-open-img">`
-        : "📦";
+        : item.emoji;
 
     document.getElementById("market-item-name").innerText = item.nome;
 
+    const tierImg = `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
+
     document.getElementById("market-item-description").innerHTML = `
-      <div>${item.descricao}</div>
+      <div>${item.descricao || "Sem descrição."}</div>
+
+      <img src="${tierImg}" style="
+        width:210px;
+        display:block;
+        margin:12px auto 0 auto;
+      "/>
     `;
 
     const actions = itemModal.querySelector(".item-actions");
 
     actions.innerHTML = `
-      <button id="buy-item">COMPRAR</button>
+      <div class="market-actions">
+
+        <div class="price-box">
+          ฿ ${item.value.toLocaleString("pt-BR")}
+        </div>
+
+        <button id="buy-item">COMPRAR</button>
+
+      </div>
     `;
 
     actions.querySelector("#buy-item").onclick = () => {

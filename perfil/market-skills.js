@@ -113,10 +113,10 @@ function initMarketSkills() {
         const div =
           document.createElement("div");
 
-        div.className = "inventory-item";
+        div.className = "skill-item";
 
         div.innerHTML = `
-          <div class="inventory-item-top">
+          <div class="skill-item-top">
 
             <img 
               src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skillId}.jpg"
@@ -124,18 +124,18 @@ function initMarketSkills() {
               alt="${skill.nome}"
             />
 
-            <div class="inventory-text">
+            <div class="skill-text">
 
               <div
-                class="inventory-name-qty"
+                class="skill-name-qty"
                 style="width:100%; justify-content:space-between;"
               >
 
-                <span class="inventory-name">
+                <span class="skill-name">
                   ${skill.nome || skillId}
                 </span>
 
-                <span class="inventory-qty">
+                <span class="skill-qty">
                   ${skill.cost || 1} HA
                 </span>
 

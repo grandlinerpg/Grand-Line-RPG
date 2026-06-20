@@ -37,30 +37,34 @@ function initInventory() {
   const auth = window.auth;
   const db = window.db;
 
-  const openBtn = document.getElementById("open-inventory");
   const inventoryModal = document.getElementById("inventory-modal");
-  const closeInventory = document.getElementById("close-inventory");
-
-  const itemModal = document.getElementById("item-modal");
   const inventoryList = document.getElementById("inventory-list");
   const saldoElement = document.getElementById("inventory-saldo");
-  const marketBtn = document.getElementById("open-market");
 
+  const itemModal = document.getElementById("item-modal");
   const confirmModal = document.getElementById("confirm-modal");
+
+  const openBtn = document.getElementById("open-inventory");
+  const closeInventory = document.getElementById("close-inventory");
+  const closeItem = document.getElementById("close-item");
+
+  const marketBtn = document.getElementById("open-market");
   const confirmYes = document.getElementById("confirm-yes");
   const confirmNo = document.getElementById("confirm-no");
 
-  if (!openBtn || !inventoryModal || !inventoryList) return;
+  if (!openBtn || !inventoryModal || !inventoryList) {
+    console.error("Inventário não carregou corretamente");
+    return;
+  }
 
-  const newOpenBtn = openBtn.cloneNode(true);
-  openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
+  // ❌ remove clone bugado (isso estava quebrando eventos)
+  openBtn.onclick = async () => {
 
-  newOpenBtn.onclick = async () => {
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
 
     const user = await new Promise(resolve => {
-      const unsub = auth.onAuthStateChanged((u) => {
+      const unsub = auth.onAuthStateChanged(u => {
         unsub();
         resolve(u);
       });
@@ -71,7 +75,8 @@ function initInventory() {
     const playerSnap = await get(ref(db, `players/${user.uid}/info`));
 
     if (playerSnap.exists() && saldoElement) {
-      saldoElement.innerText = "฿ " + (playerSnap.val().saldo || 0).toLocaleString("pt-BR");
+      saldoElement.innerText =
+        "฿ " + (playerSnap.val().saldo || 0).toLocaleString("pt-BR");
     }
 
     if (inventoryRef && inventoryCallback) {
@@ -86,6 +91,7 @@ function initInventory() {
     const categorias = itensSnap.val();
 
     inventoryCallback = onValue(inventoryRef, (snapshot) => {
+
       const myVersion = ++renderVersion;
 
       inventoryList.innerHTML = "";
@@ -98,6 +104,7 @@ function initInventory() {
       const inventory = snapshot.val();
 
       for (const itemId in inventory) {
+
         const quantidade = inventory[itemId];
 
         let itemData = null;
@@ -138,7 +145,7 @@ function initInventory() {
               ${itemData.img
                 ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                     class="inventory-item-img">`
-                : (itemData.item || "📦")}
+                : (itemData.item || itemData.emoji || itemData.icon || "📦")}
             </span>
 
             <div class="inventory-text">
@@ -159,7 +166,7 @@ function initInventory() {
             itemData.img
               ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                   class="item-open-img">`
-              : "📦";
+              : (itemData.item || itemData.emoji || itemData.icon || "📦");
 
           itemModal.querySelector("#item-name").innerText = itemData.nome;
 
@@ -171,21 +178,16 @@ function initInventory() {
               style="width:210px;margin:12px auto 0;">
           `;
 
-          const actions = itemModal.querySelector(".item-actions");
-
-          actions.innerHTML = `
+          itemModal.querySelector(".item-actions").innerHTML = `
             <button id="use-item">USAR</button>
             <button id="sell-item">VENDER</button>
           `;
 
-          const useBtn = actions.querySelector("#use-item");
-          const sellBtn = actions.querySelector("#sell-item");
-
-          useBtn.onclick = () => {
+          itemModal.querySelector("#use-item").onclick = () => {
             confirmModal.style.display = "flex";
           };
 
-          sellBtn.onclick = () => {
+          itemModal.querySelector("#sell-item").onclick = () => {
             window.abrirVendaItem?.(currentItem);
           };
 
@@ -197,16 +199,19 @@ function initInventory() {
     });
   };
 
-  closeInventory.onclick = () => inventoryModal.style.display = "none";
+  // 🔥 FECHAMENTOS ESTÁVEIS (SEM listener quebrando)
+  closeInventory.onclick = () => {
+    inventoryModal.style.display = "none";
+  };
 
-  document.getElementById("close-item")?.addEventListener("click", () => {
+  closeItem.onclick = () => {
     itemModal.style.display = "none";
-  });
+  };
 
-  marketBtn?.addEventListener("click", () => {
+  marketBtn.onclick = () => {
     inventoryModal.style.display = "none";
     window.openMarket?.();
-  });
+  };
 
   confirmNo.onclick = () => {
     confirmModal.style.display = "none";

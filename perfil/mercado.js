@@ -8,6 +8,19 @@ const marketContainer =
 
 let currentItem = null;
 
+// 🔥 RESET GLOBAL DO ITEM MODAL
+function resetItemModal() {
+  const emoji = document.getElementById("item-emoji");
+  const name = document.getElementById("item-name");
+  const desc = document.getElementById("item-description");
+  const actions = document.querySelector(".item-actions");
+
+  if (emoji) emoji.innerHTML = "📦";
+  if (name) name.innerText = "";
+  if (desc) desc.innerHTML = "";
+  if (actions) actions.innerHTML = "";
+}
+
 async function loadMarketHTML() {
 
   const response =
@@ -45,7 +58,10 @@ function initMarket() {
   let anuncios = {};
   let itensDB = {};
 
+  // 🔥 FUNÇÃO GLOBAL
   window.openMarket = async function () {
+
+    resetItemModal(); // evita herdar estado do inventário
 
     marketModal.style.display = "flex";
 
@@ -82,9 +98,17 @@ function initMarket() {
     };
   };
 
+  // 🔥 FECHAR MERCADO = VOLTAR PRO INVENTÁRIO (NÃO FECHA TUDO)
   if (closeMarket) {
     closeMarket.onclick = () => {
+
       marketModal.style.display = "none";
+
+      // abre inventário de volta (se existir)
+      const inv = document.getElementById("inventory-modal");
+      if (inv) {
+        inv.style.display = "flex";
+      }
     };
   }
 
@@ -169,6 +193,8 @@ function initMarket() {
 
       div.onclick = () => {
 
+        resetItemModal(); // 🔥 evita herdar estado antigo
+
         currentItem = {
           id: anuncioId,
           nome: itemData.nome,
@@ -186,8 +212,10 @@ function initMarket() {
   }
 }
 
-// 🔥 ITEM MODAL (TIER IGUAL INVENTÁRIO MESMO VISUAL)
+// 🔥 ITEM MODAL
 function openMarketItemModal(item) {
+
+  resetItemModal();
 
   const itemModal =
     document.getElementById("item-modal");
@@ -234,29 +262,29 @@ function openMarketItemModal(item) {
     </div>
   `;
 
-  document.getElementById("buy-item").onclick = () => {
+  const buyBtn = document.getElementById("buy-item");
 
-    // 🔥 PEGAR AQUI (CORRIGIDO)
-    const buyConfirm =
-      document.getElementById("confirm-modal");
+  if (buyBtn) {
+    buyBtn.onclick = () => {
 
-    if (!buyConfirm) {
-      console.error("confirm-modal não encontrado");
-      return;
-    }
+      const buyConfirm =
+        document.getElementById("confirm-modal");
 
-    buyConfirm.style.display = "flex";
+      if (!buyConfirm) return;
 
-    document.getElementById("confirm-buy-yes").onclick = () => {
-      buyConfirm.style.display = "none";
-      itemModal.style.display = "none";
-      console.log("COMPRADO:", item.id);
+      buyConfirm.style.display = "flex";
+
+      document.getElementById("confirm-buy-yes").onclick = () => {
+        buyConfirm.style.display = "none";
+        itemModal.style.display = "none";
+        console.log("COMPRADO:", item.id);
+      };
+
+      document.getElementById("confirm-buy-no").onclick = () => {
+        buyConfirm.style.display = "none";
+      };
     };
-
-    document.getElementById("confirm-buy-no").onclick = () => {
-      buyConfirm.style.display = "none";
-    };
-  };
+  }
 
   itemModal.style.display = "flex";
 }

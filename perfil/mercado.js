@@ -46,178 +46,139 @@ function initMarket() {
 
     marketModal.style.display = "flex";
 
-    // 🔥 1. mercado (somente anúncios)
+    // 🔥 mercado (anúncios)
     const marketSnap =
       await get(ref(db, "mercado/itens"));
 
     if (!marketSnap.exists()) {
-      marketList.innerHTML =
-        "Nenhum item encontrado.";
+      marketList.innerHTML = "Nenhum item encontrado.";
       return;
     }
 
-    // 🔥 2. base de itens (dados completos)
+    // 🔥 catálogo (categorias reais)
     const itensSnap =
       await get(ref(db, "itens"));
 
     if (!itensSnap.exists()) {
-      marketList.innerHTML =
-        "Nenhum item encontrado.";
+      marketList.innerHTML = "Nenhum item encontrado.";
       return;
     }
 
-    const marketItems =
-      marketSnap.val();
+    const anuncios = marketSnap.val();
+    const itensDB = itensSnap.val();
 
-    const itensDB =
-      itensSnap.val();
+    renderMarket(anuncios, itensDB, marketList);
 
-    // categoria só visual
-    categorySelect.innerHTML = `
-      <option value="all">Todos</option>
-    `;
-
-    const cats = new Set();
-
-    for (const id in marketItems) {
-      const m = marketItems[id];
-      if (m.categoria) cats.add(m.categoria);
-    }
-
-    cats.forEach(cat => {
-      categorySelect.innerHTML += `
-        <option value="${cat}">
-          ${cat}
-        </option>
-      `;
-    });
-
-    renderMarket(marketItems, itensDB, "all", marketList);
-
-    categorySelect.onchange = () => {
-      renderMarket(
-        marketItems,
-        itensDB,
-        categorySelect.value,
-        marketList
-      );
-    };
   };
 
   if (closeMarket) {
 
     closeMarket.addEventListener("click", () => {
-
       marketModal.style.display = "none";
-
-      const inventoryModal =
-        document.getElementById("inventory-modal");
-
-      if (inventoryModal) {
-        inventoryModal.style.display = "flex";
-      }
-
     });
 
   }
 }
 
-function renderMarket(
-  marketItems,
-  itensDB,
-  filtro,
-  marketList
-) {
+function renderMarket(anuncios, itensDB, marketList) {
 
   marketList.innerHTML = "";
 
-  for (const id in marketItems) {
+  // 🔥 percorre categorias do catálogo
+  for (const categoria in itensDB) {
 
-    const anuncio =
-      marketItems[id];
+    const categoriaDiv =
+      document.createElement("div");
 
-    const itemId = anuncio.item;
-    const value = anuncio.value;
+    categoriaDiv.className = "market-category-title";
+    categoriaDiv.innerText = categoria;
 
-    // 🔥 procura o item em TODAS categorias
-    let itemData = null;
+    marketList.appendChild(categoriaDiv);
 
-    for (const cat in itensDB) {
-      if (itensDB[cat][itemId]) {
-        itemData = itensDB[cat][itemId];
-        break;
+    let hasItems = false;
+
+    const itens = itensDB[categoria];
+
+    // 🔥 percorre itens da categoria
+    for (const itemId in itens) {
+
+      const itemData = itens[itemId];
+
+      // 🔥 procura anúncios desse item
+      for (const anuncioId in anuncios) {
+
+        const anuncio = anuncios[anuncioId];
+
+        if (anuncio.item !== itemId) continue;
+
+        hasItems = true;
+
+        const div =
+          document.createElement("div");
+
+        div.className = "inventory-item";
+
+        div.innerHTML = `
+          <div class="inventory-item-top">
+
+            <span class="inventory-emoji">
+
+              ${
+                itemData.img
+                  ? `<img
+                      src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                      class="inventory-item-img"
+                    >`
+                  : "📦"
+              }
+
+            </span>
+
+            <div class="inventory-text">
+
+              <div class="inventory-name-qty">
+
+                <span class="inventory-name">
+                  ${itemData.nome || itemId}
+                </span>
+
+                <span class="inventory-qty">
+                  ฿ ${Number(anuncio.value || 0).toLocaleString("pt-BR")}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+        div.addEventListener("click", () => {
+
+          currentItem = {
+            id: anuncioId,
+            nome: itemData.nome,
+            descricao: itemData.description,
+            img: itemData.img,
+            value: anuncio.value
+          };
+
+          openMarketItemModal(currentItem);
+        });
+
+        marketList.appendChild(div);
       }
     }
 
-    if (!itemData) continue;
+    if (!hasItems) {
+      const empty =
+        document.createElement("div");
 
-    // filtro opcional por categoria
-    if (
-      filtro !== "all" &&
-      anuncio.categoria !== filtro
-    ) {
-      continue;
+      empty.innerText = "Sem itens nessa categoria";
+      empty.className = "empty-category";
+
+      marketList.appendChild(empty);
     }
-
-    const div =
-      document.createElement("div");
-
-    div.className = "inventory-item";
-
-    div.innerHTML = `
-      <div class="inventory-item-top">
-
-        <span class="inventory-emoji">
-
-          ${
-            itemData.img
-              ? `<img
-                  src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                  class="inventory-item-img"
-                >`
-              : "📦"
-          }
-
-        </span>
-
-        <div class="inventory-text">
-
-          <div class="inventory-name-qty">
-
-            <span class="inventory-name">
-              ${itemData.nome || itemId}
-            </span>
-
-            <span class="inventory-qty">
-              ฿ ${Number(value || 0).toLocaleString("pt-BR")}
-            </span>
-
-          </div>
-
-        </div>
-
-      </div>
-    `;
-
-    div.addEventListener("click", () => {
-
-      currentItem = {
-        id,
-        nome: itemData.nome,
-        descricao: itemData.description,
-        img: itemData.img,
-        value
-      };
-
-      openMarketItemModal(currentItem);
-    });
-
-    marketList.appendChild(div);
-  }
-
-  if (!marketList.children.length) {
-    marketList.innerHTML =
-      "Nenhum item encontrado.";
   }
 }
 

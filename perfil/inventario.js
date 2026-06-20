@@ -8,8 +8,13 @@ import {
 const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
+
+// 🔥 FIX GLOBAL: impede múltiplas inicializações
+let inventoryInitialized = false;
+
+// 🔥 listener controlado
+let inventoryRef = null;
 let inventoryListener = null;
-let inventoryRef = null; // 🔥 FIX REAL
 
 function resetItemModal() {
   const emoji = document.getElementById("item-emoji");
@@ -38,6 +43,10 @@ async function loadInventoryHTML() {
 
 function initInventory() {
 
+  // 🔥 EVITA DUPLO INIT (ESSA É A CORREÇÃO PRINCIPAL)
+  if (inventoryInitialized) return;
+  inventoryInitialized = true;
+
   const auth = window.auth;
   const db = window.db;
 
@@ -57,6 +66,11 @@ function initInventory() {
   const confirmYes = document.getElementById("confirm-yes");
   const confirmNo = document.getElementById("confirm-no");
 
+  if (!openBtn || !inventoryModal || !inventoryList) {
+    console.error("Inventário não carregou corretamente no DOM");
+    return;
+  }
+
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
@@ -72,7 +86,10 @@ function initInventory() {
       });
     });
 
-    if (!user) return;
+    if (!user) {
+      inventoryList.innerHTML = "Usuário não logado.";
+      return;
+    }
 
     const playerSnap = await get(
       ref(db, `players/${user.uid}/info`)
@@ -84,9 +101,9 @@ function initInventory() {
         "฿ " + saldo.toLocaleString("pt-BR");
     }
 
-    // 🔥 FIX REAL AQUI
+    // 🔥 remove listener antigo corretamente
     if (inventoryRef) {
-      off(inventoryRef, "value", inventoryListener);
+      off(inventoryRef);
     }
 
     inventoryRef = ref(db, `players/${user.uid}/inventory`);
@@ -134,12 +151,7 @@ function initInventory() {
           tier: itemData.tier,
           value: itemData.value,
           categoria: itemCategoria,
-          quantidade: quantidade,
-          img: itemData.img,
-          description: itemData.description,
-          item: itemData.item,
-          emoji: itemData.emoji,
-          icon: itemData.icon
+          quantidade
         };
 
         div.innerHTML = `
@@ -150,7 +162,7 @@ function initInventory() {
                 itemData.img
                   ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                        class="inventory-item-img">`
-                  : (itemData.item || itemData.emoji || itemData.icon || "📦")
+                  : (itemData.item || "📦")
               }
             </span>
 
@@ -183,27 +195,13 @@ function initInventory() {
             itemData.img
               ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                      class="item-open-img">`
-              : (itemData.item || itemData.emoji || itemData.icon || "📦");
+              : "📦";
 
           document.getElementById("item-name").innerText =
             itemData.nome || itemId;
 
-          const tier = Number(itemData.tier) || 1;
-
-          const tierImgUrl =
-            `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
-
-          document.getElementById("item-description").innerHTML = `
-            <div>
-              ${itemData.description || "Sem descrição."}
-            </div>
-
-            <img src="${tierImgUrl}" style="
-              width:210px;
-              display:block;
-              margin:12px auto 0 auto;
-            "/>
-          `;
+          document.getElementById("item-description").innerText =
+            itemData.description || "Sem descrição.";
 
           document.querySelector(".item-actions").innerHTML = `
             <button id="use-item">USAR</button>
@@ -211,7 +209,6 @@ function initInventory() {
           `;
 
           document.getElementById("use-item").onclick = () => {
-            if (!currentItem) return;
             if (confirmModal) confirmModal.style.display = "flex";
           };
 
@@ -227,33 +224,26 @@ function initInventory() {
     });
   });
 
-  if (closeInventory) {
-    closeInventory.addEventListener("click", () => {
-      inventoryModal.style.display = "none";
-    });
-  }
+  closeInventory?.addEventListener("click", () => {
+    inventoryModal.style.display = "none";
+  });
 
-  if (closeItem) {
-    closeItem.addEventListener("click", () => {
-      itemModal.style.display = "none";
-    });
-  }
+  closeItem?.addEventListener("click", () => {
+    itemModal.style.display = "none";
+  });
 
-  if (marketBtn) {
-    marketBtn.addEventListener("click", () => {
-      inventoryModal.style.display = "none";
-      if (window.openMarket) window.openMarket();
-    });
-  }
+  marketBtn?.addEventListener("click", () => {
+    inventoryModal.style.display = "none";
+    window.openMarket?.();
+  });
 
   confirmNo?.addEventListener("click", () => {
-    if (confirmModal) confirmModal.style.display = "none";
+    confirmModal.style.display = "none";
   });
 
   confirmYes?.addEventListener("click", () => {
-    if (confirmModal) confirmModal.style.display = "none";
-    if (itemModal) itemModal.style.display = "none";
-
+    confirmModal.style.display = "none";
+    itemModal.style.display = "none";
     window.usarItem?.(currentItem);
   });
 }

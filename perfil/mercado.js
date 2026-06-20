@@ -33,9 +33,6 @@ function initMarket() {
   const closeMarket =
     document.getElementById("close-market");
 
-  const categorySelect =
-    document.getElementById("market-category");
-
   const marketList =
     document.getElementById("market-list");
 
@@ -46,37 +43,30 @@ function initMarket() {
 
     marketModal.style.display = "flex";
 
-    // 🔥 mercado (anúncios)
     const marketSnap =
       await get(ref(db, "mercado/itens"));
 
-    if (!marketSnap.exists()) {
-      marketList.innerHTML = "Nenhum item encontrado.";
-      return;
-    }
-
-    // 🔥 catálogo (categorias reais)
     const itensSnap =
       await get(ref(db, "itens"));
 
-    if (!itensSnap.exists()) {
+    if (!marketSnap.exists() || !itensSnap.exists()) {
       marketList.innerHTML = "Nenhum item encontrado.";
       return;
     }
 
-    const anuncios = marketSnap.val();
-    const itensDB = itensSnap.val();
+    const anuncios =
+      marketSnap.val();
+
+    const itensDB =
+      itensSnap.val();
 
     renderMarket(anuncios, itensDB, marketList);
-
   };
 
   if (closeMarket) {
-
     closeMarket.addEventListener("click", () => {
       marketModal.style.display = "none";
     });
-
   }
 }
 
@@ -84,7 +74,7 @@ function renderMarket(anuncios, itensDB, marketList) {
 
   marketList.innerHTML = "";
 
-  // 🔥 percorre categorias do catálogo
+  // 🔥 percorre CATEGORIAS (consumiveis, armas, etc)
   for (const categoria in itensDB) {
 
     const categoriaDiv =
@@ -95,26 +85,25 @@ function renderMarket(anuncios, itensDB, marketList) {
 
     marketList.appendChild(categoriaDiv);
 
-    let hasItems = false;
-
     const itens = itensDB[categoria];
+
+    let hasAny = false;
 
     // 🔥 percorre itens da categoria
     for (const itemId in itens) {
 
       const itemData = itens[itemId];
 
-      // 🔥 procura anúncios desse item
+      // 🔥 procura anúncio correspondente no mercado
       for (const anuncioId in anuncios) {
 
         const anuncio = anuncios[anuncioId];
 
-        if (anuncio.item !== itemId) continue;
+        if (anuncio.nome !== itemId) continue;
 
-        hasItems = true;
+        hasAny = true;
 
-        const div =
-          document.createElement("div");
+        const div = document.createElement("div");
 
         div.className = "inventory-item";
 
@@ -125,10 +114,8 @@ function renderMarket(anuncios, itensDB, marketList) {
 
               ${
                 itemData.img
-                  ? `<img
-                      src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                      class="inventory-item-img"
-                    >`
+                  ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                    class="inventory-item-img">`
                   : "📦"
               }
 
@@ -170,13 +157,9 @@ function renderMarket(anuncios, itensDB, marketList) {
       }
     }
 
-    if (!hasItems) {
-      const empty =
-        document.createElement("div");
-
+    if (!hasAny) {
+      const empty = document.createElement("div");
       empty.innerText = "Sem itens nessa categoria";
-      empty.className = "empty-category";
-
       marketList.appendChild(empty);
     }
   }
@@ -190,10 +173,8 @@ function openMarketItemModal(item) {
 
   document.getElementById("item-emoji").innerHTML =
     item.img
-      ? `<img 
-          src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-          class="item-open-img"
-        >`
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+        class="item-open-img">`
       : "📦";
 
   document.getElementById("item-name").innerText =
@@ -212,16 +193,14 @@ function openMarketItemModal(item) {
         ฿ ${Number(item.value || 0).toLocaleString("pt-BR")}
       </div>
 
-      <button id="buy-item">
-        COMPRAR
-      </button>
+      <button id="buy-item">COMPRAR</button>
 
     </div>
   `;
 
-  document.getElementById("buy-item").addEventListener("click", () => {
+  document.getElementById("buy-item").onclick = () => {
     console.log("comprar:", item.id);
-  });
+  };
 
   itemModal.style.display = "flex";
 }

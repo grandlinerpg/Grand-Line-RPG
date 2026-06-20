@@ -7,10 +7,12 @@ import {
 
 const modalContainer = document.getElementById("inventory-container");
 
-let currentItem = null;
 let inventoryRef = null;
 let inventoryCallback = null;
 let renderVersion = 0;
+
+// 🔥 ITEM LOCAL (NÃO GLOBAL COMPARTILHADO COM MERCADO)
+let inventoryItem = null;
 
 function resetItemModal() {
   const itemModal = document.getElementById("item-modal");
@@ -58,7 +60,7 @@ function initInventory() {
     return;
   }
 
-  // 🔥 abrir inventário
+  // 🔥 ABRIR INVENTÁRIO
   openBtn.onclick = async () => {
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
@@ -156,7 +158,7 @@ function initInventory() {
         `;
 
         div.onclick = () => {
-          currentItem = itemObj;
+          inventoryItem = itemObj;
 
           resetItemModal();
 
@@ -186,10 +188,6 @@ function initInventory() {
           const useBtn = actions.querySelector("#use-item");
           const sellBtn = actions.querySelector("#sell-item");
 
-          // 🔥 limpa conflitos
-          useBtn.onclick = null;
-          sellBtn.onclick = null;
-
           useBtn.onclick = () => {
             confirmModal.style.display = "flex";
 
@@ -199,7 +197,9 @@ function initInventory() {
             confirmYes.onclick = () => {
               confirmModal.style.display = "none";
               itemModal.style.display = "none";
-              window.usarItem?.(currentItem);
+
+              // 🔥 usa item LOCAL do inventário
+              window.usarItem?.(inventoryItem);
             };
 
             confirmNo.onclick = () => {
@@ -208,7 +208,7 @@ function initInventory() {
           };
 
           sellBtn.onclick = () => {
-            window.abrirVendaItem?.(currentItem);
+            window.abrirVendaItem?.(inventoryItem);
           };
 
           itemModal.style.display = "flex";
@@ -219,7 +219,7 @@ function initInventory() {
     });
   };
 
-  // 🔥 FECHAMENTOS FIXOS
+  // 🔥 FECHAMENTOS
   closeInventory.onclick = () => {
     inventoryModal.style.display = "none";
   };
@@ -240,7 +240,7 @@ function initInventory() {
   confirmYes.onclick = () => {
     confirmModal.style.display = "none";
     itemModal.style.display = "none";
-    window.usarItem?.(currentItem);
+    window.usarItem?.(inventoryItem);
   };
 }
 

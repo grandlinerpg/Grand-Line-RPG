@@ -173,7 +173,7 @@ window.abrirVendaItem = function(item) {
       await set(
         ref(
           db,
-          `mercado/itens/${nextId}`
+        `mercado/itens/${nextId}`
         ),
         {
           item: item.id,
@@ -183,6 +183,60 @@ window.abrirVendaItem = function(item) {
           data: data
         }
       );
+
+// =========================
+// REMOVER DO INVENTÁRIO
+// =========================
+
+      const novoTotal =
+        item.quantidade - qtd;
+
+      if (novoTotal > 0) {
+
+        await set(
+          ref(
+            db,
+            `players/${auth.currentUser.uid}/inventory/${item.id}`
+          ),
+          novoTotal
+        );
+
+      } else {
+
+        await set(
+          ref(
+            db,
+            `players/${auth.currentUser.uid}/inventory/${item.id}`
+          ),
+          null
+        );
+
+      }
+
+console.log(
+  "✅ anúncio criado:",
+  nextId
+);
+
+modal.style.display = "none";
+
+// fecha janela do item
+const itemModal =
+  document.getElementById("item-modal");
+
+if (itemModal) {
+  itemModal.style.display = "none";
+}
+
+// mantém inventário aberto
+const inventoryModal =
+  document.getElementById("inventory-modal");
+
+if (inventoryModal) {
+  inventoryModal.style.display = "flex";
+}
+
+alert("Item anunciado com sucesso!");
 
       console.log(
         "✅ anúncio criado:",
@@ -210,3 +264,5 @@ window.abrirVendaItem = function(item) {
       alert("Item anunciado com sucesso!");
     };
 };
+
+

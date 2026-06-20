@@ -47,14 +47,7 @@ function initMarketSkills() {
   if (!openBtn || !modal || !list) return;
 
   let habilidadesDB = {};
-  let allowedSubs = new Set();
-
-  function normalize(str) {
-    return (str || "")
-      .toString()
-      .trim()
-      .toLowerCase();
-  }
+  let allowedMap = {}; // 🔥 NOVO (categoria → sub)
 
   function renderSkills() {
 
@@ -85,32 +78,32 @@ function initMarketSkills() {
         continue;
       }
 
-      for (const skillId in habilidadesDB[categoria]) {
+      for (const sub in habilidadesDB[categoria]) {
 
-        const skill =
-          habilidadesDB[categoria][skillId];
+        const skills = habilidadesDB[categoria][sub];
 
-        const sub = normalize(skill.sub);
-        const categoriaNorm = normalize(categoria);
+        for (const skillId in skills) {
 
-        // 🔥 "gerais" IGNORA TUDO
-        const isGerais = categoriaNorm === "gerais";
+          const skill = skills[skillId];
 
-        if (!isGerais && allowedSubs.size && !allowedSubs.has(sub)) {
-          continue;
+          // 🔥 FILTRO CERTO AGORA
+          const allowedSubs = allowedMap[categoria];
+
+          if (allowedSubs && !allowedSubs.has(sub)) {
+            continue;
+          }
+
+          const rank = Number(skill.rank) || 1;
+
+          if (!skillsPorRank[rank]) {
+            skillsPorRank[rank] = [];
+          }
+
+          skillsPorRank[rank].push({
+            skill,
+            skillId
+          });
         }
-
-        const rank =
-          Number(skill.rank) || 1;
-
-        if (!skillsPorRank[rank]) {
-          skillsPorRank[rank] = [];
-        }
-
-        skillsPorRank[rank].push({
-          skill,
-          skillId
-        });
       }
     }
 
@@ -143,7 +136,6 @@ function initMarketSkills() {
           <span class="skill-name">
             ${skill.nome || skillId}
           </span>
-          
         `;
 
         list.appendChild(div);
@@ -176,11 +168,20 @@ function initMarketSkills() {
 
     const player = playerSnap.val();
 
-    allowedSubs = new Set([
-      normalize(player?.character?.race),
-      normalize(player?.character?.fruit),
-      normalize(player?.character?.style)
-    ].filter(Boolean));
+    // 🔥 MAPEAMENTO REAL DO PERSONAGEM
+    allowedMap = {
+      "estilo-de-luta": new Set([
+        player?.character?.style
+      ].filter(Boolean)),
+
+      "raça/tribo": new Set([
+        player?.character?.race
+      ].filter(Boolean)),
+
+      "akuma-no-mi": new Set([
+        player?.character?.fruit
+      ].filter(Boolean))
+    };
 
     habilidadesDB = snap.val();
 

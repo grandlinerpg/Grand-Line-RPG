@@ -42,6 +42,16 @@ function initMarket() {
   const itemModal =
     document.getElementById("item-modal");
 
+  // 🔥 CONFIRMAÇÃO COMPRA
+  const buyConfirm =
+    document.getElementById("buy-confirm-modal");
+
+  const yesBtn =
+    document.getElementById("confirm-buy-yes");
+
+  const noBtn =
+    document.getElementById("confirm-buy-no");
+
   let anuncios = {};
   let itensDB = {};
 
@@ -137,7 +147,6 @@ function initMarket() {
       const { anuncioId, itemId, value, itemData } = data;
 
       const div = document.createElement("div");
-
       div.className = "inventory-item";
 
       div.innerHTML = `
@@ -198,7 +207,7 @@ function initMarket() {
   }
 }
 
-// 🔥 ITEM MODAL (IGUAL INVENTÁRIO, SEM QUEBRAR CSS)
+// 🔥 ITEM MODAL + COMPRA
 function openMarketItemModal(item) {
 
   const itemModal =
@@ -244,8 +253,29 @@ function openMarketItemModal(item) {
     </div>
   `;
 
+  const buyConfirm =
+    document.getElementById("buy-confirm-modal");
+
   document.getElementById("buy-item").onclick = () => {
-    console.log("comprar:", item.id);
+
+    buyConfirm.style.display = "flex";
+
+    const yesBtn =
+      document.getElementById("confirm-buy-yes");
+
+    const noBtn =
+      document.getElementById("confirm-buy-no");
+
+    yesBtn.onclick = () => {
+      buyConfirm.style.display = "none";
+      itemModal.style.display = "none";
+
+      console.log("COMPRADO:", item.id);
+    };
+
+    noBtn.onclick = () => {
+      buyConfirm.style.display = "none";
+    };
   };
 
   itemModal.style.display = "flex";

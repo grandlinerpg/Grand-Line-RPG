@@ -5,7 +5,7 @@ import {
 
 const marketContainer = document.getElementById("market-container");
 
-let currentItem = null;
+let marketItem = null; // 🔥 isolado (não conflita com inventário)
 
 function resetItemModal() {
   const modal = document.getElementById("market-item-modal");
@@ -45,11 +45,9 @@ function initMarket() {
   let anuncios = {};
   let itensDB = {};
 
-  // REMOVE listeners antigos (evita conflito)
-  let buyHandler = null;
-
   window.openMarket = async () => {
     resetItemModal();
+
     marketModal.style.display = "flex";
 
     const marketSnap = await get(ref(db, "mercado/itens"));
@@ -138,26 +136,28 @@ function initMarket() {
   function openItem(item) {
     resetItemModal();
 
-    currentItem = item;
+    marketItem = item; // 🔥 isolado do inventário
 
-    document.getElementById("market-item-emoji").innerHTML =
-      item.img
-        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-            class="item-open-img">`
-        : item.emoji;
+    const emojiEl = document.getElementById("market-item-emoji");
+    const nameEl = document.getElementById("market-item-name");
+    const descEl = document.getElementById("market-item-description");
+    const actions = itemModal.querySelector(".item-actions");
 
-    document.getElementById("market-item-name").innerText = item.nome;
+    emojiEl.innerHTML = item.img
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+          class="item-open-img">`
+      : item.emoji;
+
+    nameEl.innerText = item.nome;
 
     const tierImg =
       `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
 
-    document.getElementById("market-item-description").innerHTML = `
+    descEl.innerHTML = `
       <div>${item.descricao || "Sem descrição."}</div>
       <div>Preço: ฿ ${item.value.toLocaleString("pt-BR")}</div>
       <img src="${tierImg}" style="width:210px;display:block;margin:12px auto 0 auto;">
     `;
-
-    const actions = itemModal.querySelector(".item-actions");
 
     actions.innerHTML = `
       <div class="market-actions">
@@ -166,20 +166,20 @@ function initMarket() {
       </div>
     `;
 
-    // 🔥 remove conflito antigo
     const buyBtn = actions.querySelector("#buy-item");
 
     buyBtn.onclick = () => {
       confirmModal.style.display = "flex";
 
-      // REMOVE antes de recriar
       yesBtn.onclick = null;
       noBtn.onclick = null;
 
       yesBtn.onclick = () => {
         confirmModal.style.display = "none";
         itemModal.style.display = "none";
-        console.log("COMPRADO:", item.id);
+
+        // 🔥 usa ITEM DO MERCADO (não mistura com inventário)
+        console.log("COMPRADO:", marketItem);
       };
 
       noBtn.onclick = () => {

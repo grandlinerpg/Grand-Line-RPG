@@ -9,9 +9,12 @@ const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
 
-// 🔥 controle de listener
+// controla listener ativo
 let inventoryRef = null;
-let inventoryListener = null;
+let inventoryCallback = null;
+
+// controle anti-race-condition
+let renderVersion = 0;
 
 function resetItemModal() {
   const emoji = document.getElementById("item-emoji");
@@ -94,30 +97,38 @@ function initInventory() {
         "฿ " + saldo.toLocaleString("pt-BR");
     }
 
-    // 🔥 remove listener anterior corretamente
-    if (inventoryRef && inventoryListener) {
-      off(inventoryRef, "value", inventoryListener);
+    // =========================
+    // 🔥 REMOVE LISTENER ANTIGO (FORÇA LIMPEZA REAL)
+    // =========================
+    if (inventoryRef && inventoryCallback) {
+      off(inventoryRef, "value", inventoryCallback);
     }
 
     inventoryRef = ref(db, `players/${user.uid}/inventory`);
 
-    inventoryListener = onValue(inventoryRef, async (inventorySnap) => {
+    const itensSnap = await get(ref(db, "itens"));
+    if (!itensSnap.exists()) return;
+
+    const categorias = itensSnap.val();
+
+    // =========================
+    // TEMPO REAL COM PROTEÇÃO
+    // =========================
+    inventoryCallback = onValue(inventoryRef, (snapshot) => {
+
+      const myVersion = ++renderVersion;
+
+      const inventoryList = document.getElementById("inventory-list");
+      if (!inventoryList) return;
 
       inventoryList.innerHTML = "";
 
-      if (!inventorySnap.exists()) {
+      if (!snapshot.exists()) {
         inventoryList.innerHTML = "Inventário vazio.";
         return;
       }
 
-      const inventory = inventorySnap.val();
-
-      const itensSnap = await get(ref(db, "itens"));
-      if (!itensSnap.exists()) return;
-
-      const categorias = itensSnap.val();
-
-      const fragment = document.createDocumentFragment();
+      const inventory = snapshot.val();
 
       for (const itemId in inventory) {
 
@@ -136,6 +147,9 @@ function initInventory() {
 
         if (!itemData) continue;
 
+        // 🔥 se outro render começou, cancela esse
+        if (myVersion !== renderVersion) return;
+
         const div = document.createElement("div");
         div.className = "inventory-item";
 
@@ -146,7 +160,7 @@ function initInventory() {
           tier: itemData.tier,
           value: itemData.value,
           categoria: itemCategoria,
-          quantidade,
+          quantidade: quantidade,
           img: itemData.img,
           description: itemData.description,
           item: itemData.item,
@@ -206,9 +220,7 @@ function initInventory() {
             `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
 
           document.getElementById("item-description").innerHTML = `
-            <div>
-              ${itemData.description || "Sem descrição."}
-            </div>
+            <div>${itemData.description || "Sem descrição."}</div>
 
             <img src="${tierImgUrl}" style="
               width:210px;
@@ -223,7 +235,6 @@ function initInventory() {
           `;
 
           document.getElementById("use-item").onclick = () => {
-            if (!currentItem) return;
             if (confirmModal) confirmModal.style.display = "flex";
           };
 
@@ -234,10 +245,8 @@ function initInventory() {
           itemModal.style.display = "flex";
         });
 
-        fragment.appendChild(div);
+        inventoryList.appendChild(div);
       }
-
-      inventoryList.appendChild(fragment);
     });
   });
 
@@ -256,7 +265,7 @@ function initInventory() {
   if (marketBtn) {
     marketBtn.addEventListener("click", () => {
       inventoryModal.style.display = "none";
-      if (window.openMarket) window.openMarket();
+      window.openMarket?.();
     });
   }
 
@@ -265,9 +274,8 @@ function initInventory() {
   });
 
   confirmYes?.addEventListener("click", () => {
-    if (confirmModal) confirmModal.style.display = "none";
-    if (itemModal) itemModal.style.display = "none";
-
+    confirmModal.style.display = "none";
+    itemModal.style.display = "none";
     window.usarItem?.(currentItem);
   });
 }

@@ -274,13 +274,13 @@ function openMarketItemModal(item) {
 
       buyConfirm.style.display = "flex";
 
-      document.getElementById("confirm-buy-yes").onclick = () => {
+      document.getElementById("buy-confirm-yes").onclick = () => {
         buyConfirm.style.display = "none";
         itemModal.style.display = "none";
         console.log("COMPRADO:", item.id);
       };
 
-      document.getElementById("confirm-buy-no").onclick = () => {
+      document.getElementById("buy-confirm-no").onclick = () => {
         buyConfirm.style.display = "none";
       };
     };

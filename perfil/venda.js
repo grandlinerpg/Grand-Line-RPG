@@ -165,12 +165,6 @@ window.abrirVendaItem = function(item) {
             .padStart(6, "0");
       }
 
-      const itemMercado = {
-        ...item
-      };
-
-      delete itemMercado.quantidade;
-
       const data =
         new Date().toLocaleString(
           "pt-BR"
@@ -182,7 +176,7 @@ window.abrirVendaItem = function(item) {
           `mercado/itens/${nextId}`
         ),
         {
-          item: itemMercado,
+          item: item.id,
           value: price,
           jogador: auth.currentUser.uid,
           qtd: qtd,

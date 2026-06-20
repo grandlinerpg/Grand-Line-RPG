@@ -9,9 +9,10 @@ const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
 
-// 🔥 FIX GLOBAL: garante 1 listener só
+// 🔥 CONTROLES ANTI BUG
 let inventoryRef = null;
 let inventoryListener = null;
+let renderLock = false;
 
 function resetItemModal() {
   const emoji = document.getElementById("item-emoji");
@@ -94,7 +95,7 @@ function initInventory() {
         "฿ " + saldo.toLocaleString("pt-BR");
     }
 
-    // 🔥 REMOVE LISTENER ANTIGO CORRETAMENTE
+    // 🔥 REMOVE LISTENER ANTIGO
     if (inventoryRef && inventoryListener) {
       off(inventoryRef, "value", inventoryListener);
     }
@@ -103,141 +104,151 @@ function initInventory() {
 
     inventoryListener = onValue(inventoryRef, async (inventorySnap) => {
 
-      inventoryList.innerHTML = ""; // LIMPA SEMPRE
+      // 🔥 trava anti render duplicado
+      if (renderLock) return;
+      renderLock = true;
 
-      if (!inventorySnap.exists()) {
-        inventoryList.innerHTML = "Inventário vazio.";
-        return;
-      }
+      try {
 
-      const inventory = inventorySnap.val();
+        inventoryList.innerHTML = "";
 
-      const itensSnap = await get(ref(db, "itens"));
-      if (!itensSnap.exists()) return;
-
-      const categorias = itensSnap.val();
-
-      const fragment = document.createDocumentFragment();
-
-      for (const itemId in inventory) {
-
-        const quantidade = inventory[itemId];
-
-        let itemData = null;
-        let itemCategoria = null;
-
-        for (const categoria in categorias) {
-          if (categorias[categoria][itemId]) {
-            itemData = categorias[categoria][itemId];
-            itemCategoria = categoria;
-            break;
-          }
+        if (!inventorySnap.exists()) {
+          inventoryList.innerHTML = "Inventário vazio.";
+          return;
         }
 
-        if (!itemData) continue;
+        const inventory = inventorySnap.val();
 
-        const div = document.createElement("div");
-        div.className = "inventory-item";
+        const itensSnap = await get(ref(db, "itens"));
+        if (!itensSnap.exists()) return;
 
-        const itemObj = {
-          id: itemId,
-          nome: itemData.nome,
-          tipo: itemData.tipo,
-          tier: itemData.tier,
-          value: itemData.value,
-          categoria: itemCategoria,
-          quantidade: quantidade,
-          img: itemData.img,
-          description: itemData.description,
-          item: itemData.item,
-          emoji: itemData.emoji,
-          icon: itemData.icon
-        };
+        const categorias = itensSnap.val();
 
-        div.innerHTML = `
-          <div class="inventory-item-top">
+        const fragment = document.createDocumentFragment();
 
-            <span class="inventory-emoji">
-              ${
-                itemData.img
-                  ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                       class="inventory-item-img">`
-                  : (itemData.item || itemData.emoji || itemData.icon || "📦")
-              }
-            </span>
+        for (const itemId in inventory) {
 
-            <div class="inventory-text">
+          const quantidade = inventory[itemId];
 
-              <div class="inventory-name-qty">
+          let itemData = null;
+          let itemCategoria = null;
 
-                <span class="inventory-name">
-                  ${itemData.nome || itemId}
-                </span>
+          for (const categoria in categorias) {
+            if (categorias[categoria][itemId]) {
+              itemData = categorias[categoria][itemId];
+              itemCategoria = categoria;
+              break;
+            }
+          }
 
-                <span class="inventory-qty">
-                  ${quantidade}
-                </span>
+          if (!itemData) continue;
+
+          const div = document.createElement("div");
+          div.className = "inventory-item";
+
+          const itemObj = {
+            id: itemId,
+            nome: itemData.nome,
+            tipo: itemData.tipo,
+            tier: itemData.tier,
+            value: itemData.value,
+            categoria: itemCategoria,
+            quantidade: quantidade,
+            img: itemData.img,
+            description: itemData.description,
+            item: itemData.item,
+            emoji: itemData.emoji,
+            icon: itemData.icon
+          };
+
+          div.innerHTML = `
+            <div class="inventory-item-top">
+
+              <span class="inventory-emoji">
+                ${
+                  itemData.img
+                    ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                         class="inventory-item-img">`
+                    : (itemData.item || itemData.emoji || itemData.icon || "📦")
+                }
+              </span>
+
+              <div class="inventory-text">
+
+                <div class="inventory-name-qty">
+
+                  <span class="inventory-name">
+                    ${itemData.nome || itemId}
+                  </span>
+
+                  <span class="inventory-qty">
+                    ${quantidade}
+                  </span>
+
+                </div>
 
               </div>
 
             </div>
-
-          </div>
-        `;
-
-        div.addEventListener("click", () => {
-
-          currentItem = itemObj;
-
-          resetItemModal();
-
-          document.getElementById("item-emoji").innerHTML =
-            itemData.img
-              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                     class="item-open-img">`
-              : (itemData.item || itemData.emoji || itemData.icon || "📦");
-
-          document.getElementById("item-name").innerText =
-            itemData.nome || itemId;
-
-          const tier = Number(itemData.tier) || 1;
-
-          const tierImgUrl =
-            `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
-
-          document.getElementById("item-description").innerHTML = `
-            <div>
-              ${itemData.description || "Sem descrição."}
-            </div>
-
-            <img src="${tierImgUrl}" style="
-              width:210px;
-              display:block;
-              margin:12px auto 0 auto;
-            "/>
           `;
 
-          document.querySelector(".item-actions").innerHTML = `
-            <button id="use-item">USAR</button>
-            <button id="sell-item">VENDER</button>
-          `;
+          div.addEventListener("click", () => {
 
-          document.getElementById("use-item").onclick = () => {
-            if (!currentItem) return;
-            if (confirmModal) confirmModal.style.display = "flex";
-          };
+            currentItem = itemObj;
 
-          document.getElementById("sell-item").onclick = () => {
-            window.abrirVendaItem?.(currentItem);
-          };
+            resetItemModal();
 
-          itemModal.style.display = "flex";
-        });
+            document.getElementById("item-emoji").innerHTML =
+              itemData.img
+                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                       class="item-open-img">`
+                : (itemData.item || itemData.emoji || itemData.icon || "📦");
 
-        fragment.appendChild(div);
+            document.getElementById("item-name").innerText =
+              itemData.nome || itemId;
+
+            const tier = Number(itemData.tier) || 1;
+
+            const tierImgUrl =
+              `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
+
+            document.getElementById("item-description").innerHTML = `
+              <div>
+                ${itemData.description || "Sem descrição."}
+              </div>
+
+              <img src="${tierImgUrl}" style="
+                width:210px;
+                display:block;
+                margin:12px auto 0 auto;
+              "/>
+            `;
+
+            document.querySelector(".item-actions").innerHTML = `
+              <button id="use-item">USAR</button>
+              <button id="sell-item">VENDER</button>
+            `;
+
+            document.getElementById("use-item").onclick = () => {
+              if (!currentItem) return;
+              if (confirmModal) confirmModal.style.display = "flex";
+            };
+
+            document.getElementById("sell-item").onclick = () => {
+              window.abrirVendaItem?.(currentItem);
+            };
+
+            itemModal.style.display = "flex";
+          });
+
+          fragment.appendChild(div);
+        }
+
+        inventoryList.appendChild(fragment);
+
+      } finally {
+        renderLock = false;
       }
-
-      inventoryList.appendChild(fragment);
     });
   });
 

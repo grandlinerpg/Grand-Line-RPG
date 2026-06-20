@@ -63,10 +63,8 @@ function initSkills() {
       const categoria = skillPlayer.categoria;
       const sub = skillPlayer.sub;
 
-      // 🔥 FIX: leitura segura da estrutura
       const data =
-        habilidadesDB?.[categoria]?.[sub]?.[skillId]
-        || habilidadesDB?.[categoria]?.[skillId];
+        habilidadesDB[categoria]?.[sub]?.[skillId];
 
       if (!data) continue;
 
@@ -124,13 +122,28 @@ function initSkills() {
     }
   }
 
+  // 🔥 CORREÇÃO ÚNICA: espera o auth estabilizar antes de buscar dados
   newBtn.addEventListener("click", async () => {
 
     modal.style.display = "flex";
     list.innerHTML = "Carregando...";
 
-    const user = auth.currentUser;
-    if (!user) return;
+    let user = auth.currentUser;
+
+    if (!user) {
+      await new Promise(resolve => {
+        const unsub = auth.onAuthStateChanged(u => {
+          user = u;
+          unsub();
+          resolve();
+        });
+      });
+    }
+
+    if (!user) {
+      list.innerHTML = "Você não está logado.";
+      return;
+    }
 
     const playerSnap =
       await get(ref(db, `players/${user.uid}`));
@@ -138,7 +151,10 @@ function initSkills() {
     const habSnap =
       await get(ref(db, `habilidades`));
 
-    if (!playerSnap.exists() || !habSnap.exists()) return;
+    if (!playerSnap.exists() || !habSnap.exists()) {
+      list.innerHTML = "Nenhuma habilidade encontrada.";
+      return;
+    }
 
     const player = playerSnap.val();
 

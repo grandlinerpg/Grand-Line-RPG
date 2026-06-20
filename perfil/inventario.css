@@ -599,7 +599,7 @@
    CONFIRMAÇÃO COMPRA
 ========================= */
 
-#buy-confirm-modal{
+#confirm-modal{
   position:fixed;
   inset:0;
 
@@ -612,8 +612,7 @@
   z-index:4000;
 }
 
-/* usa mesma janela do item */
-#buy-confirm-modal .item-window{
+#confirm-modal .item-window{
   width:90%;
   max-width:420px;
 
@@ -626,30 +625,28 @@
   text-align:center;
 }
 
-#buy-confirm-modal h2{
+#confirm-modal h2{
   color:#f6d365;
   font-family:'Cinzel', serif;
   margin-bottom:10px;
 }
 
-#buy-confirm-modal p{
+#confirm-modal p{
   color:#ddd;
   font-size:14px;
   margin-bottom:20px;
 }
 
-/* botões sim/não */
-#buy-confirm-modal .item-actions{
+#confirm-modal .item-actions{
   display:flex;
   gap:10px;
 }
 
-#confirm-buy-yes,
-#confirm-buy-no{
+#confirm-yes,
+#confirm-no{
   flex:1;
 
   padding:12px;
-
   border:none;
   border-radius:10px;
 
@@ -657,23 +654,20 @@
   font-size:14px;
 
   cursor:pointer;
-
   transition:0.2s;
 }
 
-#confirm-buy-yes{
+#confirm-yes{
   background:linear-gradient(to bottom,#1f7a3a,#0f4a22);
   color:#b6ffcc;
 }
 
-#confirm-buy-no{
+#confirm-no{
   background:linear-gradient(to bottom,#8f1408,#5e0800);
   color:#f6d365;
 }
 
-#confirm-buy-yes:hover,
-#confirm-buy-no:hover{
+#confirm-yes:hover,
+#confirm-no:hover{
   transform:scale(1.03);
 }
-
-

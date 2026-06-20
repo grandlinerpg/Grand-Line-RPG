@@ -256,7 +256,7 @@ function initInventory() {
     if (confirmModal) confirmModal.style.display = "none";
     if (itemModal) itemModal.style.display = "none";
 
-    console.log("USAR ITEM:", currentItem);
+    window.usarItem?.(currentItem);
 
   });
 }

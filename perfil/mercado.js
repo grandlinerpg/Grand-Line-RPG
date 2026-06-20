@@ -214,10 +214,10 @@ function openMarketItemModal(item) {
     `
       <div>${item.descricao || "Sem descrição."}</div>
 
-      <img src="${tierImgUrl}" style="
-        width:210px;
-        display:block;
-        margin:12px auto 0 auto;
+      <img 
+        src="${tierImg}"
+        class="inventory-item-img"
+        style="width:210px; display:block; margin:12px auto 0 auto;"
       />
     `;
 

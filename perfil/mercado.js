@@ -42,9 +42,6 @@ function initMarket() {
   const itemModal =
     document.getElementById("item-modal");
 
-  const buyConfirm =
-    document.getElementById("confirm-modal");
-
   let anuncios = {};
   let itensDB = {};
 
@@ -209,7 +206,6 @@ function openMarketItemModal(item) {
   document.getElementById("item-name").innerText =
     item.nome;
 
-  // ✔️ MESMO VISUAL DO INVENTÁRIO
   document.getElementById("item-description").innerHTML =
     `
       <div>${item.descricao || "Sem descrição."}</div>
@@ -239,6 +235,15 @@ function openMarketItemModal(item) {
   `;
 
   document.getElementById("buy-item").onclick = () => {
+
+    // 🔥 PEGAR AQUI (CORRIGIDO)
+    const buyConfirm =
+      document.getElementById("confirm-modal");
+
+    if (!buyConfirm) {
+      console.error("confirm-modal não encontrado");
+      return;
+    }
 
     buyConfirm.style.display = "flex";
 

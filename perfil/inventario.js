@@ -50,9 +50,6 @@ function initInventory() {
   const saldoElement = document.getElementById("inventory-saldo");
   const marketBtn = document.getElementById("open-market");
 
-  const useBtn = document.getElementById("use-item");
-  const sellBtn = document.getElementById("sell-item");
-
   const confirmModal = document.getElementById("confirm-modal");
   const confirmYes = document.getElementById("confirm-yes");
   const confirmNo = document.getElementById("confirm-no");
@@ -180,7 +177,6 @@ function initInventory() {
 
         currentItem = itemObj;
 
-        // 🔥 IMPORTANTE: RESET ANTES DE ABRIR (CORREÇÃO)
         resetItemModal();
 
         document.getElementById("item-emoji").innerHTML =
@@ -209,6 +205,22 @@ function initInventory() {
           "/>
         `;
 
+        // 🔥 AQUI ESTÁ A CORREÇÃO PRINCIPAL
+        document.querySelector(".item-actions").innerHTML = `
+          <button id="use-item">USAR</button>
+          <button id="sell-item">VENDER</button>
+        `;
+
+        // rebind dos botões
+        document.getElementById("use-item").onclick = () => {
+          if (!currentItem) return;
+          if (confirmModal) confirmModal.style.display = "flex";
+        };
+
+        document.getElementById("sell-item").onclick = () => {
+          console.log("VENDER:", currentItem);
+        };
+
         itemModal.style.display = "flex";
       });
 
@@ -234,11 +246,6 @@ function initInventory() {
       if (window.openMarket) window.openMarket();
     });
   }
-
-  useBtn?.addEventListener("click", () => {
-    if (!currentItem) return;
-    if (confirmModal) confirmModal.style.display = "flex";
-  });
 
   confirmNo?.addEventListener("click", () => {
     if (confirmModal) confirmModal.style.display = "none";

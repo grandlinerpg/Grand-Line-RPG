@@ -47,6 +47,7 @@ function initMarketSkills() {
   if (!openBtn || !modal || !list) return;
 
   let habilidadesDB = {};
+  let allowedSubs = new Set(); // 🔥 NOVO
 
   function renderSkills() {
 
@@ -81,6 +82,13 @@ function initMarketSkills() {
 
         const skill =
           habilidadesDB[categoria][skillId];
+
+        const sub = skill.sub; // 🔥 NOVO FILTRO
+
+        // 🔥 BLOQUEIA SE NÃO FOR DA SUBCATEGORIA DO PERSONAGEM
+        if (allowedSubs.size && !allowedSubs.has(sub)) {
+          continue;
+        }
 
         const rank =
           Number(skill.rank) || 1;
@@ -142,13 +150,28 @@ function initMarketSkills() {
     modal.style.display = "flex";
     list.innerHTML = "Carregando...";
 
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const playerSnap =
+      await get(ref(db, `players/${user.uid}`));
+
     const snap =
       await get(ref(db, "habilidades"));
 
-    if (!snap.exists()) {
+    if (!snap.exists() || !playerSnap.exists()) {
       list.innerHTML = "Nenhuma habilidade encontrada.";
       return;
     }
+
+    const player = playerSnap.val();
+
+    // 🔥 PEGANDO SUBCATEGORIAS DO PERSONAGEM
+    allowedSubs = new Set([
+      player?.character?.race,
+      player?.character?.fruit,
+      player?.character?.style
+    ].filter(Boolean));
 
     habilidadesDB = snap.val();
 

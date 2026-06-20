@@ -594,18 +594,3 @@
 
   margin-right:8px; /* 🔥 isso impede colar no botão */
 }
-
-/* =========================
-   TIER VISUAL (FALTAVA ISSO)
-========================= */
-
-.tier-img{
-  width:28px;
-  height:28px;
-
-  object-fit:contain;
-  display:block;
-
-  margin:6px auto 0 auto;
-}
-

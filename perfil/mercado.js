@@ -268,7 +268,7 @@ function openMarketItemModal(item) {
     buyBtn.onclick = () => {
 
       const buyConfirm =
-        document.getElementById("confirm-modal");
+        document.getElementById("buy-confirm-modal");
 
       if (!buyConfirm) return;
 

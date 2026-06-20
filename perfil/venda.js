@@ -1,3 +1,5 @@
+console.log("🔥 venda.js CARREGOU");
+
 // =========================
 // PREÇO MÍNIMO POR TIER
 // =========================

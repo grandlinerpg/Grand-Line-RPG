@@ -54,153 +54,150 @@ function initInventory() {
 
   newOpenBtn.addEventListener("click", async () => {
 
-    try {
+    inventoryModal.style.display = "flex";
+    inventoryList.innerHTML = "Carregando...";
 
-      inventoryModal.style.display = "flex";
-      inventoryList.innerHTML = "Carregando...";
+    // 🔥 FIX: espera o Firebase Auth terminar de restaurar sessão
+    const user = await new Promise(resolve => {
+      const unsub = auth.onAuthStateChanged((u) => {
+        unsub();
+        resolve(u);
+      });
+    });
 
-      const user = auth.currentUser;
-      if (!user) {
-        inventoryList.innerHTML = "Usuário não logado.";
-        return;
-      }
+    if (!user) {
+      inventoryList.innerHTML = "Usuário não logado.";
+      return;
+    }
 
-      const playerSnap = await get(
-        ref(db, `players/${user.uid}/info`)
-      );
+    const playerSnap = await get(
+      ref(db, `players/${user.uid}/info`)
+    );
 
-      if (playerSnap.exists() && saldoElement) {
-        const saldo = playerSnap.val().saldo || 0;
-        saldoElement.innerText =
-          "฿ " + saldo.toLocaleString("pt-BR");
-      }
+    if (playerSnap.exists() && saldoElement) {
+      const saldo = playerSnap.val().saldo || 0;
+      saldoElement.innerText =
+        "฿ " + saldo.toLocaleString("pt-BR");
+    }
 
-      const inventorySnap = await get(
-        ref(db, `players/${user.uid}/inventory`)
-      );
+    const inventorySnap = await get(
+      ref(db, `players/${user.uid}/inventory`)
+    );
 
-      if (!inventorySnap.exists()) {
-        inventoryList.innerHTML = "Inventário vazio.";
-        return;
-      }
+    if (!inventorySnap.exists()) {
+      inventoryList.innerHTML = "Inventário vazio.";
+      return;
+    }
 
-      const inventory = inventorySnap.val();
+    const inventory = inventorySnap.val();
 
-      const itensSnap = await get(ref(db, "itens"));
-      if (!itensSnap.exists()) {
-        inventoryList.innerHTML = "Itens não encontrados.";
-        return;
-      }
+    const itensSnap = await get(ref(db, "itens"));
+    if (!itensSnap.exists()) return;
 
-      const categorias = itensSnap.val();
+    const categorias = itensSnap.val();
 
-      inventoryList.innerHTML = "";
+    inventoryList.innerHTML = "";
 
-      for (const itemId in inventory) {
+    for (const itemId in inventory) {
 
-        const quantidade = inventory[itemId];
+      const quantidade = inventory[itemId];
 
-        let itemData = null;
-        let itemCategoria = null;
+      let itemData = null;
+      let itemCategoria = null;
 
-        for (const categoria in categorias) {
-          if (categorias[categoria][itemId]) {
-            itemData = categorias[categoria][itemId];
-            itemCategoria = categoria;
-            break;
-          }
+      for (const categoria in categorias) {
+        if (categorias[categoria][itemId]) {
+          itemData = categorias[categoria][itemId];
+          itemCategoria = categoria;
+          break;
         }
+      }
 
-        if (!itemData) continue;
+      if (!itemData) continue;
 
-        const div = document.createElement("div");
-        div.className = "inventory-item";
+      const div = document.createElement("div");
+      div.className = "inventory-item";
 
-        const itemObj = {
-          id: itemId,
-          nome: itemData.nome,
-          tipo: itemData.tipo,
-          tier: itemData.tier,
-          value: itemData.value,
-          categoria: itemCategoria,
-          quantidade: quantidade,
-          img: itemData.img,
-          description: itemData.description,
-          item: itemData.item,
-          emoji: itemData.emoji,
-          icon: itemData.icon
-        };
+      const itemObj = {
+        id: itemId,
+        nome: itemData.nome,
+        tipo: itemData.tipo,
+        tier: itemData.tier,
+        value: itemData.value,
+        categoria: itemCategoria,
+        quantidade: quantidade,
+        img: itemData.img,
+        description: itemData.description,
+        item: itemData.item,
+        emoji: itemData.emoji,
+        icon: itemData.icon
+      };
 
-        div.innerHTML = `
-          <div class="inventory-item-top">
+      div.innerHTML = `
+        <div class="inventory-item-top">
 
-            <span class="inventory-emoji">
-              ${
-                itemData.img
-                  ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                       class="inventory-item-img">`
-                  : (itemData.item || itemData.emoji || itemData.icon || "📦")
-              }
-            </span>
+          <span class="inventory-emoji">
+            ${
+              itemData.img
+                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                     class="inventory-item-img">`
+                : (itemData.item || itemData.emoji || itemData.icon || "📦")
+            }
+          </span>
 
-            <div class="inventory-text">
+          <div class="inventory-text">
 
-              <div class="inventory-name-qty">
+            <div class="inventory-name-qty">
 
-                <span class="inventory-name">
-                  ${itemData.nome || itemId}
-                </span>
+              <span class="inventory-name">
+                ${itemData.nome || itemId}
+              </span>
 
-                <span class="inventory-qty">
-                  ${quantidade}
-                </span>
-
-              </div>
+              <span class="inventory-qty">
+                ${quantidade}
+              </span>
 
             </div>
 
           </div>
+
+        </div>
+      `;
+
+      div.addEventListener("click", () => {
+
+        currentItem = itemObj;
+
+        document.getElementById("item-emoji").innerHTML =
+          itemData.img
+            ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                   class="item-open-img">`
+            : (itemData.item || itemData.emoji || itemData.icon || "📦");
+
+        document.getElementById("item-name").innerText =
+          itemData.nome || itemId;
+
+        const tier = Number(itemData.tier) || 1;
+
+        const tierImgUrl =
+          `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
+
+        document.getElementById("item-description").innerHTML = `
+          <div>
+            ${itemData.description || "Sem descrição."}
+          </div>
+
+          <img src="${tierImgUrl}" style="
+            width:210px;
+            display:block;
+            margin:12px auto 0 auto;
+          "/>
         `;
 
-        div.addEventListener("click", () => {
+        itemModal.style.display = "flex";
+      });
 
-          currentItem = itemObj;
-
-          document.getElementById("item-emoji").innerHTML =
-            itemData.img
-              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                     class="item-open-img">`
-              : (itemData.item || itemData.emoji || itemData.icon || "📦");
-
-          document.getElementById("item-name").innerText =
-            itemData.nome || itemId;
-
-          const tier = Number(itemData.tier) || 1;
-
-          const tierImgUrl =
-            `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
-
-          document.getElementById("item-description").innerHTML = `
-            <div>
-              ${itemData.description || "Sem descrição."}
-            </div>
-
-            <img src="${tierImgUrl}" style="
-              width:210px;
-              display:block;
-              margin:12px auto 0 auto;
-            "/>
-          `;
-
-          itemModal.style.display = "flex";
-        });
-
-        inventoryList.appendChild(div);
-      }
-
-    } catch (err) {
-      console.error(err);
-      inventoryList.innerHTML = "Erro ao carregar inventário.";
+      inventoryList.appendChild(div);
     }
   });
 

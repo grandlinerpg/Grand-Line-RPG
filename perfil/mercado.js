@@ -144,7 +144,7 @@ function initMarket() {
                     src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                     class="inventory-item-img"
                   >`
-                : (itemData.item || itemData.emoji || itemData.icon || "📦")
+                : "📦"
             }
           </span>
 
@@ -201,12 +201,11 @@ function openMarketItemModal(item) {
           src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
           class="item-open-img"
         >`
-      : (item.item || item.emoji || item.icon || "📦");
+      : "📦";
 
   document.getElementById("item-name").innerText =
     item.nome;
 
-  // 🔥 remove texto herdado do inventário
   document.getElementById("item-description").innerHTML =
     `
       <div>${item.descricao || "Sem descrição."}</div>
@@ -220,14 +219,6 @@ function openMarketItemModal(item) {
         "
       />
     `;
-
-  // 🔥 força texto correto do modal (evita vir "usar item")
-  const itemDescText =
-    document.querySelector("#item-modal p");
-
-  if (itemDescText) {
-    itemDescText.innerText = "Deseja comprar este item?";
-  }
 
   document.querySelector(".item-actions").innerHTML = `
     <div class="market-actions">
@@ -245,6 +236,7 @@ function openMarketItemModal(item) {
 
   document.getElementById("buy-item").onclick = () => {
 
+    // 🔥 PEGAR AQUI (CORRIGIDO)
     const buyConfirm =
       document.getElementById("confirm-modal");
 

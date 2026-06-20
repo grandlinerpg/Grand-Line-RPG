@@ -672,6 +672,10 @@
   transform:scale(1.03);
 }
 
+#buy-confirm-modal{
+  z-index: 99999;
+}
+
 /* =========================
    MODAL DE VENDA
 ========================= */

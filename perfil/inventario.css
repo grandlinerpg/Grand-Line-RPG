@@ -599,52 +599,47 @@
    CONFIRMAÇÃO COMPRA
 ========================= */
 
-#confirm-modal,
-#buy-confirm-modal {
-  position:fixed;
-  inset:0;
+#confirm-modal {
+  position: fixed;
+  inset: 0;
 
-  display:none;
-  justify-content:center;
-  align-items:center;
+  display: none;
+  justify-content: center;
+  align-items: center;
 
-  background:rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.75);
 
-  z-index:4000;
+  z-index: 4000;
 }
 
-#confirm-modal .item-window,
-#buy-confirm-modal .item-window {
-  width:90%;
-  max-width:420px;
+#confirm-modal .item-window {
+  width: 90%;
+  max-width: 420px;
 
-  background:rgba(10,10,10,0.96);
-  border:1px solid rgba(246,211,101,0.2);
-  border-radius:16px;
+  background: rgba(10,10,10,0.96);
+  border: 1px solid rgba(246,211,101,0.2);
+  border-radius: 16px;
 
-  padding:22px;
+  padding: 22px;
 
-  text-align:center;
+  text-align: center;
 }
 
-#confirm-modal h2,
-#buy-confirm-modal h2 {
-  color:#f6d365;
-  font-family:'Cinzel', serif;
-  margin-bottom:10px;
+#confirm-modal h2 {
+  color: #f6d365;
+  font-family: 'Cinzel', serif;
+  margin-bottom: 10px;
 }
 
-#confirm-modal p,
-#buy-confirm-modal p {
-  color:#ddd;
-  font-size:14px;
-  margin-bottom:20px;
+#confirm-modal p {
+  color: #ddd;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
-#confirm-modal .item-actions,
-#buy-confirm-modal .item-actions {
-  display:flex;
-  gap:10px;
+#confirm-modal .item-actions {
+  display: flex;
+  gap: 10px;
 }
 
 #confirm-yes,

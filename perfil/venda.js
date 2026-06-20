@@ -176,7 +176,7 @@ window.abrirVendaItem = function(item) {
         `mercado/itens/${nextId}`
         ),
         {
-          item: item.id,
+          nome: item.id,
           value: price,
           jogador: auth.currentUser.uid,
           qtd: qtd,

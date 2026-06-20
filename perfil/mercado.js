@@ -42,15 +42,8 @@ function initMarket() {
   const itemModal =
     document.getElementById("item-modal");
 
-  // 🔥 CONFIRMAÇÃO COMPRA
   const buyConfirm =
     document.getElementById("buy-confirm-modal");
-
-  const yesBtn =
-    document.getElementById("confirm-buy-yes");
-
-  const noBtn =
-    document.getElementById("confirm-buy-no");
 
   let anuncios = {};
   let itensDB = {};
@@ -62,15 +55,10 @@ function initMarket() {
     const marketSnap =
       await get(ref(db, "mercado/itens"));
 
-    if (!marketSnap.exists()) {
-      marketList.innerHTML = "Nenhum item encontrado.";
-      return;
-    }
-
     const itensSnap =
       await get(ref(db, "itens"));
 
-    if (!itensSnap.exists()) {
+    if (!marketSnap.exists() || !itensSnap.exists()) {
       marketList.innerHTML = "Nenhum item encontrado.";
       return;
     }
@@ -98,9 +86,9 @@ function initMarket() {
   };
 
   if (closeMarket) {
-    closeMarket.addEventListener("click", () => {
+    closeMarket.onclick = () => {
       marketModal.style.display = "none";
-    });
+    };
   }
 
   function renderMarket(filtro) {
@@ -153,16 +141,14 @@ function initMarket() {
         <div class="inventory-item-top">
 
           <span class="inventory-emoji">
-
             ${
               itemData.img
                 ? `<img 
                     src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                     class="inventory-item-img"
                   >`
-                : (itemData.item || "📦")
+                : "📦"
             }
-
           </span>
 
           <div class="inventory-text">
@@ -174,7 +160,7 @@ function initMarket() {
               </span>
 
               <span class="inventory-qty">
-                ฿ ${Number(value || 0).toLocaleString("pt-BR")}
+                ฿ ${value.toLocaleString("pt-BR")}
               </span>
 
             </div>
@@ -184,7 +170,7 @@ function initMarket() {
         </div>
       `;
 
-      div.addEventListener("click", () => {
+      div.onclick = () => {
 
         currentItem = {
           id: anuncioId,
@@ -196,27 +182,21 @@ function initMarket() {
         };
 
         openMarketItemModal(currentItem);
-      });
+      };
 
       marketList.appendChild(div);
-    }
-
-    if (!marketList.children.length) {
-      marketList.innerHTML = "Nenhum item encontrado.";
     }
   }
 }
 
-// 🔥 ITEM MODAL + COMPRA
+// 🔥 ITEM MODAL (TIER IGUAL INVENTÁRIO MESMO VISUAL)
 function openMarketItemModal(item) {
 
   const itemModal =
     document.getElementById("item-modal");
 
-  const tier = Number(item.tier || 1);
-
   const tierImg =
-    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png`;
+    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
 
   document.getElementById("item-emoji").innerHTML =
     item.img
@@ -229,6 +209,7 @@ function openMarketItemModal(item) {
   document.getElementById("item-name").innerText =
     item.nome;
 
+  // ✔️ MESMO VISUAL DO INVENTÁRIO
   document.getElementById("item-description").innerHTML =
     `
       <div>${item.descricao || "Sem descrição."}</div>
@@ -236,6 +217,7 @@ function openMarketItemModal(item) {
       <img 
         src="${tierImg}"
         class="inventory-item-img"
+        style="width:210px; display:block; margin:12px auto 0 auto;"
       />
     `;
 
@@ -243,7 +225,7 @@ function openMarketItemModal(item) {
     <div class="market-actions">
 
       <div class="price-box">
-        ฿ ${Number(item.value || 0).toLocaleString("pt-BR")}
+        ฿ ${item.value.toLocaleString("pt-BR")}
       </div>
 
       <button id="buy-item">
@@ -253,27 +235,17 @@ function openMarketItemModal(item) {
     </div>
   `;
 
-  const buyConfirm =
-    document.getElementById("buy-confirm-modal");
-
   document.getElementById("buy-item").onclick = () => {
 
     buyConfirm.style.display = "flex";
 
-    const yesBtn =
-      document.getElementById("confirm-buy-yes");
-
-    const noBtn =
-      document.getElementById("confirm-buy-no");
-
-    yesBtn.onclick = () => {
+    document.getElementById("confirm-buy-yes").onclick = () => {
       buyConfirm.style.display = "none";
       itemModal.style.display = "none";
-
       console.log("COMPRADO:", item.id);
     };
 
-    noBtn.onclick = () => {
+    document.getElementById("confirm-buy-no").onclick = () => {
       buyConfirm.style.display = "none";
     };
   };

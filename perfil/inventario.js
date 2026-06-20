@@ -16,15 +16,10 @@ function resetItemModal() {
   const itemModal = document.getElementById("item-modal");
   if (!itemModal) return;
 
-  const emoji = itemModal.querySelector("#item-emoji");
-  const name = itemModal.querySelector("#item-name");
-  const desc = itemModal.querySelector("#item-description");
-  const actions = itemModal.querySelector(".item-actions");
-
-  if (emoji) emoji.innerHTML = "📦";
-  if (name) name.innerText = "";
-  if (desc) desc.innerHTML = "";
-  if (actions) actions.innerHTML = "";
+  itemModal.querySelector("#item-emoji").innerHTML = "📦";
+  itemModal.querySelector("#item-name").innerText = "";
+  itemModal.querySelector("#item-description").innerHTML = "";
+  itemModal.querySelector(".item-actions").innerHTML = "";
 }
 
 async function loadInventoryHTML() {
@@ -47,47 +42,44 @@ function initInventory() {
   const closeInventory = document.getElementById("close-inventory");
 
   const itemModal = document.getElementById("item-modal");
-  const closeItem = document.getElementById("close-item");
-
   const inventoryList = document.getElementById("inventory-list");
+
   const saldoElement = document.getElementById("inventory-saldo");
   const marketBtn = document.getElementById("open-market");
 
   const confirmModal = document.getElementById("confirm-modal");
-  const confirmYes = document.getElementById("confirm-yes");
-  const confirmNo = document.getElementById("confirm-no");
 
-  if (!openBtn || !inventoryModal || !inventoryList) {
-    console.error("Inventário não carregou corretamente");
-    return;
-  }
+  const confirmYesOld = document.getElementById("confirm-yes");
+  const confirmNoOld = document.getElementById("confirm-no");
+
+  const confirmYes = confirmYesOld?.cloneNode(true);
+  const confirmNo = confirmNoOld?.cloneNode(true);
+
+  confirmYesOld?.replaceWith(confirmYes);
+  confirmNoOld?.replaceWith(confirmNo);
+
+  let userRef = null;
 
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
-  newOpenBtn.addEventListener("click", async () => {
+  newOpenBtn.onclick = async () => {
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
 
     const user = await new Promise(resolve => {
-      const unsub = auth.onAuthStateChanged((u) => {
+      const unsub = auth.onAuthStateChanged(u => {
         unsub();
         resolve(u);
       });
     });
 
-    if (!user) {
-      inventoryList.innerHTML = "Usuário não logado.";
-      return;
-    }
+    if (!user) return;
 
-    const playerSnap = await get(
-      ref(db, `players/${user.uid}/info`)
-    );
+    const playerSnap = await get(ref(db, `players/${user.uid}/info`));
 
     if (playerSnap.exists() && saldoElement) {
-      const saldo = playerSnap.val().saldo || 0;
-      saldoElement.innerText = "฿ " + saldo.toLocaleString("pt-BR");
+      saldoElement.innerText = "฿ " + (playerSnap.val().saldo || 0).toLocaleString("pt-BR");
     }
 
     if (inventoryRef && inventoryCallback) {
@@ -101,15 +93,12 @@ function initInventory() {
 
     const categorias = itensSnap.val();
 
-    inventoryCallback = onValue(inventoryRef, (snapshot) => {
-      const myVersion = ++renderVersion;
+    inventoryCallback = onValue(inventoryRef, snapshot => {
+      const version = ++renderVersion;
 
       inventoryList.innerHTML = "";
 
-      if (!snapshot.exists()) {
-        inventoryList.innerHTML = "Inventário vazio.";
-        return;
-      }
+      if (!snapshot.exists()) return;
 
       const inventory = snapshot.val();
 
@@ -119,16 +108,16 @@ function initInventory() {
         let itemData = null;
         let itemCategoria = null;
 
-        for (const categoria in categorias) {
-          if (categorias[categoria][itemId]) {
-            itemData = categorias[categoria][itemId];
-            itemCategoria = categoria;
+        for (const cat in categorias) {
+          if (categorias[cat][itemId]) {
+            itemData = categorias[cat][itemId];
+            itemCategoria = cat;
             break;
           }
         }
 
         if (!itemData) continue;
-        if (myVersion !== renderVersion) return;
+        if (version !== renderVersion) return;
 
         const div = document.createElement("div");
         div.className = "inventory-item";
@@ -136,124 +125,89 @@ function initInventory() {
         const itemObj = {
           id: itemId,
           nome: itemData.nome,
-          tipo: itemData.tipo,
-          tier: itemData.tier,
-          value: itemData.value,
-          categoria: itemCategoria,
-          quantidade,
+          descricao: itemData.description,
           img: itemData.img,
-          description: itemData.description,
-          item: itemData.item,
-          emoji: itemData.emoji,
-          icon: itemData.icon
+          tier: itemData.tier,
+          quantidade
         };
 
         div.innerHTML = `
           <div class="inventory-item-top">
+
             <span class="inventory-emoji">
-              ${
-                itemData.img
-                  ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                       class="inventory-item-img">`
-                  : (itemData.item || itemData.emoji || itemData.icon || "📦")
-              }
+              ${itemData.img
+                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                    class="inventory-item-img">`
+                : "📦"}
             </span>
 
             <div class="inventory-text">
-              <div class="inventory-name-qty">
-                <span class="inventory-name">
-                  ${itemData.nome || itemId}
-                </span>
-
-                <span class="inventory-qty">
-                  ${quantidade}
-                </span>
-              </div>
+              <span class="inventory-name">${itemData.nome}</span>
+              <span class="inventory-qty">${quantidade}</span>
             </div>
+
           </div>
         `;
 
-        div.addEventListener("click", () => {
+        div.onclick = () => {
           currentItem = itemObj;
 
           resetItemModal();
 
-          if (!itemModal) return;
+          itemModal.style.display = "flex";
 
           itemModal.querySelector("#item-emoji").innerHTML =
             itemData.img
               ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                     class="item-open-img">`
-              : (itemData.item || itemData.emoji || itemData.icon || "📦");
+                  class="item-open-img">`
+              : "📦";
 
-          itemModal.querySelector("#item-name").innerText =
-            itemData.nome || itemId;
-
-          const tier = Number(itemData.tier) || 1;
+          itemModal.querySelector("#item-name").innerText = itemData.nome;
 
           itemModal.querySelector("#item-description").innerHTML = `
-            <div>${itemData.description || "Sem descrição."}</div>
-            <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png"
-              style="width:210px;display:block;margin:12px auto 0 auto;">
+            ${itemData.description || "Sem descrição"}
           `;
 
-          itemModal.querySelector(".item-actions").innerHTML = `
+          const actions = itemModal.querySelector(".item-actions");
+
+          actions.innerHTML = `
             <button id="use-item">USAR</button>
             <button id="sell-item">VENDER</button>
           `;
 
-          const useBtn = itemModal.querySelector("#use-item");
-          const sellBtn = itemModal.querySelector("#sell-item");
+          const useBtn = actions.querySelector("#use-item");
+          const sellBtn = actions.querySelector("#sell-item");
 
-          if (useBtn) {
-            useBtn.onclick = () => {
-              if (confirmModal) confirmModal.style.display = "flex";
-            };
-          }
+          useBtn.onclick = () => {
+            confirmModal.style.display = "flex";
+          };
 
-          if (sellBtn) {
-            sellBtn.onclick = () => {
-              window.abrirVendaItem?.(currentItem);
-            };
-          }
-
-          itemModal.style.display = "flex";
-        });
+          sellBtn.onclick = () => {
+            window.abrirVendaItem?.(currentItem);
+          };
+        };
 
         inventoryList.appendChild(div);
       }
     });
-  });
+  };
 
-  closeInventory?.addEventListener("click", () => {
-    inventoryModal.style.display = "none";
-  });
+  closeInventory.onclick = () => inventoryModal.style.display = "none";
 
-  closeItem?.addEventListener("click", () => {
-    itemModal.style.display = "none";
-  });
-
-  marketBtn?.addEventListener("click", () => {
+  marketBtn.onclick = () => {
     inventoryModal.style.display = "none";
     window.openMarket?.();
-  });
+  };
 
-  confirmNo?.addEventListener("click", () => {
-    if (confirmModal) confirmModal.style.display = "none";
-  });
+  confirmNo.onclick = () => {
+    confirmModal.style.display = "none";
+  };
 
-  confirmYes?.addEventListener("click", () => {
-    if (!currentItem) return;
-
+  confirmYes.onclick = () => {
     confirmModal.style.display = "none";
     itemModal.style.display = "none";
-
-    if (typeof window.usarItem === "function") {
-      window.usarItem(currentItem);
-    } else {
-      console.error("window.usarItem não definida");
-    }
-  });
+    window.usarItem?.(currentItem);
+  };
 }
 
 loadInventoryHTML();

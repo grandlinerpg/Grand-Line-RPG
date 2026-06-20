@@ -671,3 +671,126 @@
 #confirm-no:hover{
   transform:scale(1.03);
 }
+
+/* =========================
+   MODAL DE VENDA
+========================= */
+
+#sell-modal {
+  position: fixed;
+  inset: 0;
+
+  display: none;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 9999;
+}
+
+/* JANELA */
+#sell-modal .item-window {
+  width: 90%;
+  max-width: 400px;
+
+  background: rgba(10, 10, 10, 0.95);
+
+  border: 1px solid rgba(246, 211, 101, 0.25);
+  border-radius: 12px;
+
+  padding: 18px;
+
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* PREVIEW DO ITEM */
+.sell-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sell-image {
+  width: 80px;
+  height: 80px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 42px;
+}
+
+/* INFO */
+.sell-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sell-min-price {
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
+}
+
+/* INPUT */
+#sell-price-input {
+  width: 100%;
+
+  padding: 10px;
+
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  background: rgba(0, 0, 0, 0.4);
+
+  color: #fff;
+
+  outline: none;
+
+  font-size: 14px;
+}
+
+/* AÇÕES */
+.item-actions {
+  display: flex;
+  gap: 10px;
+}
+
+#confirm-sell,
+#cancel-sell {
+  flex: 1;
+
+  padding: 10px;
+
+  border: none;
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  font-weight: bold;
+
+  transition: 0.2s;
+}
+
+/* botão vender */
+#confirm-sell {
+  background: linear-gradient(135deg, #f6d365, #fda085);
+  color: #111;
+}
+
+/* botão cancelar */
+#cancel-sell {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+#confirm-sell:hover,
+#cancel-sell:hover {
+  transform: scale(1.03);
+}

@@ -47,7 +47,16 @@ function initMarketSkills() {
   if (!openBtn || !modal || !list) return;
 
   let habilidadesDB = {};
-  let allowedMap = {}; // 🔥 NOVO (categoria → sub)
+  let playerMap = {};
+
+  function normalize(str) {
+    return (str || "")
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase();
+  }
 
   function renderSkills() {
 
@@ -78,18 +87,18 @@ function initMarketSkills() {
         continue;
       }
 
+      const allowed = playerMap[categoria];
+
       for (const sub in habilidadesDB[categoria]) {
 
-        const skills = habilidadesDB[categoria][sub];
+        for (const skillId in habilidadesDB[categoria][sub]) {
 
-        for (const skillId in skills) {
+          const skill = habilidadesDB[categoria][sub][skillId];
 
-          const skill = skills[skillId];
+          const skillSub = normalize(sub);
 
-          // 🔥 FILTRO CERTO AGORA
-          const allowedSubs = allowedMap[categoria];
-
-          if (allowedSubs && !allowedSubs.has(sub)) {
+          // 🔥 AGORA COMPARAÇÃO REALMENTE SEGURA
+          if (allowed && !allowed.has(skillSub)) {
             continue;
           }
 
@@ -132,7 +141,6 @@ function initMarketSkills() {
             class="skill-icon"
             alt="${skill.nome}"
           />
-
           <span class="skill-name">
             ${skill.nome || skillId}
           </span>
@@ -168,19 +176,19 @@ function initMarketSkills() {
 
     const player = playerSnap.val();
 
-    // 🔥 MAPEAMENTO REAL DO PERSONAGEM
-    allowedMap = {
-      "estilo-de-luta": new Set([
-        player?.character?.style
-      ].filter(Boolean)),
+    const normalize = (str) =>
+      (str || "")
+        .toString()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
 
-      "raça/tribo": new Set([
-        player?.character?.race
-      ].filter(Boolean)),
-
-      "akuma-no-mi": new Set([
-        player?.character?.fruit
-      ].filter(Boolean))
+    // 🔥 MAPEAMENTO CORRETO POR TIPO
+    playerMap = {
+      "estilo-de-luta": new Set([normalize(player?.character?.style)]),
+      "raça/tribo": new Set([normalize(player?.character?.race)]),
+      "akuma-no-mi": new Set([normalize(player?.character?.fruit)])
     };
 
     habilidadesDB = snap.val();

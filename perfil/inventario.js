@@ -220,11 +220,7 @@ function initInventory() {
 
           console.log("CLICK VENDER OK");
 
-          document.dispatchEvent(
-            new CustomEvent("abrirVenda", {
-              detail: currentItem
-            })
-          );
+          window.abrirVendaItem?.(currentItem);
         };
 
         itemModal.style.display = "flex";

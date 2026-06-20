@@ -3,30 +3,21 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const marketContainer =
-  document.getElementById("market-container");
+const marketContainer = document.getElementById("market-container");
 
 let currentItem = null;
 
-// 🔥 RESET SOMENTE DO MODAL DO MERCADO
-function resetItemModal() {
+function resetMarketModal() {
+  const modal = document.getElementById("market-item-modal");
+  if (!modal) return;
 
-  const emoji = document.getElementById("market-item-emoji");
-  const name = document.getElementById("market-item-name");
-  const desc = document.getElementById("market-item-description");
-
-  // ⚠️ IMPORTANTE: sempre pegar dentro do modal
-  const itemModal = document.getElementById("market-item-modal");
-  const actions = itemModal?.querySelector(".item-actions");
-
-  if (emoji) emoji.innerHTML = "📦";
-  if (name) name.innerText = "";
-  if (desc) desc.innerHTML = "";
-  if (actions) actions.innerHTML = "";
+  modal.querySelector("#market-item-emoji").innerHTML = "📦";
+  modal.querySelector("#market-item-name").innerText = "";
+  modal.querySelector("#market-item-description").innerHTML = "";
+  modal.querySelector(".market-actions-container")?.innerHTML = "";
 }
 
 async function loadMarketHTML() {
-
   const response = await fetch("perfil/mercado.html");
   const html = await response.text();
 
@@ -38,7 +29,6 @@ async function loadMarketHTML() {
 }
 
 function initMarket() {
-
   const db = window.db;
 
   const marketModal = document.getElementById("market-modal");
@@ -47,88 +37,70 @@ function initMarket() {
   const marketList = document.getElementById("market-list");
 
   const itemModal = document.getElementById("market-item-modal");
+  const buyConfirm = document.getElementById("buy-confirm-modal");
 
   let anuncios = {};
   let itensDB = {};
 
-  // 🔥 ABRIR MERCADO
-  window.openMarket = async function () {
-
-    resetItemModal();
+  window.openMarket = async () => {
+    resetMarketModal();
 
     marketModal.style.display = "flex";
 
     const marketSnap = await get(ref(db, "mercado/itens"));
     const itensSnap = await get(ref(db, "itens"));
 
-    if (!marketSnap.exists() || !itensSnap.exists()) {
-      marketList.innerHTML = "Nenhum item encontrado.";
-      return;
-    }
+    if (!marketSnap.exists() || !itensSnap.exists()) return;
 
     anuncios = marketSnap.val();
     itensDB = itensSnap.val();
 
-    categorySelect.innerHTML = `<option value="all">Todas as Categorias</option>`;
+    categorySelect.innerHTML = `<option value="all">Todas</option>`;
 
-    for (const categoria in itensDB) {
-      categorySelect.innerHTML += `
-        <option value="${categoria}">${categoria}</option>
-      `;
+    for (const c in itensDB) {
+      categorySelect.innerHTML += `<option value="${c}">${c}</option>`;
     }
 
-    renderMarket("all");
+    render("all");
 
-    categorySelect.onchange = () => {
-      renderMarket(categorySelect.value);
-    };
+    categorySelect.onchange = () => render(categorySelect.value);
   };
 
-  // 🔥 FECHAR
-  if (closeMarket) {
-    closeMarket.onclick = () => {
-      marketModal.style.display = "none";
+  closeMarket.onclick = () => {
+    marketModal.style.display = "none";
+  };
 
-      const inv = document.getElementById("inventory-modal");
-      if (inv) inv.style.display = "flex";
-    };
-  }
-
-  function renderMarket(filtro) {
-
+  function render(filter) {
     marketList.innerHTML = "";
 
-    const lista = [];
+    const list = [];
 
-    for (const anuncioId in anuncios) {
-
-      const anuncio = anuncios[anuncioId];
-      const itemId = anuncio.nome;
-      const value = Number(anuncio.value || 0);
+    for (const id in anuncios) {
+      const a = anuncios[id];
+      const itemId = a.nome;
 
       let itemData = null;
 
-      for (const categoria in itensDB) {
+      for (const cat in itensDB) {
+        if (filter !== "all" && cat !== filter) continue;
 
-        if (filtro !== "all" && categoria !== filtro) continue;
-
-        const itens = itensDB[categoria];
-
-        if (itens[itemId]) {
-          itemData = itens[itemId];
+        if (itensDB[cat][itemId]) {
+          itemData = itensDB[cat][itemId];
           break;
         }
       }
 
       if (!itemData) continue;
 
-      lista.push({ anuncioId, itemId, value, itemData });
+      list.push({
+        id,
+        itemId,
+        itemData,
+        value: a.value
+      });
     }
 
-    lista.sort((a, b) => a.value - b.value);
-
-    for (const data of lista) {
-
+    for (const data of list) {
       const div = document.createElement("div");
       div.className = "inventory-item";
 
@@ -136,115 +108,64 @@ function initMarket() {
         <div class="inventory-item-top">
 
           <span class="inventory-emoji">
-            ${
-              data.itemData.img
-                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${data.itemData.img}.png"
-                  class="inventory-item-img">`
-                : "📦"
-            }
+            ${data.itemData.img
+              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${data.itemData.img}.png"
+                class="inventory-item-img">`
+              : "📦"}
           </span>
 
           <div class="inventory-text">
-
-            <div class="inventory-name-qty">
-
-              <span class="inventory-name">
-                ${data.itemData.nome || data.itemId}
-              </span>
-
-              <span class="inventory-qty">
-                ฿ ${data.value.toLocaleString("pt-BR")}
-              </span>
-
-            </div>
-
+            <span class="inventory-name">${data.itemData.nome}</span>
+            <span class="inventory-qty">฿ ${data.value}</span>
           </div>
 
         </div>
       `;
 
       div.onclick = () => {
+        currentItem = data;
 
-        resetItemModal();
+        resetMarketModal();
 
-        currentItem = {
-          id: data.anuncioId,
-          nome: data.itemData.nome,
-          descricao: data.itemData.description,
-          img: data.itemData.img,
-          value: data.value,
-          tier: Number(data.itemData.tier || 1)
+        itemModal.style.display = "flex";
+
+        itemModal.querySelector("#market-item-name").innerText = data.itemData.nome;
+
+        itemModal.querySelector("#market-item-description").innerHTML =
+          data.itemData.description || "Sem descrição";
+
+        const actions = itemModal.querySelector(".market-actions-container");
+
+        actions.innerHTML = `
+          <div class="market-actions">
+            <div class="price-box">฿ ${data.value}</div>
+            <button id="buy-btn">COMPRAR</button>
+          </div>
+        `;
+
+        const buyBtn = actions.querySelector("#buy-btn");
+
+        buyBtn.onclick = () => {
+          buyConfirm.style.display = "flex";
+
+          const yes = document.getElementById("buy-confirm-yes");
+          const no = document.getElementById("buy-confirm-no");
+
+          yes.onclick = () => {
+            buyConfirm.style.display = "none";
+            itemModal.style.display = "none";
+            console.log("COMPRA:", currentItem);
+          };
+
+          no.onclick = () => {
+            buyConfirm.style.display = "none";
+          };
         };
-
-        openMarketItemModal(currentItem);
       };
 
       marketList.appendChild(div);
     }
   }
-}
-
-// 🔥 ITEM MODAL DO MERCADO
-function openMarketItemModal(item) {
-
-  resetItemModal();
-
-  const itemModal = document.getElementById("market-item-modal");
-
-  document.getElementById("market-item-emoji").innerHTML =
-    item.img
-      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-          class="item-open-img">`
-      : "📦";
-
-  document.getElementById("market-item-name").innerText =
-    item.nome;
-
-  const tierImg =
-    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
-
-  document.getElementById("market-item-description").innerHTML = `
-    <div>${item.descricao || "Sem descrição."}</div>
-
-    <img src="${tierImg}" style="
-      width:210px;
-      display:block;
-      margin:12px auto 0 auto;
-    "/>
-  `;
-
-  const actions = itemModal.querySelector(".item-actions");
-
-  actions.innerHTML = `
-    <div class="market-actions">
-
-      <div class="price-box">
-        ฿ ${item.value.toLocaleString("pt-BR")}
-      </div>
-
-      <button id="buy-item">COMPRAR</button>
-
-    </div>
-  `;
-
-  document.getElementById("buy-item").onclick = () => {
-
-    const buyConfirm = document.getElementById("buy-confirm-modal");
-
-    buyConfirm.style.display = "flex";
-
-    document.getElementById("buy-confirm-yes").onclick = () => {
-      buyConfirm.style.display = "none";
-      itemModal.style.display = "none";
-      console.log("COMPRADO:", item.id);
-    };
-
-    document.getElementById("buy-confirm-no").onclick = () => {
-      buyConfirm.style.display = "none";
-    };
-  };
-
-  itemModal.style.display = "flex";
 }
 
 loadMarketHTML();

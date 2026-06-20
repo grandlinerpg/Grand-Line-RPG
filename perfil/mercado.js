@@ -97,7 +97,6 @@ function initMarket() {
 
     marketList.innerHTML = "";
 
-    // 🔥 ÚNICA ALTERAÇÃO: transformar em array e ordenar
     const lista = [];
 
     for (const anuncioId in anuncios) {
@@ -108,7 +107,6 @@ function initMarket() {
       const value = Number(anuncio.value || 0);
 
       let itemData = null;
-      let categoriaItem = null;
 
       for (const categoria in itensDB) {
 
@@ -121,7 +119,6 @@ function initMarket() {
 
         if (itens[itemId]) {
           itemData = itens[itemId];
-          categoriaItem = categoria;
           break;
         }
       }
@@ -136,23 +133,21 @@ function initMarket() {
       });
     }
 
-    // 🔥 ORDENA DO MENOR PARA O MAIOR PREÇO
     lista.sort((a, b) => a.value - b.value);
 
-    // 🔥 renderização normal (sem mudar lógica)
     for (const data of lista) {
 
       const { anuncioId, itemId, value, itemData } = data;
 
-      const div = document.createElement("div");
+      const tier = Number(itemData.tier) || 1;
 
+      const div = document.createElement("div");
       div.className = "inventory-item";
 
       div.innerHTML = `
         <div class="inventory-item-top">
 
           <span class="inventory-emoji">
-
             ${
               itemData.img
                 ? `<img 
@@ -161,7 +156,6 @@ function initMarket() {
                 >`
               : (itemData.item || "📦")
             }
-
           </span>
 
           <div class="inventory-text">
@@ -177,6 +171,15 @@ function initMarket() {
               </span>
 
             </div>
+
+            <img
+              src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png"
+              style="
+                width:60px;
+                display:block;
+                margin-top:4px;
+              "
+            />
 
           </div>
 

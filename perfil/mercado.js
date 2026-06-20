@@ -8,14 +8,16 @@ const marketContainer =
 
 let currentItem = null;
 
-// 🔥 RESET GLOBAL DO ITEM MODAL
+// 🔥 RESET SOMENTE DO MODAL DO MERCADO
 function resetItemModal() {
-const itemModal = document.getElementById("market-item-modal");
 
-const emoji = document.getElementById("market-item-emoji");
-const name = document.getElementById("market-item-name");
-const desc = document.getElementById("market-item-description");
-const actions = itemModal.querySelector(".item-actions");
+  const emoji = document.getElementById("market-item-emoji");
+  const name = document.getElementById("market-item-name");
+  const desc = document.getElementById("market-item-description");
+
+  // ⚠️ IMPORTANTE: sempre pegar dentro do modal
+  const itemModal = document.getElementById("market-item-modal");
+  const actions = itemModal?.querySelector(".item-actions");
 
   if (emoji) emoji.innerHTML = "📦";
   if (name) name.innerText = "";
@@ -25,11 +27,8 @@ const actions = itemModal.querySelector(".item-actions");
 
 async function loadMarketHTML() {
 
-  const response =
-    await fetch("perfil/mercado.html");
-
-  const html =
-    await response.text();
+  const response = await fetch("perfil/mercado.html");
+  const html = await response.text();
 
   marketContainer.innerHTML = html;
 
@@ -42,36 +41,25 @@ function initMarket() {
 
   const db = window.db;
 
-  const marketModal =
-    document.getElementById("market-modal");
+  const marketModal = document.getElementById("market-modal");
+  const closeMarket = document.getElementById("close-market");
+  const categorySelect = document.getElementById("market-category");
+  const marketList = document.getElementById("market-list");
 
-  const closeMarket =
-    document.getElementById("close-market");
-
-  const categorySelect =
-    document.getElementById("market-category");
-
-  const marketList =
-    document.getElementById("market-list");
-
-  const itemModal =
-    document.getElementById("market-item-modal");
+  const itemModal = document.getElementById("market-item-modal");
 
   let anuncios = {};
   let itensDB = {};
 
-  // 🔥 FUNÇÃO GLOBAL
+  // 🔥 ABRIR MERCADO
   window.openMarket = async function () {
 
-    resetItemModal(); // evita herdar estado do inventário
+    resetItemModal();
 
     marketModal.style.display = "flex";
 
-    const marketSnap =
-      await get(ref(db, "mercado/itens"));
-
-    const itensSnap =
-      await get(ref(db, "itens"));
+    const marketSnap = await get(ref(db, "mercado/itens"));
+    const itensSnap = await get(ref(db, "itens"));
 
     if (!marketSnap.exists() || !itensSnap.exists()) {
       marketList.innerHTML = "Nenhum item encontrado.";
@@ -81,15 +69,11 @@ function initMarket() {
     anuncios = marketSnap.val();
     itensDB = itensSnap.val();
 
-    categorySelect.innerHTML = `
-      <option value="all">Todas as Categorias</option>
-    `;
+    categorySelect.innerHTML = `<option value="all">Todas as Categorias</option>`;
 
     for (const categoria in itensDB) {
       categorySelect.innerHTML += `
-        <option value="${categoria}">
-          ${categoria}
-        </option>
+        <option value="${categoria}">${categoria}</option>
       `;
     }
 
@@ -100,17 +84,13 @@ function initMarket() {
     };
   };
 
-  // 🔥 FECHAR MERCADO = VOLTAR PRO INVENTÁRIO (NÃO FECHA TUDO)
+  // 🔥 FECHAR
   if (closeMarket) {
     closeMarket.onclick = () => {
-
       marketModal.style.display = "none";
 
-      // abre inventário de volta (se existir)
       const inv = document.getElementById("inventory-modal");
-      if (inv) {
-        inv.style.display = "flex";
-      }
+      if (inv) inv.style.display = "flex";
     };
   }
 
@@ -123,7 +103,6 @@ function initMarket() {
     for (const anuncioId in anuncios) {
 
       const anuncio = anuncios[anuncioId];
-
       const itemId = anuncio.nome;
       const value = Number(anuncio.value || 0);
 
@@ -143,19 +122,12 @@ function initMarket() {
 
       if (!itemData) continue;
 
-      lista.push({
-        anuncioId,
-        itemId,
-        value,
-        itemData
-      });
+      lista.push({ anuncioId, itemId, value, itemData });
     }
 
     lista.sort((a, b) => a.value - b.value);
 
     for (const data of lista) {
-
-      const { anuncioId, itemId, value, itemData } = data;
 
       const div = document.createElement("div");
       div.className = "inventory-item";
@@ -165,11 +137,9 @@ function initMarket() {
 
           <span class="inventory-emoji">
             ${
-              itemData.img
-                ? `<img 
-                    src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                    class="inventory-item-img"
-                  >`
+              data.itemData.img
+                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${data.itemData.img}.png"
+                  class="inventory-item-img">`
                 : "📦"
             }
           </span>
@@ -179,11 +149,11 @@ function initMarket() {
             <div class="inventory-name-qty">
 
               <span class="inventory-name">
-                ${itemData.nome || itemId}
+                ${data.itemData.nome || data.itemId}
               </span>
 
               <span class="inventory-qty">
-                ฿ ${value.toLocaleString("pt-BR")}
+                ฿ ${data.value.toLocaleString("pt-BR")}
               </span>
 
             </div>
@@ -195,15 +165,15 @@ function initMarket() {
 
       div.onclick = () => {
 
-        resetItemModal(); // 🔥 evita herdar estado antigo
+        resetItemModal();
 
         currentItem = {
-          id: anuncioId,
-          nome: itemData.nome,
-          descricao: itemData.description,
-          img: itemData.img,
-          value,
-          tier: Number(itemData.tier || 1)
+          id: data.anuncioId,
+          nome: data.itemData.nome,
+          descricao: data.itemData.description,
+          img: data.itemData.img,
+          value: data.value,
+          tier: Number(data.itemData.tier || 1)
         };
 
         openMarketItemModal(currentItem);
@@ -214,79 +184,65 @@ function initMarket() {
   }
 }
 
-// 🔥 ITEM MODAL
+// 🔥 ITEM MODAL DO MERCADO
 function openMarketItemModal(item) {
 
   resetItemModal();
 
-  const itemModal =
-    document.getElementById("market-item-modal");
-
-  const tierImg =
-    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
+  const itemModal = document.getElementById("market-item-modal");
 
   document.getElementById("market-item-emoji").innerHTML =
     item.img
-      ? `<img 
-          src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-          class="item-open-img"
-        >`
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+          class="item-open-img">`
       : "📦";
 
   document.getElementById("market-item-name").innerText =
     item.nome;
 
-  document.getElementById("market-item-description").innerHTML =
-    `
-      <div>${item.descricao || "Sem descrição."}</div>
+  const tierImg =
+    `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
 
-      <img 
-        src="${tierImg}"
-        style="
-          width:210px;
-          display:block;
-          margin:12px auto 0 auto;
-        "
-      />
-    `;
+  document.getElementById("market-item-description").innerHTML = `
+    <div>${item.descricao || "Sem descrição."}</div>
 
-  document.querySelector(".item-actions").innerHTML = `
+    <img src="${tierImg}" style="
+      width:210px;
+      display:block;
+      margin:12px auto 0 auto;
+    "/>
+  `;
+
+  const actions = itemModal.querySelector(".item-actions");
+
+  actions.innerHTML = `
     <div class="market-actions">
 
       <div class="price-box">
         ฿ ${item.value.toLocaleString("pt-BR")}
       </div>
 
-      <button id="buy-item">
-        COMPRAR
-      </button>
+      <button id="buy-item">COMPRAR</button>
 
     </div>
   `;
 
-  const buyBtn = document.getElementById("buy-item");
+  document.getElementById("buy-item").onclick = () => {
 
-  if (buyBtn) {
-    buyBtn.onclick = () => {
+    const buyConfirm = document.getElementById("buy-confirm-modal");
 
-      const buyConfirm =
-        document.getElementById("buy-confirm-modal");
+    buyConfirm.style.display = "flex";
 
-      if (!buyConfirm) return;
-
-      buyConfirm.style.display = "flex";
-
-      document.getElementById("buy-confirm-yes").onclick = () => {
-        buyConfirm.style.display = "none";
-        itemModal.style.display = "none";
-        console.log("COMPRADO:", item.id);
-      };
-
-      document.getElementById("buy-confirm-no").onclick = () => {
-        buyConfirm.style.display = "none";
-      };
+    document.getElementById("buy-confirm-yes").onclick = () => {
+      buyConfirm.style.display = "none";
+      itemModal.style.display = "none";
+      console.log("COMPRADO:", item.id);
     };
-  }
+
+    document.getElementById("buy-confirm-no").onclick = () => {
+      buyConfirm.style.display = "none";
+    };
+  };
 
   itemModal.style.display = "flex";
 }

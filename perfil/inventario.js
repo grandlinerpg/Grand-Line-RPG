@@ -205,19 +205,21 @@ function initInventory() {
           "/>
         `;
 
-        // 🔥 AQUI ESTÁ A CORREÇÃO PRINCIPAL
+        // 🔥 BOTÕES (SEM LISTENER DUPLICADO)
         document.querySelector(".item-actions").innerHTML = `
           <button id="use-item">USAR</button>
           <button id="sell-item">VENDER</button>
         `;
 
-        // rebind dos botões
         document.getElementById("use-item").onclick = () => {
           if (!currentItem) return;
           if (confirmModal) confirmModal.style.display = "flex";
         };
 
         document.getElementById("sell-item").onclick = () => {
+
+          console.log("CLICK VENDER OK");
+
           document.dispatchEvent(
             new CustomEvent("abrirVenda", {
               detail: currentItem
@@ -261,7 +263,6 @@ function initInventory() {
     if (itemModal) itemModal.style.display = "none";
 
     window.usarItem?.(currentItem);
-
   });
 }
 

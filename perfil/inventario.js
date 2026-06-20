@@ -14,10 +14,13 @@ let inventoryCallback = null;
 let renderVersion = 0;
 
 function resetItemModal() {
-  const emoji = document.getElementById("item-emoji");
-  const name = document.getElementById("item-name");
-  const desc = document.getElementById("item-description");
-  const actions = document.querySelector("#item-modal .item-actions");
+  const itemModal = document.getElementById("item-modal");
+  if (!itemModal) return;
+
+  const emoji = itemModal.querySelector("#item-emoji");
+  const name = itemModal.querySelector("#item-name");
+  const desc = itemModal.querySelector("#item-description");
+  const actions = itemModal.querySelector(".item-actions");
 
   if (emoji) emoji.innerHTML = "📦";
   if (name) name.innerText = "";
@@ -26,9 +29,11 @@ function resetItemModal() {
 }
 
 async function loadInventoryHTML() {
+
   const response = await fetch("perfil/inventario.html");
   const html = await response.text();
 
+  modalContainer.innerHTML = "";
   modalContainer.innerHTML = html;
 
   requestAnimationFrame(() => {
@@ -57,6 +62,11 @@ function initInventory() {
   const confirmYes = document.getElementById("confirm-yes");
   const confirmNo = document.getElementById("confirm-no");
 
+  if (!openBtn || !inventoryModal || !inventoryList) {
+    console.error("Inventário não carregou corretamente no DOM");
+    return;
+  }
+
   const newOpenBtn = openBtn.cloneNode(true);
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
@@ -72,13 +82,19 @@ function initInventory() {
       });
     });
 
-    if (!user) return;
+    if (!user) {
+      inventoryList.innerHTML = "Usuário não logado.";
+      return;
+    }
 
-    const playerSnap = await get(ref(db, `players/${user.uid}/info`));
+    const playerSnap = await get(
+      ref(db, `players/${user.uid}/info`)
+    );
 
     if (playerSnap.exists() && saldoElement) {
       const saldo = playerSnap.val().saldo || 0;
-      saldoElement.innerText = "฿ " + saldo.toLocaleString("pt-BR");
+      saldoElement.innerText =
+        "฿ " + saldo.toLocaleString("pt-BR");
     }
 
     if (inventoryRef && inventoryCallback) {
@@ -126,80 +142,117 @@ function initInventory() {
         const itemObj = {
           id: itemId,
           nome: itemData.nome,
-          descricao: itemData.description,
+          tipo: itemData.tipo,
+          tier: itemData.tier,
+          value: itemData.value,
+          categoria: itemCategoria,
+          quantidade,
           img: itemData.img,
-          tier: itemData.tier
+          description: itemData.description,
+          item: itemData.item,
+          emoji: itemData.emoji,
+          icon: itemData.icon
         };
 
         div.innerHTML = `
           <div class="inventory-item-top">
+
             <span class="inventory-emoji">
-              ${itemData.img
-                ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png" class="inventory-item-img">`
-                : "📦"}
+              ${
+                itemData.img
+                  ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                       class="inventory-item-img">`
+                  : (itemData.item || itemData.emoji || itemData.icon || "📦")
+              }
             </span>
 
             <div class="inventory-text">
-              <span>${itemData.nome}</span>
-              <span>${quantidade}</span>
+
+              <div class="inventory-name-qty">
+
+                <span class="inventory-name">
+                  ${itemData.nome || itemId}
+                </span>
+
+                <span class="inventory-qty">
+                  ${quantidade}
+                </span>
+
+              </div>
+
             </div>
+
           </div>
         `;
 
-        div.onclick = () => {
+        div.addEventListener("click", () => {
 
           currentItem = itemObj;
 
           resetItemModal();
 
-          document.getElementById("item-emoji").innerHTML =
+          const modal = document.getElementById("item-modal");
+
+          modal.querySelector("#item-emoji").innerHTML =
             itemData.img
-              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png" class="item-open-img">`
-              : "📦";
+              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                     class="item-open-img">`
+              : (itemData.item || itemData.emoji || itemData.icon || "📦");
 
-          document.getElementById("item-name").innerText = itemData.nome;
+          modal.querySelector("#item-name").innerText =
+            itemData.nome || itemId;
 
-          document.getElementById("item-description").innerHTML =
-            itemData.description || "Sem descrição.";
+          const tier = Number(itemData.tier) || 1;
 
-          document.querySelector("#item-modal .item-actions").innerHTML = `
+          modal.querySelector("#item-description").innerHTML = `
+            <div>${itemData.description || "Sem descrição."}</div>
+            <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png"
+              style="width:210px;display:block;margin:12px auto 0 auto;">
+          `;
+
+          modal.querySelector(".item-actions").innerHTML = `
             <button id="use-item">USAR</button>
             <button id="sell-item">VENDER</button>
           `;
 
-          document.getElementById("use-item").onclick = () => {
-            confirmModal.style.display = "flex";
+          modal.querySelector("#use-item").onclick = () => {
+            if (confirmModal) confirmModal.style.display = "flex";
           };
 
-          document.getElementById("sell-item").onclick = () => {
+          modal.querySelector("#sell-item").onclick = () => {
             window.abrirVendaItem?.(currentItem);
           };
 
-          itemModal.style.display = "flex";
-        };
+          modal.style.display = "flex";
+        });
 
         inventoryList.appendChild(div);
       }
     });
   });
 
-  confirmYes.onclick = () => {
+  closeInventory?.addEventListener("click", () => {
+    inventoryModal.style.display = "none";
+  });
+
+  closeItem?.addEventListener("click", () => {
+    itemModal.style.display = "none";
+  });
+
+  marketBtn?.addEventListener("click", () => {
+    inventoryModal.style.display = "none";
+    window.openMarket?.();
+  });
+
+  confirmNo?.addEventListener("click", () => {
+    confirmModal.style.display = "none";
+  });
+
+  confirmYes?.addEventListener("click", () => {
     confirmModal.style.display = "none";
     itemModal.style.display = "none";
     window.usarItem?.(currentItem);
-  };
-
-  confirmNo.onclick = () => {
-    confirmModal.style.display = "none";
-  };
-
-  closeInventory.onclick = () => inventoryModal.style.display = "none";
-  closeItem.onclick = () => itemModal.style.display = "none";
-
-  marketBtn.onclick = () => {
-    inventoryModal.style.display = "none";
-    window.openMarket?.();
-  };
+  });
 }
 
 loadInventoryHTML();

@@ -8,7 +8,6 @@ import {
 const modalContainer = document.getElementById("inventory-container");
 
 let currentItem = null;
-
 let inventoryRef = null;
 let inventoryCallback = null;
 let renderVersion = 0;
@@ -29,11 +28,9 @@ function resetItemModal() {
 }
 
 async function loadInventoryHTML() {
-
   const response = await fetch("perfil/inventario.html");
   const html = await response.text();
 
-  modalContainer.innerHTML = "";
   modalContainer.innerHTML = html;
 
   requestAnimationFrame(() => {
@@ -42,7 +39,6 @@ async function loadInventoryHTML() {
 }
 
 function initInventory() {
-
   const auth = window.auth;
   const db = window.db;
 
@@ -54,7 +50,6 @@ function initInventory() {
   const closeItem = document.getElementById("close-item");
 
   const inventoryList = document.getElementById("inventory-list");
-
   const saldoElement = document.getElementById("inventory-saldo");
   const marketBtn = document.getElementById("open-market");
 
@@ -63,7 +58,7 @@ function initInventory() {
   const confirmNo = document.getElementById("confirm-no");
 
   if (!openBtn || !inventoryModal || !inventoryList) {
-    console.error("Inventário não carregou corretamente no DOM");
+    console.error("Inventário não carregou corretamente");
     return;
   }
 
@@ -71,7 +66,6 @@ function initInventory() {
   openBtn.parentNode.replaceChild(newOpenBtn, openBtn);
 
   newOpenBtn.addEventListener("click", async () => {
-
     inventoryModal.style.display = "flex";
     inventoryList.innerHTML = "Carregando...";
 
@@ -93,8 +87,7 @@ function initInventory() {
 
     if (playerSnap.exists() && saldoElement) {
       const saldo = playerSnap.val().saldo || 0;
-      saldoElement.innerText =
-        "฿ " + saldo.toLocaleString("pt-BR");
+      saldoElement.innerText = "฿ " + saldo.toLocaleString("pt-BR");
     }
 
     if (inventoryRef && inventoryCallback) {
@@ -109,17 +102,18 @@ function initInventory() {
     const categorias = itensSnap.val();
 
     inventoryCallback = onValue(inventoryRef, (snapshot) => {
-
       const myVersion = ++renderVersion;
 
       inventoryList.innerHTML = "";
 
-      if (!snapshot.exists()) return;
+      if (!snapshot.exists()) {
+        inventoryList.innerHTML = "Inventário vazio.";
+        return;
+      }
 
       const inventory = snapshot.val();
 
       for (const itemId in inventory) {
-
         const quantidade = inventory[itemId];
 
         let itemData = null;
@@ -156,7 +150,6 @@ function initInventory() {
 
         div.innerHTML = `
           <div class="inventory-item-top">
-
             <span class="inventory-emoji">
               ${
                 itemData.img
@@ -167,9 +160,7 @@ function initInventory() {
             </span>
 
             <div class="inventory-text">
-
               <div class="inventory-name-qty">
-
                 <span class="inventory-name">
                   ${itemData.nome || itemId}
                 </span>
@@ -177,53 +168,56 @@ function initInventory() {
                 <span class="inventory-qty">
                   ${quantidade}
                 </span>
-
               </div>
-
             </div>
-
           </div>
         `;
 
         div.addEventListener("click", () => {
-
           currentItem = itemObj;
 
           resetItemModal();
 
-          const modal = document.getElementById("item-modal");
+          if (!itemModal) return;
 
-          modal.querySelector("#item-emoji").innerHTML =
+          itemModal.querySelector("#item-emoji").innerHTML =
             itemData.img
               ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
                      class="item-open-img">`
               : (itemData.item || itemData.emoji || itemData.icon || "📦");
 
-          modal.querySelector("#item-name").innerText =
+          itemModal.querySelector("#item-name").innerText =
             itemData.nome || itemId;
 
           const tier = Number(itemData.tier) || 1;
 
-          modal.querySelector("#item-description").innerHTML = `
+          itemModal.querySelector("#item-description").innerHTML = `
             <div>${itemData.description || "Sem descrição."}</div>
             <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${tier}.png"
               style="width:210px;display:block;margin:12px auto 0 auto;">
           `;
 
-          modal.querySelector(".item-actions").innerHTML = `
+          itemModal.querySelector(".item-actions").innerHTML = `
             <button id="use-item">USAR</button>
             <button id="sell-item">VENDER</button>
           `;
 
-          modal.querySelector("#use-item").onclick = () => {
-            if (confirmModal) confirmModal.style.display = "flex";
-          };
+          const useBtn = itemModal.querySelector("#use-item");
+          const sellBtn = itemModal.querySelector("#sell-item");
 
-          modal.querySelector("#sell-item").onclick = () => {
-            window.abrirVendaItem?.(currentItem);
-          };
+          if (useBtn) {
+            useBtn.onclick = () => {
+              if (confirmModal) confirmModal.style.display = "flex";
+            };
+          }
 
-          modal.style.display = "flex";
+          if (sellBtn) {
+            sellBtn.onclick = () => {
+              window.abrirVendaItem?.(currentItem);
+            };
+          }
+
+          itemModal.style.display = "flex";
         });
 
         inventoryList.appendChild(div);
@@ -245,13 +239,20 @@ function initInventory() {
   });
 
   confirmNo?.addEventListener("click", () => {
-    confirmModal.style.display = "none";
+    if (confirmModal) confirmModal.style.display = "none";
   });
 
   confirmYes?.addEventListener("click", () => {
+    if (!currentItem) return;
+
     confirmModal.style.display = "none";
     itemModal.style.display = "none";
-    window.usarItem?.(currentItem);
+
+    if (typeof window.usarItem === "function") {
+      window.usarItem(currentItem);
+    } else {
+      console.error("window.usarItem não definida");
+    }
   });
 }
 

@@ -218,7 +218,7 @@ function initInventory() {
         };
 
         document.getElementById("sell-item").onclick = () => {
-          console.log("VENDER:", currentItem);
+          window.abrirVendaItem?.(currentItem);
         };
 
         itemModal.style.display = "flex";

@@ -218,7 +218,11 @@ function initInventory() {
         };
 
         document.getElementById("sell-item").onclick = () => {
-          window.abrirVendaItem?.(currentItem);
+          document.dispatchEvent(
+            new CustomEvent("abrirVenda", {
+              detail: currentItem
+            })
+          );
         };
 
         itemModal.style.display = "flex";

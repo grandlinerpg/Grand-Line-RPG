@@ -7,14 +7,14 @@ const marketContainer = document.getElementById("market-container");
 
 let currentItem = null;
 
-function resetMarketModal() {
+function resetItemModal() {
   const modal = document.getElementById("market-item-modal");
   if (!modal) return;
 
   modal.querySelector("#market-item-emoji").innerHTML = "📦";
   modal.querySelector("#market-item-name").innerText = "";
   modal.querySelector("#market-item-description").innerHTML = "";
-  modal.querySelector(".market-actions-container")?.innerHTML = "";
+  modal.querySelector(".item-actions").innerHTML = "";
 }
 
 async function loadMarketHTML() {
@@ -37,13 +37,13 @@ function initMarket() {
   const marketList = document.getElementById("market-list");
 
   const itemModal = document.getElementById("market-item-modal");
-  const buyConfirm = document.getElementById("buy-confirm-modal");
+  const confirmModal = document.getElementById("buy-confirm-modal");
 
   let anuncios = {};
   let itensDB = {};
 
   window.openMarket = async () => {
-    resetMarketModal();
+    resetItemModal();
 
     marketModal.style.display = "flex";
 
@@ -73,11 +73,10 @@ function initMarket() {
   function render(filter) {
     marketList.innerHTML = "";
 
-    const list = [];
-
     for (const id in anuncios) {
       const a = anuncios[id];
       const itemId = a.nome;
+      const value = Number(a.value || 0);
 
       let itemData = null;
 
@@ -92,79 +91,80 @@ function initMarket() {
 
       if (!itemData) continue;
 
-      list.push({
-        id,
-        itemId,
-        itemData,
-        value: a.value
-      });
-    }
-
-    for (const data of list) {
       const div = document.createElement("div");
       div.className = "inventory-item";
 
       div.innerHTML = `
         <div class="inventory-item-top">
-
           <span class="inventory-emoji">
-            ${data.itemData.img
-              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${data.itemData.img}.png"
-                class="inventory-item-img">`
+            ${itemData.img
+              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                  class="inventory-item-img">`
               : "📦"}
           </span>
 
           <div class="inventory-text">
-            <span class="inventory-name">${data.itemData.nome}</span>
-            <span class="inventory-qty">฿ ${data.value}</span>
+            <div class="inventory-name-qty">
+              <span class="inventory-name">${itemData.nome}</span>
+              <span class="inventory-qty">฿ ${value.toLocaleString("pt-BR")}</span>
+            </div>
           </div>
-
         </div>
       `;
 
       div.onclick = () => {
-        currentItem = data;
-
-        resetMarketModal();
-
-        itemModal.style.display = "flex";
-
-        itemModal.querySelector("#market-item-name").innerText = data.itemData.nome;
-
-        itemModal.querySelector("#market-item-description").innerHTML =
-          data.itemData.description || "Sem descrição";
-
-        const actions = itemModal.querySelector(".market-actions-container");
-
-        actions.innerHTML = `
-          <div class="market-actions">
-            <div class="price-box">฿ ${data.value}</div>
-            <button id="buy-btn">COMPRAR</button>
-          </div>
-        `;
-
-        const buyBtn = actions.querySelector("#buy-btn");
-
-        buyBtn.onclick = () => {
-          buyConfirm.style.display = "flex";
-
-          const yes = document.getElementById("buy-confirm-yes");
-          const no = document.getElementById("buy-confirm-no");
-
-          yes.onclick = () => {
-            buyConfirm.style.display = "none";
-            itemModal.style.display = "none";
-            console.log("COMPRA:", currentItem);
-          };
-
-          no.onclick = () => {
-            buyConfirm.style.display = "none";
-          };
+        currentItem = {
+          id,
+          nome: itemData.nome,
+          descricao: itemData.description,
+          img: itemData.img,
+          value,
+          tier: Number(itemData.tier || 1)
         };
+
+        openItem(currentItem);
       };
 
       marketList.appendChild(div);
     }
+  }
+
+  function openItem(item) {
+    resetItemModal();
+
+    document.getElementById("market-item-emoji").innerHTML =
+      item.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+            class="item-open-img">`
+        : "📦";
+
+    document.getElementById("market-item-name").innerText = item.nome;
+
+    document.getElementById("market-item-description").innerHTML = `
+      <div>${item.descricao}</div>
+    `;
+
+    const actions = itemModal.querySelector(".item-actions");
+
+    actions.innerHTML = `
+      <button id="buy-item">COMPRAR</button>
+    `;
+
+    actions.querySelector("#buy-item").onclick = () => {
+      confirmModal.style.display = "flex";
+
+      document.getElementById("buy-confirm-yes").onclick = () => {
+        confirmModal.style.display = "none";
+        itemModal.style.display = "none";
+        console.log("COMPRADO:", item.id);
+      };
+
+      document.getElementById("buy-confirm-no").onclick = () => {
+        confirmModal.style.display = "none";
+      };
+    };
+
+    itemModal.style.display = "flex";
   }
 }
 

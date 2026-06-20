@@ -102,167 +102,173 @@ window.abrirVendaItem = function(item) {
 
   modal.style.display = "flex";
 
+  // =========================
   // CANCELAR
+  // =========================
 
   document.getElementById("cancel-sell").onclick = () => {
     modal.style.display = "none";
   };
 
+  // =========================
   // CONFIRMAR
+  // =========================
 
   document.getElementById("confirm-sell").onclick =
     async () => {
 
-      const auth = window.auth;
-      const db = window.db;
+      try {
 
-      const price =
-        Number(priceInput.value);
+        const auth = window.auth;
+        const db = window.db;
 
-      const qtd =
-        Number(qtyInput.value);
-
-      if (!price || price < minPrice) {
-        alert("Preço abaixo do mínimo!");
-        return;
-      }
-
-      if (!qtd || qtd <= 0) {
-        alert("Quantidade inválida!");
-        return;
-      }
-
-      if (qtd > item.quantidade) {
-        alert(
-          `Você possui apenas ${item.quantidade} unidade(s).`
-        );
-        return;
-      }
-
-      const mercadoSnap =
-        await get(
-          ref(db, "mercado/itens")
-        );
-
-      let nextId = "000001";
-
-      if (mercadoSnap.exists()) {
-
-        const ids =
-          Object.keys(
-            mercadoSnap.val()
-          );
-
-        const maior =
-          Math.max(
-            ...ids.map(id =>
-              Number(id)
-            )
-          );
-
-        nextId =
-          String(maior + 1)
-            .padStart(6, "0");
-      }
-
-      const data =
-        new Date().toLocaleString(
-          "pt-BR"
-        );
-
-      await set(
-        ref(
-          db,
-        `mercado/itens/${nextId}`
-        ),
-        {
-          nome: item.id,
-          value: price,
-          jogador: auth.currentUser.uid,
-          qtd: qtd,
-          data: data
+        if (!auth.currentUser) {
+          alert("Usuário não logado.");
+          return;
         }
-      );
 
-// =========================
-// REMOVER DO INVENTÁRIO
-// =========================
+        const price =
+          Number(priceInput.value);
 
-      const novoTotal =
-        item.quantidade - qtd;
+        const qtd =
+          Number(qtyInput.value);
 
-      if (novoTotal > 0) {
+        if (!price || price < minPrice) {
+          alert("Preço abaixo do mínimo!");
+          return;
+        }
+
+        if (!qtd || qtd <= 0) {
+          alert("Quantidade inválida!");
+          return;
+        }
+
+        if (qtd > item.quantidade) {
+          alert(
+            `Você possui apenas ${item.quantidade} unidade(s).`
+          );
+          return;
+        }
+
+        // =========================
+        // GERAR ID DO ANÚNCIO
+        // =========================
+
+        const mercadoSnap =
+          await get(
+            ref(db, "mercado/itens")
+          );
+
+        let nextId = "000001";
+
+        if (mercadoSnap.exists()) {
+
+          const ids =
+            Object.keys(
+              mercadoSnap.val()
+            );
+
+          const maior =
+            Math.max(
+              ...ids.map(id =>
+                Number(id)
+              )
+            );
+
+          nextId =
+            String(maior + 1)
+              .padStart(6, "0");
+        }
+
+        // =========================
+        // DATA
+        // =========================
+
+        const data =
+          new Date().toLocaleString(
+            "pt-BR"
+          );
+
+        // =========================
+        // CRIAR ANÚNCIO
+        // =========================
 
         await set(
           ref(
             db,
-            `players/${auth.currentUser.uid}/inventory/${item.id}`
+            `mercado/itens/${nextId}`
           ),
-          novoTotal
+          {
+            nome: item.id,
+            value: price,
+            jogador: auth.currentUser.uid,
+            qtd: qtd,
+            data: data
+          }
         );
 
-      } else {
+        // =========================
+        // REMOVER DO INVENTÁRIO
+        // =========================
 
-        await set(
-          ref(
-            db,
-            `players/${auth.currentUser.uid}/inventory/${item.id}`
-          ),
-          null
+        const novoTotal =
+          item.quantidade - qtd;
+
+        if (novoTotal > 0) {
+
+          await set(
+            ref(
+              db,
+              `players/${auth.currentUser.uid}/inventory/${item.id}`
+            ),
+            novoTotal
+          );
+
+        } else {
+
+          await set(
+            ref(
+              db,
+              `players/${auth.currentUser.uid}/inventory/${item.id}`
+            ),
+            null
+          );
+
+        }
+
+        console.log(
+          "✅ anúncio criado:",
+          nextId
         );
 
+        modal.style.display = "none";
+
+        const itemModal =
+          document.getElementById("item-modal");
+
+        if (itemModal) {
+          itemModal.style.display = "none";
+        }
+
+        const inventoryModal =
+          document.getElementById("inventory-modal");
+
+        if (inventoryModal) {
+          inventoryModal.style.display = "flex";
+        }
+
+        alert("Item anunciado com sucesso!");
+
+      } catch (error) {
+
+        console.error(
+          "❌ erro ao anunciar item:",
+          error
+        );
+
+        alert(
+          "Erro ao anunciar item. Verifique o console."
+        );
       }
-
-console.log(
-  "✅ anúncio criado:",
-  nextId
-);
-
-modal.style.display = "none";
-
-// fecha janela do item
-const itemModal =
-  document.getElementById("item-modal");
-
-if (itemModal) {
-  itemModal.style.display = "none";
-}
-
-// mantém inventário aberto
-const inventoryModal =
-  document.getElementById("inventory-modal");
-
-if (inventoryModal) {
-  inventoryModal.style.display = "flex";
-}
-
-alert("Item anunciado com sucesso!");
-
-      console.log(
-        "✅ anúncio criado:",
-        nextId
-      );
-
-      modal.style.display = "none";
-
-      // fecha janela do item
-      const itemModal =
-        document.getElementById("item-modal");
-
-      if (itemModal) {
-        itemModal.style.display = "none";
-      }
-  
-      // garante inventário aberto
-      const inventoryModal =
-        document.getElementById("inventory-modal");
-
-      if (inventoryModal) {
-        inventoryModal.style.display = "flex";
-      }
-
-      alert("Item anunciado com sucesso!");
     };
 };
-
-

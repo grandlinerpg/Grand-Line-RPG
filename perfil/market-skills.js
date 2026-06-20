@@ -125,10 +125,7 @@ function initMarketSkills() {
           <span class="skill-name">
             ${skill.nome || skillId}
           </span>
-
-          <span class="skill-qty">
-            ${skill.cost || 1} HA
-          </span>
+          
         `;
 
         list.appendChild(div);

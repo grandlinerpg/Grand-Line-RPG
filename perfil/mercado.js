@@ -49,7 +49,6 @@ function initMarket() {
 
     marketModal.style.display = "flex";
 
-    // 🔥 1. mercado (anúncios)
     const marketSnap =
       await get(ref(db, "mercado/itens"));
 
@@ -58,7 +57,6 @@ function initMarket() {
       return;
     }
 
-    // 🔥 2. catálogo de itens
     const itensSnap =
       await get(ref(db, "itens"));
 
@@ -70,7 +68,6 @@ function initMarket() {
     anuncios = marketSnap.val();
     itensDB = itensSnap.val();
 
-    // 🔥 monta select com categorias reais do catálogo
     categorySelect.innerHTML = `
       <option value="all">Todas as Categorias</option>
     `;
@@ -100,18 +97,19 @@ function initMarket() {
 
     marketList.innerHTML = "";
 
-    // 🔥 loop em TODOS os anúncios
+    // 🔥 ÚNICA ALTERAÇÃO: transformar em array e ordenar
+    const lista = [];
+
     for (const anuncioId in anuncios) {
 
       const anuncio = anuncios[anuncioId];
 
       const itemId = anuncio.nome;
-      const value = anuncio.value;
+      const value = Number(anuncio.value || 0);
 
       let itemData = null;
       let categoriaItem = null;
 
-      // 🔥 procura item no catálogo inteiro
       for (const categoria in itensDB) {
 
         if (
@@ -129,6 +127,22 @@ function initMarket() {
       }
 
       if (!itemData) continue;
+
+      lista.push({
+        anuncioId,
+        itemId,
+        value,
+        itemData
+      });
+    }
+
+    // 🔥 ORDENA DO MENOR PARA O MAIOR PREÇO
+    lista.sort((a, b) => a.value - b.value);
+
+    // 🔥 renderização normal (sem mudar lógica)
+    for (const data of lista) {
+
+      const { anuncioId, itemId, value, itemData } = data;
 
       const div = document.createElement("div");
 

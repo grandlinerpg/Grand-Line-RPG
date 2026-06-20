@@ -46,6 +46,17 @@ function initMarket() {
 
     marketModal.style.display = "flex";
 
+    // 🔥 1. mercado (somente anúncios)
+    const marketSnap =
+      await get(ref(db, "mercado/itens"));
+
+    if (!marketSnap.exists()) {
+      marketList.innerHTML =
+        "Nenhum item encontrado.";
+      return;
+    }
+
+    // 🔥 2. base de itens (dados completos)
     const itensSnap =
       await get(ref(db, "itens"));
 
@@ -55,38 +66,41 @@ function initMarket() {
       return;
     }
 
-    const categorias =
+    const marketItems =
+      marketSnap.val();
+
+    const itensDB =
       itensSnap.val();
 
+    // categoria só visual
     categorySelect.innerHTML = `
-      <option value="all">
-        Todas as Categorias
-      </option>
+      <option value="all">Todos</option>
     `;
 
-    for (const categoria in categorias) {
+    const cats = new Set();
 
-      categorySelect.innerHTML += `
-        <option value="${categoria}">
-          ${categoria}
-        </option>
-      `;
+    for (const id in marketItems) {
+      const m = marketItems[id];
+      if (m.categoria) cats.add(m.categoria);
     }
 
-    renderMarket(
-      categorias,
-      "all",
-      marketList
-    );
+    cats.forEach(cat => {
+      categorySelect.innerHTML += `
+        <option value="${cat}">
+          ${cat}
+        </option>
+      `;
+    });
+
+    renderMarket(marketItems, itensDB, "all", marketList);
 
     categorySelect.onchange = () => {
-
       renderMarket(
-        categorias,
+        marketItems,
+        itensDB,
         categorySelect.value,
         marketList
       );
-
     };
   };
 
@@ -109,100 +123,105 @@ function initMarket() {
 }
 
 function renderMarket(
-  categorias,
+  marketItems,
+  itensDB,
   filtro,
   marketList
 ) {
 
   marketList.innerHTML = "";
 
-  for (const categoria in categorias) {
+  for (const id in marketItems) {
 
+    const anuncio =
+      marketItems[id];
+
+    const itemId = anuncio.item;
+    const value = anuncio.value;
+
+    // 🔥 procura o item em TODAS categorias
+    let itemData = null;
+
+    for (const cat in itensDB) {
+      if (itensDB[cat][itemId]) {
+        itemData = itensDB[cat][itemId];
+        break;
+      }
+    }
+
+    if (!itemData) continue;
+
+    // filtro opcional por categoria
     if (
       filtro !== "all" &&
-      filtro !== categoria
+      anuncio.categoria !== filtro
     ) {
       continue;
     }
 
-    const itens =
-      categorias[categoria];
+    const div =
+      document.createElement("div");
 
-    for (const itemId in itens) {
+    div.className = "inventory-item";
 
-      const itemData =
-        itens[itemId];
+    div.innerHTML = `
+      <div class="inventory-item-top">
 
-      const div =
-        document.createElement("div");
+        <span class="inventory-emoji">
 
-      div.className =
-        "inventory-item";
+          ${
+            itemData.img
+              ? `<img
+                  src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                  class="inventory-item-img"
+                >`
+              : "📦"
+          }
 
-      div.innerHTML = `
-        <div class="inventory-item-top">
+        </span>
 
-          <span class="inventory-emoji">
+        <div class="inventory-text">
 
-            ${
-              itemData.img
-                ? `<img
-                    src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
-                    class="inventory-item-img"
-                  >`
-                : (itemData.item || "📦")
-            }
+          <div class="inventory-name-qty">
 
-          </span>
+            <span class="inventory-name">
+              ${itemData.nome || itemId}
+            </span>
 
-          <div class="inventory-text">
-
-            <div class="inventory-name-qty">
-
-              <span class="inventory-name">
-                ${itemData.nome || itemId}
-              </span>
-
-              <span class="inventory-qty">
-                ฿ ${Number(
-                  itemData.value || 0
-                ).toLocaleString("pt-BR")}
-              </span>
-
-            </div>
+            <span class="inventory-qty">
+              ฿ ${Number(value || 0).toLocaleString("pt-BR")}
+            </span>
 
           </div>
 
         </div>
-      `;
 
-      // 🔥 CLIQUE NO ITEM (NOVO)
-      div.addEventListener("click", () => {
+      </div>
+    `;
 
-        currentItem = {
-          id: itemId,
-          nome: itemData.nome,
-          descricao: itemData.description,
-          img: itemData.img,
-          value: itemData.value
-        };
+    div.addEventListener("click", () => {
 
-        openMarketItemModal(currentItem);
-      });
+      currentItem = {
+        id,
+        nome: itemData.nome,
+        descricao: itemData.description,
+        img: itemData.img,
+        value
+      };
 
-      marketList.appendChild(div);
-    }
+      openMarketItemModal(currentItem);
+    });
+
+    marketList.appendChild(div);
   }
 
-  if (!marketList.innerHTML.trim()) {
-
+  if (!marketList.children.length) {
     marketList.innerHTML =
       "Nenhum item encontrado.";
-
   }
 }
 
-// 🔥 MODAL DO ITEM NO MERCADO
+// 🔥 MODAL
 function openMarketItemModal(item) {
 
   const itemModal =
@@ -220,11 +239,7 @@ function openMarketItemModal(item) {
     item.nome;
 
   document.getElementById("item-description").innerHTML =
-    `
-      <div>
-        ${item.descricao || "Sem descrição."}
-      </div>
-    `;
+    `<div>${item.descricao || "Sem descrição."}</div>`;
 
   const actions =
     document.querySelector(".item-actions");
@@ -244,8 +259,7 @@ function openMarketItemModal(item) {
   `;
 
   document.getElementById("buy-item").addEventListener("click", () => {
-    console.log("comprar item:", item.id);
-    // aqui depois entra lógica de compra
+    console.log("comprar:", item.id);
   });
 
   itemModal.style.display = "flex";

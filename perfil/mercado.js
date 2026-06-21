@@ -106,7 +106,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     ========================= */
 
     const invData = invSnap.exists() ? invSnap.val() : {};
-    const nomeItem = item.nome;
+    const itemId = a.nome; // vindo do mercado
 
     const atualRaw = invData?.[nomeItem];
 

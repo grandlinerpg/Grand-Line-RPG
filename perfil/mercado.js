@@ -2,7 +2,8 @@ import {
   ref,
   get,
   update,
-  remove
+  remove,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const marketContainer = document.getElementById("market-container");
@@ -44,8 +45,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
 
   const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
   const sellerRef = ref(db, `players/${item.jogador}/info/saldo`);
-
-  const invRef = ref(db, `players/${compradorUid}/inventory`);
+  const invRef = ref(db, `players/${compradorUid}/inventory/${item.nome}`);
 
   const [buyerSnap, sellerSnap, marketSnap, invSnap] = await Promise.all([
     get(buyerRef),
@@ -77,26 +77,29 @@ async function comprarItem(db, item, quantidade, compradorUid) {
   });
 
   /* =========================
-     🎒 INVENTÁRIO (CORRIGIDO DE VERDADE)
+     🎒 INVENTÁRIO (100% SEGURO)
   ========================= */
-  const invData = invSnap.exists() ? invSnap.val() : {};
 
-  const currentQty = Number(invData[item.nome] || 0);
-
-  await update(invRef, {
-    [item.nome]: currentQty + quantidade
+  await runTransaction(invRef, (current) => {
+    if (current === null) current = 0;
+    return Number(current) + quantidade;
   });
 
   /* =========================
-     🏪 MERCADO
+     🏪 MERCADO (SEGURO)
   ========================= */
-  const newQtd = data.qtd - quantidade;
 
-  if (newQtd <= 0) {
-    await remove(marketRef);
-  } else {
-    await update(marketRef, { qtd: newQtd });
-  }
+  await runTransaction(marketRef, (itemData) => {
+    if (!itemData) return itemData;
+
+    if (itemData.qtd < quantidade) return;
+
+    itemData.qtd -= quantidade;
+
+    if (itemData.qtd <= 0) return null;
+
+    return itemData;
+  });
 }
 
 /* =========================
@@ -267,6 +270,9 @@ function initMarket() {
 
       confirmModal.style.display = "none";
       itemModal.style.display = "none";
+      marketModal.style.display = "flex";
+
+      marketItem = null;
 
       console.log("COMPRA REALIZADA");
 

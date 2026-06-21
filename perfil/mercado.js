@@ -70,26 +70,40 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     if (data.qtd < qtdFinal) throw new Error("Sem estoque");
     if (buyerSaldo < total) throw new Error("Saldo insuficiente");
 
+    /* =========================
+       ESTOQUE (REMOVE SE ZERAR)
+    ========================= */
     const result = await runTransaction(marketRef, (itemData) => {
       if (!itemData) return null;
 
       const atual = Number(itemData.qtd || 0);
+
       if (atual < qtdFinal) return itemData;
 
       const novo = atual - qtdFinal;
+
+      // 🔥 se zerou remove anúncio
       if (novo <= 0) return null;
 
-      return { ...itemData, qtd: novo };
+      return {
+        ...itemData,
+        qtd: novo
+      };
     });
 
     if (!result.committed) {
       throw new Error("Falha no estoque");
     }
 
+    /* =========================
+       💸 SALDO (CORRIGIDO)
+       - compra de si mesmo NÃO dá lucro
+    ========================= */
     let novoBuyer = buyerSaldo - total;
     let novoSeller = sellerSaldo + total;
 
     if (item.jogador === compradorUid) {
+      // 🔥 se for próprio item: cancela efeito de lucro
       novoSeller -= total;
     }
 
@@ -98,6 +112,9 @@ async function comprarItem(db, item, quantidade, compradorUid) {
       [`players/${item.jogador}/info/saldo`]: novoSeller
     });
 
+    /* =========================
+       🎒 INVENTÁRIO
+    ========================= */
     const invSnap = await get(invRef);
     const invData = invSnap.exists() ? invSnap.val() : {};
 
@@ -142,23 +159,14 @@ function initMarket() {
   let marketRef = ref(db, "mercado/itens");
 
   /* =========================
-     FECHAR → VOLTA INVENTÁRIO (FIX REAL)
+     FECHAR → VOLTA INVENTÁRIO
   ========================= */
   if (closeMarket) {
     closeMarket.onclick = () => {
       marketModal.style.display = "none";
 
-      // 🔥 GARANTE que nada fica preso aberto
-      if (itemModal) itemModal.style.display = "none";
-      if (confirmModal) confirmModal.style.display = "none";
-
-      marketItem = null;
-
-      // 🔥 ÚNICA FUNÇÃO EXTRA: voltar inventário sem resetar nada
       const inv = document.getElementById("inventory-container");
-      if (inv) {
-        inv.style.display = "flex";
-      }
+      if (inv) inv.style.display = "flex";
     };
   }
 
@@ -169,7 +177,7 @@ function initMarket() {
   }
 
   /* =========================
-     🔥 OPEN MARKET
+     🔥 LIVE MARKET
   ========================= */
   window.openMarket = async () => {
     resetItemModal();
@@ -189,11 +197,13 @@ function initMarket() {
       categorySelect.innerHTML += `<option value="${c}">${c}</option>`;
     }
 
+    // remove listener antigo
     if (marketListener) off(marketRef, "value", marketListener);
 
     marketListener = onValue(marketRef, (snap) => {
       const raw = snap.val() || {};
 
+      // 🔥 remove automaticamente itens zerados (garantia extra)
       for (const id in raw) {
         if (!raw[id] || raw[id].qtd <= 0) {
           remove(ref(db, `mercado/itens/${id}`));

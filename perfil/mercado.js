@@ -36,25 +36,27 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA FINAL FIX
+   💰 COMPRA (CORRIGIDA FINAL)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
 
   const marketRef = ref(db, `mercado/itens/${item.marketId}`);
+
   const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
   const sellerRef = ref(db, `players/${item.jogador}/info/saldo`);
-  const invRef = ref(db, `players/${compradorUid}/inventory/${item.nome}`);
 
-  const [marketSnap, buyerSnap, sellerSnap, invSnap] = await Promise.all([
-    get(marketRef),
+  const invRef = ref(db, `players/${compradorUid}/inventory`);
+
+  const [buyerSnap, sellerSnap, marketSnap, invSnap] = await Promise.all([
     get(buyerRef),
     get(sellerRef),
+    get(marketRef),
     get(invRef)
   ]);
 
-  if (!marketSnap.exists()) throw new Error("Item não existe");
   if (!buyerSnap.exists()) throw new Error("Comprador inválido");
   if (!sellerSnap.exists()) throw new Error("Vendedor inválido");
+  if (!marketSnap.exists()) throw new Error("Item não existe");
 
   const data = marketSnap.val();
 
@@ -75,14 +77,15 @@ async function comprarItem(db, item, quantidade, compradorUid) {
   });
 
   /* =========================
-     🎒 INVENTÁRIO (FIX REAL)
+     🎒 INVENTÁRIO (CORRIGIDO DE VERDADE)
   ========================= */
-  const currentQty = invSnap.exists() ? Number(invSnap.val()) : 0;
+  const invData = invSnap.exists() ? invSnap.val() : {};
 
-  // garante que nunca vira NaN
-  const newQty = (isNaN(currentQty) ? 0 : currentQty) + quantidade;
+  const currentQty = Number(invData[item.nome] || 0);
 
-  await update(invRef, newQty);
+  await update(invRef, {
+    [item.nome]: currentQty + quantidade
+  });
 
   /* =========================
      🏪 MERCADO
@@ -121,8 +124,17 @@ function initMarket() {
   let anuncios = {};
   let itensDB = {};
 
-  closeMarket.onclick = () => marketModal.style.display = "none";
-  closeItem.onclick = () => itemModal.style.display = "none";
+  if (closeMarket) {
+    closeMarket.onclick = () => {
+      marketModal.style.display = "none";
+    };
+  }
+
+  if (closeItem) {
+    closeItem.onclick = () => {
+      itemModal.style.display = "none";
+    };
+  }
 
   window.openMarket = async () => {
     resetItemModal();
@@ -178,61 +190,88 @@ function initMarket() {
 
       div.innerHTML = `
         <div class="inventory-item-top">
-          <span class="inventory-emoji">${getEmoji(itemData)}</span>
+          <span class="inventory-emoji">
+            ${itemData.img
+              ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemData.img}.png"
+                  class="inventory-item-img">`
+              : getEmoji(itemData)}
+          </span>
+
           <div class="inventory-text">
-            <span>${itemData.nome}</span>
-            <span>฿ ${value.toLocaleString("pt-BR")}</span>
+            <div class="inventory-name-qty">
+              <span class="inventory-name">${itemData.nome}</span>
+              <span class="inventory-qty">฿ ${value.toLocaleString("pt-BR")}</span>
+            </div>
           </div>
         </div>
       `;
 
-      div.onclick = () => {
-        marketItem = {
-          marketId,
-          nome: itemData.nome,
-          descricao: itemData.description || itemData.descricao,
-          value,
-          jogador: a.jogador,
-          qtd: a.qtd
-        };
-
-        document.getElementById("market-item-name").innerText = itemData.nome;
-        document.getElementById("market-item-description").innerText =
-          itemData.description || itemData.descricao || "Sem descrição";
-
-        priceBox.innerText = `฿ ${value}`;
-
-        itemModal.style.display = "flex";
-      };
+      div.onclick = () => openItem({
+        marketId,
+        nome: itemData.nome,
+        descricao: itemData.description,
+        img: itemData.img,
+        value,
+        tier: Number(itemData.tier || 1),
+        emoji: getEmoji(itemData),
+        jogador: a.jogador,
+        qtd: a.qtd
+      });
 
       marketList.appendChild(div);
     }
   }
 
+  function openItem(item) {
+    resetItemModal();
+
+    marketItem = item;
+
+    document.getElementById("market-item-emoji").innerHTML =
+      item.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+            class="item-open-img">`
+        : item.emoji;
+
+    document.getElementById("market-item-name").innerText = item.nome;
+
+    document.getElementById("market-item-description").innerHTML = `
+      <div>${item.descricao || "Sem descrição."}</div>
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
+        style="width:210px;display:block;margin:12px auto 0 auto;">
+    `;
+
+    priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;
+
+    itemModal.style.display = "flex";
+  }
+
   buyBtn.onclick = () => {
+    if (!marketItem) return;
     confirmModal.style.display = "flex";
   };
 
   yesBtn.onclick = async () => {
     try {
-      const qtd = Number(document.getElementById("market-quantity-select")?.value || 1);
-      const uid = window.auth?.currentUser?.uid;
+      if (!marketItem) return;
 
-      if (!uid) throw new Error("Usuário não carregado");
+      const qtd = Number(
+        document.getElementById("market-quantity-select")?.value || 1
+      );
 
-      await comprarItem(db, marketItem, qtd, uid);
+      const comprador = window.auth?.currentUser?.uid;
+
+      if (!comprador) throw new Error("Usuário não carregado");
+
+      await comprarItem(window.db, marketItem, qtd, comprador);
 
       confirmModal.style.display = "none";
       itemModal.style.display = "none";
-
-      // 🔥 FORÇA ATUALIZAÇÃO DO MERCADO
-      window.openMarket();
 
       console.log("COMPRA REALIZADA");
 
     } catch (err) {
       console.error("Erro na compra:", err.message);
-      confirmModal.style.display = "none";
     }
   };
 

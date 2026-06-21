@@ -30,51 +30,37 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 FUNÇÃO DE COMPRA (CORRIGIDA)
+   💰 COMPRA SEGURA
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
 
-  const vendedorUid = item.jogador;
-  const total = item.value * quantidade;
-
-  // 🔥 FIX: usar marketId (ID REAL do Firebase)
   const marketRef = ref(db, `mercado/itens/${item.marketId}`);
-  const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
-  const sellerRef = ref(db, `players/${vendedorUid}/info/saldo`);
 
-  const [buyerSnap, sellerSnap, marketSnap] = await Promise.all([
-    get(buyerRef),
-    get(sellerRef),
-    get(marketRef)
-  ]);
-
-  if (!buyerSnap.exists()) throw new Error("Comprador não existe");
-  if (!sellerSnap.exists()) throw new Error("Vendedor não existe");
-  if (!marketSnap.exists()) throw new Error("Item não existe");
-
-  const buyerSaldo = buyerSnap.val();
-  const sellerSaldo = sellerSnap.val();
-  const marketData = marketSnap.val();
-
-  if (marketData.qtd < quantidade) {
-    throw new Error("Quantidade indisponível");
-  }
-
-  if (buyerSaldo < total) {
-    throw new Error("Saldo insuficiente");
-  }
-
-  // saldo update
-  await update(ref(db), {
-    [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
-    [`players/${vendedorUid}/info/saldo`]: sellerSaldo + total
-  });
-
-  // estoque update seguro
-  await runTransaction(marketRef, (data) => {
+  await runTransaction(marketRef, async (data) => {
     if (!data) return null;
 
+    const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
+    const sellerRef = ref(db, `players/${data.jogador}/info/saldo`);
+
+    const [buyerSnap, sellerSnap] = await Promise.all([
+      get(buyerRef),
+      get(sellerRef)
+    ]);
+
+    if (!buyerSnap.exists() || !sellerSnap.exists()) return;
+
+    const buyerSaldo = Number(buyerSnap.val());
+    const sellerSaldo = Number(sellerSnap.val());
+
+    const total = Number(data.value) * quantidade;
+
     if (data.qtd < quantidade) return;
+    if (buyerSaldo < total) return;
+
+    await update(ref(db), {
+      [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
+      [`players/${data.jogador}/info/saldo`]: sellerSaldo + total
+    });
 
     data.qtd -= quantidade;
 
@@ -82,7 +68,9 @@ async function comprarItem(db, item, quantidade, compradorUid) {
   });
 }
 
-/* ========================= */
+/* =========================
+   MARKET
+========================= */
 
 function initMarket() {
   const db = window.db;
@@ -189,7 +177,7 @@ function initMarket() {
       `;
 
       div.onclick = () => openItem({
-        marketId, // 🔥 FIX CRÍTICO
+        marketId,
         nome: itemData.nome,
         descricao: itemData.description,
         img: itemData.img,

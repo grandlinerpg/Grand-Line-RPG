@@ -36,7 +36,7 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA (CORRIGIDA E ESTÁVEL)
+   💰 COMPRA (CORRIGIDA FINAL)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
 
@@ -53,18 +53,26 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     get(invRef)
   ]);
 
-  if (!buyerSnap.exists() || !sellerSnap.exists() || !marketSnap.exists()) {
-    throw new Error("Dados inválidos");
-  }
+  if (!buyerSnap.exists()) throw new Error("Comprador inválido");
+  if (!sellerSnap.exists()) throw new Error("Vendedor inválido");
+  if (!marketSnap.exists()) throw new Error("Item não existe");
+
+  const data = marketSnap.val();
 
   const buyerSaldo = Number(buyerSnap.val());
   const sellerSaldo = Number(sellerSnap.val());
-  const data = marketSnap.val();
 
   const total = Number(data.value) * quantidade;
 
   if (data.qtd < quantidade) throw new Error("Sem estoque");
   if (buyerSaldo < total) throw new Error("Saldo insuficiente");
+
+  /* =========================
+     🚫 BLOQUEIO AUTO-COMPRA
+  ========================= */
+  if (item.jogador === compradorUid) {
+    throw new Error("Você não pode comprar seu próprio item");
+  }
 
   /* =========================
      💰 SALDO
@@ -75,11 +83,13 @@ async function comprarItem(db, item, quantidade, compradorUid) {
   });
 
   /* =========================
-     🎒 INVENTÁRIO
+     🎒 INVENTÁRIO (CORRETO)
   ========================= */
   const currentQty = invSnap.exists() ? Number(invSnap.val()) : 0;
 
-  await update(invRef, currentQty + quantidade);
+  await update(invRef, {
+    [item.nome]: currentQty + quantidade
+  });
 
   /* =========================
      🏪 MERCADO

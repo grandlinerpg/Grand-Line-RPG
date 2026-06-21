@@ -239,7 +239,6 @@ function initInventory() {
   };
 
   marketBtn.onclick = () => {
-    inventoryModal.style.display = "none";
     window.openMarket?.();
   };
 

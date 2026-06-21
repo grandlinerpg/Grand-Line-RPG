@@ -74,17 +74,12 @@ async function comprarItem(db, item, quantidade, compradorUid) {
       if (!itemData) return null;
 
       const atual = Number(itemData.qtd || 0);
-
       if (atual < qtdFinal) return itemData;
 
       const novo = atual - qtdFinal;
-
       if (novo <= 0) return null;
 
-      return {
-        ...itemData,
-        qtd: novo
-      };
+      return { ...itemData, qtd: novo };
     });
 
     if (!result.committed) {
@@ -142,24 +137,26 @@ function initMarket() {
   const yesBtn = document.getElementById("market-confirm-yes");
   const noBtn = document.getElementById("market-confirm-no");
 
+  const qtySelect = document.getElementById("market-quantity-select");
+
   let anuncios = {};
   let itensDB = {};
   let marketRef = ref(db, "mercado/itens");
 
   /* =========================
-     FECHAR → VOLTA INVENTÁRIO
+     FECHAR → VOLTA INVENTÁRIO (FIX REAL)
   ========================= */
   if (closeMarket) {
     closeMarket.onclick = () => {
       marketModal.style.display = "none";
 
-      // 🔥 ÚNICA ALTERAÇÃO: garante retorno ao inventário
-      const inv = document.getElementById("inventory-container");
-      if (inv) inv.style.display = "flex";
-
-      // garante que não fica nada preso aberto
       if (itemModal) itemModal.style.display = "none";
       if (confirmModal) confirmModal.style.display = "none";
+
+      marketItem = null;
+
+      const inv = document.getElementById("inventory-container");
+      if (inv) inv.style.display = "flex";
     };
   }
 
@@ -273,6 +270,9 @@ function initMarket() {
     resetItemModal();
     marketItem = item;
 
+    // 🔥 FIX: reset quantidade sempre ao abrir item
+    if (qtySelect) qtySelect.value = "1";
+
     document.getElementById("market-item-emoji").innerHTML =
       item.img
         ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
@@ -299,9 +299,7 @@ function initMarket() {
 
   yesBtn.onclick = async () => {
     try {
-      const qtd = Number(
-        document.getElementById("market-quantity-select")?.value || 1
-      );
+      const qtd = Number(qtySelect?.value || 1);
 
       const comprador = window.auth?.currentUser?.uid;
       if (!comprador) throw new Error("Usuário não logado");

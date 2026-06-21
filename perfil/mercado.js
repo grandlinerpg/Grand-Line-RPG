@@ -61,13 +61,11 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     throw new Error("Saldo insuficiente");
   }
 
-  // 💰 atualiza saldos
   await update(ref(db), {
     [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
     [`players/${vendedorUid}/info/saldo`]: sellerSaldo + total
   });
 
-  // 📦 atualiza estoque
   await runTransaction(marketRef, (data) => {
     if (!data) return data;
 
@@ -191,7 +189,11 @@ function initMarket() {
         img: itemData.img,
         value,
         tier: Number(itemData.tier || 1),
-        emoji: getEmoji(itemData)
+        emoji: getEmoji(itemData),
+
+        // 🔥 ESSENCIAL
+        jogador: a.jogador,
+        qtd: a.qtd
       });
 
       marketList.appendChild(div);
@@ -228,16 +230,26 @@ function initMarket() {
   };
 
   yesBtn.onclick = async () => {
-    const qtd = Number(document.getElementById("market-quantity-select")?.value || 1);
-    const comprador = window.user.uid;
-
     try {
+      if (!marketItem) return;
+
+      const qtd = Number(
+        document.getElementById("market-quantity-select")?.value || 1
+      );
+
+      const comprador = window.user?.uid;
+
+      if (!comprador) {
+        throw new Error("Usuário não carregado");
+      }
+
       await comprarItem(window.db, marketItem, qtd, comprador);
 
       confirmModal.style.display = "none";
       itemModal.style.display = "none";
 
       console.log("COMPRA REALIZADA");
+
     } catch (err) {
       console.error("Erro na compra:", err.message);
     }

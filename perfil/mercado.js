@@ -37,7 +37,7 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA (CORRIGIDA FINAL)
+   💰 COMPRA
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
 
@@ -45,7 +45,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
 
   const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
   const sellerRef = ref(db, `players/${item.jogador}/info/saldo`);
-  const invRef = ref(db, `players/${compradorUid}/inventory/${item.nome}`);
+  const invRef = ref(db, `players/${compradorUid}/inventory`);
 
   const [buyerSnap, sellerSnap, marketSnap, invSnap] = await Promise.all([
     get(buyerRef),
@@ -77,28 +77,33 @@ async function comprarItem(db, item, quantidade, compradorUid) {
   });
 
   /* =========================
-     🎒 INVENTÁRIO (100% SEGURO)
+     🎒 INVENTÁRIO
   ========================= */
+  const invData = invSnap.exists() ? invSnap.val() : {};
+  const currentQty = Number(invData[item.nome] || 0);
 
-  await runTransaction(invRef, (current) => {
-    if (current === null) current = 0;
-    return Number(current) + quantidade;
+  await update(invRef, {
+    [item.nome]: currentQty + quantidade
   });
 
   /* =========================
-     🏪 MERCADO (SEGURO)
+     🏪 MERCADO (CORRIGIDO DE VERDADE)
   ========================= */
-
   await runTransaction(marketRef, (itemData) => {
     if (!itemData) return itemData;
 
-    if (itemData.qtd < quantidade) return;
+    const atual = Number(itemData.qtd || 0);
 
-    itemData.qtd -= quantidade;
+    if (atual < quantidade) return;
 
-    if (itemData.qtd <= 0) return null;
+    const novaQtd = atual - quantidade;
 
-    return itemData;
+    if (novaQtd <= 0) return null;
+
+    return {
+      ...itemData,
+      qtd: novaQtd
+    };
   });
 }
 

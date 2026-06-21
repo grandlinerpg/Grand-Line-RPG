@@ -3,16 +3,15 @@ import {
   get,
   update,
   remove,
-  runTransaction
+  runTransaction,
+  onValue,
+  off
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const marketContainer = document.getElementById("market-container");
 
 let marketItem = null;
 
-/* =========================
-   RESET MODAL
-========================= */
 function resetItemModal() {
   const modal = document.getElementById("market-item-modal");
   if (!modal) return;
@@ -37,11 +36,10 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA (CORRIGIDO)
+   💰 COMPRA
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
   try {
-    console.log("🟢 INICIO COMPRA");
 
     const marketRef = ref(db, `mercado/itens/${item.marketId}`);
     const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
@@ -65,14 +63,18 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     const sellerSaldo = Number(sellerSnap.val());
 
     const qtdFinal = Number.isFinite(Number(quantidade)) ? Number(quantidade) : 1;
-
     const total = Number(data.value) * qtdFinal;
+
+    /* ❌ BLOQUEIO: comprar de si mesmo */
+    if (item.jogador === compradorUid) {
+      throw new Error("Você não pode comprar seu próprio item");
+    }
 
     if (data.qtd < qtdFinal) throw new Error("Sem estoque");
     if (buyerSaldo < total) throw new Error("Saldo insuficiente");
 
     /* =========================
-       🏪 ESTOQUE
+       ESTOQUE (TRANSACTION)
     ========================= */
     const result = await runTransaction(marketRef, (itemData) => {
       if (!itemData) return null;
@@ -81,18 +83,25 @@ async function comprarItem(db, item, quantidade, compradorUid) {
 
       if (atual < qtdFinal) return itemData;
 
+      const novaQtd = atual - qtdFinal;
+
       return {
         ...itemData,
-        qtd: atual - qtdFinal
+        qtd: novaQtd
       };
     });
 
-    if (!result.committed) {
-      throw new Error("Falha no estoque");
+    if (!result.committed) throw new Error("Falha no estoque");
+
+    const novoEstoque = result.snapshot.val()?.qtd ?? 0;
+
+    /* 🧨 SE ZEROU, REMOVE ANÚNCIO */
+    if (novoEstoque <= 0) {
+      await remove(marketRef);
     }
 
     /* =========================
-       💰 SALDOS
+       SALDOS
     ========================= */
     await update(ref(db), {
       [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
@@ -100,41 +109,34 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     });
 
     /* =========================
-       🎒 INVENTÁRIO (CORRIGIDO)
-       - usa nome do item do mercado
+       INVENTÁRIO
     ========================= */
 
     const invData = invSnap.exists() ? invSnap.val() : {};
 
-    const itemKey = data.nome; // <- SEMPRE o nome do mercado
+    const itemKey = data.nome;
 
-    const atualRaw = invData?.[itemKey];
-
-    let currentQty = Number(atualRaw);
-    if (!Number.isFinite(currentQty)) currentQty = 0;
-
-    const finalQty = currentQty + qtdFinal;
+    const currentQty = Number(invData?.[itemKey] || 0);
 
     await update(invRef, {
-      [itemKey]: finalQty
+      [itemKey]: currentQty + qtdFinal
     });
 
-    console.log("✅ COMPRA FINALIZADA");
+    console.log("✅ COMPRA OK");
 
   } catch (err) {
-    console.error("💥 ERRO NA COMPRA:", err.message);
+    console.error("💥 ERRO:", err.message);
   }
 }
 
 /* =========================
-   INIT MARKET
+   INIT MARKET (AO VIVO)
 ========================= */
 function initMarket() {
   const db = window.db;
 
   const marketModal = document.getElementById("market-modal");
   const closeMarket = document.getElementById("close-market");
-
   const categorySelect = document.getElementById("market-category");
   const marketList = document.getElementById("market-list");
 
@@ -151,29 +153,31 @@ function initMarket() {
   let anuncios = {};
   let itensDB = {};
 
-  if (closeMarket) {
-    closeMarket.onclick = () => {
-      marketModal.style.display = "none";
-    };
-  }
+  /* 🔥 AO VIVO */
+  const marketRef = ref(db, "mercado/itens");
 
-  if (closeItem) {
-    closeItem.onclick = () => {
-      itemModal.style.display = "none";
-    };
-  }
+  onValue(marketRef, (snap) => {
+    anuncios = snap.exists() ? snap.val() : {};
+    render(categorySelect?.value || "all");
+  });
+
+  closeMarket.onclick = () => {
+    marketModal.style.display = "none";
+    window.openInventory?.();
+  };
+
+  closeItem.onclick = () => {
+    itemModal.style.display = "none";
+  };
 
   window.openMarket = async () => {
     resetItemModal();
 
     marketModal.style.display = "flex";
 
-    const marketSnap = await get(ref(db, "mercado/itens"));
     const itensSnap = await get(ref(db, "itens"));
+    if (!itensSnap.exists()) return;
 
-    if (!marketSnap.exists() || !itensSnap.exists()) return;
-
-    anuncios = marketSnap.val();
     itensDB = itensSnap.val();
 
     categorySelect.innerHTML = `<option value="all">Todas</option>`;
@@ -233,44 +237,23 @@ function initMarket() {
         </div>
       `;
 
-      div.onclick = () => openItem({
-        marketId,
-        nome: itemData.nome,
-        descricao: itemData.description,
-        img: itemData.img,
-        value,
-        tier: Number(itemData.tier || 1),
-        emoji: getEmoji(itemData),
-        jogador: a.jogador,
-        qtd: a.qtd
-      });
+      div.onclick = () => {
+        marketItem = {
+          marketId,
+          nome: itemData.nome,
+          descricao: itemData.description,
+          img: itemData.img,
+          value,
+          tier: Number(itemData.tier || 1),
+          emoji: getEmoji(itemData),
+          jogador: a.jogador
+        };
+
+        itemModal.style.display = "flex";
+      };
 
       marketList.appendChild(div);
     }
-  }
-
-  function openItem(item) {
-    resetItemModal();
-    marketItem = item;
-
-    document.getElementById("market-item-emoji").innerHTML =
-      item.img
-        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-            class="item-open-img">`
-        : item.emoji;
-
-    document.getElementById("market-item-name").innerText = item.nome;
-
-    document.getElementById("market-item-description").innerHTML = `
-      <div>${item.descricao || "Sem descrição."}</div>
-
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
-        style="width:210px;display:block;margin:12px auto 0 auto;">
-    `;
-
-    priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;
-
-    itemModal.style.display = "flex";
   }
 
   buyBtn.onclick = () => {
@@ -280,13 +263,10 @@ function initMarket() {
 
   yesBtn.onclick = async () => {
     try {
-      const qtd = Number(
-        document.getElementById("market-quantity-select")?.value || 1
-      );
-
+      const qtd = Number(document.getElementById("market-quantity-select")?.value || 1);
       const comprador = window.auth?.currentUser?.uid;
 
-      if (!comprador) throw new Error("Usuário não logado");
+      if (!comprador) throw new Error("Não logado");
 
       await comprarItem(window.db, marketItem, qtd, comprador);
 

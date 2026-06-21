@@ -37,7 +37,7 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA (DEBUG + SEGURO)
+   💰 COMPRA (FIX DEFINITIVO)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
   try {
@@ -48,16 +48,12 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     const sellerRef = ref(db, `players/${item.jogador}/info/saldo`);
     const invRef = ref(db, `players/${compradorUid}/inventory`);
 
-    console.log("🟡 GET DADOS");
-
     const [buyerSnap, sellerSnap, marketSnap, invSnap] = await Promise.all([
       get(buyerRef),
       get(sellerRef),
       get(marketRef),
       get(invRef)
     ]);
-
-    console.log("🟡 SNAPSHOT OK");
 
     if (!buyerSnap.exists()) throw new Error("Comprador inválido");
     if (!sellerSnap.exists()) throw new Error("Vendedor inválido");
@@ -68,37 +64,24 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     const buyerSaldo = Number(buyerSnap.val());
     const sellerSaldo = Number(sellerSnap.val());
 
-    const total = Number(data.value) * quantidade;
+    const qtdFinal = Number.isFinite(Number(quantidade)) ? Number(quantidade) : 1;
 
-    console.log("💰 TOTAL:", total);
-    console.log("📦 ESTOQUE:", data.qtd);
+    const total = Number(data.value) * qtdFinal;
 
-    if (data.qtd < quantidade) throw new Error("Sem estoque");
+    if (data.qtd < qtdFinal) throw new Error("Sem estoque");
     if (buyerSaldo < total) throw new Error("Saldo insuficiente");
 
     /* =========================
-       🏪 TRANSACTION PRIMEIRO (ESTOQUE)
+       🏪 TRANSACTION (ESTOQUE)
     ========================= */
-    console.log("🏪 INICIANDO TRANSACTION");
-
     const result = await runTransaction(marketRef, (itemData) => {
-      console.log("🔥 TRANSACTION EXECUTANDO:", itemData);
-
-      if (!itemData) {
-        console.log("❌ itemData null");
-        return null;
-      }
+      if (!itemData) return null;
 
       const atual = Number(itemData.qtd || 0);
 
-      if (atual < quantidade) {
-        console.log("❌ SEM ESTOQUE NA TRANSACTION");
-        return itemData;
-      }
+      if (atual < qtdFinal) return itemData;
 
-      const novaQtd = atual - quantidade;
-
-      console.log("📦 NOVA QTD:", novaQtd);
+      const novaQtd = atual - qtdFinal;
 
       return {
         ...itemData,
@@ -106,41 +89,37 @@ async function comprarItem(db, item, quantidade, compradorUid) {
       };
     });
 
-    console.log("🏁 RESULT TRANSACTION:", result);
-
     if (!result.committed) {
-      throw new Error("Falha na atualização do estoque");
+      throw new Error("Falha no estoque");
     }
-
-    console.log("🏪 ESTOQUE OK");
 
     /* =========================
        💰 SALDOS
     ========================= */
-    console.log("💰 ATUALIZANDO SALDOS");
-
     await update(ref(db), {
       [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
       [`players/${item.jogador}/info/saldo`]: sellerSaldo + total
     });
 
-    console.log("💰 SALDOS OK");
-
     /* =========================
-       🎒 INVENTÁRIO
+       🎒 INVENTÁRIO (CORRIGIDO DE VERDADE)
     ========================= */
-    console.log("🎒 INVENTARIO");
 
     const invData = invSnap.exists() ? invSnap.val() : {};
-    const currentQty = Number(invData[item.nome] || 0);
+    const nomeItem = item.nome;
+
+    const atualRaw = invData?.[nomeItem];
+
+    let currentQty = Number(atualRaw);
+    if (!Number.isFinite(currentQty)) currentQty = 0;
+
+    const finalQty = currentQty + qtdFinal;
 
     await update(invRef, {
-      [item.nome]: currentQty + quantidade
+      [nomeItem]: finalQty
     });
 
-    console.log("🎒 INVENTARIO OK");
-
-    console.log("✅ COMPRA FINALIZADA COM SUCESSO");
+    console.log("✅ COMPRA FINALIZADA");
 
   } catch (err) {
     console.error("💥 ERRO NA COMPRA:", err.message);
@@ -272,7 +251,6 @@ function initMarket() {
 
   function openItem(item) {
     resetItemModal();
-
     marketItem = item;
 
     document.getElementById("market-item-emoji").innerHTML =
@@ -285,8 +263,6 @@ function initMarket() {
 
     document.getElementById("market-item-description").innerHTML = `
       <div>${item.descricao || "Sem descrição."}</div>
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
-        style="width:210px;display:block;margin:12px auto 0 auto;">
     `;
 
     priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;
@@ -301,8 +277,6 @@ function initMarket() {
 
   yesBtn.onclick = async () => {
     try {
-      if (!marketItem) return;
-
       const qtd = Number(
         document.getElementById("market-quantity-select")?.value || 1
       );

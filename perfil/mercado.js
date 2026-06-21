@@ -30,20 +30,23 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 FUNÇÃO DE COMPRA
+   💰 FUNÇÃO DE COMPRA (CORRIGIDA)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
 
   const vendedorUid = item.jogador;
   const total = item.value * quantidade;
 
+  // 🔥 FIX: usar marketId (ID REAL do Firebase)
+  const marketRef = ref(db, `mercado/itens/${item.marketId}`);
   const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
   const sellerRef = ref(db, `players/${vendedorUid}/info/saldo`);
-  const marketRef = ref(db, `mercado/itens/${item.id}`);
 
-  const buyerSnap = await get(buyerRef);
-  const sellerSnap = await get(sellerRef);
-  const marketSnap = await get(marketRef);
+  const [buyerSnap, sellerSnap, marketSnap] = await Promise.all([
+    get(buyerRef),
+    get(sellerRef),
+    get(marketRef)
+  ]);
 
   if (!buyerSnap.exists()) throw new Error("Comprador não existe");
   if (!sellerSnap.exists()) throw new Error("Vendedor não existe");
@@ -61,19 +64,21 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     throw new Error("Saldo insuficiente");
   }
 
+  // saldo update
   await update(ref(db), {
     [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
     [`players/${vendedorUid}/info/saldo`]: sellerSaldo + total
   });
 
+  // estoque update seguro
   await runTransaction(marketRef, (data) => {
-    if (!data) return data;
+    if (!data) return null;
+
+    if (data.qtd < quantidade) return;
 
     data.qtd -= quantidade;
 
-    if (data.qtd <= 0) return null;
-
-    return data;
+    return data.qtd > 0 ? data : null;
   });
 }
 
@@ -143,8 +148,9 @@ function initMarket() {
   function render(filter) {
     marketList.innerHTML = "";
 
-    for (const id in anuncios) {
-      const a = anuncios[id];
+    for (const marketId in anuncios) {
+      const a = anuncios[marketId];
+
       const itemId = a.nome;
       const value = Number(a.value || 0);
 
@@ -183,15 +189,13 @@ function initMarket() {
       `;
 
       div.onclick = () => openItem({
-        id,
+        marketId, // 🔥 FIX CRÍTICO
         nome: itemData.nome,
         descricao: itemData.description,
         img: itemData.img,
         value,
         tier: Number(itemData.tier || 1),
         emoji: getEmoji(itemData),
-
-        // 🔥 ESSENCIAL
         jogador: a.jogador,
         qtd: a.qtd
       });

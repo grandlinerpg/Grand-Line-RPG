@@ -254,6 +254,9 @@ function initMarket() {
   };
 
   yesBtn.onclick = async () => {
+    console.log("CLICK CONFIRMAR");
+    console.log("marketItem:", marketItem);
+    console.log("user:", window.user);
     try {
       if (!marketItem) return;
 

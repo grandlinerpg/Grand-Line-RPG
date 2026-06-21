@@ -270,7 +270,6 @@ function initMarket() {
     resetItemModal();
     marketItem = item;
 
-    // 🔥 FIX: reset quantidade sempre ao abrir item
     if (qtySelect) qtySelect.value = "1";
 
     document.getElementById("market-item-emoji").innerHTML =

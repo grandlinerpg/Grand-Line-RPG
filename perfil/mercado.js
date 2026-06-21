@@ -37,7 +37,7 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA (FIX DEFINITIVO)
+   💰 COMPRA (CORRIGIDO)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
   try {
@@ -72,7 +72,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     if (buyerSaldo < total) throw new Error("Saldo insuficiente");
 
     /* =========================
-       🏪 TRANSACTION (ESTOQUE)
+       🏪 ESTOQUE
     ========================= */
     const result = await runTransaction(marketRef, (itemData) => {
       if (!itemData) return null;
@@ -81,11 +81,9 @@ async function comprarItem(db, item, quantidade, compradorUid) {
 
       if (atual < qtdFinal) return itemData;
 
-      const novaQtd = atual - qtdFinal;
-
       return {
         ...itemData,
-        qtd: novaQtd
+        qtd: atual - qtdFinal
       };
     });
 
@@ -102,13 +100,15 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     });
 
     /* =========================
-       🎒 INVENTÁRIO (CORRIGIDO DE VERDADE)
+       🎒 INVENTÁRIO (CORRIGIDO)
+       - usa nome do item do mercado
     ========================= */
 
     const invData = invSnap.exists() ? invSnap.val() : {};
-    const itemId = a.nome; // vindo do mercado
 
-    const atualRaw = invData?.[nomeItem];
+    const itemKey = data.nome; // <- SEMPRE o nome do mercado
+
+    const atualRaw = invData?.[itemKey];
 
     let currentQty = Number(atualRaw);
     if (!Number.isFinite(currentQty)) currentQty = 0;
@@ -116,7 +116,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     const finalQty = currentQty + qtdFinal;
 
     await update(invRef, {
-      [nomeItem]: finalQty
+      [itemKey]: finalQty
     });
 
     console.log("✅ COMPRA FINALIZADA");
@@ -263,6 +263,9 @@ function initMarket() {
 
     document.getElementById("market-item-description").innerHTML = `
       <div>${item.descricao || "Sem descrição."}</div>
+
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
+        style="width:210px;display:block;margin:12px auto 0 auto;">
     `;
 
     priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;

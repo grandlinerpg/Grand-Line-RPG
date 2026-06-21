@@ -3,6 +3,9 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+// 🔥 IMPORT ADICIONADO (ESSENCIAL)
+import { comprarItem } from "./compra.js";
+
 const marketContainer = document.getElementById("market-container");
 
 let marketItem = null;
@@ -38,7 +41,6 @@ function initMarket() {
 
   const itemModal = document.getElementById("market-item-modal");
 
-  // 🔥 CLOSE DO ITEM (CORREÇÃO)
   const closeItem = document.getElementById("close-market-item");
 
   const buyBtn = document.getElementById("market-buy-btn");
@@ -51,14 +53,12 @@ function initMarket() {
   let anuncios = {};
   let itensDB = {};
 
-  // 🔥 CLOSE MERCADO
   if (closeMarket) {
     closeMarket.onclick = () => {
       marketModal.style.display = "none";
     };
   }
 
-  // 🔥 CLOSE ITEM (AQUI ESTAVA O BUG)
   if (closeItem) {
     closeItem.onclick = () => {
       itemModal.style.display = "none";
@@ -181,11 +181,20 @@ function initMarket() {
     confirmModal.style.display = "flex";
   };
 
-  yesBtn.onclick = () => {
-    confirmModal.style.display = "none";
-    itemModal.style.display = "none";
+  yesBtn.onclick = async () => {
+    const qtd = Number(document.getElementById("market-quantity-select")?.value || 1);
+    const comprador = window.user.uid;
 
-    console.log("COMPRADO:", marketItem);
+    try {
+      await comprarItem(window.db, marketItem, qtd, comprador);
+
+      confirmModal.style.display = "none";
+      itemModal.style.display = "none";
+
+      console.log("COMPRA REALIZADA");
+    } catch (err) {
+      console.error("Erro na compra:", err.message);
+    }
   };
 
   noBtn.onclick = () => {

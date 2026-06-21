@@ -1,10 +1,9 @@
 import {
   ref,
-  get
+  get,
+  update,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-// 🔥 IMPORT ADICIONADO (ESSENCIAL)
-import { comprarItem } from "./compra.js";
 
 const marketContainer = document.getElementById("market-container");
 
@@ -30,6 +29,58 @@ async function loadMarketHTML() {
   });
 }
 
+/* =========================
+   💰 FUNÇÃO DE COMPRA
+========================= */
+async function comprarItem(db, item, quantidade, compradorUid) {
+
+  const vendedorUid = item.jogador;
+  const total = item.value * quantidade;
+
+  const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
+  const sellerRef = ref(db, `players/${vendedorUid}/info/saldo`);
+  const marketRef = ref(db, `mercado/itens/${item.id}`);
+
+  const buyerSnap = await get(buyerRef);
+  const sellerSnap = await get(sellerRef);
+  const marketSnap = await get(marketRef);
+
+  if (!buyerSnap.exists()) throw new Error("Comprador não existe");
+  if (!sellerSnap.exists()) throw new Error("Vendedor não existe");
+  if (!marketSnap.exists()) throw new Error("Item não existe");
+
+  const buyerSaldo = buyerSnap.val();
+  const sellerSaldo = sellerSnap.val();
+  const marketData = marketSnap.val();
+
+  if (marketData.qtd < quantidade) {
+    throw new Error("Quantidade indisponível");
+  }
+
+  if (buyerSaldo < total) {
+    throw new Error("Saldo insuficiente");
+  }
+
+  // 💰 atualiza saldos
+  await update(ref(db), {
+    [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
+    [`players/${vendedorUid}/info/saldo`]: sellerSaldo + total
+  });
+
+  // 📦 atualiza estoque
+  await runTransaction(marketRef, (data) => {
+    if (!data) return data;
+
+    data.qtd -= quantidade;
+
+    if (data.qtd <= 0) return null;
+
+    return data;
+  });
+}
+
+/* ========================= */
+
 function initMarket() {
   const db = window.db;
 
@@ -40,7 +91,6 @@ function initMarket() {
   const marketList = document.getElementById("market-list");
 
   const itemModal = document.getElementById("market-item-modal");
-
   const closeItem = document.getElementById("close-market-item");
 
   const buyBtn = document.getElementById("market-buy-btn");
@@ -64,10 +114,6 @@ function initMarket() {
       itemModal.style.display = "none";
     };
   }
-
-  if (buyBtn) buyBtn.onclick = null;
-  if (yesBtn) yesBtn.onclick = null;
-  if (noBtn) noBtn.onclick = null;
 
   window.openMarket = async () => {
     resetItemModal();

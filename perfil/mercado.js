@@ -137,14 +137,12 @@ function initMarket() {
   const yesBtn = document.getElementById("market-confirm-yes");
   const noBtn = document.getElementById("market-confirm-no");
 
-  const qtySelect = document.getElementById("market-quantity-select");
-
   let anuncios = {};
   let itensDB = {};
   let marketRef = ref(db, "mercado/itens");
 
   /* =========================
-     FECHAR → VOLTA INVENTÁRIO (FIX REAL)
+     FECHAR → VOLTA INVENTÁRIO
   ========================= */
   if (closeMarket) {
     closeMarket.onclick = () => {
@@ -270,6 +268,7 @@ function initMarket() {
     resetItemModal();
     marketItem = item;
 
+    const qtySelect = document.getElementById("market-quantity-select");
     if (qtySelect) qtySelect.value = "1";
 
     document.getElementById("market-item-emoji").innerHTML =
@@ -298,6 +297,7 @@ function initMarket() {
 
   yesBtn.onclick = async () => {
     try {
+      const qtySelect = document.getElementById("market-quantity-select");
       const qtd = Number(qtySelect?.value || 1);
 
       const comprador = window.auth?.currentUser?.uid;

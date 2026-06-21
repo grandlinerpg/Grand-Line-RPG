@@ -11,7 +11,11 @@ import {
 const marketContainer = document.getElementById("market-container");
 
 let marketItem = null;
+let marketListener = null;
 
+/* =========================
+   RESET MODAL
+========================= */
 function resetItemModal() {
   const modal = document.getElementById("market-item-modal");
   if (!modal) return;
@@ -36,21 +40,19 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA
+   💰 COMPRA (FIX TOTAL)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
   try {
-
     const marketRef = ref(db, `mercado/itens/${item.marketId}`);
     const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
     const sellerRef = ref(db, `players/${item.jogador}/info/saldo`);
     const invRef = ref(db, `players/${compradorUid}/inventory`);
 
-    const [buyerSnap, sellerSnap, marketSnap, invSnap] = await Promise.all([
+    const [buyerSnap, sellerSnap, marketSnap] = await Promise.all([
       get(buyerRef),
       get(sellerRef),
-      get(marketRef),
-      get(invRef)
+      get(marketRef)
     ]);
 
     if (!buyerSnap.exists()) throw new Error("Comprador inválido");
@@ -59,22 +61,17 @@ async function comprarItem(db, item, quantidade, compradorUid) {
 
     const data = marketSnap.val();
 
-    const buyerSaldo = Number(buyerSnap.val());
-    const sellerSaldo = Number(sellerSnap.val());
-
-    const qtdFinal = Number.isFinite(Number(quantidade)) ? Number(quantidade) : 1;
+    const qtdFinal = Number(quantidade || 1);
     const total = Number(data.value) * qtdFinal;
 
-    /* ❌ BLOQUEIO: comprar de si mesmo */
-    if (item.jogador === compradorUid) {
-      throw new Error("Você não pode comprar seu próprio item");
-    }
+    const buyerSaldo = Number(buyerSnap.val());
+    const sellerSaldo = Number(sellerSnap.val());
 
     if (data.qtd < qtdFinal) throw new Error("Sem estoque");
     if (buyerSaldo < total) throw new Error("Saldo insuficiente");
 
     /* =========================
-       ESTOQUE (TRANSACTION)
+       ESTOQUE (REMOVE SE ZERAR)
     ========================= */
     const result = await runTransaction(marketRef, (itemData) => {
       if (!itemData) return null;
@@ -83,60 +80,67 @@ async function comprarItem(db, item, quantidade, compradorUid) {
 
       if (atual < qtdFinal) return itemData;
 
-      const novaQtd = atual - qtdFinal;
+      const novo = atual - qtdFinal;
+
+      // 🔥 se zerou remove anúncio
+      if (novo <= 0) return null;
 
       return {
         ...itemData,
-        qtd: novaQtd
+        qtd: novo
       };
     });
 
-    if (!result.committed) throw new Error("Falha no estoque");
-
-    const novoEstoque = result.snapshot.val()?.qtd ?? 0;
-
-    /* 🧨 SE ZEROU, REMOVE ANÚNCIO */
-    if (novoEstoque <= 0) {
-      await remove(marketRef);
+    if (!result.committed) {
+      throw new Error("Falha no estoque");
     }
 
     /* =========================
-       SALDOS
+       💸 SALDO (CORRIGIDO)
+       - compra de si mesmo NÃO dá lucro
     ========================= */
+    let novoBuyer = buyerSaldo - total;
+    let novoSeller = sellerSaldo + total;
+
+    if (item.jogador === compradorUid) {
+      // 🔥 se for próprio item: cancela efeito de lucro
+      novoSeller -= total;
+    }
+
     await update(ref(db), {
-      [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
-      [`players/${item.jogador}/info/saldo`]: sellerSaldo + total
+      [`players/${compradorUid}/info/saldo`]: novoBuyer,
+      [`players/${item.jogador}/info/saldo`]: novoSeller
     });
 
     /* =========================
-       INVENTÁRIO
+       🎒 INVENTÁRIO
     ========================= */
-
+    const invSnap = await get(invRef);
     const invData = invSnap.exists() ? invSnap.val() : {};
 
     const itemKey = data.nome;
 
-    const currentQty = Number(invData?.[itemKey] || 0);
+    const atualQty = Number(invData?.[itemKey] || 0);
+    const finalQty = atualQty + qtdFinal;
 
     await update(invRef, {
-      [itemKey]: currentQty + qtdFinal
+      [itemKey]: finalQty
     });
 
-    console.log("✅ COMPRA OK");
-
   } catch (err) {
-    console.error("💥 ERRO:", err.message);
+    console.error("💥 ERRO NA COMPRA:", err.message);
   }
 }
 
 /* =========================
-   INIT MARKET (AO VIVO)
+   INIT MARKET
 ========================= */
 function initMarket() {
   const db = window.db;
 
   const marketModal = document.getElementById("market-modal");
   const closeMarket = document.getElementById("close-market");
+
   const categorySelect = document.getElementById("market-category");
   const marketList = document.getElementById("market-list");
 
@@ -152,26 +156,34 @@ function initMarket() {
 
   let anuncios = {};
   let itensDB = {};
+  let marketRef = ref(db, "mercado/itens");
 
-  /* 🔥 AO VIVO */
-  const marketRef = ref(db, "mercado/itens");
+  /* =========================
+     FECHAR → VOLTA INVENTÁRIO
+  ========================= */
+  if (closeMarket) {
+    closeMarket.onclick = () => {
+      marketModal.style.display = "none";
 
-  onValue(marketRef, (snap) => {
-    anuncios = snap.exists() ? snap.val() : {};
-    render(categorySelect?.value || "all");
-  });
+      const inv = document.getElementById("inventory-container");
+      if (inv) inv.style.display = "flex";
+    };
+  }
 
-  closeMarket.onclick = () => {
-    marketModal.style.display = "none";
-    window.openInventory?.();
-  };
+  if (closeItem) {
+    closeItem.onclick = () => {
+      itemModal.style.display = "none";
+    };
+  }
 
-  closeItem.onclick = () => {
-    itemModal.style.display = "none";
-  };
-
+  /* =========================
+     🔥 LIVE MARKET
+  ========================= */
   window.openMarket = async () => {
     resetItemModal();
+
+    const inv = document.getElementById("inventory-container");
+    if (inv) inv.style.display = "none";
 
     marketModal.style.display = "flex";
 
@@ -181,12 +193,29 @@ function initMarket() {
     itensDB = itensSnap.val();
 
     categorySelect.innerHTML = `<option value="all">Todas</option>`;
-
     for (const c in itensDB) {
       categorySelect.innerHTML += `<option value="${c}">${c}</option>`;
     }
 
+    // remove listener antigo
+    if (marketListener) off(marketRef, "value", marketListener);
+
+    marketListener = onValue(marketRef, (snap) => {
+      const raw = snap.val() || {};
+
+      // 🔥 remove automaticamente itens zerados (garantia extra)
+      for (const id in raw) {
+        if (!raw[id] || raw[id].qtd <= 0) {
+          remove(ref(db, `mercado/itens/${id}`));
+        }
+      }
+
+      anuncios = raw;
+      render(categorySelect.value || "all");
+    });
+
     render("all");
+
     categorySelect.onchange = () => render(categorySelect.value);
   };
 
@@ -199,7 +228,6 @@ function initMarket() {
 
     for (const marketId in anuncios) {
       const a = anuncios[marketId];
-
       const itemId = a.nome;
       const value = Number(a.value || 0);
 
@@ -237,23 +265,43 @@ function initMarket() {
         </div>
       `;
 
-      div.onclick = () => {
-        marketItem = {
-          marketId,
-          nome: itemData.nome,
-          descricao: itemData.description,
-          img: itemData.img,
-          value,
-          tier: Number(itemData.tier || 1),
-          emoji: getEmoji(itemData),
-          jogador: a.jogador
-        };
-
-        itemModal.style.display = "flex";
-      };
+      div.onclick = () => openItem({
+        marketId,
+        nome: itemData.nome,
+        descricao: itemData.description,
+        img: itemData.img,
+        value,
+        tier: Number(itemData.tier || 1),
+        emoji: getEmoji(itemData),
+        jogador: a.jogador,
+        qtd: a.qtd
+      });
 
       marketList.appendChild(div);
     }
+  }
+
+  function openItem(item) {
+    resetItemModal();
+    marketItem = item;
+
+    document.getElementById("market-item-emoji").innerHTML =
+      item.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+            class="item-open-img">`
+        : item.emoji;
+
+    document.getElementById("market-item-name").innerText = item.nome;
+
+    document.getElementById("market-item-description").innerHTML = `
+      <div>${item.descricao || "Sem descrição."}</div>
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
+        style="width:210px;display:block;margin:12px auto 0 auto;">
+    `;
+
+    priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;
+
+    itemModal.style.display = "flex";
   }
 
   buyBtn.onclick = () => {
@@ -263,12 +311,14 @@ function initMarket() {
 
   yesBtn.onclick = async () => {
     try {
-      const qtd = Number(document.getElementById("market-quantity-select")?.value || 1);
+      const qtd = Number(
+        document.getElementById("market-quantity-select")?.value || 1
+      );
+
       const comprador = window.auth?.currentUser?.uid;
+      if (!comprador) throw new Error("Usuário não logado");
 
-      if (!comprador) throw new Error("Não logado");
-
-      await comprarItem(window.db, marketItem, qtd, comprador);
+      await comprarItem(db, marketItem, qtd, comprador);
 
       confirmModal.style.display = "none";
       itemModal.style.display = "none";

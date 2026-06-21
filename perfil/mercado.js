@@ -9,6 +9,9 @@ const marketContainer = document.getElementById("market-container");
 
 let marketItem = null;
 
+/* =========================
+   RESET MODAL
+========================= */
 function resetItemModal() {
   const modal = document.getElementById("market-item-modal");
   if (!modal) return;
@@ -18,6 +21,9 @@ function resetItemModal() {
   modal.querySelector("#market-item-description").innerHTML = "";
 }
 
+/* =========================
+   LOAD HTML
+========================= */
 async function loadMarketHTML() {
   const response = await fetch("perfil/mercado.html");
   const html = await response.text();
@@ -30,21 +36,23 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA SEGURA
+   💰 COMPRA FINAL (CORRIGIDA)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
 
   const marketRef = ref(db, `mercado/itens/${item.marketId}`);
 
-  await runTransaction(marketRef, async (data) => {
+  return await runTransaction(marketRef, async (data) => {
     if (!data) return null;
 
     const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
     const sellerRef = ref(db, `players/${data.jogador}/info/saldo`);
+    const invRef = ref(db, `players/${compradorUid}/inventory/${data.nome}`);
 
-    const [buyerSnap, sellerSnap] = await Promise.all([
+    const [buyerSnap, sellerSnap, invSnap] = await Promise.all([
       get(buyerRef),
-      get(sellerRef)
+      get(sellerRef),
+      get(invRef)
     ]);
 
     if (!buyerSnap.exists() || !sellerSnap.exists()) return;
@@ -57,11 +65,24 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     if (data.qtd < quantidade) return;
     if (buyerSaldo < total) return;
 
+    /* =========================
+       💰 SALDO
+    ========================= */
     await update(ref(db), {
       [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
       [`players/${data.jogador}/info/saldo`]: sellerSaldo + total
     });
 
+    /* =========================
+       🎒 INVENTÁRIO SIMPLES
+    ========================= */
+    const currentQty = invSnap.exists() ? Number(invSnap.val()) : 0;
+
+    await update(invRef, currentQty + quantidade);
+
+    /* =========================
+       🏪 ESTOQUE MERCADO
+    ========================= */
     data.qtd -= quantidade;
 
     return data.qtd > 0 ? data : null;
@@ -69,9 +90,8 @@ async function comprarItem(db, item, quantidade, compradorUid) {
 }
 
 /* =========================
-   MARKET
+   INIT MARKET
 ========================= */
-
 function initMarket() {
   const db = window.db;
 
@@ -106,6 +126,9 @@ function initMarket() {
     };
   }
 
+  /* =========================
+     OPEN MARKET
+  ========================= */
   window.openMarket = async () => {
     resetItemModal();
 
@@ -133,6 +156,9 @@ function initMarket() {
     return itemData.emoji || itemData.icon || itemData.item || "📦";
   }
 
+  /* =========================
+     RENDER
+  ========================= */
   function render(filter) {
     marketList.innerHTML = "";
 
@@ -192,6 +218,9 @@ function initMarket() {
     }
   }
 
+  /* =========================
+     OPEN ITEM
+  ========================= */
   function openItem(item) {
     resetItemModal();
 
@@ -216,6 +245,9 @@ function initMarket() {
     itemModal.style.display = "flex";
   }
 
+  /* =========================
+     BUY BUTTON
+  ========================= */
   buyBtn.onclick = () => {
     if (!marketItem) return;
     confirmModal.style.display = "flex";

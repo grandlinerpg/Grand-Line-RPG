@@ -793,3 +793,32 @@
 #cancel-sell:hover {
   transform: scale(1.03);
 }
+
+#market-quantity-select {
+  background: #1a1a1a;
+  color: #f6d365;
+  border: 1px solid rgba(246, 211, 101, 0.4);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+#market-quantity-select:hover {
+  border-color: #f6d365;
+  box-shadow: 0 0 8px rgba(246, 211, 101, 0.3);
+}
+
+#market-quantity-select:focus {
+  border-color: #f6d365;
+  box-shadow: 0 0 10px rgba(246, 211, 101, 0.5);
+}
+
+/* estilo das opções (limitado pelo navegador, mas ajuda em alguns casos) */
+#market-quantity-select option {
+  background: #1a1a1a;
+  color: #fff;
+}

@@ -142,19 +142,23 @@ function initMarket() {
   let marketRef = ref(db, "mercado/itens");
 
   /* =========================
-     FECHAR → VOLTA INVENTÁRIO
+     FECHAR → VOLTA INVENTÁRIO (FIX REAL)
   ========================= */
   if (closeMarket) {
     closeMarket.onclick = () => {
       marketModal.style.display = "none";
 
+      // 🔥 GARANTE que nada fica preso aberto
       if (itemModal) itemModal.style.display = "none";
       if (confirmModal) confirmModal.style.display = "none";
 
       marketItem = null;
 
+      // 🔥 ÚNICA FUNÇÃO EXTRA: voltar inventário sem resetar nada
       const inv = document.getElementById("inventory-container");
-      if (inv) inv.style.display = "flex";
+      if (inv) {
+        inv.style.display = "flex";
+      }
     };
   }
 
@@ -164,6 +168,9 @@ function initMarket() {
     };
   }
 
+  /* =========================
+     🔥 OPEN MARKET
+  ========================= */
   window.openMarket = async () => {
     resetItemModal();
 
@@ -268,9 +275,6 @@ function initMarket() {
     resetItemModal();
     marketItem = item;
 
-    const qtySelect = document.getElementById("market-quantity-select");
-    if (qtySelect) qtySelect.value = "1";
-
     document.getElementById("market-item-emoji").innerHTML =
       item.img
         ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
@@ -297,8 +301,9 @@ function initMarket() {
 
   yesBtn.onclick = async () => {
     try {
-      const qtySelect = document.getElementById("market-quantity-select");
-      const qtd = Number(qtySelect?.value || 1);
+      const qtd = Number(
+        document.getElementById("market-quantity-select")?.value || 1
+      );
 
       const comprador = window.auth?.currentUser?.uid;
       if (!comprador) throw new Error("Usuário não logado");

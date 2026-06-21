@@ -5,7 +5,7 @@ import {
 
 const marketContainer = document.getElementById("market-container");
 
-let marketItem = null; // 🔥 isolado (não conflita com inventário)
+let marketItem = null;
 
 function resetItemModal() {
   const modal = document.getElementById("market-item-modal");
@@ -39,17 +39,15 @@ function initMarket() {
   const itemModal = document.getElementById("market-item-modal");
   const confirmModal = document.getElementById("buy-confirm-modal");
 
-  const yesBtnOld = document.getElementById("buy-confirm-yes");
-  const noBtnOld = document.getElementById("buy-confirm-no");
+  const yesBtn = document.getElementById("buy-confirm-yes");
+  const noBtn = document.getElementById("buy-confirm-no");
 
-  const yesBtn = yesBtnOld.cloneNode(true);
-  const noBtn = noBtnOld.cloneNode(true);
-
-  yesBtnOld.replaceWith(yesBtn);
-  noBtnOld.replaceWith(noBtn);
-  
   let anuncios = {};
   let itensDB = {};
+
+  // 🔥 EVITA ACÚMULO DE EVENTO (SEM cloneNode)
+  yesBtn.onclick = null;
+  noBtn.onclick = null;
 
   window.openMarket = async () => {
     resetItemModal();
@@ -142,7 +140,7 @@ function initMarket() {
   function openItem(item) {
     resetItemModal();
 
-    marketItem = item; // 🔥 isolado do inventário
+    marketItem = item;
 
     const emojiEl = document.getElementById("market-item-emoji");
     const nameEl = document.getElementById("market-item-name");
@@ -177,14 +175,11 @@ function initMarket() {
     buyBtn.onclick = () => {
       confirmModal.style.display = "flex";
 
-      yesBtn.onclick = null;
-      noBtn.onclick = null;
-
+      // 🔥 SEM conflito, sempre sobrescreve
       yesBtn.onclick = () => {
         confirmModal.style.display = "none";
         itemModal.style.display = "none";
 
-        // 🔥 usa ITEM DO MERCADO (não mistura com inventário)
         console.log("COMPRADO:", marketItem);
       };
 

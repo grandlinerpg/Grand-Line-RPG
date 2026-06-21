@@ -2,7 +2,7 @@ import {
   ref,
   get,
   update,
-  runTransaction
+  remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const marketContainer = document.getElementById("market-container");
@@ -36,57 +36,61 @@ async function loadMarketHTML() {
 }
 
 /* =========================
-   💰 COMPRA FINAL (CORRIGIDA)
+   💰 COMPRA (CORRIGIDA E ESTÁVEL)
 ========================= */
 async function comprarItem(db, item, quantidade, compradorUid) {
 
   const marketRef = ref(db, `mercado/itens/${item.marketId}`);
 
-  return await runTransaction(marketRef, async (data) => {
-    if (!data) return null;
+  const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
+  const sellerRef = ref(db, `players/${item.jogador}/info/saldo`);
+  const invRef = ref(db, `players/${compradorUid}/inventory/${item.nome}`);
 
-    const buyerRef = ref(db, `players/${compradorUid}/info/saldo`);
-    const sellerRef = ref(db, `players/${data.jogador}/info/saldo`);
-    const invRef = ref(db, `players/${compradorUid}/inventory/${data.nome}`);
+  const [buyerSnap, sellerSnap, marketSnap, invSnap] = await Promise.all([
+    get(buyerRef),
+    get(sellerRef),
+    get(marketRef),
+    get(invRef)
+  ]);
 
-    const [buyerSnap, sellerSnap, invSnap] = await Promise.all([
-      get(buyerRef),
-      get(sellerRef),
-      get(invRef)
-    ]);
+  if (!buyerSnap.exists() || !sellerSnap.exists() || !marketSnap.exists()) {
+    throw new Error("Dados inválidos");
+  }
 
-    if (!buyerSnap.exists() || !sellerSnap.exists()) return;
+  const buyerSaldo = Number(buyerSnap.val());
+  const sellerSaldo = Number(sellerSnap.val());
+  const data = marketSnap.val();
 
-    const buyerSaldo = Number(buyerSnap.val());
-    const sellerSaldo = Number(sellerSnap.val());
+  const total = Number(data.value) * quantidade;
 
-    const total = Number(data.value) * quantidade;
+  if (data.qtd < quantidade) throw new Error("Sem estoque");
+  if (buyerSaldo < total) throw new Error("Saldo insuficiente");
 
-    if (data.qtd < quantidade) return;
-    if (buyerSaldo < total) return;
-
-    /* =========================
-       💰 SALDO
-    ========================= */
-    await update(ref(db), {
-      [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
-      [`players/${data.jogador}/info/saldo`]: sellerSaldo + total
-    });
-
-    /* =========================
-       🎒 INVENTÁRIO SIMPLES
-    ========================= */
-    const currentQty = invSnap.exists() ? Number(invSnap.val()) : 0;
-
-    await update(invRef, currentQty + quantidade);
-
-    /* =========================
-       🏪 ESTOQUE MERCADO
-    ========================= */
-    data.qtd -= quantidade;
-
-    return data.qtd > 0 ? data : null;
+  /* =========================
+     💰 SALDO
+  ========================= */
+  await update(ref(db), {
+    [`players/${compradorUid}/info/saldo`]: buyerSaldo - total,
+    [`players/${item.jogador}/info/saldo`]: sellerSaldo + total
   });
+
+  /* =========================
+     🎒 INVENTÁRIO
+  ========================= */
+  const currentQty = invSnap.exists() ? Number(invSnap.val()) : 0;
+
+  await update(invRef, currentQty + quantidade);
+
+  /* =========================
+     🏪 MERCADO
+  ========================= */
+  const newQtd = data.qtd - quantidade;
+
+  if (newQtd <= 0) {
+    await remove(marketRef);
+  } else {
+    await update(marketRef, { qtd: newQtd });
+  }
 }
 
 /* =========================
@@ -246,7 +250,7 @@ function initMarket() {
   }
 
   /* =========================
-     BUY BUTTON
+     BUY
   ========================= */
   buyBtn.onclick = () => {
     if (!marketItem) return;
@@ -261,7 +265,7 @@ function initMarket() {
         document.getElementById("market-quantity-select")?.value || 1
       );
 
-      const comprador = window.auth.currentUser?.uid;
+      const comprador = window.auth?.currentUser?.uid;
 
       if (!comprador) {
         throw new Error("Usuário não carregado");

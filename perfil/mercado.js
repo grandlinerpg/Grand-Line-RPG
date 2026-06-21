@@ -56,7 +56,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     ]);
 
     if (!buyerSnap.exists()) throw new Error("Comprador inválido");
-    const sellerSaldo = sellerSnap.exists() ? Number(sellerSnap.val()) : 0;
+    if (!sellerSnap.exists()) throw new Error("Vendedor inválido");
     if (!marketSnap.exists()) throw new Error("Item não existe");
 
     const data = marketSnap.val();
@@ -261,7 +261,7 @@ function initMarket() {
   }
 
   /* =========================
-     🔥 SOMENTE SELECT ALTERADO
+     🔥 SELECT DE QUANTIDADE (SÓ ISSO MEXIDO)
   ========================= */
   function openItem(item) {
     resetItemModal();
@@ -283,7 +283,7 @@ function initMarket() {
 
     priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;
 
-    /* 🔥 SELECT PELO ESTOQUE */
+    /* 🔥 SELECT AJUSTADO PELO ESTOQUE */
     const qtySelect = document.getElementById("market-quantity-select");
 
     if (qtySelect) {

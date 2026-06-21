@@ -38,6 +38,9 @@ function initMarket() {
 
   const itemModal = document.getElementById("market-item-modal");
 
+  // 🔥 CLOSE DO ITEM (CORREÇÃO)
+  const closeItem = document.getElementById("close-market-item");
+
   const buyBtn = document.getElementById("market-buy-btn");
   const priceBox = document.getElementById("market-item-price");
 
@@ -48,10 +51,17 @@ function initMarket() {
   let anuncios = {};
   let itensDB = {};
 
-  // 🔥 FIX PRINCIPAL DO CLOSE
+  // 🔥 CLOSE MERCADO
   if (closeMarket) {
     closeMarket.onclick = () => {
       marketModal.style.display = "none";
+    };
+  }
+
+  // 🔥 CLOSE ITEM (AQUI ESTAVA O BUG)
+  if (closeItem) {
+    closeItem.onclick = () => {
+      itemModal.style.display = "none";
     };
   }
 

@@ -11,8 +11,11 @@ let inventoryRef = null;
 let inventoryCallback = null;
 let renderVersion = 0;
 
-// 🔥 ITEM LOCAL (NÃO GLOBAL COMPARTILHADO COM MERCADO)
+// 🔥 ITEM LOCAL (ISOLADO)
 let inventoryItem = null;
+
+// 🔥 trava de confirmação (evita bug de clique duplo/stale state)
+let isConfirmingUse = false;
 
 function resetItemModal() {
   const itemModal = document.getElementById("item-modal");
@@ -159,6 +162,7 @@ function initInventory() {
 
         div.onclick = () => {
           inventoryItem = itemObj;
+          isConfirmingUse = false;
 
           resetItemModal();
 
@@ -188,21 +192,27 @@ function initInventory() {
           const useBtn = actions.querySelector("#use-item");
           const sellBtn = actions.querySelector("#sell-item");
 
+          // 🔥 USAR (CORRIGIDO)
           useBtn.onclick = () => {
+            if (!inventoryItem || isConfirmingUse) return;
+
+            isConfirmingUse = true;
             confirmModal.style.display = "flex";
 
             confirmYes.onclick = null;
             confirmNo.onclick = null;
 
             confirmYes.onclick = () => {
+              isConfirmingUse = false;
+
               confirmModal.style.display = "none";
               itemModal.style.display = "none";
 
-              // 🔥 usa item LOCAL do inventário
               window.usarItem?.(inventoryItem);
             };
 
             confirmNo.onclick = () => {
+              isConfirmingUse = false;
               confirmModal.style.display = "none";
             };
           };
@@ -235,12 +245,18 @@ function initInventory() {
 
   confirmNo.onclick = () => {
     confirmModal.style.display = "none";
+    isConfirmingUse = false;
   };
 
   confirmYes.onclick = () => {
     confirmModal.style.display = "none";
     itemModal.style.display = "none";
-    window.usarItem?.(inventoryItem);
+
+    if (inventoryItem) {
+      window.usarItem?.(inventoryItem);
+    }
+
+    isConfirmingUse = false;
   };
 }
 

@@ -162,7 +162,6 @@ function initMarket() {
 
     descEl.innerHTML = `
       <div>${item.descricao || "Sem descrição."}</div>
-      <div>Preço: ฿ ${item.value.toLocaleString("pt-BR")}</div>
       <img src="${tierImg}" style="width:210px;display:block;margin:12px auto 0 auto;">
     `;
 

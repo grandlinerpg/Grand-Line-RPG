@@ -32,12 +32,12 @@ function initMarket() {
 
   const marketModal = document.getElementById("market-modal");
   const closeMarket = document.getElementById("close-market");
+
   const categorySelect = document.getElementById("market-category");
   const marketList = document.getElementById("market-list");
 
   const itemModal = document.getElementById("market-item-modal");
 
-  // 🔥 ELEMENTOS NOVOS (BOTÃO FIXO NO HTML)
   const buyBtn = document.getElementById("market-buy-btn");
   const priceBox = document.getElementById("market-item-price");
 
@@ -48,10 +48,16 @@ function initMarket() {
   let anuncios = {};
   let itensDB = {};
 
-  // eventos fixos (SEM duplicar)
-  buyBtn.onclick = null;
-  yesBtn.onclick = null;
-  noBtn.onclick = null;
+  // 🔥 FIX PRINCIPAL DO CLOSE
+  if (closeMarket) {
+    closeMarket.onclick = () => {
+      marketModal.style.display = "none";
+    };
+  }
+
+  if (buyBtn) buyBtn.onclick = null;
+  if (yesBtn) yesBtn.onclick = null;
+  if (noBtn) noBtn.onclick = null;
 
   window.openMarket = async () => {
     resetItemModal();
@@ -73,12 +79,7 @@ function initMarket() {
     }
 
     render("all");
-
     categorySelect.onchange = () => render(categorySelect.value);
-  };
-
-  closeMarket.onclick = () => {
-    marketModal.style.display = "none";
   };
 
   function getEmoji(itemData) {
@@ -146,36 +147,27 @@ function initMarket() {
 
     marketItem = item;
 
-    const emojiEl = document.getElementById("market-item-emoji");
-    const nameEl = document.getElementById("market-item-name");
-    const descEl = document.getElementById("market-item-description");
+    document.getElementById("market-item-emoji").innerHTML =
+      item.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+            class="item-open-img">`
+        : item.emoji;
 
-    emojiEl.innerHTML = item.img
-      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-          class="item-open-img">`
-      : item.emoji;
+    document.getElementById("market-item-name").innerText = item.nome;
 
-    nameEl.innerText = item.nome;
-
-    const tierImg =
-      `https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png`;
-
-    descEl.innerHTML = `
+    document.getElementById("market-item-description").innerHTML = `
       <div>${item.descricao || "Sem descrição."}</div>
-      <img src="${tierImg}" style="width:210px;display:block;margin:12px auto 0 auto;">
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779723072/tier-${item.tier}.png"
+        style="width:210px;display:block;margin:12px auto 0 auto;">
     `;
 
-    // 🔥 atualiza preço no botão fixo
     priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;
 
-    // abre modal do item
     itemModal.style.display = "flex";
   }
 
-  // 🔥 BOTÃO COMPRAR (FIXO, NÃO DINÂMICO)
   buyBtn.onclick = () => {
     if (!marketItem) return;
-
     confirmModal.style.display = "flex";
   };
 

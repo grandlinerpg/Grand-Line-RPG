@@ -10,6 +10,8 @@ const modalContainer = document.getElementById("inventory-container");
 let inventoryRef = null;
 let inventoryCallback = null;
 let renderVersion = 0;
+let saldoRef = null;
+let saldoCallback = null;
 
 // 🔥 ITEM LOCAL (ISOLADO)
 let inventoryItem = null;
@@ -77,12 +79,20 @@ function initInventory() {
 
     if (!user) return;
 
-    const playerSnap = await get(ref(db, `players/${user.uid}/info`));
-
-    if (playerSnap.exists() && saldoElement) {
-      saldoElement.innerText =
-        "฿ " + (playerSnap.val().saldo || 0).toLocaleString("pt-BR");
+    if (saldoRef && saldoCallback) {
+      off(saldoRef, "value", saldoCallback);
     }
+
+    saldoRef = ref(db, `players/${user.uid}/info/saldo`);
+
+    saldoCallback = onValue(saldoRef, (snapshot) => {
+      const saldo = snapshot.val() || 0;
+
+      if (saldoElement) {
+        saldoElement.innerText =
+          "฿ " + Number(saldo).toLocaleString("pt-BR");
+      }
+    });
 
     if (inventoryRef && inventoryCallback) {
       off(inventoryRef, "value", inventoryCallback);

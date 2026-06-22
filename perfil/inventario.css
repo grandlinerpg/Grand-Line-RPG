@@ -853,3 +853,7 @@
   margin:10px 0 20px;
 }
 
+#message-modal {
+  z-index: 999999;
+}
+

@@ -857,3 +857,8 @@
   z-index: 999999;
 }
 
+#message-modal .item-window{
+  width:90%;
+  max-width:400px;
+}
+

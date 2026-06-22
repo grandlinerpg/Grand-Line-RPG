@@ -48,6 +48,22 @@ function getMinPrice(tier) {
 }
 
 // =========================
+// PREÇO MÁXIMO POR TIER
+// =========================
+
+function getMaxPrice(tier) {
+
+  switch (Number(tier)) {
+    case 1: return 300000;
+    case 2: return 800000;
+    case 3: return 1500000;
+    case 4: return 3000000;
+    case 5: return 10000000;
+    default: return 300000;
+  }
+}
+
+// =========================
 // ABRIR MODAL DE VENDA
 // =========================
 
@@ -81,6 +97,9 @@ window.abrirVendaItem = function(item) {
   const minPrice =
     getMinPrice(item.tier);
 
+  const maxPrice =
+    getMaxPrice(item.tier);
+
   priceInput.value = "";
   qtyInput.value = "";
 
@@ -98,7 +117,7 @@ window.abrirVendaItem = function(item) {
     : "📦";
 
   minText.innerText =
-    `Preço mínimo: ฿ ${minPrice.toLocaleString("pt-BR")}`;
+    `Preço: ฿ ${minPrice.toLocaleString("pt-BR")} até ฿ ${maxPrice.toLocaleString("pt-BR")}`;
 
   modal.style.display = "flex";
 
@@ -133,8 +152,22 @@ window.abrirVendaItem = function(item) {
         const qtd =
           Number(qtyInput.value);
 
-        if (!price || price < minPrice) {
-          alert("Preço abaixo do mínimo!");
+        if (!price) {
+          alert("Preço inválido!");
+          return;
+        }
+
+        if (price < minPrice) {
+          alert(
+            `Preço abaixo do mínimo permitido (฿ ${minPrice.toLocaleString("pt-BR")}).`
+          );
+          return;
+        }
+
+        if (price > maxPrice) {
+          alert(
+            `Preço acima do máximo permitido (฿ ${maxPrice.toLocaleString("pt-BR")}).`
+          );
           return;
         }
 

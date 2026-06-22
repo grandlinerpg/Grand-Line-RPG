@@ -31,6 +31,35 @@ async function loadVendaHTML() {
 
 loadVendaHTML();
 
+function showMessage(title, text) {
+
+  const modal =
+    document.getElementById("message-modal");
+
+  const titleEl =
+    document.getElementById("message-title");
+
+  const textEl =
+    document.getElementById("message-text");
+
+  const okBtn =
+    document.getElementById("message-ok");
+
+  if (!modal) {
+    alert(text);
+    return;
+  }
+
+  titleEl.innerText = title;
+  textEl.innerText = text;
+
+  modal.style.display = "flex";
+
+  okBtn.onclick = () => {
+    modal.style.display = "none";
+  };
+}
+
 // =========================
 // PREÇO MÍNIMO POR TIER
 // =========================
@@ -142,7 +171,10 @@ window.abrirVendaItem = function(item) {
         const db = window.db;
 
         if (!auth.currentUser) {
-          alert("Usuário não logado.");
+          showMessage(
+            "ERRO",
+            "Usuário não logado."
+          );
           return;
         }
 
@@ -153,31 +185,40 @@ window.abrirVendaItem = function(item) {
           Number(qtyInput.value);
 
         if (!price) {
-          alert("Preço inválido!");
+          showMessage(
+            "PREÇO INVÁLIDO",
+            "Informe um preço válido."
+          );
           return;
         }
 
         if (price < minPrice) {
-          alert(
+          showMessage(
+            "PREÇO INVÁLIDO",
             `Preço abaixo do mínimo permitido (฿ ${minPrice.toLocaleString("pt-BR")}).`
           );
           return;
         }
 
         if (price > maxPrice) {
-          alert(
+          showMessage(
+            "PREÇO INVÁLIDO",
             `Preço acima do máximo permitido (฿ ${maxPrice.toLocaleString("pt-BR")}).`
           );
           return;
         }
 
         if (!qtd || qtd <= 0) {
-          alert("Quantidade inválida!");
+          showMessage(
+            "QUANTIDADE INVÁLIDA",
+            "Informe uma quantidade válida."
+          );
           return;
         }
 
         if (qtd > item.quantidade) {
-          alert(
+          showMessage(
+            "QUANTIDADE INSUFICIENTE",
             `Você possui apenas ${item.quantidade} unidade(s).`
           );
           return;
@@ -290,7 +331,10 @@ window.abrirVendaItem = function(item) {
           inventoryModal.style.display = "flex";
         }
 
-        alert("Item anunciado com sucesso!");
+        showMessage(
+          "ANÚNCIO CRIADO",
+          "Item anunciado com sucesso!"
+         );
 
       } catch (error) {
 
@@ -299,7 +343,8 @@ window.abrirVendaItem = function(item) {
           error
         );
 
-        alert(
+        showMessage(
+          "ERRO",
           "Erro ao anunciar item. Verifique o console."
         );
       }

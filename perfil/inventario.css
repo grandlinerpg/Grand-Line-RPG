@@ -614,7 +614,7 @@
 
 #confirm-modal .item-window {
   width: 90%;
-  max-width: 420px;
+  max-width: 400px;
 
   background: rgba(10,10,10,0.96);
   border: 1px solid rgba(246,211,101,0.2);

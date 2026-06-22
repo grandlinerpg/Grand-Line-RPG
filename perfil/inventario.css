@@ -846,3 +846,10 @@
   margin-top:0px;
 }
 
+.message-text{
+  text-align:center;
+  color:#ddd;
+  line-height:1.5;
+  margin:10px 0 20px;
+}
+

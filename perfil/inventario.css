@@ -841,3 +841,8 @@
   background: #1a1a1a;
   color: #fff;
 }
+
+#sell-modal .item-actions{
+  margin-top:0px;
+}
+

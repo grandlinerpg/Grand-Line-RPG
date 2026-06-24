@@ -1,4 +1,4 @@
-import {
+  import {
   ref,
   get,
   update,
@@ -142,6 +142,10 @@ function initMarket() {
   const yesBtn = document.getElementById("market-confirm-yes");
   const noBtn = document.getElementById("market-confirm-no");
 
+  const successModal = document.getElementById("market-success-modal");
+  const successText = document.getElementById("market-success-text");
+  const successOk = document.getElementById("market-success-ok");
+
   let anuncios = {};
   let itensDB = {};
   let marketRef = ref(db, "mercado/itens");
@@ -157,6 +161,12 @@ function initMarket() {
   if (closeItem) {
     closeItem.onclick = () => {
       itemModal.style.display = "none";
+    };
+  }
+
+  if (successOk) {
+    successOk.onclick = () => {
+      successModal.style.display = "none";
     };
   }
 
@@ -314,11 +324,17 @@ function initMarket() {
       const comprador = window.auth?.currentUser?.uid;
       if (!comprador) throw new Error("Usuário não logado");
 
+      const nomeItem = marketItem.nome;
+
       await comprarItem(db, marketItem, qtd, comprador);
 
       confirmModal.style.display = "none";
       itemModal.style.display = "none";
-      marketModal.style.display = "flex";
+
+      successText.innerText =
+        `Você comprou com sucesso ${qtd}x ${nomeItem}.`;
+
+      successModal.style.display = "flex";
 
       marketItem = null;
 

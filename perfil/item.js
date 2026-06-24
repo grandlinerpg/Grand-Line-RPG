@@ -410,14 +410,32 @@ async function usarTipo4(item) {
   // =====================
   if (itemRecebido) {
 
-    alert(
-      `Você recebeu ${dinheiro} Berries e um item!`
-    );
-
-  } else {
-
-    alert(
-      `Você recebeu ${dinheiro} Berries!`
+    window.mostrarResultado(
+      "BAÚ ABERTO!",
+      `
+      Você recebeu <b>${dinheiro} Berries</b><br>
+      ${itemRecebido ? "🎁 Um item foi encontrado!" : "Sem item adicional"}
+      `,
+      "🧰"
     );
   }
 }
+
+  // =====================
+  // RESULTADO
+  // =====================
+   // RESULTADO (WINDOW GLOBAL)
+  // =========================
+  window.mostrarResultado = function(titulo, texto, icon = "📦") {
+
+    const modal = document.getElementById("result-modal");
+    const title = document.getElementById("result-title");
+    const content = document.getElementById("result-content");
+    const iconBox = document.getElementById("result-icon");
+
+    title.innerText = titulo;
+    content.innerHTML = texto;
+    iconBox.innerHTML = icon;
+
+    modal.style.display = "flex";
+  };

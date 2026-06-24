@@ -223,6 +223,12 @@ async function usarTipo1(item) {
 
   // adiciona novo
   await adicionarItem(itemFinal.id);
+
+  window.mostrarResultado(
+    "ITEM SORTEADO!",
+    `Você recebeu <b>${itemFinal.nome || itemFinal.id}</b>`,
+    "🎁"
+  );
 }
 
 // =========================
@@ -269,6 +275,16 @@ async function usarTipo2(item) {
   await update(charRef, updates);
 
   await removerItem(item.id);
+
+  window.mostrarResultado(
+    "PERSONAGEM ALTERADO!",
+    `
+    ${item.categoria === "akuma no mi" ? "🍇 Fruta equipada" : ""}
+    ${item.categoria === "fator de linhagem" ? "🧬 Raça alterada" : ""}
+    ${item.categoria === "pergaminho de ensinamento" ? "📜 Estilo alterado" : ""}
+    `,
+    "⚡"
+  );
 }
 
 // =========================

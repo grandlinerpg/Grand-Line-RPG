@@ -366,6 +366,7 @@ function initMarket() {
         `Você comprou com sucesso ${qtd}x ${nomeItem}.`;
     } else {
       successTitle.innerText = "COMPRA FALHOU";
+      successTitle.style.color = "#ff6d6d";
       successText.innerText =
         resultado.erro;
     }

@@ -468,14 +468,12 @@
    SCROLL DO MERCADO
 ========================= */
 
-#market-list{
-  height:400px;
-
-  overflow-y:auto;
-  overflow-x:hidden;
-
-  padding-right:0;   /* remove o espaço extra */
-  box-sizing:border-box;
+#market-list {
+  height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 5px;
+  box-sizing: border-box;
 }
 
 /* SCROLL */
@@ -494,13 +492,6 @@
 
 #market-list::-webkit-scrollbar-thumb:hover{
   background:rgba(246,211,101,0.45);
-}
-
-#market-list{
-  overflow-y:auto;
-  overflow-x:hidden;
-
-  padding-right:5px; /* espaço entre itens e scrollbar */
 }
 
 .market-actions{

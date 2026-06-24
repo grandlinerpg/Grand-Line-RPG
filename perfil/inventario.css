@@ -162,10 +162,6 @@
   overflow-x:hidden;
 }
 
-.inventory-item{
-  flex-shrink:0;
-}
-
 /* ITEM */
 .inventory-item{
   background:rgba(255,255,255,0.05);
@@ -406,12 +402,6 @@
   gap:10px;
 }
 
-.market-btn{
-  min-width:110px;
-  padding:10px 12px;
-  font-size:12px;
-}
-
 /* =========================
    RODAPÉ INVENTÁRIO
 ========================= */
@@ -428,10 +418,6 @@
   justify-content:space-between;
 
   gap:15px;
-}
-
-.inventory-saldo{
-  flex:1;
 }
 
 #inventory-saldo{
@@ -464,9 +450,9 @@
 }
 
 .market-btn{
-  min-width:130px;
+  min-width:110px;
 
-  padding:12px 18px;
+  padding:10px 12px;
 
   border:none;
   border-radius:10px;
@@ -484,7 +470,7 @@
   color:#f6d365;
 
   font-family:'Cinzel', serif;
-  font-size:14px;
+  font-size:12px;
   font-weight:bold;
 
   transition:.2s;
@@ -531,11 +517,9 @@
 
 #market-list{
   height:400px;
-
   overflow-y:auto;
   overflow-x:hidden;
-
-  padding-right:0;   /* remove o espaço extra */
+  padding-right:5;   /* remove o espaço extra */
   box-sizing:border-box;
 }
 
@@ -555,13 +539,6 @@
 
 #market-list::-webkit-scrollbar-thumb:hover{
   background:rgba(246,211,101,0.45);
-}
-
-#market-list{
-  overflow-y:auto;
-  overflow-x:hidden;
-
-  padding-right:5px; /* espaço entre itens e scrollbar */
 }
 
 .market-actions{

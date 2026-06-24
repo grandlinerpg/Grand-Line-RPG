@@ -408,18 +408,16 @@ async function usarTipo4(item) {
   // =====================
   // ALERTA
   // =====================
-  if (itemRecebido) {
 
-    window.mostrarResultado(
-      "BAÚ ABERTO!",
-      `
-      Você recebeu <b>${dinheiro} Berries</b><br>
-      ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido}</b>` : "Sem item adicional"}
-      `,
-      "🧰"
-    );
+  window.mostrarResultado(
+     "BAÚ ABERTO!",
+     `
+    Você recebeu <b>${dinheiro} Berries</b><br>
+    ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido}</b>` : "Sem item adicional"}
+    `,
+    "🧰"
+   );
   }
-}
 
   // =====================
   // RESULTADO

@@ -161,6 +161,7 @@ function initMarket() {
   const noBtn = document.getElementById("market-confirm-no");
 
   const successModal = document.getElementById("market-success-modal");
+  const successTitle = document.getElementById("market-success-title");
   const successText = document.getElementById("market-success-text");
   const successOk = document.getElementById("market-success-ok");
 
@@ -360,9 +361,11 @@ function initMarket() {
     );
 
     if (resultado.sucesso) {
+      successTitle.innerText = "COMPRA REALIZADA";
       successText.innerText =
         `Você comprou com sucesso ${qtd}x ${nomeItem}.`;
     } else {
+      successTitle.innerText = "COMPRA FALHOU";
       successText.innerText =
         resultado.erro;
     }

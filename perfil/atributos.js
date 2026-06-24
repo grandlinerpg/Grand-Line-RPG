@@ -93,8 +93,6 @@ fetch("perfil/atributos.html")
 
         distributeBtn.addEventListener("click", () => {
 
-          modal.style.display = "none";
-
           const openPoints = document.getElementById("open-points");
 
           if (openPoints) {

@@ -362,6 +362,7 @@ function initMarket() {
 
     if (resultado.sucesso) {
       successTitle.innerText = "COMPRA REALIZADA";
+      successTitle.style.color = "#6dff8b";
       successText.innerText =
         `Você comprou com sucesso ${qtd}x ${nomeItem}.`;
     } else {

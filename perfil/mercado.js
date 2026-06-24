@@ -55,9 +55,17 @@ async function comprarItem(db, item, quantidade, compradorUid) {
       get(marketRef)
     ]);
 
-    if (!buyerSnap.exists()) throw new Error("Comprador inválido");
-    if (!sellerSnap.exists()) throw new Error("Vendedor inválido");
-    if (!marketSnap.exists()) throw new Error("Item não existe");
+    if (!buyerSnap.exists()) {
+      return { sucesso: false, erro: "Comprador inválido" };
+    }
+
+    if (!sellerSnap.exists()) {
+      return { sucesso: false, erro: "Vendedor inválido" };
+    }
+
+    if (!marketSnap.exists()) {
+      return { sucesso: false, erro: "Item não existe" };
+    }
 
     const data = marketSnap.val();
 
@@ -67,8 +75,13 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     const buyerSaldo = Number(buyerSnap.val());
     const sellerSaldo = Number(sellerSnap.val());
 
-    if (data.qtd < qtdFinal) throw new Error("Sem estoque");
-    if (buyerSaldo < total) throw new Error("Saldo insuficiente");
+    if (data.qtd < qtdFinal) {
+      return { sucesso: false, erro: "Sem estoque" };
+    }
+
+    if (buyerSaldo < total) {
+      return { sucesso: false, erro: "Saldo insuficiente" };
+    }
 
     const result = await runTransaction(marketRef, (itemData) => {
       if (!itemData) return null;
@@ -88,7 +101,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     });
 
     if (!result.committed) {
-      throw new Error("Falha no estoque");
+      return { sucesso: false, erro: "Falha no estoque" };
     }
 
     let novoBuyer = buyerSaldo - total;
@@ -115,8 +128,13 @@ async function comprarItem(db, item, quantidade, compradorUid) {
       [itemKey]: finalQty
     });
 
+    return {
+      sucesso: true
+    };
+
   } catch (err) {
     console.error("💥 ERRO NA COMPRA:", err.message);
+    throw err;
   }
 }
 
@@ -316,31 +334,42 @@ function initMarket() {
   };
 
   yesBtn.onclick = async () => {
-    try {
-      const qtd = Number(
-        document.getElementById("market-quantity-select")?.value || 1
-      );
 
-      const comprador = window.auth?.currentUser?.uid;
-      if (!comprador) throw new Error("Usuário não logado");
+    const qtd = Number(
+      document.getElementById("market-quantity-select")?.value || 1
+    );
 
-      const nomeItem = marketItem.nome;
+    const comprador = window.auth?.currentUser?.uid;
 
-      await comprarItem(db, marketItem, qtd, comprador);
+    confirmModal.style.display = "none";
+    itemModal.style.display = "none";
 
-      confirmModal.style.display = "none";
-      itemModal.style.display = "none";
+    if (!comprador) {
+      successText.innerText = "Usuário não logado";
+      successModal.style.display = "flex";
+      return;
+    }
 
+    const nomeItem = marketItem.nome;
+
+    const resultado = await comprarItem(
+      db,
+      marketItem,
+      qtd,
+      comprador
+    );
+
+    if (resultado.sucesso) {
       successText.innerText =
         `Você comprou com sucesso ${qtd}x ${nomeItem}.`;
-
-      successModal.style.display = "flex";
-
-      marketItem = null;
-
-    } catch (err) {
-      console.error("💥 ERRO:", err.message);
+    } else {
+      successText.innerText =
+        resultado.erro;
     }
+
+    successModal.style.display = "flex";
+
+    marketItem = null;
   };
 
   noBtn.onclick = () => {

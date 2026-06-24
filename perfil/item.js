@@ -414,7 +414,7 @@ async function usarTipo4(item) {
       "BAÚ ABERTO!",
       `
       Você recebeu <b>${dinheiro} Berries</b><br>
-      ${itemRecebido ? "🎁 Um item foi encontrado!" : "Sem item adicional"}
+      ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido}</b>` : "Sem item adicional"}
       `,
       "🧰"
     );
@@ -424,8 +424,6 @@ async function usarTipo4(item) {
   // =====================
   // RESULTADO
   // =====================
-   // RESULTADO (WINDOW GLOBAL)
-  // =========================
   window.mostrarResultado = function(titulo, texto, icon = "📦") {
 
     const modal = document.getElementById("result-modal");

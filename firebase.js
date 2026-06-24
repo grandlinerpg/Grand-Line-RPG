@@ -88,6 +88,13 @@ window.register = async function () {
         trocadepersonagem: 1
       },
 
+      skills: {
+        esquiva: {
+          categoria: "gerais"
+          sub: "basic"
+        }
+      },
+
       stats: {
         str: 1,
         res: 1,
@@ -98,6 +105,8 @@ window.register = async function () {
       },
       points: {
         available: 10,
+        skill-avaiable: 1,
+        skill-used: 1,
         used: 0
       }
     };

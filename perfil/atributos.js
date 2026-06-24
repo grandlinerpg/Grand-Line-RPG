@@ -3,7 +3,8 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-aut
 import {
   getDatabase,
   ref,
-  get
+  onValue,
+  off
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -11,6 +12,9 @@ import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.
 const app = getApp();
 const auth = getAuth(app);
 const db = getDatabase(app);
+
+let attrRef = null;
+let attrListener = null;
 
 fetch("perfil/atributos.html")
   .then(res => res.text())
@@ -25,35 +29,39 @@ fetch("perfil/atributos.html")
       const closeBtn = document.querySelector(".attributes-close-btn");
       const distributeBtn = document.getElementById("open-distribute-points");
 
-      if (!modal) {
+      if (!modal || !openBtn || !closeBtn) {
         console.error("attributes-modal não encontrada");
         return;
       }
 
       modal.style.display = "none";
 
+      const set = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = value;
+      };
+
       // ======================
-      // ABRIR ATRIBUTOS
+      // ABRIR ATRIBUTOS (TEMPO REAL)
       // ======================
-      if (openBtn) {
+      openBtn.addEventListener("click", () => {
 
-        openBtn.addEventListener("click", async () => {
+        const user = auth.currentUser;
+        if (!user) return;
 
-          const user = auth.currentUser;
-          if (!user) return;
+        attrRef = ref(db, `players/${user.uid}`);
 
-          const userRef = ref(db, `players/${user.uid}`);
+        modal.style.display = "flex";
 
-          const snap = await get(userRef);
+        // evita duplicar listener
+        if (attrListener) off(attrRef);
+
+        attrListener = onValue(attrRef, (snap) => {
+
           if (!snap.exists()) return;
 
           const data = snap.val();
           const stats = data.stats || {};
-
-          const set = (id, value) => {
-            const el = document.getElementById(id);
-            if (el) el.innerText = value;
-          };
 
           set("attr-str", stats.str || 0);
           set("attr-res", stats.res || 0);
@@ -62,32 +70,33 @@ fetch("perfil/atributos.html")
           set("attr-sta", stats.sta || 0);
           set("attr-hp", stats.hp || 0);
 
-          const mainImg = document.getElementById("char-img");
-          const attrImg = document.getElementById("attr-char-img");
-
-          if (mainImg && attrImg) {
-            attrImg.src = mainImg.src;
-          }
-
-          modal.style.display = "flex";
-
         });
 
-      }
+        const mainImg = document.getElementById("char-img");
+        const attrImg = document.getElementById("attr-char-img");
+
+        if (mainImg && attrImg) {
+          attrImg.src = mainImg.src;
+        }
+
+      });
 
       // ======================
       // FECHAR
       // ======================
-      if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
 
-        closeBtn.addEventListener("click", () => {
-          modal.style.display = "none";
-        });
+        modal.style.display = "none";
 
-      }
+        if (attrRef) {
+          off(attrRef);
+          attrListener = null;
+        }
+
+      });
 
       // ======================
-      // ABRIR DISTRIBUIR (CORRETO)
+      // ABRIR DISTRIBUIR
       // ======================
       if (distributeBtn) {
 

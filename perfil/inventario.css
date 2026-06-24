@@ -858,7 +858,7 @@
 }
 
 #market-confirm-modal .item-window,
-#market-sucess-modal .item-window,
+#market-success-modal .item-window,
 #message-modal .item-window{
   width:90%;
   max-width:400px;

@@ -90,7 +90,7 @@ window.register = async function () {
 
       skills: {
         esquiva: {
-          categoria: "gerais"
+          categoria: "gerais",
           sub: "basic"
         }
       },
@@ -105,8 +105,8 @@ window.register = async function () {
       },
       points: {
         available: 10,
-        skill-avaiable: 1,
-        skill-used: 1,
+        skillAvaiable: 1,
+        skillUsed: 1,
         used: 0
       }
     };

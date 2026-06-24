@@ -89,10 +89,20 @@ fetch("perfil/distribuir.html")
       // ======================
       closeBtn.addEventListener("click", () => {
 
+         // fecha distribuir
         modal.style.display = "none";
 
+        // desfaz alterações não confirmadas
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
+
+        // reabre atributos
+       const attrModal = document.querySelector(".attributes-modal");
+
+        if (attrModal) {
+          attrModal.style.display = "flex";
+        }
+
       });
 
       // ======================

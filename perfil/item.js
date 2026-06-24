@@ -429,7 +429,7 @@ async function usarTipo4(item) {
      "BAÚ ABERTO!",
      `
     Você recebeu <b>${dinheiro} Berries</b><br>
-    ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido}</b>` : "Sem item adicional"}
+    ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido.nome}</b>` : "Sem item adicional"}
     `,
     "🧰"
    );

@@ -422,10 +422,3 @@
   border:2px solid rgba(255,215,120,0.3);
 }
 
-.attributes-modal{
-  z-index: 9998;
-}
-
-.points-modal{
-  z-index: 9999;
-}

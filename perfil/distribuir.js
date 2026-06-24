@@ -35,7 +35,7 @@ fetch("perfil/distribuir.html")
       const modal = document.querySelector(".points-modal");
       const openBtn = document.getElementById("open-points");
       const closeBtn = document.querySelector(".distribuir-close-btn");
-      const confirmBtn = document.querySelector(".save-btn");
+      const confirmBtn = document.querySelector(".points-modal .save-btn");
 
       if (!modal || !openBtn || !closeBtn || !confirmBtn) {
         console.error("Modal não carregou corretamente");
@@ -100,7 +100,7 @@ fetch("perfil/distribuir.html")
       // ======================
       document.addEventListener("click", (e) => {
 
-        const btn = e.target.st(".plus-btn");
+        const btn = e.target.closest(".plus-btn");
         if (!btn) return;
 
         if ((tempPoints.available || 0) <= 0) return;

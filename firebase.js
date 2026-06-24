@@ -105,8 +105,8 @@ window.register = async function () {
       },
       points: {
         available: 10,
-        skillAvaiable: 1,
-        skillUsed: 1,
+        "skill-avaiable": 1,
+        "skill-used": 1,
         used: 0
       }
     };

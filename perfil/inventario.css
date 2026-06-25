@@ -534,15 +534,6 @@
   background:rgba(246,211,101,0.45);
 }
 
-.market-actions{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-
-  gap:10px;
-  width:100%;
-}
-
 .price-box{
   flex:1;
 
@@ -627,32 +618,6 @@
   padding: 22px;
 
   text-align: center;
-}
-
-#result-modal .item-actions{
-  display: flex;
-  gap: 10px;
-}
-
-#close-result{
-  flex: 1;
-
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-
-  cursor: pointer;
-  transition: 0.2s;
-
-  background: linear-gradient(to bottom,#1f7a3a,#0f4a22);
-  color:#f6d365;
-}
-
-#close-result:hover{
-  transform: scale(1.03);
 }
 
 /* =========================

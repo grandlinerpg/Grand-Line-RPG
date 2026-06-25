@@ -226,7 +226,7 @@ async function usarTipo1(item) {
 
   window.mostrarResultado(
     "ITEM SORTEADO!",
-    `Você recebeu <b>${itemFinal.nome || itemFinal.id}</b>`,
+    `Você recebeu um(a) <b>${itemFinal.nome || itemFinal.id}</b>`,
     "🎁"
   );
 }

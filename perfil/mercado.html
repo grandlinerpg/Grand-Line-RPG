@@ -61,7 +61,7 @@
 
     <div class="item-top">
 
-      <h2 style="color:#f6d365; font-family:'Cinzel', serif;">
+      <h2 class="item">
         CONFIRMAR COMPRA
       </h2>
 
@@ -69,7 +69,6 @@
         Escolha a quantidade:
       </p>
 
-      <!-- 🔥 SELECT DE QUANTIDADE (COM VALOR PADRÃO PRA EVITAR BUG) -->
       <div style="display:flex; justify-content:center; margin-top:10px;">
         <select id="market-quantity-select" style="padding:6px; border-radius:6px;">
           <option value="1">1</option>
@@ -89,15 +88,15 @@
 
 </div>
 
-<div id="market-success-modal" class="item-modal">
+<!-- 🔥 SUCESSO -->
+
+  <div id="market-success-modal" class="item-modal">
 
   <div class="item-window">
 
     <div class="item-top">
 
-      <h2
-        id="market-success-title"
-        style="color:#f6d365; font-family:'Cinzel', serif;">
+      <h2 id="market-success-title" class="item">
         COMPRA REALIZADA
       </h2>
 
@@ -108,7 +107,9 @@
     </div>
 
     <div class="item-actions">
+
       <button id="market-success-ok">OK</button>
+
     </div>
 
   </div>

@@ -715,39 +715,6 @@
   font-size: 14px;
 }
 
-#confirm-sell,
-#cancel-sell {
-  flex: 1;
-
-  padding: 10px;
-
-  border: none;
-  border-radius: 8px;
-
-  cursor: pointer;
-
-  font-weight: bold;
-
-  transition: 0.2s;
-}
-
-/* botão vender */
-#confirm-sell {
-  background: linear-gradient(135deg, #f6d365, #fda085);
-  color: #111;
-}
-
-/* botão cancelar */
-#cancel-sell {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
-#confirm-sell:hover,
-#cancel-sell:hover {
-  transform: scale(1.03);
-}
-
 #market-quantity-select {
   background: #1a1a1a;
   color: #f6d365;

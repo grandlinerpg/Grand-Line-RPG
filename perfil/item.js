@@ -439,8 +439,8 @@ async function usarTipo4(item) {
   window.mostrarResultado(
      "BAÚ ABERTO!",
      `
-    Você recebeu <b>${dinheiro} Berries</b><br>
-    ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido.nome}</b>` : ""}
+    Você recebeu <b>${dinheiro} Berries</b>.<br>
+    ${itemRecebido ? `Você encontrou um(a)<b>${itemRecebido.nome}</b>.` : ""}
     `,
     "🧰"
    );

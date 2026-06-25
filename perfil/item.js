@@ -279,9 +279,20 @@ async function usarTipo2(item) {
   window.mostrarResultado(
     "PERSONAGEM ALTERADO!",
     `
-    ${item.categoria === "akuma no mi" ? "🍇 Fruta equipada" : ""}
-    ${item.categoria === "fator de linhagem" ? "🧬 Raça alterada" : ""}
-    ${item.categoria === "pergaminho de ensinamento" ? "📜 Estilo alterado" : ""}
+    ${item.categoria === "akuma no mi"
+      ? `Você despertou o poder da <b>${nomeLimpo}</b>.`
+      : ""
+    }
+
+    ${item.categoria === "fator de linhagem"
+      ? `Seu fator de linhagem foi reescrito para <b>${nomeLimpo}</b>.`
+      : ""
+    }
+
+    ${item.categoria === "pergaminho de ensinamento"
+      ? `Você alterou o seu estilo de luta para <b>${nomeLimpo}</b>.`
+      : ""
+    }
     `,
     "⚡"
   );
@@ -429,7 +440,7 @@ async function usarTipo4(item) {
      "BAÚ ABERTO!",
      `
     Você recebeu <b>${dinheiro} Berries</b><br>
-    ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido.nome}</b>` : "Sem item adicional"}
+    ${itemRecebido ? `🎁 Você recebeu: <b>${itemRecebido.nome}</b>` : ""}
     `,
     "🧰"
    );

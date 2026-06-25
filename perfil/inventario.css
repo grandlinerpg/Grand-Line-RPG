@@ -693,7 +693,6 @@
   box-shadow: 0 0 10px rgba(246, 211, 101, 0.5);
 }
 
-/* estilo das opções (limitado pelo navegador, mas ajuda em alguns casos) */
 #market-quantity-select option {
   background: #1a1a1a;
   color: #fff;
@@ -704,7 +703,7 @@
 }
 
 #confirm-modal .item-actions{
-  margin-top:5px;
+  margin-top:0px;
 }
 
 .message-text{

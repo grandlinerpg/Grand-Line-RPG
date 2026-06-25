@@ -617,11 +617,9 @@
 #sell-modal {
   position: fixed;
   inset: 0;
-
   display: none;
   justify-content: center;
   align-items: center;
-
   background: rgba(0, 0, 0, 0.75);
   z-index: 9999;
 }
@@ -630,16 +628,11 @@
 #sell-modal .item-window {
   width: 90%;
   max-width: 400px;
-
   background: rgba(10, 10, 10, 0.95);
-
   border: 1px solid rgba(246, 211, 101, 0.25);
   border-radius: 12px;
-
   padding: 18px;
-
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -655,18 +648,12 @@
 #sell-price-input,
 #sell-qty-input{
   width: 100%;
-
   padding: 10px;
-
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-
   background: rgba(0, 0, 0, 0.4);
-
   color: #fff;
-
   outline: none;
-
   font-size: 14px;
 }
 

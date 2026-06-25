@@ -598,12 +598,6 @@
   text-align: center;
 }
 
-#confirm-modal p {
-  color: #ddd;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
 #confirm-modal .item-actions {
   display: flex;
   gap: 10px;
@@ -671,12 +665,6 @@
   padding: 22px;
 
   text-align: center;
-}
-
-#result-modal p{
-  color: #ddd;
-  font-size: 14px;
-  margin-bottom: 20px;
 }
 
 #result-modal .item-actions{

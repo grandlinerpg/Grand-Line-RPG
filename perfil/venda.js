@@ -130,7 +130,16 @@ window.abrirVendaItem = function(item) {
     getMaxPrice(item.tier);
 
   priceInput.value = minPrice;
-  qtyInput.value = 1;
+  qtyInput.innerHTML = "";
+
+  for (let i = 1; i <= item.quantidade; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = i;
+    qtyInput.appendChild(option);
+  }
+
+qtyInput.value = 1;
 
   imgBox.innerHTML = item.img
     ? `

@@ -372,19 +372,6 @@
   outline:none;
 }
 
-/* =========================
-   PREÇO
-========================= */
-
-#market-list .inventory-qty{
-  font-weight:700;
-  white-space:nowrap;
-}
-
-/* =========================
-   MOBILE
-========================= */
-
 @media(max-width:700px){
 
   .market-filter{
@@ -396,6 +383,15 @@
     padding:9px 10px;
   }
 
+}
+
+/* =========================
+   PREÇO
+========================= */
+
+#market-list .inventory-qty{
+  font-weight:700;
+  white-space:nowrap;
 }
 
 /* =========================

@@ -340,6 +340,26 @@
   transform:scale(1.01);
 }
 
+#sell-modal .item-actions{
+  margin-top:0px;
+}
+
+#confirm-modal .item-actions{
+  margin-top:20px;
+}
+
+#confirm-modal .item-actions{
+  margin-top:20px;
+}
+
+#messsage-modal .item-actions{
+  margin-top:20px;
+}
+
+#result-modal .item-actions{
+  margin-top:5px;
+}
+
 /* =========================
    FILTRO
 ========================= */
@@ -646,14 +666,6 @@
 #market-quantity-select option {
   background: #1a1a1a;
   color: #fff;
-}
-
-#sell-modal .item-actions{
-  margin-top:0px;
-}
-
-#confirm-modal .item-actions{
-  margin-top:15px;
 }
 
 .message-text{

@@ -162,6 +162,23 @@
   overflow-x:hidden;
 }
 
+.inventory-list::-webkit-scrollbar{
+  width:6px;
+}
+
+.inventory-list::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.inventory-list::-webkit-scrollbar-thumb{
+  background:rgba(246,211,101,0.25);
+  border-radius:999px;
+}
+
+.inventory-list::-webkit-scrollbar-thumb:hover{
+  background:rgba(246,211,101,0.45);
+}
+
 /* ITEM */
 .inventory-item{
   background:rgba(255,255,255,0.05);

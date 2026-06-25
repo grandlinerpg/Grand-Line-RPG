@@ -1,4 +1,4 @@
-  import {
+import {
   ref,
   get,
   update,
@@ -12,6 +12,9 @@ const marketContainer = document.getElementById("market-container");
 
 let marketItem = null;
 let marketListener = null;
+
+let qtySelect = null;
+let totalBox = null;
 
 /* =========================
    RESET MODAL
@@ -289,9 +292,6 @@ function initMarket() {
     }
   }
 
-  /* =========================
-     🔥 SELECT DE QUANTIDADE (SÓ ISSO MEXIDO)
-  ========================= */
   function openItem(item) {
     resetItemModal();
     marketItem = item;
@@ -312,8 +312,8 @@ function initMarket() {
 
     priceBox.innerText = `฿ ${item.value.toLocaleString("pt-BR")}`;
 
-    /* 🔥 SELECT AJUSTADO PELO ESTOQUE */
-    const qtySelect = document.getElementById("market-quantity-select");
+    qtySelect = document.getElementById("market-quantity-select");
+    totalBox = document.getElementById("market-total-price");
 
     if (qtySelect) {
       qtySelect.innerHTML = "";
@@ -324,9 +324,22 @@ function initMarket() {
       for (let i = 1; i <= limite; i++) {
         qtySelect.innerHTML += `<option value="${i}">${i}</option>`;
       }
+
+      qtySelect.onchange = updateTotal;
     }
 
+    updateTotal();
+
     itemModal.style.display = "flex";
+  }
+
+  function updateTotal() {
+    if (!marketItem || !qtySelect || !totalBox) return;
+
+    const qtd = Number(qtySelect.value || 1);
+    const total = marketItem.value * qtd;
+
+    totalBox.innerText = `฿ ${total.toLocaleString("pt-BR")}`;
   }
 
   buyBtn.onclick = () => {

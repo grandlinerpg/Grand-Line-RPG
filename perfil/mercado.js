@@ -344,6 +344,19 @@ function initMarket() {
 
   buyBtn.onclick = () => {
     if (!marketItem) return;
+
+    const confirmEmoji = document.getElementById("confirm-item-emoji");
+
+    if (confirmEmoji) {
+      confirmEmoji.innerHTML = "📦"; // reset antes
+
+      confirmEmoji.innerHTML =
+        marketItem.img
+          ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${marketItem.img}.png"
+              class="item-open-img">`
+          : marketItem.emoji;
+    }
+
     confirmModal.style.display = "flex";
   };
 

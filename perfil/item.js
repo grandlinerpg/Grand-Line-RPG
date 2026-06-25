@@ -452,12 +452,3 @@ async function usarTipo4(item) {
     modal.style.display = "flex";
   };
 
-// =========================
-// FECHAR RESULTADO
-// =========================
-document.getElementById("close-result")
-  .addEventListener("click", () => {
-
-    document.getElementById("result-modal")
-      .style.display = "none";
-});

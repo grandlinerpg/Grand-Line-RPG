@@ -129,8 +129,8 @@ window.abrirVendaItem = function(item) {
   const maxPrice =
     getMaxPrice(item.tier);
 
-  priceInput.value = "";
-  qtyInput.value = "";
+  priceInput.value = minPrice;
+  qtyInput.value = 1;
 
   imgBox.innerHTML = item.img
     ? `

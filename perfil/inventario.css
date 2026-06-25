@@ -182,19 +182,13 @@
 /* ITEM */
 .inventory-item{
   background:rgba(255,255,255,0.05);
-
   border:1px solid rgba(255,215,120,0.15);
-
   border-radius:10px;
-
   height:44px;
-
+  flex: 0 0 auto;   
   padding:0 12px;
-
   cursor:pointer;
-
   transition:0.2s;
-
   display:flex;
   align-items:center;
 }

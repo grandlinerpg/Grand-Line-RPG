@@ -771,31 +771,6 @@
   text-transform:uppercase;
 }
 
-/* PREVIEW DO ITEM */
-.sell-preview {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.sell-image {
-  width: 50px;
-  height: 50px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 42px;
-}
-
-/* INFO */
-.sell-info {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .sell-min-price {
   font-size: 13px;
   color: #aaa;

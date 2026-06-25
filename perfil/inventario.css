@@ -598,41 +598,6 @@
   text-align: center;
 }
 
-#confirm-modal .item-actions {
-  display: flex;
-  gap: 10px;
-}
-
-#confirm-yes,
-#confirm-no{
-  flex:1;
-
-  padding:12px;
-  border:none;
-  border-radius:10px;
-
-  font-family:'Cinzel', serif;
-  font-size:14px;
-
-  cursor:pointer;
-  transition:0.2s;
-}
-
-#confirm-yes{
-  background:linear-gradient(to bottom,#1f7a3a,#0f4a22);
-  color:#b6ffcc;
-}
-
-#confirm-no{
-  background:linear-gradient(to bottom,#8f1408,#5e0800);
-  color:#f6d365;
-}
-
-#confirm-yes:hover,
-#confirm-no:hover{
-  transform:scale(1.03);
-}
-
 #buy-confirm-modal{
   z-index: 99999;
 }

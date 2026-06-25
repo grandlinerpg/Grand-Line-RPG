@@ -1,39 +1,44 @@
+<!-- MODAL DE VENDA -->
 <div id="sell-modal" class="item-modal">
 
   <div class="item-window">
 
-    <!-- TÍTULO -->
-    <h2 class="sell-title">
-      ANUNCIAR ITEM
-    </h2>
+    <div class="item-top">
 
-    <!-- PREVIEW DO ITEM -->
-    <div class="sell-preview">
-      <div id="sell-item-image" class="sell-image"></div>
-    </div>
+      <!-- IMAGEM DO ITEM -->
+      <div id="sell-item-image" class="item-emoji">
+        📦
+      </div>
 
-    <!-- INFO -->
-    <div class="sell-info">
+      <!-- INFORMAÇÕES -->
+      <div class="item-info">
 
-      <p id="sell-min-price" class="sell-min-price">
-        Faixa de preço: ฿ 0 até ฿ 0
-      </p>
+        <h2 class="sell-title">
+          ANUNCIAR ITEM
+        </h2>
 
-      <input
-        id="sell-price-input"
-        type="text"
-        placeholder="Digite o valor do anúncio"
-      />
+        <p id="sell-min-price" class="sell-min-price">
+          Faixa de preço: ฿ 0 até ฿ 0
+        </p>
 
-      <input
-        id="sell-qty-input"
-        type="text"
-        placeholder="Quantidade"
-      />
+      </div>
 
     </div>
 
-    <!-- AÇÕES -->
+    <!-- INPUTS -->
+    <input
+      id="sell-price-input"
+      type="text"
+      placeholder="Digite o valor do anúncio"
+    />
+
+    <input
+      id="sell-qty-input"
+      type="text"
+      placeholder="Quantidade"
+    />
+
+    <!-- BOTÕES -->
     <div class="item-actions">
 
       <button id="confirm-sell">
@@ -50,19 +55,27 @@
 
 </div>
 
-<!-- MODAL DE MENSAGENS -->
 
+<!-- MODAL DE MENSAGEM -->
 <div id="message-modal" class="item-modal">
 
   <div class="item-window">
 
-    <h2 id="message-title" class="sell-title">
-      AVISO
-    </h2>
+    <div class="item-top">
 
-    <p id="message-text" class="message-text">
-      Mensagem
-    </p>
+      <div class="item-info">
+
+        <h2 id="message-title">
+          AVISO
+        </h2>
+
+        <p id="message-text">
+          Mensagem
+        </p>
+
+      </div>
+
+    </div>
 
     <div class="item-actions">
 

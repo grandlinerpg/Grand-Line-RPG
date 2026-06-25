@@ -748,6 +748,10 @@
   margin-top:0px;
 }
 
+#confirm-modal .item-actions{
+  margin-top:5px;
+}
+
 .message-text{
   text-align:center;
   color:#ddd;

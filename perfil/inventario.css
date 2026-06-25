@@ -594,12 +594,6 @@
   text-align: center;
 }
 
-#confirm-modal h2 {
-  color: #f6d365;
-  font-family: 'Cinzel', serif;
-  margin-bottom: 10px;
-}
-
 #confirm-modal p {
   color: #ddd;
   font-size: 14px;
@@ -673,12 +667,6 @@
   padding: 22px;
 
   text-align: center;
-}
-
-#result-modal h2{
-  color: #f6d365;
-  font-family: 'Cinzel', serif;
-  margin-bottom: 10px;
 }
 
 #result-modal p{

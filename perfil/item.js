@@ -484,7 +484,8 @@ function usarTipo3(item) {
       itemRecebido?.img
         ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemRecebido.img}.png"
             class="item-open-img">`
-        : "🧰"
+        : `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+            class="item-open-img">`
     );
   }
 

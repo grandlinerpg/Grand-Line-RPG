@@ -5,42 +5,30 @@
 .inventory-modal{
   position:fixed;
   inset:0;
-
   background:rgba(0,0,0,0.7);
-
   display:none;
-
   justify-content:center;
   align-items:center;
-
   z-index:1000;
 }
 
 .market-modal{
   position:fixed;
   inset:0;
-
   background:rgba(0,0,0,0.7);
-
   display:none;
-
   justify-content:center;
   align-items:center;
-
   z-index:2000;
 }
 
 .item-modal{
   position:fixed;
   inset:0;
-
   background:rgba(0,0,0,0.7);
-
   display:none;
-
   justify-content:center;
   align-items:center;
-
   z-index:3000;
 }
 
@@ -51,38 +39,24 @@
 .inventory-window{
   width:90%;
   max-width:500px;
-
   background:rgba(10,10,10,0.96);
-
   border:1px solid rgba(255,215,120,0.2);
-
   border-radius:16px;
-
   padding:22px;
-
   position:relative;
-
   margin:auto;
-
   overflow:hidden;
 }
 
 .item-window{
   width:90%;
   max-width:500px;
-
   background:rgba(10,10,10,0.96);
-
   border:1px solid rgba(255,215,120,0.2);
-
   border-radius:16px;
-
   padding:22px;
-
   position:relative;
-
   margin:auto;
-
   overflow:hidden;
 }
 
@@ -91,24 +65,18 @@
 ========================= */
 
 .inventory-header{
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   margin-bottom:18px;
 }
 
 .inventory-header h2{
   color:#f6d365;
   font-family:'Cinzel', serif;
-
   text-align:center;
-
   margin:0;
-
   line-height:1;
-
   font-size:26px;
 }
 
@@ -119,24 +87,17 @@
 .inventory-close-btn,
 .close-item-x{
   position:absolute;
-
   top:10px;
   right:15px;
-
   background:none;
   border:none;
   padding:0;
-
   width:auto;
   height:auto;
-
   color:#f6d365;
-
   font-size:30px;
   line-height:1;
-
   cursor:pointer;
-
   transition:0.3s;
 }
 
@@ -155,7 +116,7 @@
   flex-direction:column;
   gap:8px;
   height:356px;
-  overflow-y:auto;   /* só isso */
+  overflow-y:auto;   
   overflow-x:hidden;
 }
 
@@ -198,14 +159,11 @@
   display:flex;
   align-items:center;
   gap:10px;
-
   width:100%;
 }
 
 .inventory-emoji{
   font-size:22px;
-
-  /* 🔥 garante centralização da imagem */
   display:flex;
   align-items:center;
   justify-content:center;
@@ -215,9 +173,7 @@
 .inventory-item-img{
   width:26px;
   height:26px;
-
   object-fit:contain;
-
   display:block;
 }
 
@@ -252,16 +208,12 @@
   display:flex;
   align-items:center;
   justify-content:center;
-
   border-radius:50%;
-
   background:rgba(246,211,101,0.15);
   border:1px solid rgba(246,211,101,0.4);
-
   color:#f6d365;
   font-size:11px;
   font-weight:bold;
-
   line-height:1;
 }
 
@@ -470,7 +422,6 @@
 
 #market-list .inventory-name-qty{
   width:100%;
-
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -479,19 +430,14 @@
 #market-list .inventory-qty{
   width:auto;
   height:auto;
-
   background:none;
   border:none;
   border-radius:0;
-
   padding:0;
-
   color:#f6d365;
-
   font-family:'Cinzel', serif;
   font-size:13px;
   font-weight:bold;
-
   margin-left:auto;
 }
 
@@ -503,29 +449,23 @@
   height:400px;
   overflow-y:auto;
   overflow-x:hidden;
-  padding-right:5;   /* remove o espaço extra */
+  padding-right:5;  
   box-sizing:border-box;
 }
 
 .price-box{
   flex:1;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   background:rgba(0,0,0,0.6);
   border:1px solid rgba(246,211,101,0.3);
-
   color:#f6d365;
-
   padding:12px;
   border-radius:10px;
-
   font-family:'Cinzel', serif;
   font-size:14px;
   font-weight:bold;
-
   margin-right:8px; /* 🔥 isso impede colar no botão */
 }
 
@@ -536,26 +476,20 @@
 #confirm-modal {
   position: fixed;
   inset: 0;
-
   display: none;
   justify-content: center;
   align-items: center;
-
   background: rgba(0,0,0,0.75);
-
   z-index: 6000;
 }
 
 #confirm-modal .item-window {
   width: 90%;
   max-width: 400px;
-
   background: rgba(10,10,10,0.96);
   border: 1px solid rgba(246,211,101,0.2);
   border-radius: 16px;
-
   padding: 22px;
-
   text-align: center;
 }
 
@@ -570,26 +504,20 @@
 #result-modal{
   position: fixed;
   inset: 0;
-
   display: none;
   justify-content: center;
   align-items: center;
-
   background: rgba(0,0,0,0.75);
-
   z-index: 6000;
 }
 
 #result-modal .item-window{
   width: 90%;
   max-width: 400px;
-
   background: rgba(10,10,10,0.96);
   border: 1px solid rgba(246,211,101,0.2);
   border-radius: 16px;
-
   padding: 22px;
-
   text-align: center;
 }
 

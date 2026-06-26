@@ -297,7 +297,10 @@ async function usarTipo2(item) {
       : ""
     }
     `,
-    "⚡"
+    item.img
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+          class="item-open-img">`
+      : (item.item || item.emoji || item.icon || "⚡")
   );
 }
 

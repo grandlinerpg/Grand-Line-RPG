@@ -300,7 +300,11 @@
   margin-top:20px;
 }
 
-#confirm-modal .item-actions{
+#market-confirm-modal .item-actions{
+  margin-top:25px;
+}
+
+#market-sucess-modal .item-actions{
   margin-top:20px;
 }
 

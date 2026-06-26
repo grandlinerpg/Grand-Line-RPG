@@ -59,15 +59,15 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     ]);
 
     if (!buyerSnap.exists()) {
-      return { sucesso: false, erro: "Comprador inválido" };
+      return { sucesso: false, erro: "Comprador inválido." };
     }
 
     if (!sellerSnap.exists()) {
-      return { sucesso: false, erro: "Vendedor inválido" };
+      return { sucesso: false, erro: "Vendedor inválido." };
     }
 
     if (!marketSnap.exists()) {
-      return { sucesso: false, erro: "Item não existe" };
+      return { sucesso: false, erro: "Item não existe." };
     }
 
     const data = marketSnap.val();
@@ -83,7 +83,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     }
 
     if (buyerSaldo < total) {
-      return { sucesso: false, erro: "Saldo insuficiente" };
+      return { sucesso: false, erro: "Saldo insuficiente." };
     }
 
     const result = await runTransaction(marketRef, (itemData) => {
@@ -104,7 +104,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     });
 
     if (!result.committed) {
-      return { sucesso: false, erro: "Falha no estoque" };
+      return { sucesso: false, erro: "Falha no estoque." };
     }
 
     let novoBuyer = buyerSaldo - total;
@@ -372,7 +372,7 @@ function initMarket() {
     itemModal.style.display = "none";
 
     if (!comprador) {
-      successText.innerText = "Usuário não logado";
+      successText.innerText = "Usuário não logado.";
       successModal.style.display = "flex";
       return;
     }

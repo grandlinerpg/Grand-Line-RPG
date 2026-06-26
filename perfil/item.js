@@ -227,7 +227,10 @@ async function usarTipo1(item) {
   window.mostrarResultado(
     "ITEM SORTEADO!",
     `Você recebeu um(a) <b>${itemFinal.nome || itemFinal.id}</b>.`,
-    "🎁"
+    itemFinal.img
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemFinal.img}.png"
+          class="item-open-img">`
+      : (itemFinal.item || itemFinal.emoji || itemFinal.icon || "🎁")
   );
 }
 
@@ -310,140 +313,176 @@ function usarTipo3(item) {
     `${item.value}.html`;
 }
 
-// =========================
-// TIPO 4
-// BAÚ
-// =========================
-async function usarTipo4(item) {
+  // =========================
+  // TIPO 4
+  // BAÚ
+  // =========================
+  async function usarTipo4(item) {
 
-  console.log("USANDO BAÚ", item);
+    console.log("USANDO BAÚ", item);
 
-  const auth = window.auth;
-  const db = window.db;
+    const auth = window.auth;
+    const db = window.db;
 
-  const user = auth.currentUser;
+    const user = auth.currentUser;
 
-  if (!user) return;
+    if (!user) return;
 
-  // =====================
-  // PEGA BAÚ
-  // =====================
-  const bauRef =
-    ref(db, `itens/baus/${item.id}`);
+    // =====================
+    // PEGA BAÚ
+    // =====================
+    const bauRef =
+      ref(db, `itens/baus/${item.id}`);
 
-  const snap = await get(bauRef);
+    const snap = await get(bauRef);
 
-  console.log("SNAP:", snap.exists(), snap.val());
+    console.log("SNAP:", snap.exists(), snap.val());
 
-  if (!snap.exists()) return;
+    if (!snap.exists()) return;
+  
+    const bau = snap.val();
 
-  const bau = snap.val();
+    // =====================
+    // DINHEIRO
+    // =====================
+    const saldoRef =
+      ref(db, `players/${user.uid}/info/saldo`);
 
-  // =====================
-  // DINHEIRO
-  // =====================
-  const saldoRef =
-    ref(db, `players/${user.uid}/info/saldo`);
+    const saldoSnap = await get(saldoRef);
 
-  const saldoSnap = await get(saldoRef);
+    let saldoAtual = 0;
 
-  let saldoAtual = 0;
+    if (saldoSnap.exists()) {
+      saldoAtual = Number(saldoSnap.val()) || 0;
+    }
 
-  if (saldoSnap.exists()) {
-    saldoAtual = Number(saldoSnap.val()) || 0;
-  }
+    const min =
+      Number(bau.dinheiro?.min) || 0;
 
-  const min =
-    Number(bau.dinheiro?.min) || 0;
+    const max =
+      Number(bau.dinheiro?.max) || 0;
 
-  const max =
-    Number(bau.dinheiro?.max) || 0;
+    const dinheiro =
+      Math.floor(
+        Math.random() * (max - min + 1)
+      ) + min;
 
-  const dinheiro =
-    Math.floor(
-      Math.random() * (max - min + 1)
-    ) + min;
+    console.log("DINHEIRO:", dinheiro);
 
-  console.log("DINHEIRO:", dinheiro);
+    await set(
+      saldoRef,
+      saldoAtual + dinheiro
+    );
 
-  await set(
-    saldoRef,
-    saldoAtual + dinheiro
-  );
+    // =====================
+    // CHANCE DE ITEM
+    // =====================
+    let itemRecebido = null;
 
-  // =====================
-  // CHANCE DE ITEM
-  // =====================
-  let itemRecebido = null;
+    const prob =
+      Number(bau.prob) || 0;
 
-  const prob =
-    Number(bau.prob) || 0;
+    console.log("PROB:", prob);
 
-  console.log("PROB:", prob);
+    const rngProb =
+      Math.random() * 100;
 
-  const rngProb =
-    Math.random() * 100;
+    if (rngProb <= prob) {
 
-  if (rngProb <= prob) {
+      const drops =
+        bau.drops || {};
 
-    const drops =
-      bau.drops || {};
+      const lista =
+        Object.entries(drops);
 
-    const lista =
-      Object.entries(drops);
+      if (lista.length) {
 
-    if (lista.length) {
+        const totalChance =
+          lista.reduce(
+            (acc, [, chance]) =>
+              acc + (Number(chance) || 0),
+            0
+          );
 
-      const totalChance =
-        lista.reduce(
-          (acc, [, chance]) =>
-            acc + (Number(chance) || 0),
-          0
-        );
+        let rng =
+          Math.random() * totalChance;
 
-      let rng =
-        Math.random() * totalChance;
+        let acumulado = 0;
 
-      let acumulado = 0;
+        for (const [itemId, chance] of lista) {
 
-      for (const [itemId, chance] of lista) {
+          acumulado +=
+            Number(chance) || 0;
 
-        acumulado +=
-          Number(chance) || 0;
+          if (rng <= acumulado) {
 
-        if (rng <= acumulado) {
+            itemRecebido = {
+              id: itemId
+            };
 
-          itemRecebido = itemId;
+            break;
+          }
+        }
 
-          break;
+        console.log("DROP:", itemRecebido);
+
+        if (itemRecebido) {
+          await adicionarItem(itemRecebido.id);
         }
       }
+    }
 
-      console.log("DROP:", itemRecebido);
+    // =====================
+    // BUSCA DADOS DO ITEM
+    // =====================
+    if (itemRecebido) {
 
-      if (itemRecebido) {
-        await adicionarItem(itemRecebido);
+      const categoriasSnap =
+        await get(ref(db, "itens"));
+
+      if (categoriasSnap.exists()) {
+
+        const categorias =
+          categoriasSnap.val();
+
+        for (const categoria in categorias) {
+
+          if (categorias[categoria]?.[itemRecebido.id]) {
+
+            itemRecebido = {
+              id: itemRecebido.id,
+              ...categorias[categoria][itemRecebido.id]
+            };
+
+            break;
+          }
+        }
       }
     }
-  }
 
-  // =====================
-  // REMOVE BAÚ
-  // =====================
-  await removerItem(item.id);
+    // =====================
+    // REMOVE BAÚ
+    // =====================
+    await removerItem(item.id);
 
-  // =====================
-  // ALERTA
-  // =====================
-
-  window.mostrarResultado(
-     "BAÚ ABERTO!",
-     `
-    Você recebeu <b>${dinheiro} Berries</b>.<br>
-    ${itemRecebido ? `Você encontrou um(a)<b>${itemRecebido.nome}</b>.` : ""}
-    `,
-    "🧰"
-   );
+    // =====================
+    // ALERTA
+    // =====================
+    window.mostrarResultado(
+      "BAÚ ABERTO!",
+      `
+      Você recebeu <b>${dinheiro} Berries</b>.<br>
+      ${
+        itemRecebido
+          ? `Você encontrou um(a) <b>${itemRecebido.nome || itemRecebido.id}</b>.`
+          : ""
+      }
+      `,
+      itemRecebido?.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemRecebido.img}.png"
+            class="item-open-img">`
+        : "🧰"
+    );
   }
 
   // =====================

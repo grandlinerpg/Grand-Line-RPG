@@ -16,8 +16,12 @@
   z-index:1500;
 }
 
+#skills-modal{
+  z-index:1500;
+}
+
 #market-skills-modal{
-  z-index:9999;
+  z-index:1600;
 }
 
 /* =========================

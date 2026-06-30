@@ -10,7 +10,10 @@ async function loadSkillsHTML() {
   const res = await fetch("perfil/skills.html");
   const html = await res.text();
 
-  container.innerHTML = html;
+  container.insertAdjacentHTML(
+    "beforeend",
+    html
+  );
 
   requestAnimationFrame(() => {
     initSkills();

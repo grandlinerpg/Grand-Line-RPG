@@ -471,6 +471,8 @@ function usarTipo3(item) {
     // =====================
     // ALERTA
     // =====================
+    console.log("REC:", item.rec);
+    console.log(item);
     window.mostrarResultado(
       "BAÚ ABERTO!",
       `

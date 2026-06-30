@@ -149,7 +149,7 @@ function initInventory() {
           description: itemData.description,
           item: itemData.item,
           emoji: itemData.emoji,
-          rec, itemData.rec,
+          rec: itemData.rec,
           icon: itemData.icon
         };
 

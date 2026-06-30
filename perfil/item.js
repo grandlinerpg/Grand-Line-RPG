@@ -486,7 +486,7 @@ function usarTipo3(item) {
             class="item-open-img">`
         : itemRecebido
           ? (itemRecebido.item || itemRecebido.emoji || itemRecebido.icon || "📦")
-          : `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+          : `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img2}.png"
               class="item-open-img">`
     );
   }

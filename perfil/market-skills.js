@@ -161,8 +161,22 @@ function initMarketSkills() {
     modal.style.display = "flex";
     list.innerHTML = "Carregando...";
 
-    const user = auth.currentUser;
-    if (!user) return;
+    let user = auth.currentUser;
+
+    if (!user) {
+      await new Promise(resolve => {
+        const unsub = auth.onAuthStateChanged(u => {
+          user = u;
+          unsub();
+          resolve();
+        });
+      });
+    }
+
+    if (!user) {
+      list.innerHTML = "Você não está logado.";
+      return;
+    }
 
     const playerSnap =
       await get(ref(db, `players/${user.uid}`));

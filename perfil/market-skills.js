@@ -157,8 +157,6 @@ function initMarketSkills() {
     if (!e.target.closest("#open-skill-tree")) {
       return;
     }
-
-    console.log("1 - Clique no livro detectado");
     
     modal.style.display = "flex";
     list.innerHTML = "Carregando...";
@@ -166,10 +164,8 @@ function initMarketSkills() {
     let user = auth.currentUser;
 
     if (!user) {
-      console.log("3 - Esperando auth");
       await new Promise(resolve => {
         const unsub = auth.onAuthStateChanged(u => {
-          console.log("4 - Auth mudou:", u);
           user = u;
           unsub();
           resolve();
@@ -177,15 +173,12 @@ function initMarketSkills() {
       });
     }
 
-    console.log("5 - User final:", user);
 
     if (!user) {
-      console.log("6 - Sem usuário");
       list.innerHTML = "Você não está logado.";
       return;
     }
 
-    console.log("7 - Buscando player");
 
     const playerSnap =
       await get(ref(db, `players/${user.uid}`));
@@ -193,7 +186,6 @@ function initMarketSkills() {
     const snap =
       await get(ref(db, "habilidades"));
 
-    console.log("9 - Habilidades existem:", snap.exists());
     if (!snap.exists() || !playerSnap.exists()) {
       list.innerHTML = "Nenhuma habilidade encontrada.";
       return;

@@ -29,9 +29,6 @@ function initMarketSkills() {
   const auth = window.auth;
   const db = window.db;
 
-  const openBtn =
-    document.getElementById("open-skill-tree");
-
   const modal =
     document.getElementById("market-skills-modal");
 
@@ -44,7 +41,7 @@ function initMarketSkills() {
   const categorySelect =
     document.getElementById("market-skills-category");
 
-  if (!openBtn || !modal || !list) return;
+  if (!modal || !list) return;
 
   let habilidadesDB = {};
   let playerMap = {};
@@ -155,8 +152,12 @@ function initMarketSkills() {
     }
   }
 
-  openBtn.addEventListener("click", async () => {
+  document.addEventListener("click", async (e) => {
 
+    if (!e.target.closest("#open-skill-tree")) {
+      return;
+    }
+    
     modal.style.display = "flex";
     list.innerHTML = "Carregando...";
 

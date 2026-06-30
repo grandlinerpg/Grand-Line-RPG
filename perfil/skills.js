@@ -133,9 +133,14 @@ function initSkills() {
     if (!user) {
       await new Promise(resolve => {
         const unsub = auth.onAuthStateChanged(u => {
+
+          if (!u) return;
+
           user = u;
+
           unsub();
           resolve();
+
         });
       });
     }

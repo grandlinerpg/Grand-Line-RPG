@@ -8,16 +8,20 @@ const container =
 
 async function loadMarketSkillsHTML() {
 
+  console.log("A - loadMarketSkillsHTML");
+
   const response =
     await fetch("perfil/market-skills.html");
 
   const html =
     await response.text();
+  console.log("B - HTML carregado");
 
   container.insertAdjacentHTML(
     "beforeend",
     html
   );
+  console.log("C - HTML inserido");
 
   requestAnimationFrame(() => {
     initMarketSkills();
@@ -25,7 +29,7 @@ async function loadMarketSkillsHTML() {
 }
 
 function initMarketSkills() {
-
+console.log("D - initMarketSkills");
   const auth = window.auth;
   const db = window.db;
 

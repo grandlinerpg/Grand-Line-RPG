@@ -518,7 +518,7 @@ function usarTipo3(item) {
       ref(db, `players/${user.uid}/character`);
 
     await update(charRef, {
-      fruit: "-"
+      fruit: "—"
     });
 
     await removerItem(item.id);

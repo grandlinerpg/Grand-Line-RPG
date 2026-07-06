@@ -266,6 +266,24 @@ async function usarTipo2(item) {
   // AKUMA NO MI
   // =====================
   if (item.categoria === "akuma no mi") {
+
+    const charSnap = await get(charRef);
+
+    if (!charSnap.exists()) return;
+
+    const personagem = charSnap.val();
+
+    if (personagem.fruit !== "-") {
+
+      window.mostrarResultado(
+        "AÇÃO NEGADA!",
+        "Você já possui uma <b>Akuma no Mi</b>. Remova a atual antes de consumir outra.",
+        "🍎"
+      );
+
+      return;
+    }
+
     updates.fruit = nomeLimpo;
   }
 

@@ -273,12 +273,12 @@ async function usarTipo2(item) {
 
     const personagem = charSnap.val();
 
-    if (personagem.fruit !== "-") {
+    if (personagem.fruit !== "—") {
 
       window.mostrarResultado(
         "AÇÃO NEGADA!",
-        "Você já possui uma <b>Akuma no Mi</b>. Remova a atual antes de consumir outra.",
-        "🍎"
+        "Você já possui uma <b>Akuma no Mi</b>.",
+        "❌"
       );
 
       return;

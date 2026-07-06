@@ -60,6 +60,14 @@ window.usarItem = async function(item) {
       console.log("ENTROU NO TIPO 4");
       await usarTipo4(item);
       break;
+
+    // =====================
+    // TIPO 6
+    // REMOVE AKUMA NO MI
+    // =====================
+    case 5:
+      await usarTipo5(item);
+      break;
   }
 };
 
@@ -320,7 +328,7 @@ function usarTipo3(item) {
   // TIPO 4
   // BAÚ
   // =========================
-  async function usarTipo4(item) {
+    async function usarTipo4(item) {
 
     console.log("USANDO BAÚ", item);
 
@@ -490,6 +498,38 @@ function usarTipo3(item) {
           ? (itemRecebido.item || itemRecebido.emoji || itemRecebido.icon || "📦")
           : `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.rec}.png"
               class="item-open-img">`
+    );
+  }
+
+// =========================
+// TIPO 5
+// REMOVE AKUMA NO MI
+// =========================
+  async function usarTipo5(item) {
+
+    const auth = window.auth;
+    const db = window.db;
+
+    const user = auth.currentUser;
+
+    if (!user) return;
+
+    const charRef =
+      ref(db, `players/${user.uid}/character`);
+
+    await update(charRef, {
+      fruit: "-"
+    });
+
+    await removerItem(item.id);
+
+    window.mostrarResultado(
+      "AKUMA NO MI REMOVIDA!",
+      "Você renunciou ao poder da sua <b>Akuma no Mi</b>.",
+      item.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+            class="item-open-img">`
+        : (item.item || item.emoji || item.icon || "🍎")
     );
   }
 

@@ -1,3 +1,4 @@
+console.log("FICHA.JS CARREGOU");
 function abrirFicha(skill){
 
     document.getElementById("ficha-modal")

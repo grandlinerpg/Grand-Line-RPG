@@ -4,6 +4,7 @@ console.log("FICHA.JS CARREGOU");
 const fichaContainer = document.getElementById("ficha-container");
 
 
+
 async function carregarFichaHTML(){
 
     if(!fichaContainer){
@@ -32,17 +33,59 @@ async function carregarFichaHTML(){
 
     closeBtn?.addEventListener("click",()=>{
 
-        document
-        .getElementById("ficha-modal")
-        .style.display = "none";
+        const modal =
+        document.getElementById("ficha-modal");
+
+
+        if(modal){
+
+            modal.style.display = "none";
+
+        }
 
     });
-
 
 }
 
 
+
 carregarFichaHTML();
+
+
+
+
+
+function atualizarLinha(idLinha, idTexto, valor){
+
+    const linha =
+    document.getElementById(idLinha);
+
+
+    const texto =
+    document.getElementById(idTexto);
+
+
+
+    if(!linha || !texto) return;
+
+
+
+    if(valor !== undefined && valor !== null && valor !== ""){
+
+        texto.innerText = valor;
+
+        linha.style.display = "";
+
+    }else{
+
+        linha.style.display = "none";
+
+    }
+
+}
+
+
+
 
 
 
@@ -51,8 +94,10 @@ window.abrirFicha = function(skill){
     console.log("ABRINDO FICHA:", skill);
 
 
+
     const modal =
     document.getElementById("ficha-modal");
+
 
 
     if(!modal){
@@ -64,43 +109,104 @@ window.abrirFicha = function(skill){
     }
 
 
+
     modal.style.display = "flex";
 
 
-    document.getElementById("ficha-img").src =
-    `https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
+
+    // reseta linhas escondidas de outra skill
+
+    document
+    .querySelectorAll(".ficha-table tr")
+    .forEach(linha=>{
+
+        linha.style.display = "";
+
+    });
+
+
+
+
+
+    const img =
+    document.getElementById("ficha-img");
+
+
+    if(img){
+
+        img.src =
+        `https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
+
+    }
+
+
+
 
 
     document.getElementById("ficha-nome").innerText =
     skill.nome || "-";
 
 
+
     document.getElementById("ficha-description").innerText =
     skill.description || "-";
 
-    document.getElementById("ficha-cooldown").innerText =
-    skill.cooldown || "-";
-    
-    document.getElementById("ficha-categoria").innerText =
-    skill.categoria || "-";
-
-    document.getElementById("ficha-propriedade").innerText =
-    skill.propriedade || "-";
 
 
-    document.getElementById("ficha-alcance").innerText =
-    skill.alcance || "-";
 
 
-    document.getElementById("ficha-alvos").innerText =
-    skill.alvos || "-";
+    atualizarLinha(
+        "linha-cooldown",
+        "ficha-cooldown",
+        skill.cooldown
+    );
 
 
-    document.getElementById("ficha-degradation").innerText =
-    skill.degradation || "-";
+
+    atualizarLinha(
+        "linha-categoria",
+        "ficha-categoria",
+        skill.categoria
+    );
 
 
-    document.getElementById("ficha-antidodge").innerText =
-    skill.antiDodging || "-";
+
+    atualizarLinha(
+        "linha-propriedade",
+        "ficha-propriedade",
+        skill.propriedade
+    );
+
+
+
+    atualizarLinha(
+        "linha-alcance",
+        "ficha-alcance",
+        skill.alcance
+    );
+
+
+
+    atualizarLinha(
+        "linha-alvos",
+        "ficha-alvos",
+        skill.alvos
+    );
+
+
+
+    atualizarLinha(
+        "linha-degradation",
+        "ficha-degradation",
+        skill.degradation
+    );
+
+
+
+    atualizarLinha(
+        "linha-antidodge",
+        "ficha-antidodge",
+        skill.antiDodging
+    );
 
 };

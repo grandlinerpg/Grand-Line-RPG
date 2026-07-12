@@ -78,6 +78,9 @@ window.abrirFicha = function(skill){
     document.getElementById("ficha-description").innerText =
     skill.description || "-";
 
+    document.getElementById("ficha-cooldown").innerText =
+    cooldown.categoria || "-";
+    
     document.getElementById("ficha-categoria").innerText =
     skill.categoria || "-";
 

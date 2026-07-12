@@ -194,10 +194,12 @@
         const frutas = data.filter(a => {
 
           const tierOk = Number(a.tier) === t;
+          const categoria = (a.ctg || "").trim();
 
+          if (!categoria) return false;
           const categoriaOk =
             filtroAtual === "Todos" ||
-            (a.ctg || "").toLowerCase() === filtroAtual.toLowerCase();
+            categoria.toLowerCase() === filtroAtual.toLowerCase();
 
           return tierOk && categoriaOk;
 

@@ -86,7 +86,12 @@ function initSkills() {
 
       ranks[rank].push({
         nome: data.nome,
-        img: skillId
+        img: skillId,
+        description: data.description,
+        alcance: data.alcance,
+        alvos: data.alvos,
+        degradation: data.degradation,
+        antiDodging: data["anti-dodging"]
       });
     }
 
@@ -115,6 +120,13 @@ function initSkills() {
           />
           <span>${skill.nome}</span>
         `;
+
+        div.addEventListener("click", () => {
+
+          abrirFichaSkill(skill);
+
+        });
+
 
         list.appendChild(div);
       });

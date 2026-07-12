@@ -58,6 +58,26 @@
 
   </section>
 
+  <div class="category-filter">
+
+    <button class="filter-btn active" data-filter="Todos">
+      Todos
+    </button>
+
+    <button class="filter-btn" data-filter="Paramecia">
+      Paramecia
+    </button>
+
+    <button class="filter-btn" data-filter="Zoan">
+      Zoan
+    </button>
+
+    <button class="filter-btn" data-filter="Logia">
+      Logia
+    </button>
+
+  </div>
+
   <!-- LISTA -->
 
   <main id="list"></main>
@@ -160,20 +180,37 @@
     };
 
     const list = document.getElementById("list");
+    let filtroAtual = "Todos";
 
     /* CARREGAR AKUMA NO MI */
 
-    async function loadAkumas(){
+    async function loadAkumas() {
+
+      list.innerHTML = "";
 
       const snap = await get(
         ref(db, "itens/akuma no mi")
       );
 
-      if(!snap.exists()) return;
+      if (!snap.exists()) return;
 
-      const data = snap.val();
+      const data = Object.values(snap.val());
 
-      for(let t = 1; t <= 6; t++){
+      for (let t = 1; t <= 6; t++) {
+    
+        const frutas = data.filter(a => {
+
+          const tierOk = Number(a.tier) === t;
+
+          const categoriaOk =
+            filtroAtual === "Todos" ||
+            (a.ctg || "").toLowerCase() === filtroAtual.toLowerCase();
+
+          return tierOk && categoriaOk;
+
+        });
+
+        if (!frutas.length) continue;
 
         /* SEPARADOR */
 
@@ -181,29 +218,21 @@
 
         sep.className = "tier-sep";
 
-        sep.innerHTML =
-          `<img src="${tiersImg[t]}">`;
+        sep.innerHTML = `<img src="${tiersImg[t]}">`;
 
         list.appendChild(sep);
 
         /* ITENS */
 
-        Object.values(data)
-
-        .filter(a => Number(a.tier) === t)
-
-        .forEach(a => {
+        frutas.forEach(a => {
 
           const item = document.createElement("div");
 
           item.className = "item";
 
           item.innerHTML = `
-
             <img src="${CLOUD + a.img}.png">
-
             <span>${a.nome}</span>
-
           `;
 
           item.onclick = () => openModal(a);
@@ -238,6 +267,24 @@
       .src = CLOUD + a.img + ".png";
 
     }
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+
+      btn.onclick = () => {
+
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach(b => b.classList.remove("active"));
+
+        btn.classList.add("active");
+
+        filtroAtual = btn.dataset.filter;
+
+        loadAkumas();
+
+      };
+
+    });
 
     /* FECHAR MODAL */
 

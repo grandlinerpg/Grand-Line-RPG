@@ -96,7 +96,7 @@ function initSkills() {
         alcance: data.alcance,
         alvos: data.alvos,
         degradation: data.degradation,
-        antiDodging: data["anti-dodging"]
+        antidodging: data.antidoding
       });
     }
 

@@ -7,14 +7,16 @@
   display: none;
 
   position: fixed;
+
   inset: 0;
 
   background: rgba(0,0,0,0.75);
 
   align-items: center;
+
   justify-content: center;
 
-  z-index: 9999;
+  z-index: 99999;
 
 }
 
@@ -26,7 +28,12 @@
 .ficha-window {
 
   width: 420px;
+
   max-width: 90%;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
 
   background: #111;
 
@@ -40,7 +47,7 @@
 
   position: relative;
 
-  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  box-shadow: 0 0 25px rgba(0,0,0,0.9);
 
 }
 
@@ -54,16 +61,18 @@
   position: absolute;
 
   top: 10px;
+
   right: 10px;
 
   width: 35px;
+
   height: 35px;
 
   border-radius: 50%;
 
-  border: none;
+  border: 1px solid #555;
 
-  background: transparent;
+  background: #222;
 
   color: white;
 
@@ -75,19 +84,25 @@
 
 
 /* ==========================
-   IMAGEM
+   IMAGEM DA SKILL
+   PROPORÇÃO 3:2
 ========================== */
 
 .ficha-img {
 
-  width: 120px;
-  height: 120px;
+  width: 300px;
+
+  max-width: 100%;
+
+  aspect-ratio: 3 / 2;
 
   object-fit: cover;
 
-  border-radius: 10px;
+  border-radius: 12px;
 
-  margin-bottom: 10px;
+  border: 2px solid #444;
+
+  margin-bottom: 15px;
 
 }
 
@@ -100,9 +115,11 @@
 
   margin: 5px 0 15px;
 
-  font-size: 24px;
-
   color: white;
+
+  font-size: 26px;
+
+  font-family: Cinzel, serif;
 
 }
 
@@ -125,7 +142,7 @@
 
 
 /* ==========================
-   TABELA
+   TABELA DE INFORMAÇÕES
 ========================== */
 
 .ficha-table {
@@ -134,7 +151,7 @@
 
   border-collapse: collapse;
 
-  margin-top: 10px;
+  background: #151515;
 
 }
 
@@ -154,8 +171,34 @@
 
 .ficha-table td:first-child {
 
+  width: 40%;
+
   font-weight: bold;
 
-  width: 40%;
+  color: #bbb;
+
+}
+
+
+/* ==========================
+   MOBILE
+========================== */
+
+@media(max-width:600px){
+
+  .ficha-window {
+
+    width: 90%;
+
+    padding: 20px;
+
+  }
+
+
+  .ficha-img {
+
+    width: 100%;
+
+  }
 
 }

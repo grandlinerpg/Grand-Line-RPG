@@ -122,7 +122,7 @@ function initSkills() {
         `;
 
         div.addEventListener("click", () => {
-
+          console.log("Clicou na skill:", skill);
           abrirFichaSkill(skill);
 
         });

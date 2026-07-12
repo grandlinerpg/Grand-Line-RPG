@@ -60,21 +60,14 @@
 
   <div class="category-filter">
 
-    <button class="filter-btn active" data-filter="Todos">
-      Todos
-    </button>
+    <select id="category-select">
 
-    <button class="filter-btn" data-filter="Paramecia">
-      Paramecia
-    </button>
+      <option value="Todos">Todas as Categorias</option>
+      <option value="Logia">Logia</option>
+      <option value="Paramecia">Paramecia</option>
+      <option value="Zoan">Zoan</option>
 
-    <button class="filter-btn" data-filter="Zoan">
-      Zoan
-    </button>
-
-    <button class="filter-btn" data-filter="Logia">
-      Logia
-    </button>
+    </select>
 
   </div>
 
@@ -268,23 +261,15 @@
 
     }
 
-    document.querySelectorAll(".filter-btn").forEach(btn => {
+    document
+      .getElementById("category-select")
+      .addEventListener("change", function () {
 
-      btn.onclick = () => {
-
-        document
-          .querySelectorAll(".filter-btn")
-          .forEach(b => b.classList.remove("active"));
-
-        btn.classList.add("active");
-
-        filtroAtual = btn.dataset.filter;
+        filtroAtual = this.value;
 
         loadAkumas();
 
-      };
-
-    });
+      });
 
     /* FECHAR MODAL */
 

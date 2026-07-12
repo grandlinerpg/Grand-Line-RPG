@@ -63,3 +63,21 @@
     border-color:#d8b66b;
 
 }
+
+.item-emoji{
+
+    width:58px;
+    height:58px;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    font-size:42px;
+
+    flex-shrink:0;
+
+    user-select:none;
+
+}

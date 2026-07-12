@@ -78,6 +78,12 @@ window.abrirFicha = function(skill){
     document.getElementById("ficha-description").innerText =
     skill.description || "-";
 
+    document.getElementById("ficha-categoria").innerText =
+    skill.categoria || "-";
+
+    document.getElementById("ficha-propriedade").innerText =
+    skill.propriedade || "-";
+
 
     document.getElementById("ficha-alcance").innerText =
     skill.alcance || "-";

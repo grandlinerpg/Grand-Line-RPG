@@ -109,7 +109,11 @@ async function loadItens(){
       const card=document.createElement("div");
       card.className="item";
       card.innerHTML=`
-        <img src="${CLOUD+item.img}.png">
+        ${
+          item.img
+            ? `<img src="${CLOUD + item.img}.png">`
+            : `<div class="item-emoji">${item.item || "📦"}</div>`
+        }
         <span>${item.nome}</span>
       `;
 

@@ -35,9 +35,9 @@
 
   overflow-y: auto;
 
-  background: #111;
+  background: #1a1a1a;
 
-  border: 2px solid #444;
+  border: 2px solid #8b6b35;
 
   border-radius: 15px;
 
@@ -70,7 +70,7 @@
 
   border-radius: 50%;
 
-  border: 1px solid #555;
+  border: 1px solid #8b6b35;
 
   background: #222;
 
@@ -85,7 +85,6 @@
 
 /* ==========================
    IMAGEM DA SKILL
-   PROPORÇÃO 3:2
 ========================== */
 
 .ficha-img {
@@ -100,7 +99,7 @@
 
   border-radius: 12px;
 
-  border: 2px solid #444;
+  border: 2px solid #8b6b35;
 
   margin-bottom: 15px;
 
@@ -115,7 +114,7 @@
 
   margin: 5px 0 15px;
 
-  color: white;
+  color: #f5d98b;
 
   font-size: 26px;
 
@@ -142,7 +141,7 @@
 
 
 /* ==========================
-   TABELA DE INFORMAÇÕES
+   TABELA
 ========================== */
 
 .ficha-table {
@@ -151,7 +150,7 @@
 
   border-collapse: collapse;
 
-  background: #151515;
+  background: #111;
 
 }
 
@@ -175,7 +174,7 @@
 
   font-weight: bold;
 
-  color: #bbb;
+  color: #c9a45d;
 
 }
 

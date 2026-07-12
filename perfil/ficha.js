@@ -1,45 +1,120 @@
 console.log("FICHA.JS CARREGOU");
-function abrirFicha(skill){
-
-    document.getElementById("ficha-modal")
-    .style.display = "flex";
 
 
-    document.getElementById("ficha-img").src =
-    skill.img;
+window.abrirFicha = function(skill){
+
+    console.log("ABRINDO FICHA:", skill);
 
 
-    document.getElementById("ficha-nome").innerText =
-    skill.nome;
+    const modal = document.getElementById("ficha-modal");
+
+    if(!modal){
+
+        console.log("ERRO: ficha-modal não encontrado");
+
+        return;
+
+    }
 
 
-    document.getElementById("ficha-description").innerText =
-    skill.description;
+    modal.style.display = "flex";
 
 
-    document.getElementById("ficha-alcance").innerText =
-    skill.alcance || "-";
+    const img =
+    document.getElementById("ficha-img");
+
+    const nome =
+    document.getElementById("ficha-nome");
+
+    const description =
+    document.getElementById("ficha-description");
+
+    const alcance =
+    document.getElementById("ficha-alcance");
+
+    const alvos =
+    document.getElementById("ficha-alvos");
+
+    const degradation =
+    document.getElementById("ficha-degradation");
+
+    const antidodge =
+    document.getElementById("ficha-antidodge");
 
 
-    document.getElementById("ficha-alvos").innerText =
-    skill.alvos || "-";
+    if(img){
+
+        img.src =
+        `https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
+
+    }
 
 
-    document.getElementById("ficha-degradation").innerText =
-    skill.degradation || "-";
+    if(nome){
+
+        nome.innerText =
+        skill.nome || "-";
+
+    }
 
 
-    document.getElementById("ficha-antidodge").innerText =
-    skill["anti-dodge"] || "-";
+    if(description){
 
-}
+        description.innerText =
+        skill.description || "-";
+
+    }
+
+
+    if(alcance){
+
+        alcance.innerText =
+        skill.alcance || "-";
+
+    }
+
+
+    if(alvos){
+
+        alvos.innerText =
+        skill.alvos || "-";
+
+    }
+
+
+    if(degradation){
+
+        degradation.innerText =
+        skill.degradation || "-";
+
+    }
+
+
+    if(antidodge){
+
+        antidodge.innerText =
+        skill.antiDodging || "-";
+
+    }
+
+};
+
 
 
 document
 .getElementById("close-ficha")
 ?.addEventListener("click",()=>{
 
- document.getElementById("ficha-modal")
- .style.display="none";
+
+    const modal =
+    document.getElementById("ficha-modal");
+
+
+    if(modal){
+
+        modal.style.display = "none";
+
+    }
+
 
 });

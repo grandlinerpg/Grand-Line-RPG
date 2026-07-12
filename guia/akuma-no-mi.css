@@ -31,28 +31,35 @@
 .category-filter{
     display:flex;
     justify-content:center;
-    gap:12px;
-    flex-wrap:wrap;
     margin:25px 0 35px;
 }
 
-.filter-btn{
-    padding:10px 22px;
+#category-select{
+
+    width:260px;
+
+    padding:10px 16px;
+
     border:2px solid rgba(255,255,255,.2);
-    background:rgba(20,20,20,.75);
+
+    border-radius:8px;
+
+    background:rgba(20,20,20,.85);
+
     color:#fff;
-    border-radius:999px;
+
     font-family:'Cinzel',serif;
+
+    font-size:15px;
+
     cursor:pointer;
-    transition:.25s;
+
+    outline:none;
+
 }
 
-.filter-btn:hover{
-    border-color:#d8b66b;
-}
+#category-select:focus{
 
-.filter-btn.active{
-    background:#d8b66b;
-    color:#111;
     border-color:#d8b66b;
+
 }

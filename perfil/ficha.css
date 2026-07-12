@@ -1,202 +1,221 @@
-/* ==========================
-   MODAL DA FICHA DE SKILL
-========================== */
+/* =========================
+   MODAL FICHA SKILL
+========================= */
 
-.ficha-modal {
+.ficha-modal{
 
-  display: none;
+  position:fixed;
+  inset:0;
 
-  position: fixed;
+  background:rgba(0,0,0,0.7);
 
-  inset: 0;
+  display:none;
 
-  background: rgba(0,0,0,0.75);
+  justify-content:center;
+  align-items:center;
 
-  align-items: center;
-
-  justify-content: center;
-
-  z-index: 99999;
+  z-index:4000;
 
 }
 
 
-/* ==========================
+
+/* =========================
    JANELA
-========================== */
+========================= */
 
-.ficha-window {
+.ficha-window{
 
-  width: 420px;
+  width:90%;
+  max-width:500px;
 
-  max-width: 90%;
+  background:rgba(10,10,10,0.96);
 
-  max-height: 90vh;
+  border:1px solid rgba(255,215,120,0.2);
 
-  overflow-y: auto;
+  border-radius:16px;
 
-  background: #1a1a1a;
+  padding:22px;
 
-  border: 2px solid #8b6b35;
+  position:relative;
 
-  border-radius: 15px;
+  margin:auto;
 
-  padding: 25px;
+  overflow:hidden;
 
-  text-align: center;
-
-  position: relative;
-
-  box-shadow: 0 0 25px rgba(0,0,0,0.9);
+  text-align:center;
 
 }
 
 
-/* ==========================
+
+/* =========================
    BOTÃO FECHAR
-========================== */
+========================= */
 
-#close-ficha {
+#close-ficha{
 
-  position: absolute;
+  position:absolute;
 
-  top: 10px;
+  top:10px;
+  right:15px;
 
-  right: 10px;
+  background:none;
 
-  width: 35px;
+  border:none;
 
-  height: 35px;
+  padding:0;
 
-  border-radius: 50%;
+  width:auto;
+  height:auto;
 
-  border: 1px solid #8b6b35;
+  color:#f6d365;
 
-  background: #222;
+  font-size:30px;
 
-  color: white;
+  line-height:1;
 
-  font-size: 22px;
+  cursor:pointer;
 
-  cursor: pointer;
-
-}
-
-
-/* ==========================
-   IMAGEM DA SKILL
-========================== */
-
-.ficha-img {
-
-  width: 300px;
-
-  max-width: 100%;
-
-  aspect-ratio: 3 / 2;
-
-  object-fit: cover;
-
-  border-radius: 12px;
-
-  border: 2px solid #8b6b35;
-
-  margin-bottom: 15px;
+  transition:.3s;
 
 }
 
 
-/* ==========================
+#close-ficha:hover{
+
+  transform:scale(1.1);
+
+  color:#fff;
+
+}
+
+
+
+/* =========================
+   IMAGEM SKILL 3:2
+========================= */
+
+.ficha-img{
+
+  width:300px;
+
+  max-width:100%;
+
+  aspect-ratio:3 / 2;
+
+  object-fit:cover;
+
+  border-radius:12px;
+
+  border:1px solid rgba(255,215,120,0.2);
+
+  margin-bottom:15px;
+
+}
+
+
+
+/* =========================
    NOME
-========================== */
+========================= */
 
-#ficha-nome {
+#ficha-nome{
 
-  margin: 5px 0 15px;
+  color:#f6d365;
 
-  color: #f5d98b;
+  font-family:'Cinzel',serif;
 
-  font-size: 26px;
+  font-size:26px;
 
-  font-family: Cinzel, serif;
+  margin:5px 0 15px;
 
 }
 
 
-/* ==========================
+
+/* =========================
    DESCRIÇÃO
-========================== */
+========================= */
 
-#ficha-description {
+#ficha-description{
 
-  color: #ddd;
+  color:#ddd;
 
-  font-size: 15px;
+  font-size:14px;
 
-  line-height: 1.5;
+  line-height:1.5;
 
-  margin-bottom: 20px;
+  text-align:center;
+
+  margin:0 10px 20px;
 
 }
 
 
-/* ==========================
+
+/* =========================
    TABELA
-========================== */
+========================= */
 
-.ficha-table {
+.ficha-table{
 
-  width: 100%;
+  width:100%;
 
-  border-collapse: collapse;
+  border-collapse:collapse;
 
-  background: #111;
-
-}
-
-
-.ficha-table td {
-
-  border: 1px solid #444;
-
-  padding: 10px;
-
-  color: white;
-
-  font-size: 14px;
+  background:rgba(255,255,255,0.05);
 
 }
 
 
-.ficha-table td:first-child {
 
-  width: 40%;
+.ficha-table td{
 
-  font-weight: bold;
+  border:1px solid rgba(255,215,120,0.15);
 
-  color: #c9a45d;
+  padding:10px;
+
+  color:#ddd;
+
+  font-size:13px;
 
 }
 
 
-/* ==========================
+
+.ficha-table td:first-child{
+
+  width:40%;
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+  font-weight:bold;
+
+}
+
+
+
+/* =========================
    MOBILE
-========================== */
+========================= */
 
-@media(max-width:600px){
+@media(max-width:700px){
 
-  .ficha-window {
+  .ficha-window{
 
-    width: 90%;
+    width:90%;
 
-    padding: 20px;
+    padding:18px;
 
   }
 
 
-  .ficha-img {
+  .ficha-img{
 
-    width: 100%;
+    width:100%;
 
   }
 

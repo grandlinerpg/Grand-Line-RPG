@@ -1,12 +1,59 @@
 console.log("FICHA.JS CARREGOU");
 
 
+const fichaContainer = document.getElementById("ficha-container");
+
+
+async function carregarFichaHTML(){
+
+    if(!fichaContainer){
+
+        console.log("ERRO: ficha-container não encontrado");
+
+        return;
+
+    }
+
+
+    const res = await fetch("perfil/ficha.html");
+
+    const html = await res.text();
+
+
+    fichaContainer.insertAdjacentHTML(
+        "beforeend",
+        html
+    );
+
+
+    const closeBtn =
+    document.getElementById("close-ficha");
+
+
+    closeBtn?.addEventListener("click",()=>{
+
+        document
+        .getElementById("ficha-modal")
+        .style.display = "none";
+
+    });
+
+
+}
+
+
+carregarFichaHTML();
+
+
+
 window.abrirFicha = function(skill){
 
     console.log("ABRINDO FICHA:", skill);
 
 
-    const modal = document.getElementById("ficha-modal");
+    const modal =
+    document.getElementById("ficha-modal");
+
 
     if(!modal){
 
@@ -20,101 +67,31 @@ window.abrirFicha = function(skill){
     modal.style.display = "flex";
 
 
-    const img =
-    document.getElementById("ficha-img");
-
-    const nome =
-    document.getElementById("ficha-nome");
-
-    const description =
-    document.getElementById("ficha-description");
-
-    const alcance =
-    document.getElementById("ficha-alcance");
-
-    const alvos =
-    document.getElementById("ficha-alvos");
-
-    const degradation =
-    document.getElementById("ficha-degradation");
-
-    const antidodge =
-    document.getElementById("ficha-antidodge");
+    document.getElementById("ficha-img").src =
+    `https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
 
 
-    if(img){
-
-        img.src =
-        `https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
-
-    }
+    document.getElementById("ficha-nome").innerText =
+    skill.nome || "-";
 
 
-    if(nome){
-
-        nome.innerText =
-        skill.nome || "-";
-
-    }
+    document.getElementById("ficha-description").innerText =
+    skill.description || "-";
 
 
-    if(description){
-
-        description.innerText =
-        skill.description || "-";
-
-    }
+    document.getElementById("ficha-alcance").innerText =
+    skill.alcance || "-";
 
 
-    if(alcance){
-
-        alcance.innerText =
-        skill.alcance || "-";
-
-    }
+    document.getElementById("ficha-alvos").innerText =
+    skill.alvos || "-";
 
 
-    if(alvos){
-
-        alvos.innerText =
-        skill.alvos || "-";
-
-    }
+    document.getElementById("ficha-degradation").innerText =
+    skill.degradation || "-";
 
 
-    if(degradation){
-
-        degradation.innerText =
-        skill.degradation || "-";
-
-    }
-
-
-    if(antidodge){
-
-        antidodge.innerText =
-        skill.antiDodging || "-";
-
-    }
+    document.getElementById("ficha-antidodge").innerText =
+    skill.antiDodging || "-";
 
 };
-
-
-
-document
-.getElementById("close-ficha")
-?.addEventListener("click",()=>{
-
-
-    const modal =
-    document.getElementById("ficha-modal");
-
-
-    if(modal){
-
-        modal.style.display = "none";
-
-    }
-
-
-});

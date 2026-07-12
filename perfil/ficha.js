@@ -204,8 +204,8 @@ window.abrirFicha = function(skill){
 
 
     atualizarLinha(
-        "linha-antidodge",
-        "ficha-antidodge",
+        "linha-antidodging",
+        "ficha-antidodging",
         skill.antidodging
     );
 

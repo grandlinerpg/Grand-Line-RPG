@@ -86,8 +86,14 @@ function initSkills() {
 
       ranks[rank].push({
         nome: data.nome,
-        img: skillId,
+        img: data.img,
         description: data.description,
+        atributos: {
+            atk: data.atk,
+            def: data.def,
+            pow: data.pow,
+            stm: data.stm
+        },
         categoria: data.categoria,
         propriedade: data.propriedade,
         rank: data.rank,

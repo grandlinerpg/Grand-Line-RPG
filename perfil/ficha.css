@@ -1,0 +1,161 @@
+/* ==========================
+   MODAL DA FICHA DE SKILL
+========================== */
+
+.ficha-modal {
+
+  display: none;
+
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,0.75);
+
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+
+}
+
+
+/* ==========================
+   JANELA
+========================== */
+
+.ficha-window {
+
+  width: 420px;
+  max-width: 90%;
+
+  background: #111;
+
+  border: 2px solid #444;
+
+  border-radius: 15px;
+
+  padding: 25px;
+
+  text-align: center;
+
+  position: relative;
+
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+
+}
+
+
+/* ==========================
+   BOTÃO FECHAR
+========================== */
+
+#close-ficha {
+
+  position: absolute;
+
+  top: 10px;
+  right: 10px;
+
+  width: 35px;
+  height: 35px;
+
+  border-radius: 50%;
+
+  border: none;
+
+  background: transparent;
+
+  color: white;
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+}
+
+
+/* ==========================
+   IMAGEM
+========================== */
+
+.ficha-img {
+
+  width: 120px;
+  height: 120px;
+
+  object-fit: cover;
+
+  border-radius: 10px;
+
+  margin-bottom: 10px;
+
+}
+
+
+/* ==========================
+   NOME
+========================== */
+
+#ficha-nome {
+
+  margin: 5px 0 15px;
+
+  font-size: 24px;
+
+  color: white;
+
+}
+
+
+/* ==========================
+   DESCRIÇÃO
+========================== */
+
+#ficha-description {
+
+  color: #ddd;
+
+  font-size: 15px;
+
+  line-height: 1.5;
+
+  margin-bottom: 20px;
+
+}
+
+
+/* ==========================
+   TABELA
+========================== */
+
+.ficha-table {
+
+  width: 100%;
+
+  border-collapse: collapse;
+
+  margin-top: 10px;
+
+}
+
+
+.ficha-table td {
+
+  border: 1px solid #444;
+
+  padding: 10px;
+
+  color: white;
+
+  font-size: 14px;
+
+}
+
+
+.ficha-table td:first-child {
+
+  font-weight: bold;
+
+  width: 40%;
+
+}

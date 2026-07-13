@@ -90,31 +90,6 @@ function gerarImagemPersonagem(nome){
 
 }
 
-
-
-// ======================
-// IMAGEM FACÇÃO
-// ======================
-
-function gerarImagemFaccao(nome){
-
-  const faccao =
-  (nome || "default")
-  .toLowerCase()
-  .replaceAll(" ","-")
-  .replaceAll(".","")
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g,"");
-
-
-  return `
-  https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${faccao}.jpg?v=${Date.now()}
-  `;
-
-}
-
-
-
 // ======================
 // CARREGAR FACÇÃO
 // ======================
@@ -242,7 +217,7 @@ async function startAuth(){
 
 
             factionImg.src =
-            gerarImagemFaccao(nomeFaccao);
+            `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${data.imagem}.jpg?v=${Date.now()}`;
 
 
 

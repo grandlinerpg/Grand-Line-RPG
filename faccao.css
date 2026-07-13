@@ -1,0 +1,256 @@
+/* =========================
+   CONTAINER
+========================= */
+
+.faction-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+
+/* CARD */
+
+.faction-card {
+
+  width: 100%;
+  max-width: 780px;
+
+  background: rgba(0,0,0,0.80);
+
+  border-radius: 15px;
+
+  padding: 30px;
+
+  border: 1px solid rgba(255,215,120,0.25);
+
+}
+
+
+
+/* =========================
+   TITULO
+========================= */
+
+.title-center {
+
+  text-align: center;
+
+  font-family: 'Cinzel', serif;
+
+  color: #f6d365;
+
+  margin: 10px 0;
+
+  font-size: 20px;
+
+}
+
+
+
+/* =========================
+   IMAGEM FACÇÃO
+========================= */
+
+.faction-image {
+
+  display:flex;
+
+  justify-content:center;
+
+  margin-bottom:15px;
+
+}
+
+
+.faction-image img {
+
+  width:150px;
+
+  height:150px;
+
+  border-radius:12px;
+
+  border:2px solid #f6d365;
+
+  object-fit:cover;
+
+}
+
+
+
+/* =========================
+   NOME FACÇÃO
+========================= */
+
+#faction-name {
+
+  text-align:center;
+
+  font-family:'Cinzel', serif;
+
+  color:#f6d365;
+
+  margin:10px 0 20px;
+
+  font-size:28px;
+
+}
+
+
+
+/* =========================
+   ARMAZÉM + FORÇA
+========================= */
+
+.top-stats {
+
+  display:flex;
+
+  gap:10px;
+
+  margin:12px 0;
+
+}
+
+
+
+.stat-box {
+
+  flex:1;
+
+  background:rgba(255,255,255,0.05);
+
+  padding:12px;
+
+  border-radius:10px;
+
+  text-align:center;
+
+  font-family:'Cinzel', serif;
+
+  color:#f6d365;
+
+}
+
+
+
+.stat-box span {
+
+  color:#ffe6a7;
+
+  font-weight:bold;
+
+}
+
+
+
+/* =========================
+   MEMBROS
+========================= */
+
+#members-list {
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+
+  margin-top:20px;
+
+}
+
+
+
+#members-list div {
+
+  background:rgba(255,255,255,0.04);
+
+  padding:12px;
+
+  border-radius:10px;
+
+  color:#f6d365;
+
+  font-family:'Cinzel', serif;
+
+}
+
+
+
+/* =========================
+   LINHA
+========================= */
+
+hr {
+
+  border:none;
+
+  border-top:1px solid rgba(255,215,120,0.25);
+
+  margin:20px 0;
+
+}
+
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:700px) {
+
+
+  .faction-container {
+
+    min-height:100dvh;
+
+    padding:0;
+
+  }
+
+
+  .faction-card {
+
+    width:100%;
+
+    max-width:none;
+
+    min-height:100dvh;
+
+    padding:20px;
+
+    border-radius:0;
+
+    border:none;
+
+  }
+
+
+  .faction-image img {
+
+    width:120px;
+
+    height:120px;
+
+  }
+
+
+  #faction-name {
+
+    font-size:24px;
+
+  }
+
+
+  .top-stats {
+
+    flex-direction:row;
+
+  }
+
+
+}

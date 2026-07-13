@@ -120,6 +120,8 @@ return;
 
 const player =
 playerSnap.val();
+console.log("PLAYER:", player);
+console.log("CHARACTER:", player.character);
 
 
 

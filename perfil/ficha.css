@@ -159,7 +159,9 @@
 
 .ficha-status{
 
-  width:100%;
+  width:70%;
+
+  margin:0 auto 20px auto;
 
   background:rgba(255,255,255,0.05);
 
@@ -167,14 +169,11 @@
 
   border-radius:10px;
 
-  padding:12px;
-
-  margin-bottom:20px;
+  padding:10px;
 
   box-sizing:border-box;
 
 }
-
 
 
 /* RANK */
@@ -183,7 +182,7 @@
 
   text-align:center;
 
-  margin-bottom:10px;
+  margin-bottom:8px;
 
 }
 
@@ -194,10 +193,9 @@
 
   font-family:'Cinzel',serif;
 
-  font-size:18px;
+  font-size:16px;
 
 }
-
 
 
 /* ATRIBUTOS */
@@ -208,7 +206,7 @@
 
   grid-template-columns:1fr 1fr;
 
-  gap:6px;
+  gap:4px;
 
 }
 
@@ -220,10 +218,11 @@
 
   justify-content:center;
 
-  gap:5px;
+  gap:4px;
+
+  font-size:12px;
 
 }
-
 
 
 .ficha-atributo span{
@@ -237,20 +236,9 @@
 }
 
 
-
 .ficha-atributo b{
 
   color:#ddd;
-
-}
-
-
-
-/* último atributo centralizado se for ímpar */
-
-.ficha-atributo:last-child:nth-child(odd){
-
-  grid-column:1 / 3;
 
 }
 /* =========================

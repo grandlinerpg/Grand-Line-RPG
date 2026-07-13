@@ -177,6 +177,13 @@
   display:block;
 }
 
+.inventory-text{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+
 .inventory-name-qty{
   display:flex;
   align-items:center;

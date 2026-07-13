@@ -82,6 +82,7 @@ async function startAuth(){
   );
 
 
+
   onAuthStateChanged(auth,(user)=>{
 
 
@@ -94,13 +95,14 @@ async function startAuth(){
     }
 
 
+
     const uid =
     user.uid;
 
 
 
     // ======================
-    // PLAYER
+    // BUSCA PLAYER LOGADO
     // ======================
 
     onValue(
@@ -117,11 +119,9 @@ async function startAuth(){
         }
 
 
+
         const player =
         playerSnap.val();
-
-
-        console.log("PLAYER:",player);
 
 
 
@@ -130,13 +130,18 @@ async function startAuth(){
 
 
 
-        console.log("FACÇÃO:",faction);
+        console.log(
+          "Facção atual:",
+          faction
+        );
 
 
 
         if(!faction){
 
-          console.log("Sem facção");
+          console.log(
+            "Jogador sem facção"
+          );
 
           return;
 
@@ -145,7 +150,7 @@ async function startAuth(){
 
 
         // ======================
-        // FACÇÃO
+        // BUSCA DADOS DA FACÇÃO
         // ======================
 
         onValue(
@@ -156,8 +161,7 @@ async function startAuth(){
             if(!factionSnap.exists()){
 
               console.log(
-                "Facção não encontrada:",
-                faction
+                "Facção não encontrada"
               );
 
               return;
@@ -168,13 +172,6 @@ async function startAuth(){
 
             const data =
             factionSnap.val();
-
-
-
-            console.log(
-              "DADOS DA FACÇÃO:",
-              data
-            );
 
 
 
@@ -217,9 +214,17 @@ async function startAuth(){
 
 
 
-            // ======================
-            // MEMBROS
-            // ======================
+          });
+
+
+        // ======================
+        // BUSCA MEMBROS
+        // ======================
+
+        onValue(
+          ref(db,"players"),
+          (playersSnap)=>{
+
 
             const box =
             document.getElementById(
@@ -231,26 +236,38 @@ async function startAuth(){
 
 
 
-            const membros =
-            data.membros || {};
+            playersSnap.forEach((player)=>{
+
+
+              const data =
+              player.val();
 
 
 
-            Object.values(membros)
-            .forEach((membro)=>{
+              const playerFaction =
+              data.character?.faction;
 
 
-              const div =
-              document.createElement("div");
+
+              if(playerFaction === faction){
 
 
-              div.innerHTML =
-              `
-              👤 ${membro}
-              `;
+                const div =
+                document.createElement("div");
 
 
-              box.appendChild(div);
+
+                div.innerHTML =
+                `
+                👤 ${data.nome || "Sem nome"}
+                `;
+
+
+
+                box.appendChild(div);
+
+
+              }
 
 
             });

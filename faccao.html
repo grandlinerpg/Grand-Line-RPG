@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Facção - Grand Line RPG</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="faccao.css">
+
+</head>
+
+
+<body>
+
+<div class="background"></div>
+<div class="overlay"></div>
+
+
+<!-- NAVBAR -->
+<header class="navbar">
+
+<div class="logo-area">
+
+<img
+src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
+class="logo"
+>
+
+<div class="logo-text">
+
+<h1>GRAND LINE</h1>
+<p>— RPG —</p>
+
+</div>
+
+</div>
+
+
+<button class="menu-toggle" id="menu-toggle">
+☰
+</button>
+
+
+<nav id="nav-menu">
+
+<a href="index.html">INÍCIO</a>
+
+<a href="faccoes.html">FACÇÕES</a>
+
+<a href="jogadores.html">JOGADORES</a>
+
+<a href="mapa.html">MAPA</a>
+
+<a href="guia.html">GUIA</a>
+
+</nav>
+
+
+</header>
+
+
+
+<main class="faction-container">
+
+
+<div class="faction-card">
+
+
+
+<!-- IMAGEM -->
+
+<div class="faction-image">
+
+<img id="faction-img"
+src="https://res.cloudinary.com/djh45admn/image/upload/v1778661201/sem-personagem.png">
+
+</div>
+
+
+
+<!-- NOME -->
+
+<h1 id="faction-name">
+—
+</h1>
+
+
+
+<!-- STATUS -->
+
+<div class="top-stats">
+
+
+<div class="stat-box">
+
+🏦 ARMAZÉM
+
+<br>
+
+฿ <span id="warehouse">
+0
+</span>
+
+</div>
+
+
+
+<div class="stat-box">
+
+💪 FORÇA
+
+<br>
+
+<span id="power">
+0
+</span>
+
+</div>
+
+
+</div>
+
+
+
+<hr>
+
+
+
+<h2 class="title-center">
+MEMBROS
+</h2>
+
+
+
+<div id="members-list">
+
+Carregando...
+
+</div>
+
+
+
+</div>
+
+
+</main>
+
+
+
+<script type="module" src="faccao.js"></script>
+
+
+
+<script>
+
+
+const menuToggle =
+document.getElementById("menu-toggle");
+
+
+const navMenu =
+document.getElementById("nav-menu");
+
+
+menuToggle.onclick = () => {
+
+navMenu.classList.toggle("active");
+
+};
+
+
+</script>
+
+
+
+</body>
+</html>

@@ -238,8 +238,8 @@
 
 /* 🔥 IMAGEM NO ITEM ABERTO */
 .item-open-img{
-  width:90px;
-  height:90px;
+  width:100px;
+  height:100px;
   object-fit:contain;
   display:block;
 }
@@ -252,6 +252,14 @@
   color:#f6d365;
   font-family:'Cinzel', serif;
   margin-bottom:5px;
+}
+
+@media(max-width:700px){
+
+  .item-info h2{
+    font-size:16px;
+  }
+
 }
 
 .item-top p{

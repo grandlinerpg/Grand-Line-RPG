@@ -71,4 +71,17 @@ atualizarAtributo("card-def","DEF",skill.atributos?.def);
 atualizarAtributo("card-stm","STM",skill.atributos?.stm);
 atualizarAtributo("card-pow","POW",skill.atributos?.pow);
 
+const rank = document.getElementById("card-rank");
+
+if(skill.rank){
+
+    rank.style.display = "";
+    rank.innerText = ranks[skill.rank] || skill.rank;
+
+}else{
+
+    rank.style.display = "none";
+
+}
+
 };

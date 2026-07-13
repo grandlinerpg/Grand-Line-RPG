@@ -27,7 +27,7 @@
 .ficha-window{
 
   width:90%;
-  max-width:500px;
+  max-width:400px;
   height:600px; /* altura fixa */
 
   background:rgba(10,10,10,0.96);

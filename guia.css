@@ -89,65 +89,10 @@
   margin-bottom:8px;
 }
 
-/* EMOJI */
-
-.card-emoji{
-  font-size:32px;
-
-  margin:6px 0 12px 0;
-}
-
-/* TEXTO */
-
-.guide-card p{
-  color:#ddd;
-
-  font-size:16px;
-
-  line-height:1.6;
-
-  margin-bottom:18px;
-}
-
-/* BOTÃO */
-
-.guide-card button{
-  width:100%;
-
-  padding:14px;
-
-  border:none;
-  border-radius:14px;
-
-  background:linear-gradient(to bottom, #8f1408, #5e0800);
-
-  color:#f6d365;
-
-  font-family:'Cinzel', serif;
-  font-size:16px;
-  font-weight:700;
-
-  cursor:pointer;
-
-  transition:0.3s;
-}
-
-.guide-card button:hover{
-  transform:scale(1.02);
-  background:linear-gradient(to bottom, #aa1a0b, #730b00);
-}
 
 @media(max-width:700px){
 
   .guide-title h1{
     font-size:34px;
-  }
-
-  .guide-card h2{
-    font-size:22px;
-  }
-
-  .guide-card{
-    padding:20px;
   }
 }

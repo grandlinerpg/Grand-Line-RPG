@@ -2,6 +2,7 @@ console.log("FICHA.JS CARREGOU");
 
 
 const fichaContainer = document.getElementById("ficha-container");
+let skillAtual = null;
 
 
 
@@ -44,6 +45,19 @@ async function carregarFichaHTML(){
         }
 
     });
+
+    const img =
+        document.getElementById("ficha-img");
+
+        img?.addEventListener("click", () => {
+
+            if(window.abrirCard && skillAtual){
+
+                window.abrirCard(skillAtual);
+
+            }
+
+        });
 
 }
 
@@ -91,12 +105,7 @@ function atualizarLinha(idLinha, idTexto, valor){
 
 window.abrirFicha = function(skill){
 
-    console.log("ABRINDO FICHA:", skill);
-    console.log("ATRIBUTOS:", skill.atributos);
-    console.log("ATK:", skill.atributos?.atk);
-    console.log("STM:", skill.atributos?.stm);
-
-
+    skillAtual = skill;
 
     const modal =
     document.getElementById("ficha-modal");

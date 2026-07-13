@@ -152,7 +152,58 @@ window.abrirFicha = function(skill){
     skill.description || "-";
 
 
+    // =====================
+    // ATRIBUTOS DA SKILL
+    // =====================
 
+    function atualizarAtributo(idBloco, idTexto, valor){
+
+        const bloco = document.getElementById(idBloco);
+        const texto = document.getElementById(idTexto);
+
+        if(!bloco || !texto) return;
+
+
+        if(valor !== undefined && valor !== null && valor !== ""){
+    
+            texto.innerText = valor;
+            bloco.style.display = "";
+
+        }else{
+
+            bloco.style.display = "none";
+
+        }
+
+    }
+
+
+    atualizarAtributo(
+        "atributo-atk",
+        "ficha-atk",
+        skill.atributos?.atk
+    );
+
+
+    atualizarAtributo(
+        "atributo-def",
+        "ficha-def",
+        skill.atributos?.def
+    );
+
+
+    atualizarAtributo(
+        "atributo-pow",
+        "ficha-pow",
+        skill.atributos?.pow
+    );
+
+
+    atualizarAtributo(
+        "atributo-stm",
+        "ficha-stm",
+        skill.atributos?.stm
+    );            
 
 
     atualizarLinha(

@@ -28,6 +28,7 @@
 
   width:90%;
   max-width:500px;
+  height:600px; /* altura fixa */
 
   background:rgba(10,10,10,0.96);
 

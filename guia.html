@@ -9,8 +9,14 @@
 
   <title>Guia - Grand Line RPG</title>
 
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="guia.css">
+
+  <!-- CSS DA LISTA -->
+  <link rel="stylesheet" href="guia/akuma-no-mi.css">
+  <link rel="stylesheet" href="guia/estilo-luta.css">
+
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 
@@ -27,6 +33,7 @@
 
 
 
+
   <!-- NAVBAR -->
 
   <header class="navbar">
@@ -34,10 +41,12 @@
 
     <div class="logo-area">
 
+
       <img
         src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
         class="logo"
       >
+
 
       <div class="logo-text">
 
@@ -47,7 +56,10 @@
 
       </div>
 
+
     </div>
+
+
 
 
 
@@ -63,19 +75,37 @@
 
 
 
+
+
     <!-- MENU -->
 
     <nav id="nav-menu">
 
-      <a href="index.html">INÍCIO</a>
 
-      <a href="faccoes.html">FACÇÕES</a>
+      <a href="index.html">
+        INÍCIO
+      </a>
 
-      <a href="jogadores.html">JOGADORES</a>
 
-      <a href="mapa.html">MAPA</a>
+      <a href="faccoes.html">
+        FACÇÕES
+      </a>
 
-      <a href="guia.html">GUIA</a>
+
+      <a href="jogadores.html">
+        JOGADORES
+      </a>
+
+
+      <a href="mapa.html">
+        MAPA
+      </a>
+
+
+      <a href="guia.html">
+        GUIA
+      </a>
+
 
     </nav>
 
@@ -85,17 +115,26 @@
 
 
 
+
+
   <!-- TÍTULO -->
 
   <section class="guide-title">
 
-    <h1>GUIA DO RPG</h1>
+
+    <h1>
+      GUIA DO RPG
+    </h1>
+
 
     <p>
       Conheça os principais sistemas do Grand Line RPG.
     </p>
 
+
   </section>
+
+
 
 
 
@@ -111,9 +150,12 @@
 
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/combate.png">
 
-      <span>Sistema de Combate</span>
+      <span>
+        Sistema de Combate
+      </span>
 
     </div>
+
 
 
 
@@ -122,9 +164,12 @@
 
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/espada.png">
 
-      <span>Estilo de Luta</span>
+      <span>
+        Estilo de Luta
+      </span>
 
     </div>
+
 
 
 
@@ -133,46 +178,68 @@
 
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/dna.png">
 
-      <span>Raças e Tribos</span>
+      <span>
+        Raças e Tribos
+      </span>
 
     </div>
+
 
 
 
 
     <div class="item" onclick="go('guia/akuma-no-mi.html')">
 
+
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/gomu-gomu.png">
 
-      <span>Akuma no Mi</span>
+
+      <span>
+        Akuma no Mi
+      </span>
+
 
     </div>
+
 
 
 
 
     <div class="item" onclick="go('guia/baus.html')">
 
+
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/bau-comum.png">
 
-      <span>Baús do Tesouro</span>
+
+      <span>
+        Baús do Tesouro
+      </span>
+
 
     </div>
+
 
 
 
 
     <div class="item" onclick="go('guia/efeitos.html')">
 
+
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/efeitos.png">
 
-      <span>Efeitos</span>
+
+      <span>
+        Efeitos
+      </span>
+
 
     </div>
 
 
 
+
   </main>
+
 
 
 
@@ -196,39 +263,64 @@
 
 
 
+
+
     const firebaseConfig = {
 
-      apiKey: "AIzaC4kgy_L79WYFQR9XZhoDuZBfqG4AGTVUQ",
 
-      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+      apiKey: "AIzaSyC4kgy_L79WYFQR9XZhoDuZBfqG4AGTVUQ",
 
-      projectId: "grand-line-rpg-dcda9",
 
-      storageBucket: "grand-line-rpg-dcda9.appspot.com",
+      authDomain:
+      "grand-line-rpg-dcda9.firebaseapp.com",
 
-      messagingSenderId: "172042779786",
 
-      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      projectId:
+      "grand-line-rpg-dcda9",
+
+
+      storageBucket:
+      "grand-line-rpg-dcda9.appspot.com",
+
+
+      messagingSenderId:
+      "172042779786",
+
+
+      appId:
+      "1:172042779786:web:ecdff9eaf4fee36eca8173",
+
 
       databaseURL:
       "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
 
     };
 
 
 
-    const app = initializeApp(firebaseConfig);
 
-    const auth = getAuth(app);
+
+    const app =
+      initializeApp(firebaseConfig);
+
+
+    const auth =
+      getAuth(app);
+
+
 
 
 
 
     function go(page){
 
+
       window.location.href = page;
 
+
     }
+
 
 
     window.go = go;
@@ -236,41 +328,12 @@
 
 
 
-    const voltarBtn =
-      document.getElementById("voltarBtn");
-
-
-
-    if(voltarBtn){
-
-      onAuthStateChanged(auth, (user)=>{
-
-
-        if(user){
-
-          voltarBtn.textContent = "PERFIL";
-
-          voltarBtn.href = "perfil.html";
-
-
-        }else{
-
-
-          voltarBtn.textContent = "INÍCIO";
-
-          voltarBtn.href = "index.html";
-
-
-        }
-
-
-      });
-
-    }
 
 
 
   </script>
+
+
 
 
 

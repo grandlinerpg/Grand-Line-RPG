@@ -87,7 +87,7 @@ function gerarImagemPersonagem(nome){
 
 
   return `
-  https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.jpg?v=${Date.now()}
+  https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png?v=${Date.now()}
   `;
 
 }
@@ -292,7 +292,7 @@ async function startAuth(){
                 <img
                 src="${gerarImagemPersonagem(charName)}"
                 onerror="
-                this.src='https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logorlrpg.png'
+                this.src='https://res.cloudinary.com/djh45admn/image/upload/v1778661201/sem-personagem.png'
                 "
                 >
 

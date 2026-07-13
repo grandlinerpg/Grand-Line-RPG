@@ -97,8 +97,6 @@ async function loadItens(){
 
   Object.entries(categorias).forEach(([categoria,itens])=>{
 
-    if(categoria.toLowerCase()==="akuma no mi") return;
-
     Object.values(itens).forEach(item=>{
 
       if(Number(item.tipo)===2) return;

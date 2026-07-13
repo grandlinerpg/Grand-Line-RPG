@@ -42,7 +42,7 @@
 
   margin:auto;
 
-  overflow-y:auto;
+  overflow:hidden;
 
   text-align:center;
 
@@ -202,32 +202,46 @@
 ========================= */
 
 .ficha-scroll{
-  max-height:400px;
+
+  max-height:550px;
+
   overflow-y:auto;
+
   overflow-x:hidden;
+
   padding-right:5px;
+
 }
 
 
-/* barra */
 .ficha-scroll::-webkit-scrollbar{
+
   width:6px;
+
 }
+
 
 .ficha-scroll::-webkit-scrollbar-track{
+
   background:transparent;
+
 }
+
 
 .ficha-scroll::-webkit-scrollbar-thumb{
+
   background:rgba(246,211,101,0.25);
+
   border-radius:999px;
+
 }
+
 
 .ficha-scroll::-webkit-scrollbar-thumb:hover{
+
   background:rgba(246,211,101,0.45);
+
 }
-
-
 
 /* =========================
    MOBILE

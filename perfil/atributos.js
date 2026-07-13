@@ -41,6 +41,14 @@ fetch("perfil/atributos.html")
         if (el) el.innerText = value;
       };
 
+      const ranks = {
+        1: "INICIANTE",
+        2: "APRENDIZ",
+        3: "NOVATO",
+        4: "INTERMEDIÁRIO",
+        5: "VETERANO"
+      };
+
       // ======================
       // ABRIR ATRIBUTOS (TEMPO REAL)
       // ======================
@@ -62,6 +70,11 @@ fetch("perfil/atributos.html")
 
           const data = snap.val();
           const stats = data.stats || {};
+
+          set(
+            "attr-rank",
+            ranks[data.character?.rank] || data.character?.rank || "-"
+          );
 
           set("attr-str", stats.str || 0);
           set("attr-res", stats.res || 0);

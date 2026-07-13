@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -9,146 +8,78 @@
 
   <title>Guia - Grand Line RPG</title>
 
-
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="guia.css">
-
-  <!-- CSS DA LISTA -->
   <link rel="stylesheet" href="guia/akuma-no-mi.css">
   <link rel="stylesheet" href="guia/estilo-luta.css">
-
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 
 </head>
 
-
 <body>
-
-
-  <!-- FUNDO -->
 
   <div class="background"></div>
   <div class="overlay"></div>
-
-
-
 
   <!-- NAVBAR -->
 
   <header class="navbar">
 
-
     <div class="logo-area">
 
-
-      <img
-        src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
-        class="logo"
-      >
-
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
 
       <div class="logo-text">
-
         <h1>GRAND LINE</h1>
-
         <p>— RPG —</p>
-
       </div>
-
 
     </div>
 
-
-
-
-
-    <!-- BOTÃO MENU -->
-
-    <button
-      class="menu-toggle"
-      id="menu-toggle"
-      aria-label="Abrir Menu"
-    >
+    <button class="menu-toggle" id="menu-toggle">
       ☰
     </button>
 
-
-
-
-
-    <!-- MENU -->
-
     <nav id="nav-menu">
 
+      <a href="index.html">INÍCIO</a>
 
-      <a href="index.html">
-        INÍCIO
-      </a>
+      <a href="faccoes.html">FACÇÕES</a>
 
+      <a href="jogadores.html">JOGADORES</a>
 
-      <a href="faccoes.html">
-        FACÇÕES
-      </a>
+      <a href="mapa.html">MAPA</a>
 
-
-      <a href="jogadores.html">
-        JOGADORES
-      </a>
-
-
-      <a href="mapa.html">
-        MAPA
-      </a>
-
-
-      <a href="guia.html">
-        GUIA
-      </a>
-
+      <a href="guia.html">GUIA</a>
 
     </nav>
 
-
   </header>
-
-
-
-
 
 
   <!-- TÍTULO -->
 
   <section class="guide-title">
 
-
-    <h1>
-      GUIA DO RPG
-    </h1>
-
+    <h1>GUIA DO RPG</h1>
 
     <p>
       Conheça os principais sistemas do Grand Line RPG.
     </p>
 
-
   </section>
-
-
-
-
-
 
 
   <!-- LISTA -->
 
   <main id="list">
 
-
-
     <div class="item" onclick="go('guia/sistema-combate.html')">
 
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/combate.png">
+      <div class="card-emoji">
+        📖
+      </div>
 
       <span>
         Sistema de Combate
@@ -157,12 +88,11 @@
     </div>
 
 
-
-
-
     <div class="item" onclick="go('guia/estilo-luta.html')">
 
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/espada.png">
+      <div class="card-emoji">
+        ⚔️
+      </div>
 
       <span>
         Estilo de Luta
@@ -171,12 +101,11 @@
     </div>
 
 
-
-
-
     <div class="item" onclick="go('guia/racas.html')">
 
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/dna.png">
+      <div class="card-emoji">
+        🧬
+      </div>
 
       <span>
         Raças e Tribos
@@ -185,190 +114,110 @@
     </div>
 
 
-
-
-
     <div class="item" onclick="go('guia/akuma-no-mi.html')">
 
-
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/gomu-gomu.png">
-
 
       <span>
         Akuma no Mi
       </span>
 
-
     </div>
-
-
-
 
 
     <div class="item" onclick="go('guia/baus.html')">
 
-
       <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/bau-comum.png">
-
 
       <span>
         Baús do Tesouro
       </span>
 
-
     </div>
-
-
-
 
 
     <div class="item" onclick="go('guia/efeitos.html')">
 
-
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/efeitos.png">
-
+      <div class="card-emoji">
+        💥
+      </div>
 
       <span>
         Efeitos
       </span>
 
-
     </div>
 
-
-
-
   </main>
-
-
-
-
-
 
 
   <!-- FIREBASE -->
 
   <script type="module">
 
-
-    import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
     import {
-      getAuth,
-      onAuthStateChanged
-    }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-
-
+      getAuth
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
     const firebaseConfig = {
 
-
       apiKey: "AIzaSyC4kgy_L79WYFQR9XZhoDuZBfqG4AGTVUQ",
 
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
 
-      authDomain:
-      "grand-line-rpg-dcda9.firebaseapp.com",
+      projectId: "grand-line-rpg-dcda9",
 
+      storageBucket: "grand-line-rpg-dcda9.appspot.com",
 
-      projectId:
-      "grand-line-rpg-dcda9",
+      messagingSenderId: "172042779786",
 
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
 
-      storageBucket:
-      "grand-line-rpg-dcda9.appspot.com",
-
-
-      messagingSenderId:
-      "172042779786",
-
-
-      appId:
-      "1:172042779786:web:ecdff9eaf4fee36eca8173",
-
-
-      databaseURL:
-      "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
-
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 
     };
 
 
+    const app = initializeApp(firebaseConfig);
 
-
-
-    const app =
-      initializeApp(firebaseConfig);
-
-
-    const auth =
-      getAuth(app);
-
-
-
-
+    const auth = getAuth(app);
 
 
     function go(page){
 
-
       window.location.href = page;
 
-
     }
-
 
 
     window.go = go;
 
 
-
-
-
-
-
   </script>
-
-
-
-
-
-
 
 
   <!-- MENU MOBILE -->
 
   <script>
 
+    const menuToggle = document.getElementById("menu-toggle");
 
-    const menuToggle =
-      document.getElementById("menu-toggle");
-
-
-    const navMenu =
-      document.getElementById("nav-menu");
+    const navMenu = document.getElementById("nav-menu");
 
 
-
-    menuToggle.addEventListener("click",()=>{
-
+    menuToggle.addEventListener("click", () => {
 
       navMenu.classList.toggle("active");
 
-
     });
-
 
 
   </script>
 
 
-
 </body>
 
 </html>
-```

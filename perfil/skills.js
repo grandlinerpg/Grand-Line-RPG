@@ -89,10 +89,10 @@ function initSkills() {
         img: data.img,
         description: data.description,
         atributos: {
-            atk: data.atk,
-            def: data.def,
-            pow: data.pow,
-            stm: data.stm
+            atk: data.atributos?.atk,
+            def: data.atributos?.def,
+            pow: data.atributos?.pow,
+            stm: data.atributos?.stm
         },
         categoria: data.categoria,
         propriedade: data.propriedade,

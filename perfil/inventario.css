@@ -435,6 +435,15 @@
    PREÇO DO MERCADO
 ========================= */
 
+/* =========================
+   PREÇO DO MERCADO
+========================= */
+
+#market-list .inventory-text{
+  flex:1;
+  min-width:0;
+}
+
 #market-list .inventory-name-qty{
   width:100%;
   display:flex;
@@ -443,6 +452,7 @@
 
 #market-list .inventory-name{
   flex:1;
+  min-width:0;
   overflow:hidden;
   white-space:nowrap;
   text-overflow:ellipsis;
@@ -455,7 +465,6 @@
   height:auto;
   background:none;
   border:none;
-  border-radius:0;
   padding:0;
   color:#f6d365;
   font-family:'Cinzel', serif;

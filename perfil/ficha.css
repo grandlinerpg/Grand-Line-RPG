@@ -273,7 +273,7 @@
 
 .ficha-table td:first-child{
 
-  width:40%;
+  width:50%;
 
   color:#f6d365;
 
@@ -338,7 +338,7 @@
   .ficha-window{
 
     width:90%;
-    max-height:700px; /* altura fixa */
+    max-height:650px; /* altura fixa */
     padding:18px;
 
   }

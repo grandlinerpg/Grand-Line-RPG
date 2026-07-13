@@ -370,15 +370,6 @@
 }
 
 /* =========================
-   PREÇO
-========================= */
-
-#market-list .inventory-qty{
-  font-weight:700;
-  white-space:nowrap;
-}
-
-/* =========================
    RODAPÉ INVENTÁRIO
 ========================= */
 
@@ -448,10 +439,18 @@
   width:100%;
   display:flex;
   align-items:center;
-  justify-content:space-between;
+}
+
+#market-list .inventory-name{
+  flex:1;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
 }
 
 #market-list .inventory-qty{
+  margin-left:auto;
+  flex-shrink:0;
   width:auto;
   height:auto;
   background:none;
@@ -462,7 +461,6 @@
   font-family:'Cinzel', serif;
   font-size:13px;
   font-weight:bold;
-  margin-left:0;
 }
 
 /* =========================

@@ -28,6 +28,17 @@
   border:none;
 }
 
+#itens-page .item img{
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+#itens-page .modal-img{
+  width: 120px;
+  height: 120px;
+}
+
 .category-filter{
     display:flex;
     justify-content:center;
@@ -81,3 +92,4 @@
     user-select:none;
 
 }
+

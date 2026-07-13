@@ -153,6 +153,76 @@
 
 }
 
+/* =========================
+   ATRIBUTOS DA SKILL
+========================= */
+
+.ficha-atributos{
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin:15px 0;
+
+  flex-wrap:wrap;
+
+}
+
+
+
+.ficha-atributo{
+
+  min-width:60px;
+
+  padding:8px 12px;
+
+  background:rgba(255,255,255,0.05);
+
+  border:1px solid rgba(255,215,120,0.15);
+
+  border-radius:10px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+}
+
+
+
+.ficha-atributo span{
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+  font-size:11px;
+
+  font-weight:bold;
+
+}
+
+
+
+.ficha-atributo b{
+
+  color:#ddd;
+
+  font-size:15px;
+
+  margin-top:3px;
+
+}
+
 
 
 /* =========================

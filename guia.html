@@ -1,7 +1,9 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -11,29 +13,46 @@
   <link rel="stylesheet" href="guia.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+
 </head>
+
 
 <body>
 
+
   <!-- FUNDO -->
+
   <div class="background"></div>
   <div class="overlay"></div>
 
+
+
   <!-- NAVBAR -->
+
   <header class="navbar">
+
 
     <div class="logo-area">
 
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+      <img
+        src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
+        class="logo"
+      >
 
       <div class="logo-text">
+
         <h1>GRAND LINE</h1>
+
         <p>— RPG —</p>
+
       </div>
 
     </div>
 
-        <!-- BOTÃO MENU -->
+
+
+    <!-- BOTÃO MENU -->
+
     <button
       class="menu-toggle"
       id="menu-toggle"
@@ -42,7 +61,10 @@
       ☰
     </button>
 
+
+
     <!-- MENU -->
+
     <nav id="nav-menu">
 
       <a href="index.html">INÍCIO</a>
@@ -60,184 +82,230 @@
 
   </header>
 
+
+
+
   <!-- TÍTULO -->
+
   <section class="guide-title">
 
     <h1>GUIA DO RPG</h1>
 
-    <p>Conheça os principais sistemas do Grand Line RPG.</p>
+    <p>
+      Conheça os principais sistemas do Grand Line RPG.
+    </p>
 
   </section>
 
-  <!-- CONTEÚDO -->
-  <main class="guide-container">
 
-    <!-- 1 MANUAL -->
-    <div class="guide-card">
 
-      <h2>Sistema de Combate</h2>
 
-      <div class="card-emoji">📖</div>
 
-      <p>
-        Aprenda como funcionam os combates, regras básicas e ações do sistema.
-      </p>
+  <!-- LISTA -->
 
-      <button onclick="go('guia/sistema-combate.html')">
-        VER SISTEMA
-      </button>
+  <main id="list">
+
+
+
+    <div class="item" onclick="go('guia/sistema-combate.html')">
+
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/combate.png">
+
+      <span>Sistema de Combate</span>
 
     </div>
 
-    <!-- 2 ESTILO -->
-    <div class="guide-card">
 
-      <h2>Estilo de Luta</h2>
 
-      <div class="card-emoji">⚔️</div>
 
-      <p>
-        Um estilo de luta define a forma como o personagem combate.
-      </p>
+    <div class="item" onclick="go('guia/estilo-luta.html')">
 
-      <button onclick="go('guia/estilo-luta.html')">
-        VER SISTEMA
-      </button>
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/espada.png">
+
+      <span>Estilo de Luta</span>
 
     </div>
 
-    <!-- 3 RAÇAS -->
-    <div class="guide-card">
 
-      <h2>Raças e Tribos</h2>
 
-      <div class="card-emoji">🧬</div>
 
-      <p>
-        O mundo possui diferentes raças e tribos com características únicas.
-      </p>
+    <div class="item" onclick="go('guia/racas.html')">
 
-      <button onclick="go('guia/racas.html')">
-        VER SISTEMA
-      </button>
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/dna.png">
+
+      <span>Raças e Tribos</span>
 
     </div>
 
-    <!-- 4 AKUMA -->
-    <div class="guide-card">
 
-      <h2>Akuma no Mi</h2>
 
-      <div class="card-emoji">🍎</div>
 
-      <p>
-        Frutas do diabo concedem poderes únicos ao usuário.
-      </p>
+    <div class="item" onclick="go('guia/akuma-no-mi.html')">
 
-      <button onclick="go('guia/akuma-no-mi.html')">
-        VER SISTEMA
-      </button>
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/gomu-gomu.png">
+
+      <span>Akuma no Mi</span>
 
     </div>
 
-    <!-- 5 BAÚS -->
-    <div class="guide-card">
 
-      <h2>Baús do Tesouro</h2>
 
-      <div class="card-emoji">🪙</div>
 
-      <p>
-        Encontre baús escondidos pelo mundo e obtenha recompensas raras.
-      </p>
+    <div class="item" onclick="go('guia/baus.html')">
 
-      <button onclick="go('guia/baus.html')">
-        VER SISTEMA
-      </button>
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/bau-comum.png">
+
+      <span>Baús do Tesouro</span>
 
     </div>
 
-    <!-- 6 EFEITOS -->
-    <div class="guide-card">
 
-      <h2>Efeitos</h2>
 
-      <div class="card-emoji">💥</div>
 
-      <p>
-        Status como burn, stun e bleed que alteram batalhas.
-      </p>
+    <div class="item" onclick="go('guia/efeitos.html')">
 
-      <button onclick="go('guia/efeitos.html')">
-        VER SISTEMA
-      </button>
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778662150/efeitos.png">
+
+      <span>Efeitos</span>
 
     </div>
+
+
 
   </main>
 
+
+
+
+
+
+  <!-- FIREBASE -->
+
   <script type="module">
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 
     import {
       getAuth,
       onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
 
     const firebaseConfig = {
-      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+
+      apiKey: "AIzaC4kgy_L79WYFQR9XZhoDuZBfqG4AGTVUQ",
+
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+
       projectId: "grand-line-rpg-dcda9",
+
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
+
       messagingSenderId: "172042779786",
+
       appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
+      databaseURL:
+      "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
     };
+
+
 
     const app = initializeApp(firebaseConfig);
 
     const auth = getAuth(app);
 
+
+
+
     function go(page){
+
       window.location.href = page;
+
     }
+
 
     window.go = go;
 
-    const voltarBtn = document.getElementById("voltarBtn");
 
-    onAuthStateChanged(auth, (user) => {
 
-      if (user) {
 
-        voltarBtn.textContent = "PERFIL";
-        voltarBtn.href = "perfil.html";
+    const voltarBtn =
+      document.getElementById("voltarBtn");
 
-      } else {
 
-        voltarBtn.textContent = "INÍCIO";
-        voltarBtn.href = "index.html";
 
-      }
+    if(voltarBtn){
 
-    });
+      onAuthStateChanged(auth, (user)=>{
+
+
+        if(user){
+
+          voltarBtn.textContent = "PERFIL";
+
+          voltarBtn.href = "perfil.html";
+
+
+        }else{
+
+
+          voltarBtn.textContent = "INÍCIO";
+
+          voltarBtn.href = "index.html";
+
+
+        }
+
+
+      });
+
+    }
+
+
 
   </script>
 
+
+
+
+
+
   <!-- MENU MOBILE -->
+
   <script>
 
-    const menuToggle = document.getElementById("menu-toggle");
-    const navMenu = document.getElementById("nav-menu");
 
-    menuToggle.addEventListener("click", () => {
+    const menuToggle =
+      document.getElementById("menu-toggle");
+
+
+    const navMenu =
+      document.getElementById("nav-menu");
+
+
+
+    menuToggle.addEventListener("click",()=>{
+
 
       navMenu.classList.toggle("active");
 
+
     });
 
+
+
   </script>
-  
+
+
+
 </body>
+
 </html>
+```

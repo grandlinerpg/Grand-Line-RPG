@@ -92,6 +92,9 @@ function atualizarLinha(idLinha, idTexto, valor){
 window.abrirFicha = function(skill){
 
     console.log("ABRINDO FICHA:", skill);
+    console.log("ATRIBUTOS:", skill.atributos);
+    console.log("ATK:", skill.atributos?.atk);
+    console.log("STM:", skill.atributos?.stm);
 
 
 

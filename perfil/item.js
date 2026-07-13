@@ -132,13 +132,24 @@ async function adicionarItem(itemId) {
 // =========================
 // LIMPA PREFIXO
 // =========================
-function limparNome(nome) {
+function limparNome(nome, categoria) {
 
-  if (!nome.includes(":")) {
-    return nome.trim();
+  // Pergaminhos
+  if (categoria === "pergaminho de ensinamento") {
+
+    return nome
+      .replace(/^Pergaminho do\s+/i, "")
+      .replace(/^Pergaminho da\s+/i, "")
+      .trim();
+
   }
 
-  return nome.split(":")[1].trim();
+  // Demais itens (Akuma, Raças...)
+  if (nome.includes(":")) {
+    return nome.split(":")[1].trim();
+  }
+
+  return nome.trim();
 }
 
 // =========================

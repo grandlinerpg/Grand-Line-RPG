@@ -2,6 +2,7 @@
 <html lang="pt-br">
 
 <head>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -9,228 +10,260 @@
 
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet" href="../guia.css">
-  <link rel="stylesheet" href="sistema-combate.css">
+  <link rel="stylesheet" href="estilo-luta.css">
+  <link rel="stylesheet" href="../perfil/inventario.css">
+  <link rel="stylesheet" href="akuma-no-mi.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
 
-  <!-- FUNDO -->
   <div class="background"></div>
   <div class="overlay"></div>
 
   <!-- NAVBAR -->
+
   <header class="navbar">
 
     <div class="logo-area">
 
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+      <img
+        src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
+        class="logo"
+      >
 
       <div class="logo-text">
+
         <h1>GRAND LINE</h1>
+
         <p>— RPG —</p>
+
       </div>
 
     </div>
 
     <nav>
+
       <a href="#" id="voltarBtn">INÍCIO</a>
+
       <a href="../faccoes.html">FACÇÕES</a>
+
       <a href="../jogadores.html">JOGADORES</a>
+
       <a href="../mapa.html">MAPA</a>
+
       <a href="../guia.html">GUIA</a>
+
     </nav>
 
   </header>
 
-  <!-- TITULO -->
+  <!-- TÍTULO -->
+
   <section class="guide-title">
 
     <h1>SISTEMA DE COMBATE</h1>
 
     <p>
-      Conheça todas as regras e mecânicas das batalhas do Grand Line RPG.
+      Conheça todas as mecânicas do combate.
     </p>
 
   </section>
 
-  <!-- CONTEÚDO -->
-  <main class="combat-container">
+  <!-- LISTA -->
 
-    <!-- PARTE 1 -->
-    <section class="combat-section">
+  <main id="list">
 
-      <div class="combat-image">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779885594/parte-1.jpg" alt="">
+    <div
+      class="item"
+      onclick="openCombat('ataque')"
+    >
+
+      <div class="item-emoji">
+        ⚔️
       </div>
 
-      <div class="combat-content">
+      <span>
+        Ataque e Defesa
+      </span>
 
-        <h2>Introdução ao Combate</h2>
+    </div>
 
-        <div class="divider"></div>
+    <div
+      class="item"
+      onclick="openCombat('anti')"
+    >
 
-        <p>
-          O combate funciona de maneira estratégica, permitindo que os jogadores utilizem diferentes habilidades,
-          estilos de luta e recursos durante as batalhas.
-        </p>
-
+      <div class="item-emoji">
+        🎯
       </div>
 
-    </section>
+      <span>
+        Anti-Dodging
+      </span>
 
-    <!-- PARTE 2 -->
-    <section class="combat-section reverse">
+    </div>
 
-      <div class="combat-image">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779885594/parte-2.jpg" alt="">
+    <div
+      class="item"
+      onclick="openCombat('counter')"
+    >
+
+      <div class="item-emoji">
+        🛡️
       </div>
 
-      <div class="combat-content">
+      <span>
+        Counter-Clash
+      </span>
 
-        <h2>Turnos e Ações</h2>
-
-        <div class="divider"></div>
-
-        <p>
-          Cada jogador possui um turno para realizar ações como atacar, defender, utilizar habilidades ou interagir
-          com o ambiente durante a luta.
-        </p>
-
-      </div>
-
-    </section>
-
-    <!-- PARTE 3 -->
-    <section class="combat-section">
-
-      <div class="combat-image">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779885594/parte-3.jpg" alt="">
-      </div>
-
-      <div class="combat-content">
-
-        <h2>Dano e Resistência</h2>
-
-        <div class="divider"></div>
-
-        <p>
-          Os danos causados variam de acordo com força, resistência, armas, efeitos e vantagens adquiridas pelo
-          personagem.
-        </p>
-
-      </div>
-
-    </section>
-
-    <!-- PARTE 4 -->
-    <section class="combat-section reverse">
-
-      <div class="combat-image">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779885594/parte-4.jpg" alt="">
-      </div>
-
-      <div class="combat-content">
-
-        <h2>Habilidades Especiais</h2>
-
-        <div class="divider"></div>
-
-        <p>
-          Técnicas especiais podem alterar completamente o rumo da batalha, oferecendo buffs, debuffs e ataques únicos.
-        </p>
-
-      </div>
-
-    </section>
-
-    <!-- PARTE 5 -->
-    <section class="combat-section">
-
-      <div class="combat-image">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779885594/parte-5.jpg" alt="">
-      </div>
-
-      <div class="combat-content">
-
-        <h2>Efeitos e Status</h2>
-
-        <div class="divider"></div>
-
-        <p>
-          Certos golpes aplicam efeitos como queimadura, sangramento, atordoamento e lentidão nos adversários.
-        </p>
-
-      </div>
-
-    </section>
-
-    <!-- PARTE 6 -->
-    <section class="combat-section reverse">
-
-      <div class="combat-image">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779885594/parte-6.jpg" alt="">
-      </div>
-
-      <div class="combat-content">
-
-        <h2>Conclusão das Batalhas</h2>
-
-        <div class="divider"></div>
-
-        <p>
-          O resultado das batalhas influencia diretamente a reputação, recompensas e evolução dos personagens.
-        </p>
-
-      </div>
-
-    </section>
+    </div>
 
   </main>
 
+  <!-- MODAL -->
+
+  <div
+    id="modal"
+    class="modal"
+  >
+
+    <div class="modal-content">
+
+      <button
+        class="close-item-x"
+        onclick="closeModal()"
+      >
+        ×
+      </button>
+
+      <h2 id="m-title"></h2>
+
+      <p id="m-desc"></p>
+
+    </div>
+
+  </div>
+
   <script type="module">
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { initializeApp }
+
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
     import {
       getAuth,
       onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    }
+
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
+
       apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+
       authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+
       projectId: "grand-line-rpg-dcda9",
+
       storageBucket: "grand-line-rpg-dcda9.appspot.com",
+
       messagingSenderId: "172042779786",
+
       appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
+      databaseURL:
+      "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app =
+      initializeApp(firebaseConfig);
 
-    const auth = getAuth(app);
+    const auth =
+      getAuth(app);
 
-    const voltarBtn = document.getElementById("voltarBtn");
+    const voltarBtn =
+      document.getElementById("voltarBtn");
 
     onAuthStateChanged(auth, (user) => {
 
       if (user) {
 
         voltarBtn.textContent = "PERFIL";
+
         voltarBtn.href = "../perfil.html";
 
       } else {
 
         voltarBtn.textContent = "INÍCIO";
+
         voltarBtn.href = "../index.html";
 
       }
 
     });
 
+    const combats = {
+
+      ataque: {
+
+        title:
+        "Ataque e Defesa",
+
+        description:
+        "Descrição temporária."
+
+      },
+
+      anti: {
+
+        title:
+        "Anti-Dodging",
+
+        description:
+        "Descrição temporária."
+
+      },
+
+      counter: {
+
+        title:
+        "Counter-Clash",
+
+        description:
+        "Descrição temporária."
+
+      }
+
+    };
+
+    window.openCombat = function(id){
+
+      const c = combats[id];
+
+      document.getElementById("m-title")
+      .innerText = c.title;
+
+      document.getElementById("m-desc")
+      .innerText = c.description;
+
+      document.getElementById("modal")
+      .style.display = "flex";
+
+    }
+
+    window.closeModal = function(){
+
+      document.getElementById("modal")
+      .style.display = "none";
+
+    }
+
   </script>
 
 </body>
+
 </html>

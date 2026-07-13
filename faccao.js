@@ -70,6 +70,31 @@ getDatabase(app);
 
 
 // ======================
+// IMAGEM PERSONAGEM
+// ======================
+
+function gerarImagemPersonagem(nome){
+
+
+  const personagem =
+  (nome || "default")
+  .toLowerCase()
+  .replaceAll(" ","-")
+  .replaceAll(".","")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"");
+
+
+
+  return `
+  https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png?v=${Date.now()}
+  `;
+
+}
+
+
+
+// ======================
 // CARREGAR FACÇÃO
 // ======================
 
@@ -102,7 +127,7 @@ async function startAuth(){
 
 
     // ======================
-    // BUSCA PLAYER LOGADO
+    // PLAYER LOGADO
     // ======================
 
     onValue(
@@ -112,7 +137,9 @@ async function startAuth(){
 
         if(!playerSnap.exists()){
 
-          console.log("Player não encontrado");
+          console.log(
+            "Player não encontrado"
+          );
 
           return;
 
@@ -131,7 +158,7 @@ async function startAuth(){
 
 
         console.log(
-          "Facção atual:",
+          "Facção:",
           faction
         );
 
@@ -140,7 +167,7 @@ async function startAuth(){
         if(!faction){
 
           console.log(
-            "Jogador sem facção"
+            "Sem facção"
           );
 
           return;
@@ -150,7 +177,7 @@ async function startAuth(){
 
 
         // ======================
-        // BUSCA DADOS DA FACÇÃO
+        // DADOS DA FACÇÃO
         // ======================
 
         onValue(
@@ -161,7 +188,7 @@ async function startAuth(){
             if(!factionSnap.exists()){
 
               console.log(
-                "Facção não encontrada"
+                "Facção não existe"
               );
 
               return;
@@ -175,16 +202,12 @@ async function startAuth(){
 
 
 
-            // NOME
-
             document.getElementById(
               "faction-name"
             ).innerText =
             data.nome || faction;
 
 
-
-            // IMAGEM
 
             document.getElementById(
               "faction-img"
@@ -194,8 +217,6 @@ async function startAuth(){
 
 
 
-            // ARMAZÉM
-
             document.getElementById(
               "warehouse"
             ).innerText =
@@ -204,8 +225,6 @@ async function startAuth(){
 
 
 
-            // FORÇA
-
             document.getElementById(
               "power"
             ).innerText =
@@ -213,12 +232,12 @@ async function startAuth(){
             .toLocaleString("pt-BR");
 
 
-
           });
 
 
+
         // ======================
-        // BUSCA MEMBROS
+        // MEMBROS DA FACÇÃO
         // ======================
 
         onValue(
@@ -252,14 +271,36 @@ async function startAuth(){
               if(playerFaction === faction){
 
 
+                const charName =
+                data.character?.charName ||
+                "Sem personagem";
+
+
+
                 const div =
                 document.createElement("div");
+
+
+                div.className =
+                "member-card";
 
 
 
                 div.innerHTML =
                 `
-                👤 ${data.nome || "Sem nome"}
+
+                <img
+                src="${gerarImagemPersonagem(charName)}"
+                onerror="
+                this.src='https://res.cloudinary.com/djh45admn/image/upload/v1778661201/sem-personagem.png'
+                "
+                >
+
+
+                <span>
+                ${charName}
+                </span>
+
                 `;
 
 

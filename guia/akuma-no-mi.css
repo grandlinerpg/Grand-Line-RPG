@@ -29,8 +29,8 @@
 }
 
 #itens-page .item img{
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
@@ -40,8 +40,8 @@
 }
 
 #guia-page .item img{
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 

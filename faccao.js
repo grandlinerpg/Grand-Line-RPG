@@ -75,7 +75,6 @@ getDatabase(app);
 
 function gerarImagemPersonagem(nome){
 
-
   const personagem =
   (nome || "default")
   .toLowerCase()
@@ -85,9 +84,31 @@ function gerarImagemPersonagem(nome){
   .replace(/[\u0300-\u036f]/g,"");
 
 
-
   return `
   https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png?v=${Date.now()}
+  `;
+
+}
+
+
+
+// ======================
+// IMAGEM FACÇÃO
+// ======================
+
+function gerarImagemFaccao(nome){
+
+  const faccao =
+  (nome || "default")
+  .toLowerCase()
+  .replaceAll(" ","-")
+  .replaceAll(".","")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"");
+
+
+  return `
+  https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${faccao}.jpg?v=${Date.now()}
   `;
 
 }
@@ -137,9 +158,7 @@ async function startAuth(){
 
         if(!playerSnap.exists()){
 
-          console.log(
-            "Player não encontrado"
-          );
+          console.log("Player não encontrado");
 
           return;
 
@@ -166,9 +185,7 @@ async function startAuth(){
 
         if(!faction){
 
-          console.log(
-            "Sem facção"
-          );
+          console.log("Sem facção");
 
           return;
 
@@ -202,20 +219,43 @@ async function startAuth(){
 
 
 
-            document.getElementById(
-              "faction-name"
-            ).innerText =
+            const nomeFaccao =
             data.nome || faction;
 
 
 
+            // NOME
+
+            document.getElementById(
+              "faction-name"
+            ).innerText =
+            nomeFaccao;
+
+
+
+            // IMAGEM
+
+            const factionImg =
             document.getElementById(
               "faction-img"
-            ).src =
-            data.imagem ||
-            "https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logoglrpg.png";
+            );
 
 
+            factionImg.src =
+            gerarImagemFaccao(nomeFaccao);
+
+
+
+            factionImg.onerror = function(){
+
+              this.src =
+              "https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logoglrpg.png";
+
+            };
+
+
+
+            // ARMAZÉM
 
             document.getElementById(
               "warehouse"
@@ -224,6 +264,8 @@ async function startAuth(){
             .toLocaleString("pt-BR");
 
 
+
+            // FORÇA
 
             document.getElementById(
               "power"

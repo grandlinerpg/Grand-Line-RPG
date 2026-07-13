@@ -49,19 +49,26 @@ window.abrirCard=function(skill){
         5:"VETERANO"
     };
 
-    document.getElementById("card-rank").innerText=
-    ranks[skill.rank]||"-";
+    function atualizarAtributo(id, nome, valor){
 
-    document.getElementById("card-atk").innerText=
-    `ATK ${skill.atributos?.atk ?? "-"}`;
+    const el = document.getElementById(id);
 
-    document.getElementById("card-def").innerText=
-    `DEF ${skill.atributos?.def ?? "-"}`;
+    if(valor !== undefined && valor !== null && valor !== ""){
 
-    document.getElementById("card-stm").innerText=
-    `STM ${skill.atributos?.stm ?? "-"}`;
+        el.style.display = "";
+        el.innerText = `${nome} ${valor}`;
 
-    document.getElementById("card-pow").innerText=
-    `POW ${skill.atributos?.pow ?? "-"}`;
+    }else{
+
+        el.style.display = "none";
+
+    }
+
+}
+
+atualizarAtributo("card-atk","ATK",skill.atributos?.atk);
+atualizarAtributo("card-def","DEF",skill.atributos?.def);
+atualizarAtributo("card-stm","STM",skill.atributos?.stm);
+atualizarAtributo("card-pow","POW",skill.atributos?.pow);
 
 };

@@ -252,7 +252,7 @@
   color:#f6d365;
   font-family:'Cinzel', serif;
   margin:0;
-  padding:0 40px; /* espaço para o botão de fechar */
+  padding:0 20px; /* espaço para o botão de fechar */
   line-height:1.2;
   word-break:break-word;
 }

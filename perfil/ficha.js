@@ -124,6 +124,12 @@ window.abrirFicha = function(skill){
 
     });
 
+    document
+    .querySelectorAll(".ficha-atributo")
+    .forEach(attr=>{
+        attr.style.display = "";
+    });
+
 
 
 
@@ -165,12 +171,13 @@ window.abrirFicha = function(skill){
 
 
         if(valor !== undefined && valor !== null && valor !== ""){
-    
+
             texto.innerText = valor;
             bloco.style.display = "";
 
         }else{
 
+            texto.innerText = "";
             bloco.style.display = "none";
 
         }

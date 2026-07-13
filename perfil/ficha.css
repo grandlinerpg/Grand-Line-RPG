@@ -42,7 +42,7 @@
 
   margin:auto;
 
-  overflow:hidden;
+  overflow-y:auto;
 
   text-align:center;
 
@@ -216,7 +216,7 @@
 
   .ficha-img{
 
-    width:100%;
+    width:80%;
 
   }
 

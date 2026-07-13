@@ -302,11 +302,11 @@ nav a:hover::after{
     justify-content:space-between;
     align-items:center;
 
-    padding:15px 20px;
+    padding:10px 15px;
   }
 
   .logo{
-    width:60px;
+    width:45px;
   }
 
   .logo-text h1{

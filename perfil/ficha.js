@@ -160,6 +160,35 @@ window.abrirFicha = function(skill){
     document.getElementById("ficha-description").innerText =
     skill.description || "-";
 
+    // =====================
+    // RANK DA SKILL
+    // =====================
+
+    const rankEl = document.getElementById("ficha-rank");
+    const rankValor = document.getElementById("ficha-rank-valor");
+
+
+    const nomesRank = {
+        1: "INICIANTE",
+        2: "APRENDIZ",
+        3: "NOVATO",
+        4: "INTERMEDIÁRIO",
+        5: "VETERANO"
+    };
+
+
+    if(skill.rank){
+
+        rankValor.innerText =
+        nomesRank[skill.rank] || skill.rank;
+
+        rankEl.style.display = "";
+
+    }else{
+
+        rankEl.style.display = "none";
+
+    }
 
     // =====================
     // ATRIBUTOS DA SKILL

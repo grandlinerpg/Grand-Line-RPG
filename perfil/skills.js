@@ -195,7 +195,7 @@ function initSkills() {
     const points = player.points || {};
 
     availableEl.innerText =
-      points["skill-avaiable"] || 0;
+      points["skill-available"] || 0;
 
     usedEl.innerText =
       points["skill-used"] || 0;

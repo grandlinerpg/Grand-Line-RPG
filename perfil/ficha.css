@@ -252,7 +252,7 @@
   .ficha-window{
 
     width:90%;
-
+    max-height:700px; /* altura fixa */
     padding:18px;
 
   }

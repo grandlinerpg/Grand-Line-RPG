@@ -154,22 +154,64 @@
 }
 
 /* =========================
-   ATRIBUTOS DA SKILL
+   RANK DA SKILL
+========================= */
+
+.ficha-rank{
+
+  display:flex;
+  flex-direction:column;
+
+  align-items:center;
+  justify-content:center;
+
+  margin-bottom:15px;
+
+}
+
+
+.ficha-rank span{
+
+  color:#aaa;
+
+  font-family:'Cinzel',serif;
+
+  font-size:11px;
+
+  letter-spacing:2px;
+
+  text-transform:uppercase;
+
+}
+
+
+.ficha-rank b{
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+  font-size:20px;
+
+}
+
+
+
+/* =========================
+   ATRIBUTOS
 ========================= */
 
 .ficha-atributos{
 
-  display:flex;
+  display:grid;
 
-  justify-content:center;
+  grid-template-columns:1fr 1fr;
 
-  align-items:center;
+  gap:8px;
 
-  gap:10px;
+  width:100%;
 
-  margin:15px 0;
-
-  flex-wrap:wrap;
+  margin-bottom:20px;
 
 }
 
@@ -177,23 +219,21 @@
 
 .ficha-atributo{
 
-  min-width:60px;
+  display:flex;
 
-  padding:8px 12px;
+  align-items:center;
+
+  justify-content:center;
+
+  gap:6px;
 
   background:rgba(255,255,255,0.05);
 
   border:1px solid rgba(255,215,120,0.15);
 
-  border-radius:10px;
+  border-radius:8px;
 
-  display:flex;
-
-  flex-direction:column;
-
-  align-items:center;
-
-  justify-content:center;
+  padding:8px;
 
 }
 
@@ -205,9 +245,9 @@
 
   font-family:'Cinzel',serif;
 
-  font-size:11px;
-
   font-weight:bold;
+
+  font-size:13px;
 
 }
 
@@ -217,13 +257,23 @@
 
   color:#ddd;
 
-  font-size:15px;
-
-  margin-top:3px;
+  font-size:14px;
 
 }
 
 
+/* quando tiver quantidade ímpar de atributos
+   o último fica no centro */
+
+.ficha-atributo:last-child:nth-child(odd){
+
+  grid-column:1 / 3;
+
+  width:50%;
+
+  justify-self:center;
+
+}
 
 /* =========================
    TABELA

@@ -212,7 +212,8 @@ function initMarketSkills() {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .trim()
-        .toLowerCase();
+        .toLowerCase()
+        .replace(/\s+/g,"-");
 
     // 🔥 MAPEAMENTO CORRETO POR TIPO
     playerMap = {

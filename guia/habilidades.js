@@ -7,6 +7,8 @@ import {
 
 const db = window.db;
 
+console.log("FIREBASE DB:", db);
+
 async function carregarHabilidadesHTML(){
 
   const container =

@@ -11,7 +11,11 @@ async function carregarCardHTML(){
 
 
     const res =
-    await fetch("perfil/card.html");
+    await fetch(
+      location.pathname.includes("/guia/")
+      ? "../perfil/card.html"
+      : "perfil/card.html"
+    );
 
 
     cardContainer.insertAdjacentHTML(

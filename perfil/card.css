@@ -14,11 +14,20 @@
 
 }
 
+
 .card-window{
 
     position:relative;
 
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
 }
+
+
 
 .close-card{
 
@@ -41,11 +50,15 @@
 
 }
 
+
+
 .card-image-area{
 
     position:relative;
 
 }
+
+
 
 .card-img{
 
@@ -55,6 +68,8 @@
     display:block;
 
 }
+
+
 
 .card-nome{
 
@@ -82,6 +97,8 @@
 
 }
 
+
+
 .card-bottom{
 
     position:absolute;
@@ -93,9 +110,12 @@
     display:flex;
 
     justify-content:space-between;
+
     align-items:flex-end;
 
 }
+
+
 
 .card-atributos{
 
@@ -119,6 +139,8 @@
 
 }
 
+
+
 .card-rank{
 
     color:#ffd54f;
@@ -137,7 +159,49 @@
 
 }
 
+
+
+/* BOTÃO DOWNLOAD */
+
+.download-card{
+
+    margin-top:20px;
+
+    padding:10px 30px;
+
+    border:none;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-family:'Cinzel',serif;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    background:#fff;
+
+    color:#000;
+
+    transition:.2s;
+
+}
+
+
+.download-card:hover{
+
+    transform:scale(1.05);
+
+}
+
+
+
+/* MOBILE */
+
 @media(max-width:700px){
+
 
     .card-img{
 
@@ -145,22 +209,37 @@
 
     }
 
+
     .card-nome{
 
         font-size:22px;
 
     }
 
+
     .card-atributos{
 
         font-size:15px;
 
+        gap:5px 12px;
+
     }
+
 
     .card-rank{
 
         font-size:18px;
 
     }
+
+
+    .download-card{
+
+        padding:9px 24px;
+
+        font-size:14px;
+
+    }
+
 
 }

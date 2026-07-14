@@ -7,6 +7,23 @@ import {
 
 const db = window.db;
 
+async function carregarHabilidadesHTML(){
+
+  const container =
+  document.getElementById("habilidades-container");
+
+  if(!container) return;
+
+  const res =
+  await fetch("habilidades.html");
+
+  container.innerHTML =
+  await res.text();
+
+}
+
+carregarHabilidadesHTML();
+
 
 
 const habilidadeTiers = {

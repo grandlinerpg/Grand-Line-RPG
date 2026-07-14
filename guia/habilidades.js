@@ -121,11 +121,9 @@ window.abrirHabilidades = async function(estiloNome){
 
   if(!modal || !container){
 
-    console.error(
-      "Modal habilidades não encontrado"
-    );
+    await carregarHabilidadesHTML();
 
-    return;
+    return window.abrirHabilidades(estiloNome);
 
   }
 

@@ -36,6 +36,13 @@ async function carregarHabilidadesHTML(){
   container.innerHTML =
   await res.text();
 
+  const btn =
+  document.getElementById("close-habilidades");
+
+  if(btn){
+    btn.onclick = fecharHabilidades;
+  }
+
 }
 
 carregarHabilidadesHTML();

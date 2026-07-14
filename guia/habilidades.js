@@ -8,10 +8,6 @@ import {
   get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-
-// ======================
-// FIREBASE CONFIG
-// ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
   authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
@@ -22,14 +18,8 @@ const firebaseConfig = {
   databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
-
-// ======================
-// INIT FIREBASE
-// ======================
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
-
 
 console.log("FIREBASE DB:", db);
 
@@ -51,19 +41,6 @@ async function carregarHabilidadesHTML(){
 carregarHabilidadesHTML();
 
 
-
-const habilidadeTiers = {
-
-  1:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
-  2:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
-  3:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
-  4:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
-  5:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
-
-};
-
-
-
 function slug(name){
 
   return name
@@ -75,10 +52,7 @@ function slug(name){
 }
 
 
-
-
 async function getEstilo(key){
-
 
   const snap =
   await get(
@@ -88,21 +62,15 @@ async function getEstilo(key){
     )
   );
 
-
   if(!snap.exists())
     return null;
-
-
 
   const data =
   snap.val();
 
-
-
   return {
 
     skills:
-
     Object.values(data)
     .filter(
       v =>
@@ -111,38 +79,28 @@ async function getEstilo(key){
       v.nome
     ),
 
-
     heranca:{
-
       heranca:data.heranca || null,
       heranca2:data.heranca2 || null,
       heranca3:data.heranca3 || null
-
     }
 
   };
-
 
 }
 
 
 
-
-
 window.abrirHabilidades = async function(estiloNome){
-
 
   const modal =
   document.getElementById("habilidades-modal");
 
-
   const container =
   document.getElementById("habilidades-list");
 
-
   const title =
   document.getElementById("habilidades-title");
-
 
 
   if(!modal || !container){
@@ -152,7 +110,6 @@ window.abrirHabilidades = async function(estiloNome){
     return window.abrirHabilidades(estiloNome);
 
   }
-
 
 
   modal.style.display="flex";
@@ -166,58 +123,44 @@ window.abrirHabilidades = async function(estiloNome){
   }
 
 
-
   container.innerHTML =
   "Carregando...";
 
 
-
-
   try{
-
 
     const key =
     slug(estiloNome);
-
-
 
     let todasSkills=[];
 
     let visitados =
     new Set();
 
-
     let fila=[
       key
     ];
 
 
-
     while(fila.length){
-
 
       const atual =
       fila.shift();
-
 
 
       if(!atual || visitados.has(atual))
         continue;
 
 
-
       visitados.add(atual);
-
 
 
       const estilo =
       await getEstilo(atual);
 
 
-
       if(!estilo)
         continue;
-
 
 
       todasSkills =
@@ -226,33 +169,19 @@ window.abrirHabilidades = async function(estiloNome){
       );
 
 
-
       if(estilo.heranca.heranca)
-        fila.push(
-          estilo.heranca.heranca
-        );
-
+        fila.push(estilo.heranca.heranca);
 
       if(estilo.heranca.heranca2)
-        fila.push(
-          estilo.heranca.heranca2
-        );
-
+        fila.push(estilo.heranca.heranca2);
 
       if(estilo.heranca.heranca3)
-        fila.push(
-          estilo.heranca.heranca3
-        );
-
+        fila.push(estilo.heranca.heranca3);
 
     }
 
 
-
-
-
     if(!todasSkills.length){
-
 
       container.innerHTML=
       `
@@ -261,22 +190,24 @@ window.abrirHabilidades = async function(estiloNome){
       </div>
       `;
 
-
       return;
 
     }
 
 
-
-
     container.innerHTML="";
 
 
+    const nomesRank = {
+      1:"INICIANTE",
+      2:"APRENDIZ",
+      3:"NOVATO",
+      4:"INTERMEDIÁRIO",
+      5:"VETERANO"
+    };
 
 
     for(let tier=1;tier<=5;tier++){
-
-
 
       const group =
       todasSkills.filter(
@@ -285,103 +216,74 @@ window.abrirHabilidades = async function(estiloNome){
       );
 
 
-
       if(!group.length)
         continue;
-
-
 
 
       const sep =
       document.createElement("div");
 
 
-
       sep.className =
       "skill-rank";
 
 
-
-      sep.innerHTML =
-      `<img src="${habilidadeTiers[tier]}">`;
-
+      sep.innerText =
+      nomesRank[tier];
 
 
       container.appendChild(sep);
 
 
 
-
-
       group.forEach(skill=>{
-
-
 
         const item =
         document.createElement("div");
-
 
 
         item.className =
         "skill-item";
 
 
-
         item.innerHTML =
         `
-
         <img
         class="skill-icon"
-        src="
-        https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg
-        "
+        src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
         >
-
 
         <span>
         ${skill.nome}
         </span>
-
-
         `;
 
 
-
         item.onclick=()=>{
-
 
           console.log(
             "Skill:",
             skill
           );
 
-
           abrirFicha(skill);
-
 
         };
 
 
-
         container.appendChild(item);
 
-
-
       });
-
 
 
     }
 
 
-
   }catch(err){
-
 
     console.error(
       err
     );
-
 
     container.innerHTML=
     `
@@ -390,34 +292,26 @@ window.abrirHabilidades = async function(estiloNome){
     </div>
     `;
 
-
   }
-
 
 }
 
 
 
-
 window.fecharHabilidades = function(){
-
 
   const modal =
   document.getElementById("habilidades-modal");
 
-
   const container =
   document.getElementById("habilidades-list");
-
 
 
   if(modal)
     modal.style.display="none";
 
 
-
   if(container)
     container.innerHTML="";
-
 
 }

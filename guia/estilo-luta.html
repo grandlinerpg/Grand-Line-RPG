@@ -64,19 +64,7 @@
     </div>
   </div>
 
-  <div id="habilidades-modal" class="habilidades-modal">
-
-    <div class="habilidades-content">
-
-      <button class="habilidades-close" onclick="closeHabilidades()">
-        ✕
-      </button>
-
-      <div id="habilidades-container"></div>
-
-    </div>
-
-  </div>
+  <div id="habilidades-container"></div>
 
   <script>
 
@@ -177,11 +165,6 @@
 
     function closeModal(){
       document.getElementById("modal").style.display = "none";
-    }
-
-    function closeHabilidades(){
-      document.getElementById("habilidades-modal").style.display = "none";
-      document.getElementById("habilidades-container").innerHTML = "";
     }
 
     function voltar(){

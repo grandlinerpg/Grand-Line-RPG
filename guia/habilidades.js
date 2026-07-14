@@ -86,7 +86,7 @@ async function getEstilo(key){
 
 
 
-export async function abrirHabilidades(estiloNome){
+window.abrirHabilidades = async function(estiloNome){
 
 
   const modal =
@@ -358,7 +358,7 @@ export async function abrirHabilidades(estiloNome){
 
 
 
-export function fecharHabilidades(){
+window.fecharHabilidades = function(){
 
 
   const modal =

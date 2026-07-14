@@ -17,7 +17,7 @@ async function carregarFichaHTML(){
     }
 
 
-    const res = await fetch("perfil/ficha.html");
+    const res = await fetch("../perfil/ficha.html");
 
     const html = await res.text();
 

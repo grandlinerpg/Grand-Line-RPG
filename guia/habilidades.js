@@ -4,14 +4,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
-
 const container =
 document.getElementById("habilidades-container");
 
 
 
 async function carregarHabilidadesHTML(){
-
 
     if(!container) return;
 
@@ -25,7 +23,6 @@ async function carregarHabilidadesHTML(){
         await res.text()
     );
 
-
 }
 
 
@@ -35,8 +32,21 @@ carregarHabilidadesHTML();
 
 
 
-window.abrirHabilidades = async function(estilo){
+function slug(texto){
 
+    return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/\s+/g,"-");
+
+}
+
+
+
+
+
+window.abrirHabilidades = async function(estilo){
 
 
     const modal =
@@ -56,7 +66,8 @@ window.abrirHabilidades = async function(estilo){
 
 
 
-    modal.style.display = "flex";
+    modal.style.display="flex";
+
 
 
     title.innerText =
@@ -74,15 +85,27 @@ window.abrirHabilidades = async function(estilo){
 
 
 
+    const nomeEstilo =
+    slug(estilo);
+
+
+
     const snap =
-    await get(ref(db,"habilidades"));
+    await get(
+        ref(
+            db,
+            `habilidades/estilo-de-luta/${nomeEstilo}`
+        )
+    );
 
 
 
     if(!snap.exists()){
 
+
         list.innerHTML =
         "Nenhuma habilidade encontrada.";
+
 
         return;
 
@@ -111,89 +134,65 @@ window.abrirHabilidades = async function(estilo){
 
 
 
-    let encontrou = false;
+    for(const id in habilidades){
 
 
 
-    for(const categoria in habilidades){
-
-
-        for(const sub in habilidades[categoria]){
-
-
-            for(const id in habilidades[categoria][sub]){
-
-
-                const skill =
-                habilidades[categoria][sub][id];
+        const skill =
+        habilidades[id];
 
 
 
-                // FILTRO PELO ESTILO
-                if(skill.estilo !== estilo)
-                    continue;
+        const div =
+        document.createElement("div");
 
 
 
-                encontrou = true;
+        div.className =
+        "skill-item";
 
 
 
-                const div =
-                document.createElement("div");
+        div.innerHTML = `
+
+            <img
+            src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
+            class="skill-icon"
+            >
 
 
-                div.className =
-                "skill-item";
+            <span>
 
+                ${skill.nome}
 
+                <br>
 
-                div.innerHTML = `
+                ${ranks[skill.rank] || ""}
 
-                    <img
-                    src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
-                    class="skill-icon"
-                    >
+            </span>
 
-
-                    <span>
-                    ${skill.nome}
-                    <br>
-                    ${ranks[skill.rank] || ""}
-                    </span>
-
-                `;
+        `;
 
 
 
-                div.onclick = ()=>{
-
-                    console.log(
-                        "Skill:",
-                        skill
-                    );
-
-                    abrirFicha(skill);
-
-                };
+        div.addEventListener("click",()=>{
 
 
+            console.log(
+                "Clicou na skill:",
+                skill
+            );
 
-                list.appendChild(div);
+
+            abrirFicha(skill);
 
 
-            }
-
-        }
-
-    }
+        });
 
 
 
-    if(!encontrou){
+        list.appendChild(div);
 
-        list.innerHTML =
-        "Nenhuma habilidade encontrada para este estilo.";
 
     }
 
@@ -204,14 +203,17 @@ window.abrirHabilidades = async function(estilo){
 
 
 
-document.addEventListener("click",e=>{
+
+document.addEventListener("click",(e)=>{
 
 
     if(e.target.id === "close-habilidades"){
 
+
         document
         .getElementById("habilidades-modal")
         .style.display="none";
+
 
     }
 

@@ -17,7 +17,11 @@ async function carregarFichaHTML(){
     }
 
 
-    const res = await fetch("perfil/ficha.html");
+    const res = await fetch(
+      location.pathname.includes("/guia/")
+      ? "../perfil/ficha.html"
+      : "perfil/ficha.html"
+    );
 
     const html = await res.text();
 

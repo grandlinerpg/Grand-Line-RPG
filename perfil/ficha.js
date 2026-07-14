@@ -66,13 +66,6 @@ async function carregarFichaHTML(){
 }
 
 
-
-carregarFichaHTML();
-
-
-
-
-
 function atualizarLinha(idLinha, idTexto, valor){
 
     const linha =
@@ -107,7 +100,15 @@ function atualizarLinha(idLinha, idTexto, valor){
 
 
 
-window.abrirFicha = function(skill){
+window.abrirFicha = async function(skill){
+
+
+    if(!document.getElementById("ficha-modal")){
+
+        await carregarFichaHTML();
+
+    }
+
 
     skillAtual = skill;
 

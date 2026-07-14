@@ -133,7 +133,7 @@ function initMarketSkills() {
 
         div.innerHTML = `
           <img 
-            src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skillId}.jpg"
+            src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
             class="skill-icon"
             alt="${skill.nome}"
           />

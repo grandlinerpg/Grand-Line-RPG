@@ -142,6 +142,20 @@ function initMarketSkills() {
           </span>
         `;
 
+        div.onclick = () => {
+
+          if(window.abrirFicha){
+
+            window.abrirFicha(skill);
+
+          }else{
+
+            console.log("ficha.js não carregado");
+
+          }
+
+        };
+
         list.appendChild(div);
       });
     }

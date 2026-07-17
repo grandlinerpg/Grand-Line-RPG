@@ -285,7 +285,7 @@ qtyInput.value = 1;
             `mercado/itens/${nextId}`
           ),
           {
-            nome: item.id,
+            nome: item.nome,
             value: price,
             jogador: auth.currentUser.uid,
             qtd: qtd,

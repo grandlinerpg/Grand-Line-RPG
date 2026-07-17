@@ -100,7 +100,11 @@ function atualizarLinha(idLinha, idTexto, valor){
 
 
 
-window.abrirFicha = async function(skill, mostrarCusto = true){
+window.abrirFicha = async function(
+    skill,
+    mostrarCusto = true,
+    mostrarComprar = true
+){
 
 
     if(!document.getElementById("ficha-modal")){
@@ -316,16 +320,16 @@ window.abrirFicha = async function(skill, mostrarCusto = true){
     document.getElementById("ficha-cost").textContent =
     skill.custo ?? "-";
 
-    const costBox =
-    document.querySelector(".ficha-cost-box");
+    const priceBox =
+    document.getElementById("price-box");
 
     const buyBtn =
     document.getElementById("ficha-buy-btn");
 
-    costBox.style.display =
-    mostrarCusto ? "" : "none";
+    priceBox.style.display =
+    mostrarCusto ? "flex" : "none";
 
     buyBtn.style.display =
-    mostrarCusto ? "" : "none";
+    mostrarComprar ? "" : "none";
     
 };

@@ -151,7 +151,7 @@ qtyInput.value = 1;
       src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
     >
   `
-  : item.item || "📦";
+  : item.emoji || item.item || "📦";
 
   nameText.innerText = item.nome;
 
@@ -284,6 +284,7 @@ qtyInput.value = 1;
           ),
           {
             nome: item.nome,
+            img: item.img,
             value: price,
             jogador: auth.currentUser.uid,
             qtd: qtd,

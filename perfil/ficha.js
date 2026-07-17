@@ -316,8 +316,16 @@ window.abrirFicha = async function(skill, mostrarCusto = true){
     document.getElementById("ficha-cost").textContent =
     skill.custo ?? "-";
 
-    const costBox = document.querySelector(".ficha-cost-box");
+    const costBox =
+    document.querySelector(".ficha-cost-box");
 
-    costBox.style.display = mostrarCusto ? "" : "none";
+    const buyBtn =
+    document.getElementById("ficha-buy-btn");
+
+    costBox.style.display =
+    mostrarCusto ? "" : "none";
+
+    buyBtn.style.display =
+    mostrarCusto ? "" : "none";
     
 };

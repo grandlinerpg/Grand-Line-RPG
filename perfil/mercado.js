@@ -346,9 +346,14 @@ function initMarket() {
     if (!marketItem) return;
 
     const confirmEmoji = document.getElementById("confirm-item-emoji");
+    const confirmName = document.getElementById("confirm-item-name");
+
+    if(confirmName){
+      confirmName.innerText = marketItem.nome;
+    }
 
     if (confirmEmoji) {
-      confirmEmoji.innerHTML = "📦"; // reset antes
+      confirmEmoji.innerHTML = "📦";
 
       confirmEmoji.innerHTML =
         marketItem.img

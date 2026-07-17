@@ -146,10 +146,12 @@ qtyInput.value = 1;
 
   imgBox.innerHTML = item.img
   ? `
-    <img
-      src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-      class="inventory-item-img"
-    >
+    <span class="inventory-emoji">
+      <img
+        src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+        class="inventory-item-img"
+      >
+    </span>
   `
   : item.emoji || item.item || "📦";
 

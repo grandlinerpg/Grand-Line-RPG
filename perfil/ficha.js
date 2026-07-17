@@ -317,19 +317,22 @@ window.abrirFicha = async function(
         skill.antidodging
     );
 
-    document.getElementById("ficha-cost").textContent =
-    skill.custo ?? "-";
-
     const priceBox =
-    document.getElementById("price-box");
+    document.querySelector(".price-box");
 
     const buyBtn =
     document.getElementById("ficha-buy-btn");
 
-    priceBox.style.display =
-    mostrarCusto ? "flex" : "none";
 
-    buyBtn.style.display =
-    mostrarComprar ? "" : "none";
+    if(priceBox){
+        priceBox.style.display =
+        mostrarCusto ? "flex" : "none";
+    }
+
+
+    if(buyBtn){
+        buyBtn.style.display =
+        mostrarComprar ? "" : "none";
+    }
     
 };

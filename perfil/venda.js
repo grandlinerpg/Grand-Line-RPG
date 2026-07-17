@@ -104,6 +104,9 @@ window.abrirVendaItem = function(item) {
   const imgBox =
     document.getElementById("sell-item-image");
 
+  const nameText =
+    document.getElementById("sell-item-name");
+
   const minText =
     document.getElementById("sell-min-price");
 

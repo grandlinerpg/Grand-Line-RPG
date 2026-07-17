@@ -294,7 +294,7 @@ function initMarket() {
 
   function openItem(item) {
     resetItemModal();
-    marketItem = item;
+     = item;
 
     document.getElementById("market-item-emoji").innerHTML =
       item.img
@@ -334,10 +334,10 @@ function initMarket() {
   }
 
   function updateTotal() {
-    if (!marketItem || !qtySelect || !totalBox) return;
+    if (! || !qtySelect || !totalBox) return;
 
     const qtd = Number(qtySelect.value || 1);
-    const total = marketItem.value * qtd;
+    const total = .value * qtd;
 
     totalBox.innerText = `฿ ${total.toLocaleString("pt-BR")}`;
   }
@@ -377,7 +377,7 @@ function initMarket() {
       return;
     }
 
-    const nomeItem = marketItem.nome;
+    const nomeItem = document.getElementById("market-item-name").innerText;
 
     const resultado = await comprarItem(
       db,

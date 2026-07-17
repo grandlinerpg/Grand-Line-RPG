@@ -224,10 +224,9 @@
         "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
 
       // 🔥 SÓ ISSO FOI CORRIGIDO
-      document.getElementById("m-btn").onclick = async () => {
+      document.getElementById("m-btn").onclick = () => {
 
-        const mod = await import("./habilidades.js");
-        mod.abrirHabilidades(s.n);
+         abrirHabilidades(s.n);
 
       };
     }

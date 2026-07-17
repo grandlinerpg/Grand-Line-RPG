@@ -372,7 +372,17 @@
 
   flex:1;
 
-  padding:14px;
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  min-height:42px;
+
+  padding:12px;
+
+  box-sizing:border-box;
 
   border:1px solid rgba(255,255,255,.15);
 
@@ -380,17 +390,11 @@
 
   background:rgba(255,255,255,.05);
 
-  text-align:center;
-
-}
-
-#ficha-cost{
+  color:#fff;
 
   font-size:18px;
 
   font-weight:700;
-
-  color:#fff;
 
 }
 

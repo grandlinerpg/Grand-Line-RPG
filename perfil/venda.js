@@ -145,17 +145,17 @@ window.abrirVendaItem = function(item) {
 qtyInput.value = 1;
 
   imgBox.innerHTML = item.img
-    ? `
-      <img
-        src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-        style="
-          width:120px;
-          height:120px;
-          object-fit:contain;
-        "
-      >
-    `
-    : "📦";
+  ? `
+    <img
+      src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+      style="
+        width:120px;
+        height:120px;
+        object-fit:contain;
+      "
+    >
+  `
+  : item.item || "📦";
 
   minText.innerText =
     `Preço: ฿ ${minPrice.toLocaleString("pt-BR")} até ฿ ${maxPrice.toLocaleString("pt-BR")}`;

@@ -279,6 +279,7 @@ function initMarket() {
       div.onclick = () => openItem({
         marketId,
         nome: itemData.nome,
+        nomeJogador: a.nomeJogador,
         descricao: itemData.description,
         img: itemData.img,
         value,
@@ -355,27 +356,10 @@ function initMarket() {
     const sellerText =
       document.getElementById("confirm-item-seller");
 
-    if (sellerText && marketItem.jogador) {
+    if (sellerText) {
 
-      const sellerSnap =
-        await get(
-          ref(
-            db,
-            `players/${marketItem.jogador}`
-          )
-        );
-
-      if (sellerSnap.exists()) {
-
-        sellerText.innerText =
-          `Anunciado por ${sellerSnap.val()}`;
-
-      } else {
-
-        sellerText.innerText =
-          "Anunciado por Jogador";
-
-      }  
+      sellerText.innerText =
+        `Anunciado por ${marketItem.nomeJogador || "Jogador"}`;
 
     }
 

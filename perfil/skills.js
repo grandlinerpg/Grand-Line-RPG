@@ -134,7 +134,7 @@ function initSkills() {
 
         div.addEventListener("click", () => {
           console.log("Clicou na skill:", skill);
-          abrirFicha(skill);
+          abrirFicha(skill, false);
 
         });
 

@@ -153,6 +153,8 @@ qtyInput.value = 1;
   `
   : item.item || "📦";
 
+  nameText.innerText = item.nome;
+
   minText.innerText =
     `Preço: ฿ ${minPrice.toLocaleString("pt-BR")} até ฿ ${maxPrice.toLocaleString("pt-BR")}`;
 

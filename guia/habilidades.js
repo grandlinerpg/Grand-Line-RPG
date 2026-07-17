@@ -273,7 +273,7 @@ window.abrirHabilidades = async function(estiloNome){
             skill
           );
 
-          abrirFicha(skill);
+          abrirFicha(skill, true, false);
 
         };
 

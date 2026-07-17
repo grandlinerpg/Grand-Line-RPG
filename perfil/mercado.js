@@ -352,6 +352,33 @@ function initMarket() {
       confirmName.innerText = marketItem.nome;
     }
 
+    const sellerText =
+      document.getElementById("confirm-item-seller");
+
+    if (sellerText && marketItem.jogador) {
+
+      const sellerSnap =
+        await get(
+          ref(
+            db,
+            `players/${marketItem.jogador}`
+          )
+        );
+
+      if (sellerSnap.exists()) {
+
+        sellerText.innerText =
+          `Anunciado por ${sellerSnap.val()}`;
+
+      } else {
+
+        sellerText.innerText =
+          "Anunciado por Jogador";
+
+      }  
+
+    }
+
     if (confirmEmoji) {
       confirmEmoji.innerHTML = "📦";
 

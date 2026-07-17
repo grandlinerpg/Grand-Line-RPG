@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet" href="../guia.css">
   <link rel="stylesheet" href="estilo-luta.css">
+  <link rel="stylesheet" href="../perfil/inventario.css">
   <link rel="stylesheet" href="../perfil/skills.css">
   <link rel="stylesheet" href="../perfil/ficha.css">
   <link rel="stylesheet" href="../perfil/card.css">
@@ -49,6 +50,13 @@
   <div id="modal" class="modal">
     <div class="modal-content">
 
+      <button
+        class="close-item-x"
+        onclick="closeModal()"
+      >
+        ×
+      </button>
+
       <img id="m-img" class="modal-img">
 
       <h2 id="m-title"></h2>
@@ -59,8 +67,6 @@
       <img id="m-tier-img" class="modal-tier-img">
 
       <button id="m-btn">VER HABILIDADES</button>
-
-      <button onclick="closeModal()">FECHAR</button>
 
     </div>
   </div>

@@ -353,15 +353,29 @@
 }
 
 /* =========================
-   CUSTO
+   CUSTO + BOTÃO
 ========================= */
+
+.ficha-bottom{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin-top:20px;
+
+}
 
 .ficha-cost-box{
 
-  margin-top:20px;
+  flex:1;
+
   padding:14px;
 
   border:1px solid rgba(255,255,255,.15);
+
   border-radius:10px;
 
   background:rgba(255,255,255,.05);
@@ -373,7 +387,17 @@
 #ficha-cost{
 
   font-size:18px;
+
   font-weight:700;
+
   color:#fff;
+
+}
+
+.ficha-bottom .item-actions{
+
+  flex:1;
+
+  margin-top:0;
 
 }

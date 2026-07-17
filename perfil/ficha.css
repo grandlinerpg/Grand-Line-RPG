@@ -351,3 +351,29 @@
   }
 
 }
+
+/* =========================
+   CUSTO
+========================= */
+
+.ficha-cost-box{
+
+  margin-top:20px;
+  padding:14px;
+
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:10px;
+
+  background:rgba(255,255,255,.05);
+
+  text-align:center;
+
+}
+
+#ficha-cost{
+
+  font-size:18px;
+  font-weight:700;
+  color:#fff;
+
+}

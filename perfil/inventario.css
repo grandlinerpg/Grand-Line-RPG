@@ -518,6 +518,41 @@
   margin-right:8px; /* 🔥 isso impede colar no botão */
 }
 
+.market-buy-quantity{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin-top:10px;
+
+}
+
+
+#market-quantity-select{
+
+  width:70px;
+
+  padding:10px;
+
+  border-radius:10px;
+
+  border:1px solid rgba(246,211,101,0.3);
+
+  background:rgba(0,0,0,0.6);
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+  font-size:14px;
+
+  text-align:center;
+
+}
+
 /* =========================
    CONFIRMAÇÃO COMPRA
 ========================= */

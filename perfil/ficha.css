@@ -368,36 +368,6 @@
 
 }
 
-.ficha-cost-box{
-
-  flex:1;
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:center;
-
-  min-height:42px;
-
-  padding:12px;
-
-  box-sizing:border-box;
-
-  border:1px solid rgba(255,255,255,.15);
-
-  border-radius:10px;
-
-  background:rgba(255,255,255,.05);
-
-  color:#fff;
-
-  font-size:18px;
-
-  font-weight:700;
-
-}
-
 .ficha-bottom .item-actions{
 
   flex:1;

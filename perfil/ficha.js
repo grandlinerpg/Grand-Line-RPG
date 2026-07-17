@@ -320,6 +320,9 @@ window.abrirFicha = async function(
    const priceBox =
    document.querySelector("#ficha-modal .price-box");
 
+   const fichaBottom =
+   document.querySelector("#ficha-modal .ficha-bottom");
+
    const buyBtn =
    document.querySelector("#ficha-modal #ficha-buy-btn");
 
@@ -344,5 +347,19 @@ window.abrirFicha = async function(
        }
 
    }
+
+    if(fichaBottom){
+
+        if(!mostrarCusto && !mostrarComprar){
+
+            fichaBottom.style.display = "none";
+
+        }else{
+
+            fichaBottom.style.display = "flex";
+
+        }
+
+    }
     
 };

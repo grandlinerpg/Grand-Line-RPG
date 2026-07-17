@@ -342,7 +342,7 @@ function initMarket() {
     totalBox.innerText = `฿ ${total.toLocaleString("pt-BR")}`;
   }
 
-  buyBtn.onclick = () => {
+  buyBtn.onclick = async () => {
     if (!marketItem) return;
 
     const confirmEmoji = document.getElementById("confirm-item-emoji");

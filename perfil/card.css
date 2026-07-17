@@ -86,9 +86,9 @@
 
     text-align:center;
 
-    font-family:'Caranda Personal', serif;
+    font-family:'Cinzel', serif;
 
-    font-size:28px;
+    font-size:32px;
 
     color:#fff;
 
@@ -125,7 +125,7 @@
 
     grid-template-columns:repeat(2,auto);
 
-    gap:6px 18px;
+    gap:6px 14px;
 
     color:#fff;
 
@@ -149,7 +149,7 @@
 
     font-family:'Cinzel',serif;
 
-    font-size:22px;
+    font-size:16px;
 
     font-weight:bold;
 

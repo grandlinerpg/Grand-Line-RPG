@@ -317,22 +317,32 @@ window.abrirFicha = async function(
         skill.antidodging
     );
 
-    const priceBox =
-    document.querySelector(".price-box");
+   const priceBox =
+   document.querySelector("#ficha-modal .price-box");
 
-    const buyBtn =
-    document.getElementById("ficha-buy-btn");
-
-
-    if(priceBox){
-        priceBox.style.display =
-        mostrarCusto ? "flex" : "none";
-    }
+   const buyBtn =
+   document.querySelector("#ficha-modal #ficha-buy-btn");
 
 
-    if(buyBtn){
-        buyBtn.style.display =
-        mostrarComprar ? "" : "none";
-    }
+   if(priceBox){
+
+       if(mostrarCusto){
+           priceBox.style.display = "flex";
+       }else{
+           priceBox.style.display = "none";
+       }
+
+   }
+
+
+   if(buyBtn){
+
+       if(mostrarComprar){
+           buyBtn.style.display = "block";
+       }else{
+           buyBtn.style.display = "none";
+       }
+
+   }
     
 };

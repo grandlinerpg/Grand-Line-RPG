@@ -297,19 +297,36 @@
 
 .item-actions button{
   flex:1;
+
   padding:12px;
-  border:none;
+
+  border:1px solid rgba(246,211,101,.25);
   border-radius:10px;
-  background:linear-gradient(to bottom,#8f1408,#5e0800);
+
+  background:rgba(255,255,255,.04);
+
   color:#f6d365;
-  font-family:'Cinzel', serif;
+
+  font-family:'Cinzel',serif;
   font-size:14px;
+
   cursor:pointer;
-  transition:0.2s;
+
+  transition:.25s ease;
 }
 
 .item-actions button:hover{
-  transform:scale(1.01);
+
+  background:rgba(246,211,101,.12);
+
+  border-color:rgba(246,211,101,.7);
+
+  color:#fff;
+
+  transform:translateY(-1px);
+
+  box-shadow:0 0 12px rgba(246,211,101,.18);
+
 }
 
 #sell-modal .item-actions{

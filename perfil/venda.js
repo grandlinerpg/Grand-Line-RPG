@@ -147,7 +147,7 @@ qtyInput.value = 1;
   imgBox.innerHTML = item.img
   ? `
     <img
-      class="inventory-item-image"
+      class="inventory-open-img"
       src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
     >
   `

@@ -147,7 +147,7 @@ function initMarketSkills() {
 
           if(window.abrirFicha){
 
-            window.abrirFicha(skill);
+            window.abrirFicha(skill, true, true);
 
           }else{
 

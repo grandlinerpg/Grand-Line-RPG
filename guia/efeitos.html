@@ -132,17 +132,7 @@
 
     const CLOUD =
       "https://res.cloudinary.com/djh45admn/image/upload/v1784283109/";
-
-    const tiersImg = {
-
-      1: CLOUD + "tier-1.png",
-      2: CLOUD + "tier-2.png",
-      3: CLOUD + "tier-3.png",
-      4: CLOUD + "tier-4.png",
-      5: CLOUD + "tier-5.png"
-
-    };
-
+    
     const list =
       document.getElementById("list");
 
@@ -196,10 +186,6 @@
       document.getElementById("m-desc")
       .innerText =
       efeito.description || "";
-
-      document.getElementById("m-tier-img")
-      .src =
-      tiersImg[efeito.tier] || "";
 
       document.getElementById("m-img")
       .src =

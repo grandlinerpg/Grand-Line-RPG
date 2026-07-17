@@ -100,7 +100,7 @@ function atualizarLinha(idLinha, idTexto, valor){
 
 
 
-window.abrirFicha = async function(skill){
+window.abrirFicha = async function(skill, mostrarCusto = true){
 
 
     if(!document.getElementById("ficha-modal")){
@@ -313,4 +313,11 @@ window.abrirFicha = async function(skill){
         skill.antidodging
     );
 
+    document.getElementById("ficha-cost").textContent =
+    skill.custo ?? "-";
+
+    const costBox = document.querySelector(".ficha-cost-box");
+
+    costBox.style.display = mostrarCusto ? "" : "none";
+    
 };

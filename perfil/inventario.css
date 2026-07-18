@@ -606,6 +606,26 @@
   text-align: center;
 }
 
+#skill-result-modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.75);
+  z-index: 6000;
+}
+
+#skill-result-modal .item-window{
+  width: 90%;
+  max-width: 400px;
+  background: rgba(10,10,10,0.96);
+  border: 1px solid rgba(246,211,101,0.2);
+  border-radius: 16px;
+  padding: 22px;
+  text-align: center;
+}
+
 /* =========================
    MODAL DE VENDA
 ========================= */

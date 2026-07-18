@@ -149,7 +149,7 @@ qtyInput.value = 1;
     <span class="inventory-emoji">
       <img
         src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-        class="inventory-item-img"
+        class="item-open-img"
       >
     </span>
   `

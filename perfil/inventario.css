@@ -119,6 +119,7 @@
   height:356px;
   overflow-y:auto;   
   overflow-x:hidden;
+  padding-right:5px;
 }
 
 .inventory-list::-webkit-scrollbar{

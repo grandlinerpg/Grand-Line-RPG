@@ -414,7 +414,7 @@
 
   object-fit:cover;
 
-  border-radius:50%;
+  border-radius: 12px;
 
   border:2px solid rgba(255,215,120,0.3);
 }

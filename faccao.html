@@ -22,7 +22,6 @@
 <div class="overlay"></div>
 
 
-<!-- NAVBAR -->
 <header class="navbar">
 
 <div class="logo-area">
@@ -35,6 +34,7 @@ class="logo"
 <div class="logo-text">
 
 <h1>GRAND LINE</h1>
+
 <p>— RPG —</p>
 
 </div>
@@ -66,25 +66,25 @@ class="logo"
 
 <main class="faction-container">
 
-
 <div class="faction-card">
 
-<!-- NOME -->
 
 <h1 id="faction-name">
 —
 </h1>
 
-<!-- IMAGEM -->
+
 
 <div class="faction-image">
 
-<img id="faction-img"
-src="https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logoglrpg.png">
+<img 
+id="faction-img"
+src="https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logoglrpg.png"
+>
 
 </div>
 
-<!-- STATUS -->
+
 
 <div class="top-stats">
 
@@ -140,8 +140,46 @@ Carregando...
 
 </div>
 
-
 </main>
+
+
+
+<!-- WINDOW PERFIL ALTER -->
+
+<div id="perfil-alter-container"></div>
+
+
+
+<script type="module">
+
+import {
+  initPerfilAlter
+} from "./perfil/perfil-alter.js";
+
+
+async function carregarPerfilAlter(){
+
+  const res =
+  await fetch("./perfil/perfil-alter.html");
+
+
+  const html =
+  await res.text();
+
+
+  document
+  .getElementById("perfil-alter-container")
+  .innerHTML = html;
+
+
+  initPerfilAlter();
+
+}
+
+
+carregarPerfilAlter();
+
+</script>
 
 
 
@@ -150,7 +188,6 @@ Carregando...
 
 
 <script>
-
 
 const menuToggle =
 document.getElementById("menu-toggle");
@@ -162,14 +199,13 @@ document.getElementById("nav-menu");
 
 menuToggle.onclick = () => {
 
-navMenu.classList.toggle("active");
+  navMenu.classList.toggle("active");
 
 };
-
 
 </script>
 
 
-
 </body>
+
 </html>

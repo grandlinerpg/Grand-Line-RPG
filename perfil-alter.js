@@ -13,15 +13,10 @@ export function initPerfilAlter(){
   if(!modal) return;
 
 
-  window.abrirPerfilAlter = async function(){
-
-    const user = window.auth.currentUser;
-
-    if(!user) return;
-
+  window.abrirPerfilAlter = async function(uid){
 
     const snap =
-      await get(ref(window.db,`players/${user.uid}`));
+      await get(ref(window.db,`players/${uid}`));
 
 
     if(!snap.exists()) return;

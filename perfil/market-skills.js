@@ -44,6 +44,7 @@ function initMarketSkills() {
 
   let habilidadesDB = {};
   let playerMap = {};
+  let playerSkills = new Set();
 
   function normalize(str) {
     return (str || "")
@@ -91,6 +92,11 @@ function initMarketSkills() {
         for (const skillId in habilidadesDB[categoria][sub]) {
 
           const skill = habilidadesDB[categoria][sub][skillId];
+
+          // Não mostrar skills que o jogador já possui
+          if (playerSkills.has(skillId)) {
+            continue;
+          }
 
           const skillSub = normalize(sub);
 
@@ -214,6 +220,15 @@ function initMarketSkills() {
     }
 
     const player = playerSnap.val();
+    playerSkills.clear();
+
+    if (player?.skills) {
+
+      Object.keys(player.skills).forEach(id => {
+        playerSkills.add(id);
+      });
+
+    }
 
     const normalize = (str) =>
       (str || "")

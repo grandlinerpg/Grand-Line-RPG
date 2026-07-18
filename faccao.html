@@ -102,30 +102,24 @@ import {
 
 async function carregarPerfilAlter(){
 
-  const res =
-  await fetch("./perfil/perfil-alter.html");
+  const res = await fetch("./perfil/perfil-alter.html");
 
-
-  const html =
-  await res.text();
-
+  const html = await res.text();
 
   document
   .getElementById("perfil-alter-container")
   .innerHTML = html;
 
-
   initPerfilAlter();
 
-
-  await import("./faccao.js");
-
 }
-
 
 carregarPerfilAlter();
 
 </script>
+
+
+<script type="module" src="faccao.js"></script>
 
 
 <script>
@@ -135,7 +129,6 @@ document.getElementById("menu-toggle");
 
 const navMenu =
 document.getElementById("nav-menu");
-
 
 menuToggle.onclick = () => {
 

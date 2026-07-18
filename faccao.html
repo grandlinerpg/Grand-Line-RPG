@@ -100,7 +100,7 @@ import {
 } from "./perfil/perfil-alter.js";
 
 
-async function iniciar(){
+async function carregarPerfilAlter(){
 
   const res =
   await fetch("./perfil/perfil-alter.html");
@@ -123,7 +123,7 @@ async function iniciar(){
 }
 
 
-iniciar();
+carregarPerfilAlter();
 
 </script>
 
@@ -135,6 +135,7 @@ document.getElementById("menu-toggle");
 
 const navMenu =
 document.getElementById("nav-menu");
+
 
 menuToggle.onclick = () => {
 

@@ -107,7 +107,9 @@ function initMarketSkills() {
 
           skillsPorRank[rank].push({
             skill,
-            skillId
+            skillId,
+            categoria,
+            sub
           });
         }
       }
@@ -125,7 +127,7 @@ function initMarketSkills() {
 
       list.appendChild(rankTitle);
 
-      skillsPorRank[rank].forEach(({ skill, skillId }) => {
+      skillsPorRank[rank].forEach(({ skill, skillId, categoria, sub }) => {
 
         const div =
           document.createElement("div");
@@ -147,7 +149,14 @@ function initMarketSkills() {
 
           if(window.abrirFicha){
 
-            window.abrirFicha(skill, true, true);
+            window.abrirFicha(
+              skill,
+              true,
+              true,
+              skillId,
+              categoria,
+              sub
+          );
 
           }else{
 

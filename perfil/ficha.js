@@ -115,6 +115,7 @@ window.abrirFicha = async function(
 
 
     skillAtual = skill;
+    window.skillAtual = skill;
 
     const modal =
     document.getElementById("ficha-modal");
@@ -340,13 +341,26 @@ window.abrirFicha = async function(
 
    if(buyBtn){
 
-       if(mostrarComprar){
-           buyBtn.style.display = "block";
-       }else{
-           buyBtn.style.display = "none";
-       }
+    if(mostrarComprar){
 
-   }
+        buyBtn.style.display = "block";
+
+        buyBtn.onclick = () => {
+
+            document
+                .getElementById("confirm-skill-modal")
+                .style.display = "flex";
+
+        };
+
+    }else{
+
+        buyBtn.style.display = "none";
+        buyBtn.onclick = null;
+
+    }
+
+}
 
     if(fichaBottom){
 

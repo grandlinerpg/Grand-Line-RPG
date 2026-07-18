@@ -119,6 +119,9 @@ window.abrirFicha = async function(
 
     skillAtual = skill;
     window.skillAtual = skill;
+    window.skillUid = skillUid;
+    window.skillCategoria = categoria;
+    window.skillSub = sub;
 
     const modal =
     document.getElementById("ficha-modal");

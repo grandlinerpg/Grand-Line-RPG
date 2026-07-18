@@ -215,17 +215,24 @@
 
   border:1px solid rgba(246,211,101,0.2);
 
-  color:#f6d365;
-
-  font-size:26px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
   transition:.2s;
 }
 
-.skill-tree-btn:hover{
-  transform:scale(1.03);
-}
 
+.skill-tree-img{
+
+  width:38px;
+  height:38px;
+
+  object-fit:contain;
+
+  display:block;
+
+}
 /* =========================
    LISTA
 ========================= */

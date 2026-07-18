@@ -103,7 +103,10 @@ function atualizarLinha(idLinha, idTexto, valor){
 window.abrirFicha = async function(
     skill,
     mostrarCusto = true,
-    mostrarComprar = true
+    mostrarComprar = true,
+    skillUid = null,
+    categoria = "",
+    sub = ""
 ){
 
 

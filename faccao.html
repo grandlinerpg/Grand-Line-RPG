@@ -100,26 +100,32 @@ import {
 } from "./perfil/perfil-alter.js";
 
 
-async function carregarPerfilAlter(){
+async function iniciar(){
 
-  const res = await fetch("./perfil/perfil-alter.html");
+  const res =
+  await fetch("./perfil/perfil-alter.html");
 
-  const html = await res.text();
+
+  const html =
+  await res.text();
+
 
   document
   .getElementById("perfil-alter-container")
   .innerHTML = html;
 
+
   initPerfilAlter();
+
+
+  await import("./faccao.js");
 
 }
 
-carregarPerfilAlter();
+
+iniciar();
 
 </script>
-
-
-<script type="module" src="faccao.js"></script>
 
 
 <script>

@@ -2,7 +2,6 @@
 <html lang="pt-br">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,116 +11,66 @@
 
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="faccao.css">
-
 </head>
-
 
 <body>
 
 <div class="background"></div>
 <div class="overlay"></div>
 
-
 <header class="navbar">
 
 <div class="logo-area">
-
-<img
-src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
-class="logo"
->
+<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
 
 <div class="logo-text">
-
 <h1>GRAND LINE</h1>
-
 <p>— RPG —</p>
-
 </div>
 
 </div>
 
-
-<button class="menu-toggle" id="menu-toggle">
-☰
-</button>
-
+<button class="menu-toggle" id="menu-toggle">☰</button>
 
 <nav id="nav-menu">
-
 <a href="perfil.html">PERFIL</a>
-
 <a href="faccao.html">FACÇÃO</a>
-
 <a href="mapa.html">MAPA</a>
-
 <a href="guia.html">GUIA</a>
-
 </nav>
 
-
 </header>
-
 
 
 <main class="faction-container">
 
 <div class="faction-card">
 
-
-<h1 id="faction-name">
-—
-</h1>
-
-
+<h1 id="faction-name">—</h1>
 
 <div class="faction-image">
-
-<img 
-id="faction-img"
-src="https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logoglrpg.png"
->
-
+<img id="faction-img" src="https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logoglrpg.png">
 </div>
-
 
 
 <div class="top-stats">
 
-
 <div class="stat-box">
-
 🏦 ARMAZÉM
-
 <br>
-
-฿ <span id="warehouse">
-0
-</span>
-
+฿ <span id="warehouse">0</span>
 </div>
-
-
 
 <div class="stat-box">
-
 💪 FORÇA
-
 <br>
-
-<span id="power">
-0
-</span>
-
+<span id="power">0</span>
 </div>
 
-
 </div>
-
 
 
 <hr>
-
 
 
 <h2 class="title-center">
@@ -129,13 +78,9 @@ MEMBROS
 </h2>
 
 
-
 <div id="members-list">
-
 Carregando...
-
 </div>
-
 
 
 </div>
@@ -143,11 +88,8 @@ Carregando...
 </main>
 
 
-
 <!-- WINDOW PERFIL ALTER -->
-
 <div id="perfil-alter-container"></div>
-
 
 
 <script type="module">
@@ -159,32 +101,24 @@ import {
 
 async function carregarPerfilAlter(){
 
-  const res =
-  await fetch("./perfil/perfil-alter.html");
+  const res = await fetch("./perfil/perfil-alter.html");
 
-
-  const html =
-  await res.text();
-
+  const html = await res.text();
 
   document
   .getElementById("perfil-alter-container")
   .innerHTML = html;
 
-
   initPerfilAlter();
 
 }
-
 
 carregarPerfilAlter();
 
 </script>
 
 
-
 <script type="module" src="faccao.js"></script>
-
 
 
 <script>
@@ -192,10 +126,8 @@ carregarPerfilAlter();
 const menuToggle =
 document.getElementById("menu-toggle");
 
-
 const navMenu =
 document.getElementById("nav-menu");
-
 
 menuToggle.onclick = () => {
 
@@ -207,5 +139,4 @@ menuToggle.onclick = () => {
 
 
 </body>
-
 </html>

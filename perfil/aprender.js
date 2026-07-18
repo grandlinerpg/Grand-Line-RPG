@@ -30,7 +30,7 @@ function iniciarAprenderSkill() {
     };
 
     btnYes.onclick = async () => {
-
+        console.log("CLICOU SIM");
         const auth = window.auth;
         const db = window.db;
 

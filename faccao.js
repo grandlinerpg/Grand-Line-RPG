@@ -320,6 +320,23 @@ async function startAuth(){
 
                 `;
 
+                // abrir window do personagem
+                div.onclick = () => {
+
+                  if(window.abrirPerfilAlter){
+
+                    window.abrirPerfilAlter(
+                      player.key
+                    );
+
+                  }else{
+
+                    console.log("perfil-alter.js não carregado");
+
+                  }
+
+                };
+
 
 
                 box.appendChild(div);

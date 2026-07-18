@@ -2,11 +2,36 @@ import {
     ref,
     get,
     set,
-    update,
     runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 console.log("APRENDER.JS CARREGOU");
+
+function abrirResultado(titulo, texto) {
+
+    document.getElementById("skill-result-title").textContent = titulo;
+
+    document.getElementById("skill-result-text").textContent = texto;
+
+    document.getElementById("skill-result-modal").style.display = "flex";
+
+}
+
+function fecharResultado() {
+
+    document.getElementById("skill-result-modal").style.display = "none";
+
+}
+
+document.addEventListener("click", (e) => {
+
+    if (e.target.id === "skill-result-ok") {
+
+        fecharResultado();
+
+    }
+
+});
 
 function iniciarAprenderSkill() {
 
@@ -30,15 +55,23 @@ function iniciarAprenderSkill() {
     };
 
     btnYes.onclick = async () => {
+
         console.log("CLICOU SIM");
+
         const auth = window.auth;
         const db = window.db;
 
         const user = auth.currentUser;
 
         if (!user) {
-            alert("Você precisa estar logado.");
+
+            abrirResultado(
+                "ERRO",
+                "Você precisa estar logado."
+            );
+
             return;
+
         }
 
         const skill = window.skillAtual;
@@ -47,8 +80,14 @@ function iniciarAprenderSkill() {
         const sub = window.skillSub;
 
         if (!skill || !skillUid) {
-            console.log("Habilidade inválida.");
+
+            abrirResultado(
+                "ERRO",
+                "Habilidade inválida."
+            );
+
             return;
+
         }
 
         const playerRef =
@@ -58,8 +97,14 @@ function iniciarAprenderSkill() {
             await get(playerRef);
 
         if (!playerSnap.exists()) {
-            alert("Personagem não encontrado.");
+
+            abrirResultado(
+                "ERRO",
+                "Personagem não encontrado."
+            );
+
             return;
+
         }
 
         const player =
@@ -72,8 +117,14 @@ function iniciarAprenderSkill() {
             Number(player?.points?.["skill-available"]) || 0;
 
         if (disponivel < custo) {
-            alert("Você não possui pontos suficientes.");
+
+            abrirResultado(
+                "ERRO",
+                "Você não possui pontos suficientes."
+            );
+
             return;
+
         }
 
         const skillRef =
@@ -83,8 +134,14 @@ function iniciarAprenderSkill() {
             await get(skillRef);
 
         if (skillSnap.exists()) {
-            alert("Você já aprendeu essa habilidade.");
+
+            abrirResultado(
+                "ERRO",
+                "Você já aprendeu essa habilidade."
+            );
+
             return;
+
         }
 
         await set(skillRef, {
@@ -106,7 +163,10 @@ function iniciarAprenderSkill() {
 
         document.getElementById("ficha-modal").style.display = "none";
 
-        alert("Habilidade aprendida com sucesso!");
+        abrirResultado(
+            "SUCESSO",
+            "Habilidade aprendida com sucesso!"
+        );
 
     };
 

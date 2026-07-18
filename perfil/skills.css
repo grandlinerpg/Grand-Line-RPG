@@ -196,24 +196,15 @@
 }
 
 .skill-tree-btn{
-
-  width:100%;
-  height:100%;
-
-  min-height:58px;
+  width:60px;
+  height:58px;
 
   border:none;
-  border-radius:10px;
+  background:none;
+
+  padding:0;
 
   cursor:pointer;
-
-  background:linear-gradient(
-    to bottom,
-    #8f1408,
-    #5e0800
-  );
-
-  border:1px solid rgba(246,211,101,0.2);
 
   display:flex;
   align-items:center;
@@ -222,6 +213,20 @@
   transition:.2s;
 }
 
+.skill-tree-img{
+  width:45px;
+  height:45px;
+
+  object-fit:contain;
+
+  display:block;
+
+  transition:.2s;
+}
+
+.skill-tree-btn:hover .skill-tree-img{
+  transform:scale(1.1);
+}
 
 .skill-tree-img{
 

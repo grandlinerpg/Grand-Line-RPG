@@ -317,7 +317,7 @@ function initMarketSkills() {
       "akuma-no-mi":
         await getHabilidadesComHeranca(
           "akuma-no-mi",
-        player?.character?.fruit
+          player?.character?.fruit
         )
 
     };

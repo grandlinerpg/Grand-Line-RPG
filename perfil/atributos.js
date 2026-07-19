@@ -83,6 +83,14 @@ fetch("perfil/atributos.html")
           set("attr-sta", stats.sta || 0);
           set("attr-hp", stats.hp || 0);
 
+            // imagem
+        const mainImg = document.getElementById("char-img");
+        const attrImg = document.getElementById("attr-char-img");
+
+        if(mainImg && attrImg){
+            attrImg.src = mainImg.src;
+        }
+
         });
 
         const mainImg = document.getElementById("char-img");

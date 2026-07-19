@@ -43,40 +43,18 @@
 
 .window-top{
   display:flex;
-  justify-content:center;
   align-items:center;
-
-  position:relative;
-
-  height:50px;
-
-  margin:-16px -16px 16px;
-
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(60,45,18,.95),
-      rgba(35,25,8,.95)
-    );
-
-  border-bottom:1px solid rgba(255,215,120,.20);
-
-  border-radius:16px 16px 0 0;
+  justify-content:center;
+  margin-bottom:18px;
 }
 
 .window-top h1{
-  margin:0;
-
   color:#f6d365;
-
-  font-family:'Cinzel',serif;
-  font-size:20px;
-  font-weight:700;
-
-  letter-spacing:2px;
-  text-transform:uppercase;
-
-  text-shadow:0 0 8px rgba(255,215,120,.35);
+  font-family:'Cinzel', serif;
+  text-align:center;
+  margin:0;
+  line-height:1;
+  font-size:26px;
 }
 
 /* FECHAR */

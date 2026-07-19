@@ -297,7 +297,7 @@ function initMarket() {
         value,
         tier: Number(itemData.tier || 1),
         emoji: getEmoji(itemData),
-        jogador: nomeJogador,
+        jogador: a.jogador,
         qtd: a.qtd
       });
 
@@ -369,6 +369,8 @@ function initMarket() {
       document.getElementById("confirm-item-seller");
 
     if (sellerText) {
+
+      const nomeJogador = await getNomeJogador(marketItem.jogador);
 
       sellerText.innerText =
         `Anunciado por ${marketItem.jogador || "Jogador"}`;

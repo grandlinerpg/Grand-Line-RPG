@@ -110,17 +110,20 @@ async function carregarPerfilAlter(){
   .getElementById("perfil-alter-container")
   .innerHTML = html;
 
+
   initPerfilAlter();
 
+
+  // só carrega a facção depois do perfil estar pronto
+  await import("./faccao.js");
+
+
 }
+
 
 carregarPerfilAlter();
 
 </script>
-
-
-<script type="module" src="faccao.js"></script>
-
 
 <script>
 

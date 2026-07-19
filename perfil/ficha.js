@@ -186,6 +186,19 @@ window.abrirFicha = async function(
     skill.description || "-";
 
     // =====================
+    // CUSTO DA SKILL
+    // =====================
+
+    const cost =
+    document.getElementById("ficha-cost");
+
+    if(cost){
+
+        cost.innerText = skill.custo || 0;
+
+    }
+
+    // =====================
     // RANK DA SKILL
     // =====================
 

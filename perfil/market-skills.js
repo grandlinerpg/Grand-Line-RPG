@@ -56,6 +56,66 @@ function initMarketSkills() {
       .replace(/\s+/g,"-");
   }
 
+  async function getHabilidadesComHeranca(categoria, nome){
+
+    const permitidos = new Set();
+
+    const fila = [
+      normalize(nome)
+    ];
+
+    const visitados = new Set();
+
+
+    while(fila.length){
+
+      const atual = fila.shift();
+
+
+      if(!atual || visitados.has(atual))
+        continue;
+
+
+      visitados.add(atual);
+
+
+      const snap =
+        await get(
+          ref(
+            db,
+            `habilidades/${categoria}/${atual}`
+          )
+        );
+
+
+      if(!snap.exists())
+        continue;
+
+
+      const data = snap.val();
+
+
+      permitidos.add(atual);
+
+
+      if(data.heranca)
+        fila.push(normalize(data.heranca));
+
+
+      if(data.heranca2)
+        fila.push(normalize(data.heranca2));
+
+
+      if(data.heranca3)
+        fila.push(normalize(data.heranca3));
+
+    }
+
+
+    return permitidos;
+
+  }
+
   function renderSkills() {
 
     list.innerHTML = "";
@@ -241,9 +301,25 @@ function initMarketSkills() {
 
     // 🔥 MAPEAMENTO CORRETO POR TIPO
     playerMap = {
-      "estilo-de-luta": new Set([normalize(player?.character?.style)]),
-      "raça/tribo": new Set([normalize(player?.character?.race)]),
-      "akuma-no-mi": new Set([normalize(player?.character?.fruit)])
+
+      "estilo-de-luta":
+        await getHabilidadesComHeranca(
+          "estilo-de-luta",
+          player?.character?.style
+        ),
+
+      "raça/tribo":
+        await getHabilidadesComHeranca(
+          "raça/tribo",
+          player?.character?.race
+        ),
+
+      "akuma-no-mi":
+        await getHabilidadesComHeranca(
+          "akuma-no-mi",
+        player?.character?.fruit
+        )
+
     };
 
     habilidadesDB = snap.val();

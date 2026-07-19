@@ -194,7 +194,8 @@ window.abrirFicha = async function(
 
     if(cost){
 
-        cost.innerText = skill.custo || 0;
+        cost.innerText =
+        `${skill.custo || 0} PTS`;
 
     }
 

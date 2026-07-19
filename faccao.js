@@ -372,18 +372,15 @@ async function startAuth(){
 
 async function carregarPerfilAlter(){
 
-  const res = await fetch("./perfil/perfil-alter.html");
+  const res = await fetch("./perfil-alter.html");
 
   const html = await res.text();
-
 
   document
   .getElementById("perfil-alter-container")
   .innerHTML = html;
 
-
   initPerfilAlter();
-
 
   console.log(
     "Perfil alter:",
@@ -391,7 +388,6 @@ async function carregarPerfilAlter(){
   );
 
 }
-
 // ======================
 // START
 // ======================

@@ -279,7 +279,6 @@ function initMarket() {
       div.onclick = () => openItem({
         marketId,
         nome: itemData.nome,
-        nomeJogador: a.nomeJogador,
         descricao: itemData.description,
         img: itemData.img,
         value,
@@ -359,7 +358,7 @@ function initMarket() {
     if (sellerText) {
 
       sellerText.innerText =
-        `Anunciado por ${marketItem.nomeJogador || "Jogador"}`;
+        `Anunciado por ${marketItem.jogador || "Jogador"}`;
 
     }
 

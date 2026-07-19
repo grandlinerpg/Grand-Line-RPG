@@ -234,6 +234,19 @@ function initMarket() {
     return itemData.emoji || itemData.icon || itemData.item || "📦";
   }
 
+  async function getNomeJogador(uid) {
+
+    if (!uid) return "Jogador";
+
+    const snap = await get(ref(db, `players/${uid}/nome`));
+
+    if (snap.exists()) {
+    return snap.val();
+    }
+
+    return "Jogador";
+  }
+
   function render(filter) {
     marketList.innerHTML = "";
 
@@ -284,7 +297,7 @@ function initMarket() {
         value,
         tier: Number(itemData.tier || 1),
         emoji: getEmoji(itemData),
-        jogador: a.jogador,
+        jogador: nomeJogador,
         qtd: a.qtd
       });
 

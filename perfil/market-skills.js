@@ -151,6 +151,16 @@ function initMarketSkills() {
 
         for (const skillId in habilidadesDB[categoria][sub]) {
 
+            // IGNORA CONFIGURAÇÃO DE HERANÇA
+            if(
+              skillId === "heranca" ||
+              skillId === "heranca2" ||
+              skillId === "heranca3"
+            ){
+              continue;
+            }
+
+
           const skill = habilidadesDB[categoria][sub][skillId];
 
           // Não mostrar skills que o jogador já possui

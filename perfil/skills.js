@@ -1,7 +1,15 @@
 import {
   ref,
-  get
+  get,
+  onValue,
+  off
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+let playerRef = null;
+let playerCallback = null;
+
+let habilidadesRef = null;
+let habilidadesCallback = null;
 
 const container = document.getElementById("skills-container");
 
@@ -176,21 +184,27 @@ function initSkills() {
       return;
     }
 
-    const playerSnap =
-      await get(ref(db, `players/${user.uid}`));
+   if (playerRef && playerCallback) {
+    off(playerRef, "value", playerCallback);
+  }
 
-    const habSnap =
-      await get(ref(db, `habilidades`));
+  if (habilidadesRef && habilidadesCallback) {
+    off(habilidadesRef, "value", habilidadesCallback);
+  }
 
-    if (!playerSnap.exists() || !habSnap.exists()) {
+  playerRef = ref(db, `players/${user.uid}`);
+  habilidadesRef = ref(db, "habilidades");
+
+  playerCallback = onValue(playerRef, (snapshot) => {
+
+    if (!snapshot.exists()) {
       list.innerHTML = "Nenhuma habilidade encontrada.";
       return;
     }
 
-    const player = playerSnap.val();
+    const player = snapshot.val();
 
     playerSkills = player.skills || {};
-    habilidadesDB = habSnap.val();
 
     const points = player.points || {};
 
@@ -200,29 +214,53 @@ function initSkills() {
     usedEl.innerText =
       points["skill-used"] || 0;
 
-    if (categorySelect) {
-
-      categorySelect.innerHTML =
-        `<option value="all">Todas Categorias</option>`;
-
-      for (const categoria in habilidadesDB) {
-
-        categorySelect.innerHTML += `
-          <option value="${categoria}">
-            ${categoria}
-          </option>
-        `;
-      }
-    }
-
     renderSkills();
   });
+
+habilidadesCallback = onValue(habilidadesRef, (snapshot) => {
+
+  if (!snapshot.exists()) return;
+
+  habilidadesDB = snapshot.val();
+
+  if (categorySelect && categorySelect.options.length <= 1) {
+
+    categorySelect.innerHTML =
+      `<option value="all">Todas Categorias</option>`;
+
+    for (const categoria in habilidadesDB) {
+      categorySelect.innerHTML += `
+        <option value="${categoria}">
+          ${categoria}
+        </option>
+      `;
+    }
+  }
+
+  renderSkills();
+});
+    
+}); // <-- fecha o newBtn.addEventListener aqui
 
   categorySelect?.addEventListener("change", renderSkills);
 
   closeBtn?.addEventListener("click", () => {
+
     modal.style.display = "none";
+
+    if (playerRef && playerCallback) {
+      off(playerRef, "value", playerCallback);
+      playerRef = null;
+      playerCallback = null;
+    }
+
+    if (habilidadesRef && habilidadesCallback) {
+      off(habilidadesRef, "value", habilidadesCallback);
+      habilidadesRef = null;
+      habilidadesCallback = null;
+    }
   });
-}
+
+  } // <-- fecha initSkills()
 
 loadSkillsHTML();

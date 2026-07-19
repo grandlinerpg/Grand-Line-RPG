@@ -92,40 +92,6 @@ Carregando...
 <div id="perfil-alter-container"></div>
 
 
-<script type="module">
-
-import {
-  initPerfilAlter
-} from "./perfil/perfil-alter.js";
-
-
-async function carregarPerfilAlter(){
-
-  const res = await fetch("./perfil/perfil-alter.html");
-
-  const html = await res.text();
-
-  document
-  .getElementById("perfil-alter-container")
-  .innerHTML = html;
-
-
-  initPerfilAlter();
-
-
-  console.log(
-    "Perfil alter:",
-    window.abrirPerfilAlter
-  );
-
-}
-
-
-carregarPerfilAlter();
-
-</script>
-
-
 <script type="module" src="faccao.js"></script>
 
 

@@ -67,7 +67,7 @@ getAuth(app);
 const db =
 getDatabase(app);
 
-
+window.db = db;
 
 // ======================
 // IMAGEM PERSONAGEM

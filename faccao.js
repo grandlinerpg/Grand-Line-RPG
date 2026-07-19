@@ -398,7 +398,19 @@ async function carregarPerfilAlter(){
 
 async function iniciar(){
 
-  await carregarPerfilAlter();
+  try{
+
+    await carregarPerfilAlter();
+
+  }catch(e){
+
+    console.log(
+      "Erro ao carregar perfil alter:",
+      e
+    );
+
+  }
+
 
   startAuth();
 

@@ -516,7 +516,6 @@
   font-family:'Cinzel', serif;
   font-size:14px;
   font-weight:bold;
-  margin-right:8px; /* 🔥 isso impede colar no botão */
 }
 
 .market-buy-quantity{
@@ -524,6 +523,7 @@
   align-items:center;
   gap:10px;
   margin-top:0px;
+  margin-right:8px; /* 🔥 isso impede colar no botão */
 }
 
 

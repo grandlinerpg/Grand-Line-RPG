@@ -17,7 +17,9 @@ import {
   onValue
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-
+import {
+  initPerfilAlter
+} from "./perfil/perfil-alter.js";
 
 // ======================
 // FIREBASE CONFIG
@@ -368,10 +370,39 @@ async function startAuth(){
 
 }
 
+async function carregarPerfilAlter(){
 
+  const res = await fetch("./perfil/perfil-alter.html");
+
+  const html = await res.text();
+
+
+  document
+  .getElementById("perfil-alter-container")
+  .innerHTML = html;
+
+
+  initPerfilAlter();
+
+
+  console.log(
+    "Perfil alter:",
+    window.abrirPerfilAlter
+  );
+
+}
 
 // ======================
 // START
 // ======================
 
-startAuth();
+async function iniciar(){
+
+  await carregarPerfilAlter();
+
+  startAuth();
+
+}
+
+
+iniciar();

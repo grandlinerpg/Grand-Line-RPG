@@ -373,7 +373,7 @@ function initMarket() {
       const nomeJogador = await getNomeJogador(marketItem.jogador);
 
       sellerText.innerText =
-        `Anunciado por ${marketItem.jogador || "Jogador"}`;
+        `Anunciado por ${marketItem.nomeJogador || "Jogador"}`;
 
     }
 

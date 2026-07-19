@@ -1,7 +1,15 @@
 import {
   ref,
-  get
+  get,
+  onValue,
+  off
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+let playerRef = null;
+let playerCallback = null;
+
+let habilidadesRef = null;
+let habilidadesCallback = null;
 
 const container =
   document.getElementById("skills-container");
@@ -279,79 +287,98 @@ function initMarketSkills() {
     }
 
 
-    const playerSnap =
-      await get(ref(db, `players/${user.uid}`));
-    const snap =
-      await get(ref(db, "habilidades"));
-
-    if (!snap.exists() || !playerSnap.exists()) {
-      list.innerHTML = "Nenhuma habilidade encontrada.";
-      return;
+    if (playerRef && playerCallback) {
+        off(playerRef, "value", playerCallback);
     }
 
-    const player = playerSnap.val();
-    playerSkills.clear();
-
-    if (player?.skills) {
-
-      Object.keys(player.skills).forEach(id => {
-        playerSkills.add(id);
-      });
-
+    if (habilidadesRef && habilidadesCallback) {
+        off(habilidadesRef, "value", habilidadesCallback);
     }
 
-    const normalize = (str) =>
-      (str || "")
-        .toString()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g,"-");
+    playerRef = ref(db, `players/${user.uid}`);
+    habilidadesRef = ref(db, "habilidades");
 
-    // 🔥 MAPEAMENTO CORRETO POR TIPO
-    playerMap = {
+    playerCallback = onValue(playerRef, async (snapshot) => {
 
-      "estilo-de-luta":
-        await getHabilidadesComHeranca(
-          "estilo-de-luta",
-          player?.character?.style
-        ),
+      if (!snapshot.exists()) return;
 
-      "raça/tribo":
-        await getHabilidadesComHeranca(
-          "raça/tribo",
-          player?.character?.race
-        ),
+      const player = snapshot.val();
 
-      "akuma-no-mi":
-        await getHabilidadesComHeranca(
-          "akuma-no-mi",
-          player?.character?.fruit
-        )
+      playerSkills.clear();
 
-    };
+      if (player.skills) {
+        Object.keys(player.skills).forEach(id => {
+          playerSkills.add(id);
+        });
+      }
 
-    habilidadesDB = snap.val();
+      playerMap = {
 
-    categorySelect.innerHTML =
-      `<option value="all">Todas Categorias</option>`;
+        "estilo-de-luta":
+          await getHabilidadesComHeranca(
+            "estilo-de-luta",
+            player.character?.style
+          ),
 
-    for (const categoria in habilidadesDB) {
-      categorySelect.innerHTML += `
-        <option value="${categoria}">
-          ${categoria}
-        </option>
-      `;
-    }
+        "raça/tribo":
+          await getHabilidadesComHeranca(
+            "raça/tribo",
+            player.character?.race
+          ),
 
-    renderSkills();
+        "akuma-no-mi":
+          await getHabilidadesComHeranca(
+            "akuma-no-mi",
+            player.character?.fruit
+          )
+
+      };
+
+      renderSkills();
+
+    });
+
+    habilidadesCallback = onValue(habilidadesRef, (snapshot) => {
+
+      if (!snapshot.exists()) return;
+
+      habilidadesDB = snapshot.val();
+
+      categorySelect.innerHTML =
+        `<option value="all">Todas Categorias</option>`;
+
+      for (const categoria in habilidadesDB) {
+        categorySelect.innerHTML += `
+          <option value="${categoria}">
+            ${categoria}
+          </option>
+        `;
+      }
+
+      renderSkills();
+
+    });
+  
   });
 
   categorySelect?.addEventListener("change", renderSkills);
 
   closeBtn?.addEventListener("click", () => {
+
     modal.style.display = "none";
+
+    if (playerRef && playerCallback) {
+      off(playerRef, "value", playerCallback);
+      playerRef = null;
+      playerCallback = null;
+    }
+
+    if (habilidadesRef && habilidadesCallback) {
+      off(habilidadesRef, "value", habilidadesCallback);
+      habilidadesRef = null;
+      habilidadesCallback = null;
+    }  
+
   });
 }
 

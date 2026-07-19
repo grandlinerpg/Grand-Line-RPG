@@ -88,7 +88,6 @@ Carregando...
 
 </main>
 
-
 <!-- WINDOW PERFIL ALTER -->
 <div id="perfil-alter-container"></div>
 
@@ -114,9 +113,10 @@ async function carregarPerfilAlter(){
   initPerfilAlter();
 
 
-  // só carrega a facção depois do perfil estar pronto
-  await import("./faccao.js");
-
+  console.log(
+    "Perfil alter:",
+    window.abrirPerfilAlter
+  );
 
 }
 
@@ -124,6 +124,10 @@ async function carregarPerfilAlter(){
 carregarPerfilAlter();
 
 </script>
+
+
+<script type="module" src="faccao.js"></script>
+
 
 <script>
 

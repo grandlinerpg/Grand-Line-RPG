@@ -19,7 +19,7 @@ import {
 
 import {
   initPerfilAlter
-} from "./perfil/perfil-alter.js";
+} from "./perfil-alter.js";
 
 // ======================
 // FIREBASE CONFIG

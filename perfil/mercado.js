@@ -263,7 +263,10 @@ function initMarket() {
         for (const id in itensDB[cat]) {
 
           if (itensDB[cat][id].nome === itemId) {
-            itemData = itensDB[cat][id];
+            itemData = {
+              ...itensDB[cat][id],
+              idItem: id
+            };
             break;
           }
         }
@@ -295,7 +298,7 @@ function initMarket() {
       div.onclick = () => openItem({
         marketId,
         nome: itemData.nome,
-        idItem: item.id,
+        idItem: itemData.idItem,
         descricao: itemData.description,
         img: itemData.img,
         value,

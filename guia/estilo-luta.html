@@ -192,21 +192,50 @@ img:s["img-alter"]
 
 });
 
+
+
 renderizar();
 
 
 }
 
+
+
+
+
 function renderizar(){
+
+
 list.innerHTML="";
+
+
+
 for(let t=1;t<=5;t++){
+
+
+
 const sep=document.createElement("div");
+
 sep.className="tier-sep";
+
 sep.innerHTML=`<img src="${tiersImg[t]}">`;
+
 list.appendChild(sep);
+
+
+
+
+
 styles.filter(s=>s.t===t).forEach(s=>{
+
+
+
 const item=document.createElement("div");
+
 item.className="item";
+
+
+
 item.innerHTML=`
 
 <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${s.img}.jpg">
@@ -215,26 +244,105 @@ item.innerHTML=`
 
 `;
 
+
+
 item.onclick=()=>openModal(s);
+
+
+
 list.appendChild(item);
+
+
+
 });
+
+
 }
+
+
 }
+
+
+
 
 function openModal(s){
 
+
+
 document.getElementById("modal").style.display="flex";
+
+
 
 document.getElementById("m-title").innerText=s.n;
 
+
+
 document.getElementById("m-desc").innerText=s.d;
 
+
+
 document.getElementById("m-tier-img").src=tiersImg[s.t];
+
+
 
 document.getElementById("m-img").src=
 
 "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/"+s.img+".jpg";
 
+
+
+
+
 document.getElementById("m-btn").onclick=()=>{
 
-abrirHabilid
+abrirHabilidades(s.n);
+
+};
+
+
+
+}
+
+
+
+
+
+window.closeModal=function(){
+
+document.getElementById("modal").style.display="none";
+
+}
+
+
+
+
+
+window.voltar=function(){
+
+history.back();
+
+}
+
+
+
+
+
+carregarEstilos();
+
+
+
+</script>
+
+
+
+<script type="module" src="../perfil/card.js"></script>
+
+<script type="module" src="../perfil/ficha.js"></script>
+
+<script type="module" src="habilidades.js"></script>
+
+
+
+</body>
+
+</html>

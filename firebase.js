@@ -90,9 +90,9 @@ window.register = async function () {
       },
 
       skills: {
-        esquiva: {
-          categoria: "gerais",
-          sub: "basic"
+        Esquiva: {
+          categoria: "Disponíveis",
+          sub: "Básicas"
         }
       },
 

@@ -228,7 +228,7 @@ function mostrarPergunta(){
 function iniciarTempo(){
 
 
-    tempo = 30;
+    tempo = 10;
 
 
     document.getElementById(

@@ -274,7 +274,7 @@ async function usarTipo2(item) {
 
   const updates = {};
 
-  const nomeLimpo = limparNome(item.nome);
+  const nomeLimpo = limparNome(item.nome, item.categoria);
 
   // =====================
   // AKUMA NO MI

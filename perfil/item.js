@@ -319,17 +319,17 @@ async function usarTipo2(item) {
   window.mostrarResultado(
     "PERSONAGEM ALTERADO!",
     `
-    ${item.categoria === "akuma no mi"
+    ${item.categoria === "Akuma no Mi"
       ? `Você despertou o poder da <b>${nomeLimpo}</b>.`
       : ""
     }
 
-    ${item.categoria === "fator de linhagem"
+    ${item.categoria === "Fator de Linhagem"
       ? `Seu fator de linhagem foi reescrito para <b>${nomeLimpo}</b>.`
       : ""
     }
 
-    ${item.categoria === "pergaminho de ensinamento"
+    ${item.categoria === "Pergaminho de Ensinamento"
       ? `Você alterou o seu estilo de luta para <b>${nomeLimpo}</b>.`
       : ""
     }
@@ -372,7 +372,7 @@ function usarTipo3(item) {
     // PEGA BAÚ
     // =====================
     const bauRef =
-      ref(db, `itens/baus/${item.id}`);
+      ref(db, `itens/Baú do Tesouro/${item.id}`);
 
     const snap = await get(bauRef);
 

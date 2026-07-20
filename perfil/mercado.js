@@ -260,9 +260,12 @@ function initMarket() {
       for (const cat in itensDB) {
         if (filter !== "all" && cat !== filter) continue;
 
-        if (itensDB[cat][itemId]) {
-          itemData = itensDB[cat][itemId];
-          break;
+        for (const id in itensDB[cat]) {
+
+          if (itensDB[cat][id].nome === itemId) {
+            itemData = itensDB[cat][id];
+            break;
+          }
         }
       }
 

@@ -314,21 +314,21 @@ function initMarketSkills() {
 
       playerMap = {
 
-        "estilo-de-luta":
+        "Estilo de Luta":
           await getHabilidadesComHeranca(
-            "estilo-de-luta",
+            "Estilo de Luta",
             player.character?.style
           ),
 
-        "raça/tribo":
+        "Raças":
           await getHabilidadesComHeranca(
-            "raça/tribo",
+            "Raças",
             player.character?.race
           ),
 
-        "akuma-no-mi":
+        "Akuma no Mi":
           await getHabilidadesComHeranca(
-            "akuma-no-mi",
+            "Akuma no Mi",
             player.character?.fruit
           )
 

@@ -1,244 +1,127 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<script type="module">
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getDatabase,ref,get}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  <title>Estilo de Luta - Grand Line RPG</title>
-  
-  <link rel="stylesheet" href="../style.css">
-  <link rel="stylesheet" href="../guia.css">
-  <link rel="stylesheet" href="estilo-luta.css">
-  <link rel="stylesheet" href="../perfil/inventario.css">
-  <link rel="stylesheet" href="../perfil/skills.css">
-  <link rel="stylesheet" href="../perfil/ficha.css">
-  <link rel="stylesheet" href="../perfil/card.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
-</head>
+const firebaseConfig={
+apiKey:"AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+authDomain:"grand-line-rpg-dcda9.firebaseapp.com",
+projectId:"grand-line-rpg-dcda9",
+storageBucket:"grand-line-rpg-dcda9.appspot.com",
+messagingSenderId:"172042779786",
+appId:"1:172042779786:web:ecdff9eaf4fee36eca8173",
+databaseURL:"https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+};
 
-<body>
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
 
-  <div class="background"></div>
-  <div class="overlay"></div>
+const tiersImg={
+1:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
+2:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
+3:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
+4:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
+5:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
+};
 
-  <header class="navbar">
+const list=document.getElementById("list");
+let styles=[];
 
-    <div class="logo-area">
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+async function carregarRacas(){
 
-      <div class="logo-text">
-        <h1>GRAND LINE</h1>
-        <p>— RPG —</p>
-      </div>
-    </div>
+const snap=await get(ref(db,"itens/Fator de Linhagem"));
 
-    <nav>
-      <a href="#" onclick="voltar()">VOLTAR</a>
-      <a href="guia.html">GUIA</a>
-    </nav>
+if(!snap.exists())return;
 
-  </header>
+const data=snap.val();
 
-  <section class="guide-title">
-    <h1>ESTILO DE LUTA</h1>
-    <p>O estilo de luta é a maneira como o personagem enfrenta o combate.</p>
-  </section>
+styles=Object.keys(data).map(key=>{
 
-  <main id="list"></main>
+const raca=data[key];
 
-  <div id="modal" class="modal">
-    <div class="modal-content">
+return{
+n:key,
+t:Number(raca.tier),
+d:raca["description-alter"],
+img:raca["img-alter"]
+};
 
-      <button
-        class="close-item-x"
-        onclick="closeModal()"
-      >
-        ×
-      </button>
-      
-      <img id="m-img" class="modal-img">
+});
 
-      <h2 id="m-title"></h2>
-      <p id="m-tier-text"></p>
+renderizar();
 
-      <p id="m-desc"></p>
+}
 
-      <img id="m-tier-img" class="modal-tier-img">
+function renderizar(){
 
-      <button id="m-btn">VER HABILIDADES</button>
+list.innerHTML="";
 
-    </div>
-  </div>
+for(let t=1;t<=5;t++){
 
-  <div id="habilidades-container"></div>
-  <div id="ficha-container"></div>
-  <div id="card-container"></div>
+const sep=document.createElement("div");
+sep.className="tier-sep";
+sep.innerHTML=`<img src="${tiersImg[t]}">`;
+list.appendChild(sep);
 
-  <script>
+styles.filter(s=>s.t===t).forEach(s=>{
 
-    const tiersImg = {
-      1: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
-      2: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
-      3: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
-      4: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
-      5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
-    };
+const item=document.createElement("div");
+item.className="item";
 
-    const styles = [
+item.innerHTML=`
+<img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${s.img}.jpg">
+<span>${s.n}</span>
+`;
 
-  {
-    n:"Humano",
-    t:1,
-    d:"Esquecidos e abandonados pela criação, tiveram de se adaptar às circunstâncias e acabaram, inesperadamente, se tornando a mais numerosa raça do planeta."
-  },
+item.onclick=()=>openModal(s);
 
-  {
-    n:"Anão",
-    t:2,
-    d:"Em comparação com um humano de tamanho médio, a diferença de altura entre eles é aproximadamente a mesma que entre um humano de tamanho normal e um gigante de tamanho médio."
-  },
+list.appendChild(item);
 
-  {
-    n:"Braços Longos",
-    t:1,
-    d:"Indivíduos que possuem braços com duas juntas, os tornando muito mais longos que o normal."
-  },
+});
 
-  {
-    n:"Pernas Longas",
-    t:1,
-    d:"Indivíduos que possuem pernas com duas juntas, tornando-as muito mais longas que o normal."
-  },
+}
 
-  {
-    n:"Bucaneiro",
-    t:2,
-    d:"Uma raça abençoada pela natureza, mas amaldiçoada pela História. Acusados de haver cometido um pecado terrível em seu passado, foram forçados a viver ocultos do mundo."
-  },
+}
 
-  {
-    n:"Gigante",
-    t:3,
-    d:"Uma temida raça conhecida por seu principal ofício: a Arte da Guerra. Gigantes possuem tamanho extraordinário, garantindo-lhes força e resistência fora do comum."
-  },
+function openModal(s){
 
-  {
-    n:"Humano Modificado",
-    t:4,
-    d:"Humanos biologicamente aprimorados por meio de melhorias genéticas para terem características físicas incríveis."
-  },
+document.getElementById("modal").style.display="flex";
 
-  {
-    n:"Skypiean",
-    t:3,
-    d:"Os Skypieans são a raça que se estabeleceu nas ilhas do céu, sendo conhecidos como o Povo do Céu."
-  },
+document.getElementById("m-title").innerText=s.n;
 
-  {
-    n:"Mink",
-    t:3,
-    d:"A Tribo Mink é uma raça de humanoides com características mamíferas peludas que vive isolada no topo de Zou."
-  },
+document.getElementById("m-tier-img").src=tiersImg[s.t];
 
-  {
-    n:"Homem-Peixe",
-    t:3,
-    d:"Raça humanoide capaz de sobreviver tanto em terra quanto no mar. São excelentes nadadores e possuem força e resistência superiores."
-  },
+document.getElementById("m-desc").innerText=s.d;
 
-  {
-    n:"Wotan",
-    t:4,
-    d:"Os Wotans são um híbrido entre gigantes e homens-peixe."
-  },
+document.getElementById("m-img").src=
+"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/"+s.img+".jpg";
 
-  {
-    n:"Gigante Ancestral",
-    t:5,
-    d:"Uma forma ancestral dos gigantes, possuindo tamanho e força monstruosos acima dos gigantes comuns."
-  },
+document.getElementById("m-btn").onclick=()=>{
 
-  {
-    n:"Lunarian",
-    t:5,
-    d:"Uma tribo de indivíduos alados capazes de criar e controlar fogo, conhecidos como monstros capazes de sobreviver em qualquer ambiente natural."
-  },
+abrirHabilidades(s.n);
 
-  {
-    n:"Membros Longos",
-    t:2,
-    d:"Uma raça híbrida nascida da união entre uma Perna Longa e um Braço Longo, possuindo os atributos de ambos."
-  }
+};
 
-];
+}
 
-    const list = document.getElementById("list");
+window.closeModal=function(){
+document.getElementById("modal").style.display="none";
+}
 
-    function slug(name){
-      return name.toLowerCase().replace(/ /g,'-');
-    }
+window.closeHabilidades=function(){
 
-    for(let t=1;t<=5;t++){
+document.getElementById("habilidades-container").innerHTML="";
 
-      const sep = document.createElement("div");
-      sep.className = "tier-sep";
-      sep.innerHTML = `<img src="${tiersImg[t]}">`;
-      list.appendChild(sep);
+const modal=document.getElementById("habilidades-modal");
 
-      styles.filter(s => s.t === t).forEach(s => {
+if(modal)modal.style.display="none";
 
-        const item = document.createElement("div");
-        item.className = "item";
+}
 
-        item.innerHTML = `
-          <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${slug(s.n)}.jpg">
-          <span>${s.n}</span>
-        `;
+window.voltar=function(){
+history.back();
+}
 
-        item.onclick = () => openModal(s);
+carregarRacas();
 
-        list.appendChild(item);
-      });
-    }
-
-    function openModal(s){
-
-      document.getElementById("modal").style.display = "flex";
-
-      document.getElementById("m-title").innerText = s.n;
-      document.getElementById("m-tier-img").src = tiersImg[s.t];
-      document.getElementById("m-desc").innerText = s.d;
-
-      document.getElementById("m-img").src =
-        "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
-
-      // 🔥 SÓ ISSO FOI CORRIGIDO
-      document.getElementById("m-btn").onclick = () => {
-
-         abrirHabilidades(s.n);
-
-      };
-    }
-
-    function closeModal(){
-      document.getElementById("modal").style.display = "none";
-    }
-
-    function closeHabilidades(){
-      document.getElementById("habilidades-modal").style.display = "none";
-      document.getElementById("habilidades-container").innerHTML = "";
-    }
-
-    function voltar(){
-      history.back();
-    }
-
-  </script>
-
-  <script type="module" src="../perfil/card.js"></script>
-  <script type="module" src="../perfil/ficha.js"></script>
-  <script type="module" src="habilidades.js"></script>
-
-</body>
-</html>
+</script>

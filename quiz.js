@@ -46,6 +46,11 @@ let pontos = 0;
 
 let bloqueado = false;
 
+let tempo = 10;
+
+let intervaloTempo;
+
+
 
 // =========================
 // CARREGAR QUIZ
@@ -66,7 +71,6 @@ async function carregarQuiz(){
 
         for(let caminho of caminhos){
 
-
             const snapshot = await get(
                 ref(db,caminho)
             );
@@ -74,21 +78,16 @@ async function carregarQuiz(){
 
             if(snapshot.exists()){
 
-
                 const dados = snapshot.val();
 
 
                 Object.values(dados).forEach(pergunta=>{
 
-
                     perguntas.push(pergunta);
-
 
                 });
 
-
             }
-
 
         }
 
@@ -114,6 +113,7 @@ async function carregarQuiz(){
 }
 
 
+
 // =========================
 // INICIAR QUIZ
 // =========================
@@ -137,8 +137,6 @@ function iniciarQuiz(){
     );
 
 
-    // somente 10 perguntas
-
     perguntas = perguntas.slice(0,10);
 
 
@@ -152,8 +150,8 @@ function iniciarQuiz(){
 
     mostrarPergunta();
 
-
 }
+
 
 
 // =========================
@@ -161,6 +159,9 @@ function iniciarQuiz(){
 // =========================
 
 function mostrarPergunta(){
+
+
+    clearInterval(intervaloTempo);
 
 
     const pergunta = perguntas[perguntaAtual];
@@ -196,15 +197,12 @@ function mostrarPergunta(){
 
     respostas.forEach(botao=>{
 
-
         botao.classList.remove(
             "correct",
             "wrong"
         );
 
-
         botao.disabled = false;
-
 
     });
 
@@ -216,11 +214,116 @@ function mostrarPergunta(){
 
 
 
+    iniciarTempo();
+
+
 }
 
 
+
 // =========================
-// EVENTOS DOS BOTÕES
+// CRONÔMETRO
+// =========================
+
+function iniciarTempo(){
+
+
+    tempo = 30;
+
+
+    document.getElementById(
+        "time"
+    ).textContent = tempo;
+
+
+
+    intervaloTempo = setInterval(()=>{
+
+
+        tempo--;
+
+
+        document.getElementById(
+            "time"
+        ).textContent = tempo;
+
+
+
+        if(tempo <= 0){
+
+
+            clearInterval(intervaloTempo);
+
+
+            tempoAcabou();
+
+
+        }
+
+
+    },1000);
+
+
+}
+
+
+
+// =========================
+// TEMPO ESGOTOU
+// =========================
+
+function tempoAcabou(){
+
+
+    if(bloqueado) return;
+
+
+    bloqueado = true;
+
+
+    const pergunta = perguntas[perguntaAtual];
+
+
+    const letras = [
+        "a",
+        "b",
+        "c",
+        "d"
+    ];
+
+
+    const botoes = document.querySelectorAll(
+        ".answer"
+    );
+
+
+    const correta =
+        letras.indexOf(
+            pergunta.correta
+        );
+
+
+    botoes[correta].classList.add(
+        "correct"
+    );
+
+
+
+    setTimeout(()=>{
+
+
+        proximaPergunta();
+
+
+    },1000);
+
+
+}
+
+
+
+// =========================
+// EVENTOS
 // =========================
 
 function adicionarEventos(){
@@ -238,10 +341,12 @@ function adicionarEventos(){
             "click",
             ()=>{
 
+
                 verificarResposta(
                     botao,
                     index
                 );
+
 
             }
         );
@@ -251,6 +356,7 @@ function adicionarEventos(){
 
 
 }
+
 
 
 // =========================
@@ -267,6 +373,10 @@ function verificarResposta(
 
 
     bloqueado = true;
+
+
+    clearInterval(intervaloTempo);
+
 
 
     const pergunta = perguntas[perguntaAtual];
@@ -328,27 +438,7 @@ function verificarResposta(
     setTimeout(()=>{
 
 
-        perguntaAtual++;
-
-
-        if(
-            perguntaAtual < perguntas.length
-        ){
-
-
-            mostrarPergunta();
-
-
-        }else{
-
-
-            finalizarQuiz();
-
-
-        }
-
-
-        bloqueado = false;
+        proximaPergunta();
 
 
     },1000);
@@ -358,11 +448,49 @@ function verificarResposta(
 }
 
 
+
+// =========================
+// PRÓXIMA
+// =========================
+
+function proximaPergunta(){
+
+
+    perguntaAtual++;
+
+
+    if(
+        perguntaAtual < perguntas.length
+    ){
+
+        mostrarPergunta();
+
+
+    }else{
+
+
+        finalizarQuiz();
+
+
+    }
+
+
+    bloqueado = false;
+
+
+}
+
+
+
 // =========================
 // FINAL
 // =========================
 
 function finalizarQuiz(){
+
+
+    clearInterval(intervaloTempo);
+
 
 
     document.querySelector(
@@ -394,6 +522,7 @@ function finalizarQuiz(){
 
 
 }
+
 
 
 // =========================

@@ -135,7 +135,7 @@ async function adicionarItem(itemId) {
 function limparNome(nome, categoria) {
 
   // Pergaminhos
-  if (categoria === "pergaminho de ensinamento") {
+  if (categoria === "Pergaminho de Ensinamento") {
 
     return nome
       .replace(/^Pergaminho do\s+/i, "")

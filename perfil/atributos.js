@@ -69,6 +69,7 @@ fetch("perfil/atributos.html")
           if (!snap.exists()) return;
 
           const data = snap.val();
+          window.playerData = data;
           const stats = data.stats || {};
 
           set(
@@ -91,14 +92,23 @@ fetch("perfil/atributos.html")
             attrImg.src = mainImg.src;
         }
 
+        if(attrImg){
+
+          attrImg.style.cursor = "pointer";
+
+          attrImg.onclick = ()=>{
+  
+              if(window.playerData){
+
+                  abrirPersonagem(window.playerData);
+
+                }
+
+             };
+
+          }
+
         });
-
-        const mainImg = document.getElementById("char-img");
-        const attrImg = document.getElementById("attr-char-img");
-
-        if (mainImg && attrImg) {
-          attrImg.src = mainImg.src;
-        }
 
       });
 

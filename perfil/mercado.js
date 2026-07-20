@@ -122,7 +122,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     const invSnap = await get(invRef);
     const invData = invSnap.exists() ? invSnap.val() : {};
 
-    const itemKey = data.nome;
+    const itemKey = data.idItem;
 
     const atualQty = Number(invData?.[itemKey] || 0);
     const finalQty = atualQty + qtdFinal;
@@ -295,6 +295,7 @@ function initMarket() {
       div.onclick = () => openItem({
         marketId,
         nome: itemData.nome,
+        idItem: item.id,
         descricao: itemData.description,
         img: itemData.img,
         value,

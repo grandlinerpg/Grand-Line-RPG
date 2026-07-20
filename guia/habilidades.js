@@ -48,15 +48,6 @@ async function carregarHabilidadesHTML(){
 carregarHabilidadesHTML();
 
 
-function slug(name){
-
-  return name
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g,"");
-
-}
-
-
 async function getEstilo(key){
 
   let snap =
@@ -157,7 +148,7 @@ window.abrirHabilidades = async function(estiloNome){
   try{
 
     const key =
-    slug(estiloNome);
+    estiloNome;
 
     let todasSkills=[];
 

@@ -34,6 +34,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 
+
 // =========================
 // VARIÁVEIS
 // =========================
@@ -46,7 +47,7 @@ let pontos = 0;
 
 let bloqueado = false;
 
-let tempo = 10;
+let tempo = 30;
 
 let intervaloTempo;
 
@@ -60,6 +61,7 @@ async function carregarQuiz(){
 
     try{
 
+
         const caminhos = [
 
             "quiz/facil",
@@ -69,7 +71,9 @@ async function carregarQuiz(){
         ];
 
 
+
         for(let caminho of caminhos){
+
 
             const snapshot = await get(
                 ref(db,caminho)
@@ -78,22 +82,28 @@ async function carregarQuiz(){
 
             if(snapshot.exists()){
 
+
                 const dados = snapshot.val();
 
 
                 Object.values(dados).forEach(pergunta=>{
 
+
                     perguntas.push(pergunta);
+
 
                 });
 
+
             }
+
 
         }
 
 
+
         console.log(
-            "Perguntas carregadas:",
+            "Perguntas:",
             perguntas
         );
 
@@ -101,10 +111,11 @@ async function carregarQuiz(){
         iniciarQuiz();
 
 
+
     }catch(error){
 
         console.error(
-            "Erro ao carregar quiz:",
+            "Erro Firebase:",
             error
         );
 
@@ -115,7 +126,7 @@ async function carregarQuiz(){
 
 
 // =========================
-// INICIAR QUIZ
+// INICIAR
 // =========================
 
 function iniciarQuiz(){
@@ -124,7 +135,7 @@ function iniciarQuiz(){
     if(perguntas.length === 0){
 
         console.log(
-            "Nenhuma pergunta encontrada"
+            "Sem perguntas"
         );
 
         return;
@@ -132,17 +143,21 @@ function iniciarQuiz(){
     }
 
 
+
     perguntas.sort(
-        ()=> Math.random() - 0.5
+        ()=>Math.random()-0.5
     );
 
 
     perguntas = perguntas.slice(0,10);
 
 
+
     document.getElementById(
         "total-questions"
-    ).textContent = perguntas.length;
+    ).textContent =
+    perguntas.length;
+
 
 
     adicionarEventos();
@@ -150,12 +165,14 @@ function iniciarQuiz(){
 
     mostrarPergunta();
 
+
+
 }
 
 
 
 // =========================
-// MOSTRAR PERGUNTA
+// MOSTRAR QUESTÃO
 // =========================
 
 function mostrarPergunta(){
@@ -164,45 +181,49 @@ function mostrarPergunta(){
     clearInterval(intervaloTempo);
 
 
-    const pergunta = perguntas[perguntaAtual];
+
+    const pergunta =
+        perguntas[perguntaAtual];
+
 
 
     document.getElementById(
         "question-text"
-    ).textContent = pergunta.pergunta;
+    ).textContent =
+    pergunta.pergunta;
 
 
 
-    const respostas = document.querySelectorAll(
-        ".answer"
-    );
+    const botoes =
+        document.querySelectorAll(".answer");
 
 
-    respostas[0].textContent =
+
+    botoes[0].textContent =
         "A) " + pergunta.a;
 
-
-    respostas[1].textContent =
+    botoes[1].textContent =
         "B) " + pergunta.b;
 
-
-    respostas[2].textContent =
+    botoes[2].textContent =
         "C) " + pergunta.c;
 
-
-    respostas[3].textContent =
+    botoes[3].textContent =
         "D) " + pergunta.d;
 
 
 
-    respostas.forEach(botao=>{
+    botoes.forEach(botao=>{
+
 
         botao.classList.remove(
             "correct",
             "wrong"
         );
 
+
         botao.disabled = false;
+
 
     });
 
@@ -210,11 +231,13 @@ function mostrarPergunta(){
 
     document.getElementById(
         "current-question"
-    ).textContent = perguntaAtual + 1;
+    ).textContent =
+    perguntaAtual + 1;
 
 
 
     iniciarTempo();
+
 
 
 }
@@ -222,22 +245,24 @@ function mostrarPergunta(){
 
 
 // =========================
-// CRONÔMETRO
+// TEMPO
 // =========================
 
 function iniciarTempo(){
 
 
-    tempo = 10;
+    tempo = 30;
 
 
     document.getElementById(
         "time"
-    ).textContent = tempo;
+    ).textContent =
+    tempo;
 
 
 
-    intervaloTempo = setInterval(()=>{
+    intervaloTempo =
+    setInterval(()=>{
 
 
         tempo--;
@@ -245,7 +270,8 @@ function iniciarTempo(){
 
         document.getElementById(
             "time"
-        ).textContent = tempo;
+        ).textContent =
+        tempo;
 
 
 
@@ -264,24 +290,30 @@ function iniciarTempo(){
     },1000);
 
 
+
 }
 
 
 
 // =========================
-// TEMPO ESGOTOU
+// TEMPO ESGOTADO
 // =========================
 
 function tempoAcabou(){
 
 
-    if(bloqueado) return;
+    if(bloqueado)
+        return;
+
 
 
     bloqueado = true;
 
 
-    const pergunta = perguntas[perguntaAtual];
+
+    const pergunta =
+        perguntas[perguntaAtual];
+
 
 
     const letras = [
@@ -292,18 +324,17 @@ function tempoAcabou(){
     ];
 
 
-    const botoes = document.querySelectorAll(
-        ".answer"
-    );
+
+    const botoes =
+        document.querySelectorAll(".answer");
 
 
-    const correta =
+
+    botoes[
         letras.indexOf(
             pergunta.correta
-        );
-
-
-    botoes[correta].classList.add(
+        )
+    ].classList.add(
         "correct"
     );
 
@@ -315,7 +346,9 @@ function tempoAcabou(){
         proximaPergunta();
 
 
+
     },1000);
+
 
 
 }
@@ -329,9 +362,9 @@ function tempoAcabou(){
 function adicionarEventos(){
 
 
-    const botoes = document.querySelectorAll(
-        ".answer"
-    );
+    const botoes =
+        document.querySelectorAll(".answer");
+
 
 
     botoes.forEach((botao,index)=>{
@@ -360,7 +393,7 @@ function adicionarEventos(){
 
 
 // =========================
-// VERIFICAR RESPOSTA
+// RESPOSTA
 // =========================
 
 function verificarResposta(
@@ -369,7 +402,9 @@ function verificarResposta(
 ){
 
 
-    if(bloqueado) return;
+    if(bloqueado)
+        return;
+
 
 
     bloqueado = true;
@@ -379,7 +414,9 @@ function verificarResposta(
 
 
 
-    const pergunta = perguntas[perguntaAtual];
+    const pergunta =
+        perguntas[perguntaAtual];
+
 
 
     const letras = [
@@ -390,14 +427,14 @@ function verificarResposta(
     ];
 
 
+
     const resposta =
         letras[index];
 
 
 
-    const botoes = document.querySelectorAll(
-        ".answer"
-    );
+    const botoes =
+        document.querySelectorAll(".answer");
 
 
 
@@ -412,6 +449,7 @@ function verificarResposta(
         pontos++;
 
 
+
     }else{
 
 
@@ -420,13 +458,12 @@ function verificarResposta(
         );
 
 
-        const correta =
+
+        botoes[
             letras.indexOf(
                 pergunta.correta
-            );
-
-
-        botoes[correta].classList.add(
+            )
+        ].classList.add(
             "correct"
         );
 
@@ -439,6 +476,7 @@ function verificarResposta(
 
 
         proximaPergunta();
+
 
 
     },1000);
@@ -459,11 +497,12 @@ function proximaPergunta(){
     perguntaAtual++;
 
 
-    if(
-        perguntaAtual < perguntas.length
-    ){
+
+    if(perguntaAtual < perguntas.length){
+
 
         mostrarPergunta();
+
 
 
     }else{
@@ -472,10 +511,13 @@ function proximaPergunta(){
         finalizarQuiz();
 
 
+
     }
 
 
+
     bloqueado = false;
+
 
 
 }
@@ -493,32 +535,49 @@ function finalizarQuiz(){
 
 
 
-    document.querySelector(
-        ".quiz-box"
-    ).innerHTML = `
+    const exp =
+        pontos * 10;
 
 
-        <h2 class="title-center">
-            QUIZ FINALIZADO
-        </h2>
+
+    const berries =
+        pontos * 1000;
 
 
-        <p style="
-        text-align:center;
-        color:#f6d365;
-        font-family:'Cinzel';
-        font-size:20px;
-        ">
 
-        Você acertou
-        ${pontos}
-        de
-        ${perguntas.length}
-
-        </p>
+    document.getElementById(
+        "quiz-content"
+    ).style.display =
+    "none";
 
 
-    `;
+
+    document.getElementById(
+        "quiz-result"
+    ).style.display =
+    "block";
+
+
+
+    document.getElementById(
+        "result-score"
+    ).textContent =
+    `${pontos}/${perguntas.length}`;
+
+
+
+    document.getElementById(
+        "result-exp"
+    ).textContent =
+    exp;
+
+
+
+    document.getElementById(
+        "result-berries"
+    ).textContent =
+    berries;
+
 
 
 }

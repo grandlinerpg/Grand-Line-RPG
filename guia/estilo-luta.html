@@ -2,188 +2,239 @@
 <html lang="pt-br">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Estilo de Luta - Grand Line RPG</title>
-  
-  <link rel="stylesheet" href="../style.css">
-  <link rel="stylesheet" href="../guia.css">
-  <link rel="stylesheet" href="estilo-luta.css">
-  <link rel="stylesheet" href="../perfil/inventario.css">
-  <link rel="stylesheet" href="../perfil/skills.css">
-  <link rel="stylesheet" href="../perfil/ficha.css">
-  <link rel="stylesheet" href="../perfil/card.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+<title>Estilo de Luta - Grand Line RPG</title>
+
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../guia.css">
+<link rel="stylesheet" href="estilo-luta.css">
+<link rel="stylesheet" href="../perfil/inventario.css">
+<link rel="stylesheet" href="../perfil/skills.css">
+<link rel="stylesheet" href="../perfil/ficha.css">
+<link rel="stylesheet" href="../perfil/card.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
 
-  <div class="background"></div>
-  <div class="overlay"></div>
+<div class="background"></div>
+<div class="overlay"></div>
 
-  <header class="navbar">
 
-    <div class="logo-area">
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+<header class="navbar">
 
-      <div class="logo-text">
-        <h1>GRAND LINE</h1>
-        <p>— RPG —</p>
-      </div>
-    </div>
+<div class="logo-area">
 
-    <nav>
-      <a href="#" onclick="voltar()">VOLTAR</a>
-      <a href="guia.html">GUIA</a>
-    </nav>
+<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
 
-  </header>
+<div class="logo-text">
+<h1>GRAND LINE</h1>
+<p>— RPG —</p>
+</div>
 
-  <section class="guide-title">
-    <h1>ESTILO DE LUTA</h1>
-    <p>O estilo de luta é a maneira como o personagem enfrenta o combate.</p>
-  </section>
+</div>
 
-  <main id="list"></main>
 
-  <div id="modal" class="modal">
-    <div class="modal-content">
+<nav>
+<a href="#" onclick="voltar()">VOLTAR</a>
+<a href="guia.html">GUIA</a>
+</nav>
 
-      <button
-        class="close-item-x"
-        onclick="closeModal()"
-      >
-        ×
-      </button>
 
-      <img id="m-img" class="modal-img">
+</header>
 
-      <h2 id="m-title"></h2>
-      <p id="m-tier-text"></p>
 
-      <p id="m-desc"></p>
 
-      <img id="m-tier-img" class="modal-tier-img">
+<section class="guide-title">
 
-      <button id="m-btn">VER HABILIDADES</button>
+<h1>ESTILO DE LUTA</h1>
 
-    </div>
-  </div>
+<p>O estilo de luta é a maneira como o personagem enfrenta o combate.</p>
 
-  <div id="habilidades-container"></div>
-  <div id="ficha-container"></div>
-  <div id="card-container"></div>
+</section>
 
-  <script>
 
-    const tiersImg = {
-      1: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
-      2: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
-      3: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
-      4: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
-      5: "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
-    };
 
-    const styles = [
-      { n:"Akagami", t:5, d:"Garras de dragão" },
-      { n:"Arte do Clima", t:2, d:"O estilo é focado na manipulação do clima ao seu redor com o Clima-Tact. Combinado com o conhecimento de oceanografia e sistemas climáticos, esse estilo pode ser usado com efeitos devastadores." },
-      { n:"Atirador", t:1, d:"Armas de longo alcance" },
-      { n:"Black Leg", t:3, d:"Chutes poderosos" },
-      { n:"Boxeador", t:1, d:"Punhos e força bruta" },
-      { n:"Ciborgue (Battle Franky)", t:3, d:"Tecnologia e armas mecânicas" },
-      { n:"Ciborgue (Pacifista)", t:3, d:"Tecnologia e armas mecânicas" },
-      { n:"Ciborgue (Queen)", t:3, d:"Tecnologia e armas mecânicas" },
-      { n:"Circense", t:1, d:"Acrobacias e lâminas" },
-      { n:"Espadachim", t:1, d:"Mestre das espadas" },
-      { n:"Hakuba", t:3, d:"Garras de dragão" },
-      { n:"Hashoken", t:3, d:"Ondas de choque" },
-      { n:"Hipnotizador", t:3, d:"Controle mental" },
-      { n:"Jao Kun Do", t:2, d:"Chutes rápidos" },
-      { n:"Jio-Ken", t:2, d:"Golpes brutais" },
-      { n:"Lenhador", t:1, d:"Machados pesados" },
-      { n:"Músico", t:3, d:"Técnicas da Marinha" },
-      { n:"Ninjutsu", t:2, d:"Furtividade extrema" },
-      { n:"Okama Kenpo", t:1, d:"Dança de combate" },
-      { n:"Punho de Ferro", t:5, d:"Um estilo de combate brutal baseado em força física extrema e domínio avançado de Haki. O usuário canaliza sua energia nos punhos, desferindo golpes devastadores capazes de causar impactos em área." },
-      { n:"Rokushiki", t:3, d:"Técnicas da Marinha" },
-      { n:"Rokushiki (Geppo)", t:4, d:"Técnicas da Marinha" },
-      { n:"Rokushiki (Kami-e)", t:4, d:"Técnicas da Marinha" },
-      { n:"Rokushiki (Rankyaku)", t:4, d:"Técnicas da Marinha" },
-      { n:"Rokushiki (Shigan)", t:4, d:"Técnicas da Marinha" },
-      { n:"Rokushiki (Soru)", t:4, d:"Técnicas da Marinha" },
-      { n:"Rokushiki (Tekkai)", t:4, d:"Técnicas da Marinha" },
-      { n:"Rokushiki (Rokuogan)", t:5, d:"Técnicas da Marinha" },
-      { n:"Ryusoken", t:1, d:"Garras de dragão" },
-      { n:"Saikyō no Kenshi", t:4, d:"Garras de dragão" },
-      { n:"Saikyō no Otoko", t:5, d:"Armas de longo alcance" },
-      { n:"Samurai", t:3, d:"Técnicas da Marinha" },
-      { n:"Santōryū", t:4, d:"Garras de dragão" },
-      { n:"Shuron Hakke", t:5, d:"Luta bêbada" },
-      { n:"Táticas do Usopp", t:3, d:"Garras de dragão" }
-    ];
+<main id="list"></main>
 
-    const list = document.getElementById("list");
 
-    function slug(name){
-      return name.toLowerCase().replace(/ /g,'-');
-    }
 
-    for(let t=1;t<=5;t++){
+<div id="modal" class="modal">
 
-      const sep = document.createElement("div");
-      sep.className = "tier-sep";
-      sep.innerHTML = `<img src="${tiersImg[t]}">`;
-      list.appendChild(sep);
+<div class="modal-content">
 
-      styles.filter(s => s.t === t).forEach(s => {
+<button class="close-item-x" onclick="closeModal()">×</button>
 
-        const item = document.createElement("div");
-        item.className = "item";
+<img id="m-img" class="modal-img">
 
-        item.innerHTML = `
-          <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${slug(s.n)}.jpg">
-          <span>${s.n}</span>
-        `;
+<h2 id="m-title"></h2>
 
-        item.onclick = () => openModal(s);
+<p id="m-tier-text"></p>
 
-        list.appendChild(item);
-      });
-    }
+<p id="m-desc"></p>
 
-    function openModal(s){
+<img id="m-tier-img" class="modal-tier-img">
 
-      document.getElementById("modal").style.display = "flex";
+<button id="m-btn">
+VER HABILIDADES
+</button>
 
-      document.getElementById("m-title").innerText = s.n;
-      document.getElementById("m-tier-img").src = tiersImg[s.t];
-      document.getElementById("m-desc").innerText = s.d;
 
-      document.getElementById("m-img").src =
-        "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/" + slug(s.n) + ".jpg";
+</div>
 
-      // 🔥 SÓ ISSO FOI CORRIGIDO
-      document.getElementById("m-btn").onclick = () => {
+</div>
 
-        abrirHabilidades(s.n);
 
-      };
-    }
 
-    function closeModal(){
-      document.getElementById("modal").style.display = "none";
-    }
+<div id="habilidades-container"></div>
+<div id="ficha-container"></div>
+<div id="card-container"></div>
 
-    function voltar(){
-      history.back();
-    }
 
-  </script>
 
-  <script type="module" src="../perfil/card.js"></script>
-  <script type="module" src="../perfil/ficha.js"></script>
-  <script type="module" src="habilidades.js"></script>
+<script type="module">
 
-</body>
-</html>
+
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import{getDatabase,ref,get}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+
+const firebaseConfig={
+
+apiKey:"AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+
+authDomain:"grand-line-rpg-dcda9.firebaseapp.com",
+
+projectId:"grand-line-rpg-dcda9",
+
+storageBucket:"grand-line-rpg-dcda9.appspot.com",
+
+messagingSenderId:"172042779786",
+
+appId:"1:172042779786:web:ecdff9eaf4fee36eca8173",
+
+databaseURL:"https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
+};
+
+
+
+const app=initializeApp(firebaseConfig);
+
+const db=getDatabase(app);
+
+
+
+const tiersImg={
+
+1:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
+
+2:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
+
+3:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
+
+4:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
+
+5:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
+
+};
+
+
+
+const list=document.getElementById("list");
+
+let styles=[];
+
+
+
+async function carregarEstilos(){
+
+
+const snap=await get(ref(db,"itens/Estilo de Luta"));
+
+
+if(!snap.exists())return;
+
+
+
+const data=snap.val();
+
+
+
+styles=Object.keys(data)
+
+.filter(key=>data[key].tipo!==1)
+
+.map(key=>{
+
+
+let s=data[key];
+
+
+return{
+
+n:key,
+
+t:Number(s.tier),
+
+d:s["description-alter"],
+
+img:s["img-alter"]
+
+};
+
+
+});
+
+renderizar();
+
+
+}
+
+function renderizar(){
+list.innerHTML="";
+for(let t=1;t<=5;t++){
+const sep=document.createElement("div");
+sep.className="tier-sep";
+sep.innerHTML=`<img src="${tiersImg[t]}">`;
+list.appendChild(sep);
+styles.filter(s=>s.t===t).forEach(s=>{
+const item=document.createElement("div");
+item.className="item";
+item.innerHTML=`
+
+<img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${s.img}.jpg">
+
+<span>${s.n}</span>
+
+`;
+
+item.onclick=()=>openModal(s);
+list.appendChild(item);
+});
+}
+}
+
+function openModal(s){
+
+document.getElementById("modal").style.display="flex";
+
+document.getElementById("m-title").innerText=s.n;
+
+document.getElementById("m-desc").innerText=s.d;
+
+document.getElementById("m-tier-img").src=tiersImg[s.t];
+
+document.getElementById("m-img").src=
+
+"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/"+s.img+".jpg";
+
+document.getElementById("m-btn").onclick=()=>{
+
+abrirHabilid

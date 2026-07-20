@@ -115,8 +115,7 @@ window.criarPersonagem = async function () {
 
     const updates = {
       charName: personagem,
-      image: gerarUrl(personagem),
-      faction: "Governo Mundial"
+      image: gerarUrl(personagem)
     };
 
     // Só altera o estilo se ainda não possuir um

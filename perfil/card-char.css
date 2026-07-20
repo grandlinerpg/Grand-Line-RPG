@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Caranda+Personal&display=swap');
+
+.personagem-modal{
+
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.82);
+
+    display:none;
+
+    justify-content:center;
+    align-items:center;
+
+    z-index:5000;
+
+}
+
+
+.personagem-window{
+
+    position:relative;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+}
+
+
+
+.close-personagem{
+
+    position:absolute;
+
+    top:-15px;
+    right:-15px;
+
+    width:42px;
+    height:42px;
+
+    border:none;
+    border-radius:50%;
+
+    cursor:pointer;
+
+    font-size:22px;
+
+    z-index:10;
+
+}
+
+
+
+.personagem-image-area{
+
+    position:relative;
+
+}
+
+
+
+.personagem-img{
+
+    width:420px;
+    aspect-ratio:3/2;
+    max-width:90vw;
+
+    display:block;
+
+}
+
+
+
+.personagem-nome{
+
+    position:absolute;
+
+    top:10px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    width:90%;
+
+    text-align:center;
+
+    font-family:'Cinzel', serif;
+
+    font-size:32px;
+
+    color:#fff;
+
+    text-shadow:
+    0 0 6px #000,
+    0 0 12px #000,
+    2px 2px 6px #000;
+
+}
+
+
+
+.personagem-bottom{
+
+    position:absolute;
+
+    left:20px;
+    right:20px;
+    bottom:20px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-end;
+
+}
+
+
+
+.personagem-atributos{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,auto);
+
+    gap:6px 14px;
+
+    color:#fff;
+
+    font-family:'Cinzel',serif;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    text-shadow:
+    0 0 6px #000,
+    2px 2px 5px #000;
+
+}
+
+
+
+.personagem-rank{
+
+    color:#ffd54f;
+
+    font-family:'Cinzel',serif;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    text-align:right;
+
+    text-shadow:
+    0 0 8px #000,
+    2px 2px 6px #000;
+
+}
+
+
+
+/* BOTÕES */
+
+.upload-personagem,
+.download-personagem{
+
+    margin-top:20px;
+
+    padding:10px 30px;
+
+    border:none;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-family:'Cinzel',serif;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    background:#fff;
+
+    color:#000;
+
+    transition:.2s;
+
+}
+
+
+.upload-personagem:hover,
+.download-personagem:hover{
+
+    transform:scale(1.05);
+
+}
+
+
+
+/* MOBILE */
+
+@media(max-width:700px){
+
+    .personagem-img{
+
+        width:320px;
+
+    }
+
+
+    .personagem-nome{
+
+        font-size:22px;
+
+    }
+
+
+    .personagem-atributos{
+
+        font-size:15px;
+
+        gap:5px 12px;
+
+    }
+
+
+    .personagem-rank{
+
+        font-size:18px;
+
+    }
+
+
+    .upload-personagem,
+    .download-personagem{
+
+        padding:9px 24px;
+
+        font-size:14px;
+
+    }
+
+}

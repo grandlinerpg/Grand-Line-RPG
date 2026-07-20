@@ -286,6 +286,7 @@ qtyInput.value = 1;
           ),
           {
             nome: item.nome,
+            idItem: item.id, 
             img: item.img || item.item || null,
             value: price,
             jogador: auth.currentUser.uid,

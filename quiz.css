@@ -227,3 +227,92 @@
   }
 
 }
+
+/* =========================
+   RESULTADO FINAL
+========================= */
+
+#quiz-result{
+
+    text-align:center;
+
+    font-family:'Cinzel',serif;
+
+    color:#f6d365;
+
+}
+
+
+.result-box{
+
+    margin:25px 0;
+
+    background:rgba(255,255,255,.04);
+
+    border-radius:12px;
+
+    padding:20px;
+
+}
+
+
+.result-box p{
+
+    font-size:20px;
+
+    margin:15px 0;
+
+    color:#f6d365;
+
+}
+
+
+.result-box span{
+
+    color:#ffe6a7;
+
+    font-weight:bold;
+
+}
+
+
+
+/* =========================
+   BOTÃO VOLTAR
+========================= */
+
+.back-button{
+
+    padding:15px 30px;
+
+    border:none;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+
+    background:rgba(246,211,101,.15);
+
+    border:1px solid rgba(246,211,101,.4);
+
+
+    color:#f6d365;
+
+    font-family:'Cinzel',serif;
+
+    font-size:16px;
+
+
+    transition:.25s;
+
+}
+
+
+.back-button:hover{
+
+    background:rgba(246,211,101,.30);
+
+    transform:translateY(-2px);
+
+}

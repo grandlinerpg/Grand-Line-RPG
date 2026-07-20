@@ -122,7 +122,7 @@ async function comprarItem(db, item, quantidade, compradorUid) {
     const invSnap = await get(invRef);
     const invData = invSnap.exists() ? invSnap.val() : {};
 
-    const itemKey = data.idItem;
+    const itemKey = item.idItem;
 
     const atualQty = Number(invData?.[itemKey] || 0);
     const finalQty = atualQty + qtdFinal;

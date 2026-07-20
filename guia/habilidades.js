@@ -63,7 +63,7 @@ async function getEstilo(key){
   await get(
     ref(
       db,
-      `habilidades/estilo-de-luta/${key}`
+      `habilidades/Estilo de Luta/${key}`
     )
   );
 

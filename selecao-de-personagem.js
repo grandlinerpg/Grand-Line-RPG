@@ -48,9 +48,20 @@ function atualizarImagem() {
   img.src = gerarUrl(selectPersonagem.value);
 }
 
-selectPersonagem.addEventListener("change", () => {
+selectPersonagem.addEventListener("change", async () => {
   atualizarImagem();
-  controlarEstilo("—"); // força aparecer ao trocar personagem
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const snap = await get(ref(db, `players/${user.uid}/character`));
+
+  if (snap.exists()) {
+    const data = snap.val();
+    controlarEstilo(data.style || "—");
+  } else {
+    controlarEstilo("—");
+  }
 });
 
 atualizarImagem();
@@ -91,12 +102,29 @@ window.criarPersonagem = async function () {
   const estilo = selectEstilo.value;
 
   try {
-    await update(ref(db, `players/${user.uid}/character`), {
+
+    const charRef = ref(db, `players/${user.uid}/character`);
+    const snap = await get(charRef);
+
+    if (!snap.exists()) {
+      alert("Personagem não encontrado.");
+      return;
+    }
+
+    const data = snap.val();
+
+    const updates = {
       charName: personagem,
-      style: estilo,
       image: gerarUrl(personagem),
       faction: "Governo Mundial"
-    });
+    };
+
+    // Só altera o estilo se ainda não possuir um
+    if (!data.style || data.style === "—") {
+      updates.style = estilo;
+    }
+
+    await update(charRef, updates);
 
     alert("Sucesso!");
     window.location.href = "perfil.html";

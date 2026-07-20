@@ -134,24 +134,27 @@ async function adicionarItem(itemId) {
 // =========================
 function limparNome(nome, categoria) {
 
-  // Pergaminhos
+  if (!nome) return "";
+
+  // Pergaminho de Ensinamento
   if (categoria === "Pergaminho de Ensinamento") {
 
     return nome
       .replace(/^Pergaminho do\s+/i, "")
       .replace(/^Pergaminho da\s+/i, "")
+      .replace(/^Pergaminho de\s+/i, "")
+      .replace(/^Pergaminho de Ensinamento:\s*/i, "")
       .trim();
 
   }
 
-  // Demais itens (Akuma, Raças...)
+  // Outros itens
   if (nome.includes(":")) {
     return nome.split(":")[1].trim();
   }
 
   return nome.trim();
 }
-
 // =========================
 // SORTEAR TIER
 // =========================

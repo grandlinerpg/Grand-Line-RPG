@@ -123,7 +123,7 @@ window.abrirHabilidades = async function(estiloNome){
   if(title){
 
     title.innerText =
-    "HABILIDADES - " + estiloNome;
+    "HABILIDADES";
 
   }
 

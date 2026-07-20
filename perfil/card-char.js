@@ -1,14 +1,14 @@
 console.log("CARD-CHAR.JS CARREGOU");
 
 
-const charContainer =
-document.getElementById("char-container");
+const personagemContainer =
+document.getElementById("personagem-container");
 
 
 
 async function carregarCharHTML(){
 
-    if(!charContainer) return;
+    if(!personagemContainer) return;
 
 
     const res =
@@ -19,7 +19,7 @@ async function carregarCharHTML(){
     );
 
 
-    charContainer.insertAdjacentHTML(
+    personagemContainer.insertAdjacentHTML(
         "beforeend",
         await res.text()
     );

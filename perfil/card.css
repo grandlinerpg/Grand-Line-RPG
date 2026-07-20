@@ -65,6 +65,7 @@
 .card-img{
 
     width:420px;
+    aspect-ratio: 3 / 2;
     max-width:90vw;
 
     display:block;

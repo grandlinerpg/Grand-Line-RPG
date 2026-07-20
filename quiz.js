@@ -47,7 +47,7 @@ let pontos = 0;
 
 let bloqueado = false;
 
-let tempo = 30;
+let tempo = 10;
 
 let intervaloTempo;
 
@@ -251,7 +251,7 @@ function mostrarPergunta(){
 function iniciarTempo(){
 
 
-    tempo = 30;
+    tempo = 10;
 
 
     document.getElementById(

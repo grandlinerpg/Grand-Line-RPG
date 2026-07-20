@@ -1,66 +1,117 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Quiz - Grand Line RPG</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="quiz.css">
-
-</head>
-
-<body>
-
-<div class="background"></div>
-<div class="overlay"></div>
-
 <main class="quiz-container">
 
     <div class="quiz-box">
 
-        <div class="quiz-top">
 
-            <div class="question-number">
-                Questão <span id="current-question">1</span>/<span id="total-questions">10</span>
+        <!-- QUIZ -->
+        <div id="quiz-content">
+
+
+            <div class="quiz-top">
+
+                <div class="question-number">
+                    Questão 
+                    <span id="current-question">1</span>/
+                    <span id="total-questions">10</span>
+                </div>
+
+
+                <div class="timer">
+                    ⏳ <span id="time">30</span>s
+                </div>
+
             </div>
 
-            <div class="timer">
-                ⏳ <span id="time">30</span>s
+
+
+            <div class="question">
+
+                <h2 id="question-text">
+                    Qual foi o primeiro integrante da tripulação dos Chapéus de Palha?
+                </h2>
+
             </div>
+
+
+
+            <div class="answers">
+
+                <button class="answer">
+                    A) Nami
+                </button>
+
+                <button class="answer">
+                    B) Zoro
+                </button>
+
+                <button class="answer">
+                    C) Sanji
+                </button>
+
+                <button class="answer">
+                    D) Usopp
+                </button>
+
+            </div>
+
 
         </div>
 
-        <div class="question">
 
-            <h2 id="question-text">
-                Qual foi o primeiro integrante da tripulação dos Chapéus de Palha?
+
+        <!-- RESULTADO -->
+        <div id="quiz-result" style="display:none;">
+
+
+            <h2 class="title-center">
+                QUIZ FINALIZADO
             </h2>
 
+
+
+            <div class="result-box">
+
+
+                <p>
+                    🏆 Acertos:
+                    <span id="result-score">
+                        0/10
+                    </span>
+                </p>
+
+
+                <p>
+                    ⚡ EXP Ganho:
+                    <span id="result-exp">
+                        0
+                    </span>
+                </p>
+
+
+                <p>
+                    💰 Berries Ganhos:
+                    <span id="result-berries">
+                        0
+                    </span>
+                </p>
+
+
+            </div>
+
+
+
+            <button 
+                class="back-button"
+                onclick="location.href='perfil.html'"
+            >
+                VOLTAR AO PERFIL
+            </button>
+
+
         </div>
 
-        <div class="answers">
-
-            <button class="answer">A) Nami</button>
-
-            <button class="answer">B) Zoro</button>
-
-            <button class="answer">C) Sanji</button>
-
-            <button class="answer">D) Usopp</button>
-
-        </div>
 
     </div>
 
+
 </main>
-
-<script type="module" src="quiz.js"></script>
-
-</body>
-</html>

@@ -59,7 +59,7 @@ function slug(name){
 
 async function getEstilo(key){
 
-  const snap =
+  let snap =
   await get(
     ref(
       db,
@@ -67,11 +67,32 @@ async function getEstilo(key){
     )
   );
 
+
+  let tipo="Estilo de Luta";
+
+
+  if(!snap.exists()){
+
+    snap =
+    await get(
+      ref(
+        db,
+        `habilidades/Raças/${key}`
+      )
+    );
+
+    tipo="Raças";
+
+  }
+
+
   if(!snap.exists())
     return null;
 
+
   const data =
   snap.val();
+
 
   return {
 
@@ -83,6 +104,7 @@ async function getEstilo(key){
       typeof v === "object" &&
       v.nome
     ),
+
 
     heranca:{
       heranca:data.heranca || null,

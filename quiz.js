@@ -7,8 +7,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
     getDatabase,
     ref,
-    get
+    get,
+    update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
 // =========================
@@ -29,14 +36,44 @@ const firebaseConfig = {
 };
 
 
+// =========================
+// INIT
+// =========================
+
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
 
+const auth = getAuth(app);
+
 
 
 // =========================
-// VARIÁVEIS
+// PLAYER
+// =========================
+
+let jogadorUID = null;
+
+
+onAuthStateChanged(auth,(user)=>{
+
+    if(user){
+
+        jogadorUID = user.uid;
+
+        console.log(
+            "UID:",
+            jogadorUID
+        );
+
+    }
+
+});
+
+
+
+// =========================
+// VARIÁVEIS QUIZ
 // =========================
 
 let perguntas = [];
@@ -59,6 +96,7 @@ let intervaloTempo;
 
 async function carregarQuiz(){
 
+
     try{
 
 
@@ -75,18 +113,23 @@ async function carregarQuiz(){
         for(let caminho of caminhos){
 
 
-            const snapshot = await get(
-                ref(db,caminho)
-            );
+            const snapshot =
+                await get(
+                    ref(db,caminho)
+                );
+
 
 
             if(snapshot.exists()){
 
 
-                const dados = snapshot.val();
+                const dados =
+                    snapshot.val();
 
 
-                Object.values(dados).forEach(pergunta=>{
+
+                Object.values(dados)
+                .forEach(pergunta=>{
 
 
                     perguntas.push(pergunta);
@@ -103,9 +146,10 @@ async function carregarQuiz(){
 
 
         console.log(
-            "Perguntas:",
+            "Perguntas carregadas:",
             perguntas
         );
+
 
 
         iniciarQuiz();
@@ -114,12 +158,15 @@ async function carregarQuiz(){
 
     }catch(error){
 
+
         console.error(
-            "Erro Firebase:",
+            "Erro quiz:",
             error
         );
 
+
     }
+
 
 }
 
@@ -149,7 +196,9 @@ function iniciarQuiz(){
     );
 
 
-    perguntas = perguntas.slice(0,10);
+
+    perguntas =
+        perguntas.slice(0,10);
 
 
 
@@ -195,21 +244,27 @@ function mostrarPergunta(){
 
 
     const botoes =
-        document.querySelectorAll(".answer");
+        document.querySelectorAll(
+            ".answer"
+        );
 
 
 
     botoes[0].textContent =
         "A) " + pergunta.a;
 
+
     botoes[1].textContent =
         "B) " + pergunta.b;
+
 
     botoes[2].textContent =
         "C) " + pergunta.c;
 
+
     botoes[3].textContent =
         "D) " + pergunta.d;
+
 
 
 
@@ -237,7 +292,6 @@ function mostrarPergunta(){
 
 
     iniciarTempo();
-
 
 
 }
@@ -290,7 +344,6 @@ function iniciarTempo(){
     },1000);
 
 
-
 }
 
 
@@ -326,7 +379,9 @@ function tempoAcabou(){
 
 
     const botoes =
-        document.querySelectorAll(".answer");
+        document.querySelectorAll(
+            ".answer"
+        );
 
 
 
@@ -346,9 +401,7 @@ function tempoAcabou(){
         proximaPergunta();
 
 
-
     },1000);
-
 
 
 }
@@ -363,7 +416,9 @@ function adicionarEventos(){
 
 
     const botoes =
-        document.querySelectorAll(".answer");
+        document.querySelectorAll(
+            ".answer"
+        );
 
 
 
@@ -434,7 +489,9 @@ function verificarResposta(
 
 
     const botoes =
-        document.querySelectorAll(".answer");
+        document.querySelectorAll(
+            ".answer"
+        );
 
 
 
@@ -447,7 +504,6 @@ function verificarResposta(
 
 
         pontos++;
-
 
 
     }else{
@@ -478,9 +534,7 @@ function verificarResposta(
         proximaPergunta();
 
 
-
     },1000);
-
 
 
 }
@@ -504,12 +558,10 @@ function proximaPergunta(){
         mostrarPergunta();
 
 
-
     }else{
 
 
         finalizarQuiz();
-
 
 
     }
@@ -517,7 +569,6 @@ function proximaPergunta(){
 
 
     bloqueado = false;
-
 
 
 }
@@ -528,20 +579,27 @@ function proximaPergunta(){
 // FINAL
 // =========================
 
-function finalizarQuiz(){
+async function finalizarQuiz(){
 
 
     clearInterval(intervaloTempo);
 
 
 
-    const exp =
+    const expGanho =
         pontos * 10;
 
 
 
-    const berries =
+    const berriesGanho =
         pontos * 1000;
+
+
+
+    await entregarRecompensa(
+        expGanho,
+        berriesGanho
+    );
 
 
 
@@ -569,15 +627,99 @@ function finalizarQuiz(){
     document.getElementById(
         "result-exp"
     ).textContent =
-    exp;
+    expGanho;
 
 
 
     document.getElementById(
         "result-berries"
     ).textContent =
-    berries;
+    berriesGanho;
 
+
+
+}
+
+
+
+// =========================
+// DAR RECOMPENSA
+// =========================
+
+async function entregarRecompensa(
+    expGanho,
+    berriesGanho
+){
+
+
+    if(!jogadorUID){
+
+        console.log(
+            "Sem jogador logado"
+        );
+
+        return;
+
+    }
+
+
+
+    const playerRef =
+        ref(
+            db,
+            "players/" + jogadorUID
+        );
+
+
+
+    const snapshot =
+        await get(playerRef);
+
+
+
+    if(!snapshot.exists())
+        return;
+
+
+
+    const dados =
+        snapshot.val();
+
+
+
+    const expAtual =
+        dados.info?.exp || 0;
+
+
+
+    const saldoAtual =
+        dados.info?.saldo || 0;
+
+
+
+    await update(
+        playerRef,
+        {
+
+            "info/exp":
+                expAtual + expGanho,
+
+
+            "info/saldo":
+                saldoAtual + berriesGanho
+
+        }
+    );
+
+
+
+    console.log(
+        "Recompensa:",
+        expGanho,
+        "EXP",
+        berriesGanho,
+        "฿"
+    );
 
 
 }

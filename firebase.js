@@ -81,6 +81,7 @@ window.register = async function () {
         charName: "Sem Personagem",
         style: "—",
         race: "Humano",
+        rank: "1",
         fruit: "—"
       },
 

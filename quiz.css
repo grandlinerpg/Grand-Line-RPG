@@ -1,0 +1,229 @@
+/* =========================
+   CONTAINER
+========================= */
+
+.quiz-container{
+  min-height:100vh;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:40px 20px;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.quiz-box{
+
+  width:100%;
+  max-width:780px;
+
+  background:rgba(0,0,0,.80);
+
+  border-radius:15px;
+
+  padding:30px;
+
+  border:1px solid rgba(255,215,120,.25);
+
+}
+
+/* =========================
+   TOPO
+========================= */
+
+.quiz-top{
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  margin-bottom:25px;
+
+  font-family:'Cinzel',serif;
+  color:#f6d365;
+
+}
+
+.question-number{
+
+  font-size:18px;
+  font-weight:bold;
+
+}
+
+.timer{
+
+  min-width:80px;
+
+  text-align:center;
+
+  background:rgba(255,255,255,.05);
+
+  padding:10px 15px;
+
+  border-radius:10px;
+
+  font-size:18px;
+  font-weight:bold;
+
+}
+
+/* =========================
+   PERGUNTA
+========================= */
+
+.question{
+
+  background:rgba(255,255,255,.04);
+
+  border-radius:12px;
+
+  padding:25px;
+
+  margin-bottom:25px;
+
+}
+
+.question h2{
+
+  margin:0;
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+  text-align:center;
+
+  line-height:1.5;
+
+}
+
+/* =========================
+   ALTERNATIVAS
+========================= */
+
+.answers{
+
+  display:grid;
+
+  grid-template-columns:1fr;
+
+  gap:15px;
+
+}
+
+.answer{
+
+  width:100%;
+
+  padding:16px;
+
+  border:none;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+  background:rgba(255,255,255,.05);
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+  font-size:16px;
+
+  text-align:left;
+
+  transition:.25s;
+
+}
+
+.answer:hover{
+
+  background:rgba(246,211,101,.15);
+
+  transform:translateY(-2px);
+
+}
+
+.answer.correct{
+
+  background:rgba(30,170,70,.35);
+
+}
+
+.answer.wrong{
+
+  background:rgba(190,40,40,.35);
+
+}
+
+.answer:disabled{
+
+  cursor:default;
+
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media(max-width:700px){
+
+  .quiz-container{
+
+    min-height:100dvh;
+
+    padding:0;
+
+  }
+
+  .quiz-box{
+
+    width:100%;
+
+    max-width:none;
+
+    min-height:100dvh;
+
+    border-radius:0;
+
+    border:none;
+
+    padding:20px;
+
+  }
+
+  .quiz-top{
+
+    flex-direction:column;
+
+    gap:12px;
+
+  }
+
+  .question{
+
+    padding:20px;
+
+  }
+
+  .question h2{
+
+    font-size:20px;
+
+  }
+
+  .answer{
+
+    font-size:15px;
+
+    padding:15px;
+
+  }
+
+}

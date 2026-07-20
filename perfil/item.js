@@ -276,7 +276,7 @@ async function usarTipo2(item) {
   // =====================
   // AKUMA NO MI
   // =====================
-  if (item.categoria === "akuma no mi") {
+  if (item.categoria === "Akuma no Mi") {
 
     const charSnap = await get(charRef);
 
@@ -301,14 +301,14 @@ async function usarTipo2(item) {
   // =====================
   // RAÇA
   // =====================
-  if (item.categoria === "fator de linhagem") {
+  if (item.categoria === "Fator de Linhagem") {
     updates.race = nomeLimpo;
   }
 
   // =====================
   // ESTILO
   // =====================
-  if (item.categoria === "pergaminho de ensinamento") {
+  if (item.categoria === "Pergaminho de Ensinamento") {
     updates.style = nomeLimpo;
   }
 

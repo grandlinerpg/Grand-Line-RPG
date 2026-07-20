@@ -62,11 +62,19 @@ window.usarItem = async function(item) {
       break;
 
     // =====================
-    // TIPO 6
+    // TIPO 5
     // REMOVE AKUMA NO MI
     // =====================
     case 5:
       await usarTipo5(item);
+      break;
+
+    // =====================
+    // TIPO 6
+    // PONTOS PERDIDOS
+    // =====================
+    case 6:
+      await usarTipo6(item);
       break;
   }
 };
@@ -564,6 +572,95 @@ function usarTipo3(item) {
         : (item.item || item.emoji || item.icon || "🍎")
     );
   }
+
+// =========================
+// TIPO 6
+// RECUPERA SKILL PERDIDA
+// =========================
+async function usarTipo6(item) {
+
+  const auth = window.auth;
+  const db = window.db;
+
+  const user = auth.currentUser;
+
+  if (!user) return;
+
+
+  const perdidosRef =
+    ref(db, `players/${user.uid}/points/perdidos`);
+
+  const disponivelRef =
+    ref(db, `players/${user.uid}/points/skill-available`);
+
+
+  // pega pontos perdidos
+  const perdidoSnap =
+    await get(perdidosRef);
+
+
+  let perdidos = 0;
+
+  if (perdidoSnap.exists()) {
+    perdidos = Number(perdidoSnap.val()) || 0;
+  }
+
+
+  if (perdidos <= 0) {
+
+    window.mostrarResultado(
+      "AÇÃO NEGADA!",
+      "Você não possui pontos de habilidade perdidos.",
+      "❌"
+    );
+
+    return;
+  }
+
+
+  // pega pontos atuais disponíveis
+  const disponivelSnap =
+    await get(disponivelRef);
+
+
+  let disponivel = 0;
+
+  if (disponivelSnap.exists()) {
+    disponivel = Number(disponivelSnap.val()) || 0;
+  }
+
+
+  // adiciona perdido ao disponível
+  await set(
+    disponivelRef,
+    disponivel + perdidos
+  );
+
+
+  // zera perdidos
+  await set(
+    perdidosRef,
+    0
+  );
+
+
+  // remove item
+  await removerItem(item.id);
+
+
+  window.mostrarResultado(
+    "PONTOS RESTAURADOS!",
+    `
+    Você recuperou <b>${perdidos}</b> pontos de habilidade.
+    <br>
+    Eles foram enviados para seus pontos disponíveis.
+    `,
+    item.img
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
+          class="item-open-img">`
+      : "💎"
+  );
+}
 
   // =====================
   // RESULTADO

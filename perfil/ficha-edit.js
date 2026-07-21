@@ -13,8 +13,11 @@ if(!container) return;
 
 
 
-const res =
-await fetch("perfil/ficha-edit.html");
+const res = await fetch(
+    location.pathname.includes("/guia/")
+    ? "../perfil/ficha-edit.html"
+    : "perfil/ficha-edit.html"
+);
 
 
 container.innerHTML =

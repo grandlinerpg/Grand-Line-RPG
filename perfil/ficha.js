@@ -256,40 +256,109 @@ window.abrirFicha = async function(
     }
 
 
-    atualizarAtributo(
-        "atributo-atk",
-        "ficha-atk",
-        skill.atributos?.atk
-    );
+    // =====================
+    // VALORES PADRÃO POR RANK
+    // =====================
+
+    const atributosRank = {
+
+        1:{
+            stm:100,
+            atk:100,
+            def:100
+        },
+
+        2:{
+            stm:250,
+            atk:250,
+            def:250
+        },
+
+        3:{
+            stm:500,
+            atk:500,
+            def:500
+        },
+
+        4:{
+            stm:1000,
+            atk:1000,
+            def:1000
+        },
+
+        5:{
+            stm:2000,
+            atk:2000,
+            def:2000
+        }
+
+    };
 
 
-    atualizarAtributo(
-        "atributo-def",
-        "ficha-def",
-        skill.atributos?.def
-    );
+    const base = atributosRank[skill.rank] || {};
 
 
-    atualizarAtributo(
-        "atributo-pow",
-        "ficha-pow",
-        skill.atributos?.pow
-    );
-
-
+    // STM sempre
     atualizarAtributo(
         "atributo-stm",
         "ficha-stm",
-        skill.atributos?.stm
-    );            
+        skill.atributos?.stm ?? base.stm ?? "-"
+    );
+
+
+    // ATK somente ofensivo
+    atualizarAtributo(
+        "atributo-atk",
+        "ficha-atk",
+        skill.categoria === "Ofensivo"
+        ? (skill.atributos?.atk ?? base.atk ?? "-")
+        : null
+    );
+
+
+    // DEF somente defensivo
+    atualizarAtributo(
+        "atributo-def",
+        "ficha-def",
+        skill.categoria === "Defensivo"
+        ? (skill.atributos?.def ?? base.def ?? "-")
+        : null
+    );
+
+
+    // POW manual
+    atualizarAtributo(
+        "atributo-pow",
+        "ficha-pow",
+        skill.atributos?.pow ?? "-"
+    );
+
+
+
+    // =====================
+    // COOLDOWN PADRÃO POR RANK
+    // =====================
+
+    const cooldownRank = {
+
+        1:1,
+        2:2,
+        3:3,
+        4:4,
+        5:5
+
+    };
+
+
+    const cooldownBase =
+    cooldownRank[skill.rank] ?? "-";
 
 
     atualizarLinha(
         "linha-cooldown",
         "ficha-cooldown",
-        skill.cooldown
+        skill.cooldown ?? cooldownBase
     );
-
 
 
     atualizarLinha(

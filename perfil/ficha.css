@@ -28,7 +28,8 @@
 
   width:90%;
   max-width:400px;
-  max-height:550px; /* altura fixa */
+
+  height:550px; /* muda de max-height para height */
 
   background:rgba(10,10,10,0.96);
 
@@ -46,6 +47,8 @@
   overflow:hidden;
 
   text-align:center;
+
+  box-sizing:border-box;
 
 }
 
@@ -290,13 +293,14 @@
 
 .ficha-scroll{
 
-  max-height:550px;
+  height:calc(100% - 270px);
 
   overflow-y:auto;
-
   overflow-x:hidden;
 
-  padding-right:5px;
+  padding-right:8px;
+
+  box-sizing:border-box;
 
 }
 
@@ -339,11 +343,10 @@
   .ficha-window{
 
     width:90%;
-    max-height:650px; /* altura fixa */
+    height:650px;
     padding:18px;
 
   }
-
 
   .ficha-img{
 

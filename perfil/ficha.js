@@ -104,8 +104,8 @@ window.abrirFicha = async function(
     skill,
     mostrarCusto = true,
     mostrarComprar = true,
-    skillUid = null,
     mostrarEditar = false,
+    skillUid = null,
     categoria = "",
     sub = ""
 ){

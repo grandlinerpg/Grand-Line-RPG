@@ -120,13 +120,28 @@ window.abrirPersonagem=function(data){
     // IMAGEM
     // ======================
 
-    // Sempre abre vazio.
-    // Só aparece imagem quando o usuário fizer upload.
+    const personagem =
+    (character.charName || "default")
+    .toLowerCase()
+    .replaceAll(" ","-")
+    .replaceAll(".","")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"");
 
     const img =
     document.getElementById("personagem-img");
 
-    img.removeAttribute("src");
+
+    img.src =
+    `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png`;
+
+
+    img.onerror=function(){
+
+        this.src =
+        "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/sem-personagem.png";
+
+    };
 
 
     // ======================

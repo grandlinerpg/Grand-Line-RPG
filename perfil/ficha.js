@@ -105,6 +105,7 @@ window.abrirFicha = async function(
     mostrarCusto = true,
     mostrarComprar = true,
     skillUid = null,
+    mostrarEditar = false,
     categoria = "",
     sub = ""
 ){
@@ -416,6 +417,9 @@ window.abrirFicha = async function(
    const buyBtn =
    document.querySelector("#ficha-modal #ficha-buy-btn");
 
+   const editBtn =
+   document.querySelector("#ficha-modal #ficha-edit-btn");
+
 
    if(priceBox){
 
@@ -451,9 +455,33 @@ window.abrirFicha = async function(
 
 }
 
+    if(editBtn){
+
+    if(mostrarEditar){
+
+        editBtn.style.display = "block";
+
+        editBtn.onclick = () => {
+
+            document
+            .getElementById("ficha-edit")
+            .style.display = "flex";
+
+        };
+
+
+    }else{
+
+        editBtn.style.display = "none";
+        editBtn.onclick = null;
+
+    }
+
+}
+
     if(fichaBottom){
 
-        if(!mostrarCusto && !mostrarComprar){
+        if(!mostrarCusto && !mostrarComprar && !mostrarEditar){
 
             fichaBottom.style.display = "none";
 

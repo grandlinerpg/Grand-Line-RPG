@@ -143,7 +143,9 @@ fetch("perfil/distribuir.html")
           tempPoints.used += 1;
 
           const statEl = document.getElementById(`modal-${stat}`);
-          if (statEl) statEl.innerText = tempStats[stat];
+          if (statEl) {
+            statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;
+          }
 
           const av = document.getElementById("available-points");
           const us = document.getElementById("used-points");

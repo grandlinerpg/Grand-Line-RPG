@@ -240,3 +240,98 @@ cursor:pointer;
   background:rgba(246,211,101,0.45);
 
 }
+
+
+/* =========================
+   IMAGEM + UPLOAD
+========================= */
+
+.img-upload-area{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:12px;
+
+    margin-bottom:15px;
+
+}
+
+
+.img-box{
+
+    width:150px;
+
+    aspect-ratio:3/2;
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    border:1px solid rgba(246,211,101,.35);
+
+    background:#111;
+
+}
+
+
+
+.edit-img{
+
+    width:100%;
+
+    height:100%;
+
+    aspect-ratio:3/2;
+
+    object-fit:cover;
+
+    display:block;
+
+}
+
+
+
+/* BOTÃO DE UPLOAD */
+
+.upload-img-btn{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(246,211,101,.4);
+
+    background:#111;
+
+    color:#f6d365;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    transition:.2s;
+
+}
+
+
+.upload-img-btn:hover{
+
+    background:#f6d365;
+
+    color:#111;
+
+    transform:scale(1.1);
+
+}

@@ -137,7 +137,7 @@ window.abrirHabilidades = async function(estiloNome){
   modal.style.display="flex";
 
   const addBtn =
-  document.getElementById("add-skill");
+  document.getElementById("add-skill-btn");
 
 
   if(addBtn){

@@ -332,12 +332,18 @@ if(!window.skillUid){
 
 }
 
+const skillSalvar = { ...skill };
+
+delete skillSalvar.id;
+delete skillSalvar.bancoCategoria;
+delete skillSalvar.estilo;
+
 await update(
     ref(
         db,
         `habilidades/${window.skillCategoria}/${window.skillSub}/${window.skillUid}`
     ),
-    skill
+    skillSalvar
 );
 
 console.log("Skill salva no Firebase!");

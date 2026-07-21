@@ -249,13 +249,9 @@ cursor:pointer;
 .img-upload-area{
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
-    gap:12px;
-
+    gap:10px;
     margin-bottom:15px;
 
 }
@@ -263,7 +259,8 @@ cursor:pointer;
 
 .img-box{
 
-    width:150px;
+    width:100px;
+    height:66px;
 
     aspect-ratio:3/2;
 
@@ -271,9 +268,13 @@ cursor:pointer;
 
     overflow:hidden;
 
-    border:1px solid rgba(246,211,101,.35);
+    border:2px solid rgba(246,211,101,.45);
 
     background:#111;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
 
 }
 
@@ -282,10 +283,7 @@ cursor:pointer;
 .edit-img{
 
     width:100%;
-
     height:100%;
-
-    aspect-ratio:3/2;
 
     object-fit:cover;
 
@@ -295,13 +293,12 @@ cursor:pointer;
 
 
 
-/* BOTÃO DE UPLOAD */
+/* BOTÃO UPLOAD */
 
 .upload-img-btn{
 
-    width:42px;
-
-    height:42px;
+    width:36px;
+    height:36px;
 
     border-radius:50%;
 
@@ -311,7 +308,7 @@ cursor:pointer;
 
     color:#f6d365;
 
-    font-size:22px;
+    font-size:18px;
 
     cursor:pointer;
 
@@ -320,18 +317,5 @@ cursor:pointer;
     align-items:center;
 
     justify-content:center;
-
-    transition:.2s;
-
-}
-
-
-.upload-img-btn:hover{
-
-    background:#f6d365;
-
-    color:#111;
-
-    transform:scale(1.1);
 
 }

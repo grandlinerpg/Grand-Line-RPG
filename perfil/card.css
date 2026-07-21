@@ -148,7 +148,7 @@
 
     flex-direction:column;
 
-    gap:2px;
+    gap:0px;
 
     color:#fff;
 
@@ -245,7 +245,7 @@
 
         font-size:15px;
 
-        gap:5px 12px;
+        gap:0px;
 
     }
 

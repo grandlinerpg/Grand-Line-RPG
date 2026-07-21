@@ -223,7 +223,9 @@
       document.getElementById("editar-efeito-btn")
       .onclick = () => {
 
-        console.log("Editar efeito:", efeito);
+          window.efeitoAtual = efeito;
+
+          abrirEfeitoEdit();
 
       };
 
@@ -243,6 +245,8 @@
     }
 
   </script>
+
+  <script type="module" src="efeito-edit.js"></script>
 
 </body>
 

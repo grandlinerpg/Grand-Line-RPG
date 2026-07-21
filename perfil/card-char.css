@@ -1,4 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Caranda+Personal&display=swap');
+@font-face{
+
+    font-family:"Mishaland";
+
+    src:url("../fontes/Mishaland.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
+
+@font-face{
+
+    font-family:"Radiant";
+
+    src:url("../fontes/Radiant.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
 
 .personagem-modal{
 
@@ -78,7 +100,7 @@
 
     position:absolute;
 
-    top:10px;
+    top:5px;
     left:50%;
 
     transform:translateX(-50%);
@@ -87,9 +109,9 @@
 
     text-align:center;
 
-    font-family:'Cinzel', serif;
+    font-family:'Mishaland', serif;
 
-    font-size:32px;
+    font-size:40px;
 
     color:#fff;
 
@@ -130,7 +152,7 @@
 
     color:#fff;
 
-    font-family:'Cinzel',serif;
+    font-family:'Radiant',serif;
 
     font-size:18px;
 
@@ -147,7 +169,7 @@
 
     color:#ffd54f;
 
-    font-family:'Cinzel',serif;
+    font-family:'Radiant',serif;
 
     font-size:16px;
 

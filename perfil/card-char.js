@@ -171,31 +171,31 @@ window.abrirPersonagem=function(data){
     document
     .getElementById("personagem-for")
     .innerText=
-    "FOR " + (stats.str || 0);
+    "FOR: " + (stats.str || 0);
 
     document
     .getElementById("personagem-res")
     .innerText=
-    "RES " + (stats.res || 0);
+    "RES: " + (stats.res || 0);
 
     document
     .getElementById("personagem-dex")
     .innerText=
-    "DEX " + (stats.dex || 0);
+    "DEX: " + (stats.dex || 0);
 
     document
     .getElementById("personagem-agi")
     .innerText=
-    "AGI " + (stats.agi || 0);
+    "AGI: " + (stats.agi || 0);
 
     document
     .getElementById("personagem-stm")
     .innerText=
-    "STM " + (stats.sta || 0);
+    "STM: " + (stats.sta || 0);
 
     document
     .getElementById("personagem-hp")
     .innerText=
-    "HP " + (stats.hp || 0);
+    "HP: " + (stats.hp || 0);
 
 };

@@ -129,10 +129,6 @@ document.getElementById("edit-cooldown").value =
 skill.cooldown || "";
 
 
-
-document.getElementById("edit-stm").value =
-skill.atributos?.stm || "";
-
 }
 
 

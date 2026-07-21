@@ -136,6 +136,51 @@ window.abrirHabilidades = async function(estiloNome){
 
   modal.style.display="flex";
 
+  const addBtn =
+  document.getElementById("add-skill");
+
+
+  if(addBtn){
+
+      addBtn.onclick = ()=>{
+
+          window.skillAtual = {
+
+              nome:"",
+              description:"",
+              img:"",
+              rank:1,
+              categoria:"",
+              propriedade:"",
+              alcance:"",
+              alvos:"",
+              cooldown:"",
+
+              atributos:{
+                  stm:0
+              }
+
+          };
+
+
+          window.skillCategoria =
+          "Estilo de Luta";
+
+
+          window.skillSub =
+          estiloNome;
+
+
+          window.skillUid =
+          null;
+
+
+          abrirFichaEdit();
+
+      };
+
+  }
+
 
   if(title){
 

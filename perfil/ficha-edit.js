@@ -168,17 +168,12 @@ document
 
 async function uploadImagem(e){
 
-
-const file =
-e.target.files[0];
-
+const file = e.target.files[0];
 
 if(!file) return;
 
 
-
-const formData =
-new FormData();
+const formData = new FormData();
 
 
 formData.append(
@@ -193,12 +188,17 @@ formData.append(
 );
 
 
+formData.append(
+"folder",
+"Grand Line RPG/Habilidades"
+);
+
+
 
 try{
 
 
-const res =
-await fetch(
+const res = await fetch(
 "https://api.cloudinary.com/v1_1/djh45admn/image/upload",
 {
 method:"POST",
@@ -208,15 +208,21 @@ body:formData
 
 
 
-const data =
-await res.json();
+const data = await res.json();
+
+
+console.log("STATUS:", res.status);
+
+console.log("RETORNO CLOUDINARY:", data);
 
 
 
-console.log(
-"UPLOAD:",
-data
-);
+if(!data.secure_url){
+
+    console.error("Upload falhou:", data);
+    return;
+
+}
 
 
 
@@ -229,6 +235,10 @@ document
 .getElementById("edit-img")
 .src =
 data.secure_url;
+
+
+
+console.log("Imagem salva:", data.public_id);
 
 
 

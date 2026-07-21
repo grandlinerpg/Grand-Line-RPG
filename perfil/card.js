@@ -106,6 +106,46 @@ window.abrirCard=function(skill){
 
     };
 
+    // =====================
+    // VALORES PADRÃO POR RANK
+    // =====================
+
+    const atributosRank = {
+
+        1:{
+            stm:100,
+            atk:100,
+            def:100
+        },
+
+        2:{
+            stm:250,
+            atk:250,
+            def:250
+        },
+
+        3:{
+            stm:500,
+            atk:500,
+            def:500
+        },
+
+        4:{
+            stm:1000,
+            atk:1000,
+            def:1000
+        },
+
+        5:{
+            stm:2000,
+            atk:2000,
+            def:2000
+        }
+
+    };
+
+    const base = atributosRank[skill.rank] || {};
+
 
 
     function atualizarAtributo(id,nome,valor){
@@ -136,26 +176,32 @@ window.abrirCard=function(skill){
 
 
 
+    // ATK somente ofensivo
     atualizarAtributo(
         "card-atk",
         "ATK:",
-        skill.atributos?.atk
+        skill.categoria === "Ofensivo"
+        ? (skill.atributos?.atk ?? base.atk ?? null)
+        : null
     );
 
 
+    // DEF somente defensivo
     atualizarAtributo(
         "card-def",
         "DEF:",
-        skill.atributos?.def
+        skill.categoria === "Defensivo"
+        ? (skill.atributos?.def ?? base.def ?? null)
+        : null
     );
 
 
+    // STM sempre
     atualizarAtributo(
         "card-stm",
         "STM:",
-        skill.atributos?.stm
+        skill.atributos?.stm ?? base.stm ?? null
     );
-
 
     atualizarAtributo(
         "card-pow",

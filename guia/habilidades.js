@@ -291,7 +291,7 @@ window.abrirHabilidades = async function(estiloNome){
             false,
             true,
             skill.id,
-            skill.bancoCategoria,
+            skill.categoria,
             skill.estilo
         );
 

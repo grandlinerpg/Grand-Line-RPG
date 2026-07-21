@@ -163,7 +163,13 @@
       if (!snap.exists()) return;
 
       const efeitos =
-        Object.values(snap.val());
+      Object.entries(snap.val()).map(([id, efeito])=>{
+           return {
+              id:id,
+              ...efeito
+          };
+  
+       });
 
       efeitos.forEach(efeito => {
 

@@ -138,28 +138,28 @@ window.abrirCard=function(skill){
 
     atualizarAtributo(
         "card-atk",
-        "ATK",
+        "ATK:",
         skill.atributos?.atk
     );
 
 
     atualizarAtributo(
         "card-def",
-        "DEF",
+        "DEF:",
         skill.atributos?.def
     );
 
 
     atualizarAtributo(
         "card-stm",
-        "STM",
+        "STM:",
         skill.atributos?.stm
     );
 
 
     atualizarAtributo(
         "card-pow",
-        "POW",
+        "POW:",
         skill.atributos?.pow
     );
 

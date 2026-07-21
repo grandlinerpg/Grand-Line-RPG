@@ -193,17 +193,38 @@
       document.getElementById("modal")
       .style.display = "flex";
 
+
       document.getElementById("m-title")
       .innerText =
       efeito.nome;
+
 
       document.getElementById("m-desc")
       .innerText =
       efeito.description || "";
 
+
+      document.getElementById("m-func")
+      .innerText =
+      efeito.funcionamento || efeito.description || "";
+
+
+      document.getElementById("m-extras")
+      .innerText =
+      efeito.extras || "";
+
+
       document.getElementById("m-img")
       .src =
       CLOUD + efeito.img + ".jpg";
+
+
+      document.getElementById("editar-efeito-btn")
+      .onclick = () => {
+
+        console.log("Editar efeito:", efeito);
+
+      };
 
     }
 

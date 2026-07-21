@@ -457,28 +457,34 @@ window.abrirFicha = async function(
 
     if(editBtn){
 
-    if(mostrarEditar){
+        if(mostrarEditar){
 
-        editBtn.style.display = "block";
+            editBtn.style.display = "block";
 
-        editBtn.onclick = () => {
+            editBtn.onclick = () => {
 
-            document
-            .getElementById("ficha-edit")
-            .style.display = "flex";
+                if(window.abrirFichaEdit){
 
-        };
+                    window.abrirFichaEdit();
+
+                }else{
+
+                    console.log("ficha-edit.js não carregou");
+
+                }
+
+            };
 
 
-    }else{
+        }else{
 
-        editBtn.style.display = "none";
-        editBtn.onclick = null;
+            editBtn.style.display = "none";
+            editBtn.onclick = null;
+
+        }
 
     }
-
-}
-
+    
     if(fichaBottom){
 
         if(!mostrarCusto && !mostrarComprar && !mostrarEditar){

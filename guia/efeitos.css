@@ -1,0 +1,93 @@
+/* =========================
+   TITULO FUNCIONAMENTO
+========================= */
+
+#m-func-title{
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+  font-size:18px;
+
+  margin-top:20px;
+
+  margin-bottom:8px;
+
+}
+
+
+/* =========================
+   TEXTOS
+========================= */
+
+#m-func{
+
+  color:#ddd;
+
+  line-height:1.5;
+
+  text-align:center;
+
+  font-size:14px;
+
+  margin:8px 0;
+
+}
+
+
+#m-extras{
+
+  color:#ddd;
+
+  line-height:1.5;
+
+  text-align:left;
+
+  font-size:14px;
+
+  margin:15px 0 8px;
+
+}
+
+
+/* =========================
+   BOTÃO EDITAR
+========================= */
+
+#editar-efeito-btn{
+
+  width:100%;
+
+  margin-top:15px;
+
+  padding:12px;
+
+  border:none;
+
+  border-radius:10px;
+
+  background:#f6d365;
+
+  color:#111;
+
+  font-family:'Cinzel',serif;
+
+  font-size:14px;
+
+  font-weight:bold;
+
+  cursor:pointer;
+
+  transition:.2s;
+
+}
+
+
+#editar-efeito-btn:hover{
+
+  transform:scale(1.02);
+
+  box-shadow:0 0 10px rgba(246,211,101,.4);
+
+}

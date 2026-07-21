@@ -39,7 +39,7 @@
   border-radius:16px;
 
   padding:22px;
-  padding-bottom:10px;
+  padding-bottom:0px;
 
   position:relative;
 
@@ -353,7 +353,7 @@
     width:90%;
     max-height:650px;
     padding:18px;
-    padding-bottom:8px;
+    padding-bottom:0px;
 
   }
 

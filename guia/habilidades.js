@@ -81,29 +81,32 @@ async function getEstilo(key){
     return null;
 
 
-  const data =
-  snap.val();
+  const data = snap.val();
 
+    const skills = Object.entries(data)
+    .filter(([id, v]) =>
+        v &&
+        typeof v === "object" &&
+        v.nome
+    )
+    .map(([id, v]) => ({
+        ...v,
+        id,
+        categoria: tipo,
+        estilo: key
+    }));
 
-  return {
+    return {
 
-    skills:
-    Object.values(data)
-    .filter(
-      v =>
-      v &&
-      typeof v === "object" &&
-      v.nome
-    ),
+        skills,
 
+        heranca:{
+            heranca:data.heranca || null,
+            heranca2:data.heranca2 || null,
+            heranca3:data.heranca3 || null
+        }
 
-    heranca:{
-      heranca:data.heranca || null,
-      heranca2:data.heranca2 || null,
-      heranca3:data.heranca3 || null
-    }
-
-  };
+    };
 
 }
 
@@ -279,15 +282,19 @@ window.abrirHabilidades = async function(estiloNome){
 
         item.onclick=()=>{
 
-          console.log(
-            "Skill:",
-            skill
-          );
+          console.log("Skill:",skill);
 
-          abrirFicha(skill, true, false, true);
+          abrirFicha(
+            skill,
+            true,
+            false,
+            true,
+            skill.id,
+            skill.categoria,
+            skill.estilo
+        );
 
-        };
-
+      };
 
         container.appendChild(item);
 

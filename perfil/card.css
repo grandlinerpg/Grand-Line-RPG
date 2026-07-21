@@ -122,11 +122,11 @@
 
 .card-atributos{
 
-    display:grid;
+    display:flex;
 
-    grid-template-columns:repeat(2,auto);
+    flex-direction:column;
 
-    gap:6px 14px;
+    gap:6px;
 
     color:#fff;
 
@@ -141,7 +141,6 @@
     2px 2px 5px #000;
 
 }
-
 
 
 .card-rank{

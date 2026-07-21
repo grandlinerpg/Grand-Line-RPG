@@ -38,11 +38,17 @@ document
 
 
 
-window.abrirFichaEdit = function(){
-
+window.abrirFichaEdit = async function(){
 
 const skill =
 window.skillAtual;
+
+
+if(!document.getElementById("ficha-edit")){
+
+    await carregarFichaEditHTML();
+
+}
 
 
 

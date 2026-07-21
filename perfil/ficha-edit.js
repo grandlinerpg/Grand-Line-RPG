@@ -133,19 +133,6 @@ skill.cooldown || "";
 document.getElementById("edit-stm").value =
 skill.atributos?.stm || "";
 
-
-document.getElementById("edit-atk").value =
-skill.atributos?.atk || "";
-
-
-document.getElementById("edit-def").value =
-skill.atributos?.def || "";
-
-
-document.getElementById("edit-pow").value =
-skill.atributos?.pow || "";
-
-
 }
 
 
@@ -203,26 +190,6 @@ document.getElementById("edit-alvos").value;
 
 skill.cooldown =
 document.getElementById("edit-cooldown").value;
-
-
-
-skill.atributos = {
-
-stm:
-Number(document.getElementById("edit-stm").value || 0),
-
-atk:
-Number(document.getElementById("edit-atk").value || 0),
-
-def:
-Number(document.getElementById("edit-def").value || 0),
-
-pow:
-Number(document.getElementById("edit-pow").value || 0)
-
-};
-
-
 
 console.log(
 "SKILL EDITADA:",

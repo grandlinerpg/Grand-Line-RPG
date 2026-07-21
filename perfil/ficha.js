@@ -311,7 +311,7 @@ window.abrirFicha = async function(
         "atributo-atk",
         "ficha-atk",
         skill.categoria === "Ofensivo"
-        ? (skill.atributos?.atk ?? base.atk ?? "-")
+        ? (skill.atributos?.atk ?? base.atk)
         : null
     );
 
@@ -321,7 +321,7 @@ window.abrirFicha = async function(
         "atributo-def",
         "ficha-def",
         skill.categoria === "Defensivo"
-        ? (skill.atributos?.def ?? base.def ?? "-")
+        ? (skill.atributos?.def ?? base.def)
         : null
     );
 
@@ -330,7 +330,7 @@ window.abrirFicha = async function(
     atualizarAtributo(
         "atributo-pow",
         "ficha-pow",
-        skill.atributos?.pow ?? "-"
+        skill.atributos?.pow
     );
 
 

@@ -54,6 +54,21 @@ document
 .getElementById("salvar-ficha-edit")
 .onclick = salvarFichaEdit;
 
+document
+.getElementById("upload-img-btn")
+.onclick = ()=>{
+
+    document
+    .getElementById("upload-img-input")
+    .click();
+
+};
+
+
+document
+.getElementById("upload-img-input")
+.onchange = uploadImagem;
+
 
 }
 
@@ -91,10 +106,17 @@ document.getElementById("ficha-edit");
 modal.style.display="flex";
 
 
+if(skill.img){
 
-document.getElementById("edit-img").src =
-`https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
+    document.getElementById("edit-img").src =
+    `https://res.cloudinary.com/djh45admn/image/upload/${skill.img}`;
 
+}else{
+
+    document.getElementById("edit-img").src =
+    "";
+
+}
 
 
 document.getElementById("edit-nome").value =
@@ -144,7 +166,92 @@ document
 
 }
 
+async function uploadImagem(e){
 
+
+const file =
+e.target.files[0];
+
+
+if(!file) return;
+
+
+
+const formData =
+new FormData();
+
+
+formData.append(
+"file",
+file
+);
+
+
+formData.append(
+"upload_preset",
+"grandline-rpg"
+);
+
+
+
+try{
+
+
+const res =
+await fetch(
+"https://api.cloudinary.com/v1_1/djh45admn/image/upload",
+{
+method:"POST",
+body:formData
+}
+);
+
+
+
+const data =
+await res.json();
+
+
+
+console.log(
+"UPLOAD:",
+data
+);
+
+
+
+window.skillAtual.img =
+data.public_id;
+
+
+
+document
+.getElementById("edit-img")
+.src =
+data.secure_url;
+
+
+
+}catch(err){
+
+console.error(
+"Erro upload:",
+err
+);
+
+}
+
+
+}
+
+function limparUID(nome){
+
+    return nome
+    .trim()
+    .replace(/[.#$[\]/]/g,"")
+    .replace(/\s+/g,"_");
+
+}
 
 
 async function salvarFichaEdit(){
@@ -192,13 +299,24 @@ console.log(
 skill
 );
 
-if(!window.skillCategoria || !window.skillSub || !window.skillUid){
-    console.error("Dados da skill não encontrados:", {
+if(!window.skillCategoria || !window.skillSub){
+
+    console.error("Categoria ou estilo faltando:", {
         categoria: window.skillCategoria,
-        sub: window.skillSub,
-        uid: window.skillUid
+        sub: window.skillSub
     });
+
     return;
+
+}
+
+
+// se for uma skill nova cria o UID pelo nome
+if(!window.skillUid){
+
+    window.skillUid =
+    limparUID(skill.nome);
+
 }
 
 await update(

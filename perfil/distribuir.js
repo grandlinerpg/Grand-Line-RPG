@@ -23,6 +23,16 @@ let tempPoints = {};
 let originalStats = {};
 let originalPoints = {};
 
+const LIMITES_RANK = {
+  1: 20,
+  2: 40,
+  3: 60,
+  4: 80,
+  5: 100
+};
+
+let limiteAtributo = 20;
+
 fetch("perfil/distribuir.html")
   .then(res => res.text())
   .then(html => {
@@ -59,6 +69,10 @@ fetch("perfil/distribuir.html")
 
         const data = snap.val();
 
+        const rank = data.character?.rank || 1;
+
+        limiteAtributo = LIMITES_RANK[rank] || 20;
+
         originalStats = structuredClone(data.stats || {});
         originalPoints = structuredClone(data.points || {});
 
@@ -72,12 +86,12 @@ fetch("perfil/distribuir.html")
           if (el) el.innerText = val;
         };
 
-        set("modal-str", tempStats.str || 0);
-        set("modal-res", tempStats.res || 0);
-        set("modal-dex", tempStats.dex || 0);
-        set("modal-agi", tempStats.agi || 0);
-        set("modal-sta", tempStats.sta || 0);
-        set("modal-hp", tempStats.hp || 0);
+        set("modal-str", `${tempStats.str || 0}/${limiteAtributo}`);
+        set("modal-res", `${tempStats.res || 0}/${limiteAtributo}`);
+        set("modal-dex", `${tempStats.dex || 0}/${limiteAtributo}`);
+        set("modal-agi", `${tempStats.agi || 0}/${limiteAtributo}`);
+        set("modal-sta", `${tempStats.sta || 0}/${limiteAtributo}`);
+        set("modal-hp", `${tempStats.hp || 0}/${limiteAtributo}`);
 
         set("available-points", tempPoints.available || 0);
         set("used-points", tempPoints.used || 0);
@@ -118,6 +132,12 @@ fetch("perfil/distribuir.html")
         const id = btn.id;
 
         const add = (stat) => {
+
+          if ((tempStats[stat] || 0) >= limiteAtributo) {
+            alert(`Limite desse atributo atingido (${limiteAtributo})`);
+            return;
+          }
+
           tempStats[stat] = (tempStats[stat] || 0) + 1;
           tempPoints.available -= 1;
           tempPoints.used += 1;

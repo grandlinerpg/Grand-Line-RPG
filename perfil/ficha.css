@@ -29,7 +29,7 @@
   width:90%;
   max-width:400px;
 
-  height:550px; /* muda de max-height para height */
+  max-height:550px;
 
   background:rgba(10,10,10,0.96);
 
@@ -293,7 +293,7 @@
 
 .ficha-scroll{
 
-  height:calc(100% - 270px);
+  max-height:350px;
 
   overflow-y:auto;
   overflow-x:hidden;
@@ -343,7 +343,7 @@
   .ficha-window{
 
     width:90%;
-    height:650px;
+    max-height:650px;
     padding:18px;
 
   }

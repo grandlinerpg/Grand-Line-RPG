@@ -69,7 +69,7 @@ function initMarketSkills() {
     const permitidos = new Set();
 
     const fila = [
-      normalize(nome)
+      nome
     ];
 
     const visitados = new Set();
@@ -107,15 +107,15 @@ function initMarketSkills() {
 
 
       if(data.heranca)
-        fila.push(normalize(data.heranca));
+        fila.push(data.heranca);
 
 
       if(data.heranca2)
-        fila.push(normalize(data.heranca2));
+        fila.push(data.heranca2);
 
 
       if(data.heranca3)
-        fila.push(normalize(data.heranca3));
+        fila.push(data.heranca3);
 
     }
 
@@ -176,7 +176,7 @@ function initMarketSkills() {
             continue;
           }
 
-          const skillSub = normalize(sub);
+          const skillSub = sub;
 
           // 🔥 AGORA COMPARAÇÃO REALMENTE SEGURA
           if (allowed && !allowed.has(skillSub)) {

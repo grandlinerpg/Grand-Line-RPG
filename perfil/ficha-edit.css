@@ -249,20 +249,28 @@ cursor:pointer;
 .img-upload-area{
 
     display:flex;
+
+    flex-direction:column;
+
     align-items:center;
+
     justify-content:center;
-    gap:10px;
+
+    gap:8px;
+
     margin-bottom:15px;
 
 }
 
 
+
+/* MOLDURA DA IMAGEM 3:2 */
+
 .img-box{
 
-    width:100px;
-    height:66px;
+    width:120px;
 
-    aspect-ratio:3/2;
+    aspect-ratio:3 / 2;
 
     border-radius:10px;
 
@@ -273,13 +281,65 @@ cursor:pointer;
     background:#111;
 
     display:flex;
+
     align-items:center;
+
     justify-content:center;
 
 }
 
 
 
+/* IMAGEM */
+
+.edit-img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+    display:block;
+
+}
+
+
+
+/* BOTÃO UPLOAD */
+
+.upload-img-btn{
+
+    width:34px;
+
+    height:34px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(246,211,101,.4);
+
+    background:#111;
+
+    color:#f6d365;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+
+.upload-img-btn:hover{
+
+    transform:scale(1.1);
+
+}
 .edit-img{
 
     width:100%;

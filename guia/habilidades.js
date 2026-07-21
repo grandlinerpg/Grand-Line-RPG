@@ -92,6 +92,7 @@ async function getEstilo(key){
     .map(([id, v]) => ({
         ...v,
         id,
+        categoria: v.categoria || null,
         bancoCategoria: tipo,
         estilo: key
     }));

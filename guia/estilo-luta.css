@@ -211,9 +211,11 @@
 
 .add-skill-btn{
 
-    margin-top:10px;
+    width:calc(100% - 20px);
 
-    width:90%;
+    margin:10px auto 0;
+
+    display:block;
 
     padding:10px 15px;
 

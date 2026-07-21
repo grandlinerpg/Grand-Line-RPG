@@ -213,7 +213,10 @@ const data = await res.json();
 
 console.log("STATUS:", res.status);
 
-console.log("RETORNO CLOUDINARY:", data);
+console.log(
+"ERRO CLOUDINARY:",
+data.error?.message
+);
 
 
 

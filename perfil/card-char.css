@@ -130,7 +130,7 @@
 
     left:10px;
     right:10px;
-    bottom:5px;
+    bottom:3px;
 
     display:flex;
 
@@ -148,7 +148,7 @@
 
     flex-direction:column;
 
-    gap:3px;
+    gap:2px;
 
     color:#fff;
 

@@ -208,3 +208,40 @@
 
   border-color:#f6d365;
 }
+
+.add-skill-btn{
+
+    margin-top:10px;
+
+    width:90%;
+
+    padding:10px 15px;
+
+    background:#1f1f1f;
+
+    color:#d6b56c;
+
+    border:1px solid #d6b56c;
+
+    border-radius:8px;
+
+    font-family:inherit;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+.add-skill-btn:hover{
+
+    background:#d6b56c;
+
+    color:#111;
+
+}

@@ -591,6 +591,47 @@
     background:#00aa44;
 }
 
+/* =========================
+   SELECT TAMANHO DA FONTE
+========================= */
+
+#tamanho-nome,
+#tamanho-atributo{
+
+    width:65px;
+
+    height:32px;
+
+    background:#111;
+
+    color:white;
+
+    border:1px solid rgba(246,211,101,.25);
+
+    border-radius:8px;
+
+    padding:0 5px;
+
+    outline:none;
+
+    cursor:pointer;
+
+    text-align:center;
+
+    font-family:Arial,sans-serif;
+
+    font-size:14px;
+
+}
+
+
+#tamanho-nome:hover,
+#tamanho-atributo:hover{
+
+    border-color:#f6d365;
+
+}
+
 
 /* =========================
    POSIÇÕES DOS CARDS

@@ -83,7 +83,7 @@ function atualizarLinha(idLinha, idTexto, valor){
 
     if(valor !== undefined && valor !== null && valor !== ""){
 
-        texto.innerText = Number(valor).toLocaleString("pt-BR");
+        texto.innerText = valor;
 
         linha.style.display = "";
 
@@ -244,7 +244,7 @@ window.abrirFicha = async function(
 
         if(valor !== undefined && valor !== null && valor !== ""){
 
-            texto.innerText = valor;
+            texto.innerText = Number(valor).toLocaleString("pt-BR");
             bloco.style.display = "";
 
         }else{

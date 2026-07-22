@@ -22,6 +22,78 @@
 
 }
 
+@font-face{
+
+    font-family:"Dopestyle";
+
+    src:url("../fontes/Dopestyle.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
+
+@font-face{
+
+    font-family:"Headlight";
+
+    src:url("../fontes/Headlight.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
+
+@font-face{
+
+    font-family:"Matyric_PersonalUse";
+
+    src:url("../fontes/Matyric_PersonalUse.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
+
+@font-face{
+
+    font-family:"Eclipse Demo";
+
+    src:url("../fontes/Eclipse Demo.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
+
+@font-face{
+
+    font-family:"Pink Blue";
+
+    src:url("../fontes/Pink Blue.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
+
+@font-face{
+
+    font-family:"eelin Sweet";
+
+    src:url("../fontes/Feelin Sweet.ttf") format("truetype");
+
+    font-weight:normal;
+
+    font-style:normal;
+
+}
+
 .card-modal{
 
     position:fixed;

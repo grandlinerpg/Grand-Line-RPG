@@ -303,7 +303,9 @@ window.abrirFicha = async function(
     atualizarAtributo(
         "atributo-stm",
         "ficha-stm",
-        skill.atributos?.stm ?? base.stm ?? "-"
+        skill.atributos?.stm !== ""
+            ? (skill.atributos?.stm ?? base.stm)
+            : base.stm
     );
 
 
@@ -312,7 +314,11 @@ window.abrirFicha = async function(
         "atributo-atk",
         "ficha-atk",
         skill.categoria === "Ofensivo"
-        ? (skill.atributos?.atk ?? base.atk)
+        ? (
+            skill.atributos?.atk !== ""
+                ? (skill.atributos?.atk ?? base.atk)
+                : base.atk
+        )
         : null
     );
 
@@ -322,7 +328,11 @@ window.abrirFicha = async function(
         "atributo-def",
         "ficha-def",
         skill.categoria === "Defensivo"
-        ? (skill.atributos?.def ?? base.def)
+        ? (
+            skill.atributos?.def !== ""
+                ? (skill.atributos?.def ?? base.def)
+                : base.def
+        )        
         : null
     );
 
@@ -358,7 +368,9 @@ window.abrirFicha = async function(
     atualizarLinha(
         "linha-cooldown",
         "ficha-cooldown",
-        skill.cooldown ?? cooldownBase
+        skill.cooldown !== ""
+            ? (skill.cooldown ?? cooldownBase)
+            : cooldownBase
     );
 
 

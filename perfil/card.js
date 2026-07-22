@@ -238,6 +238,30 @@ document.getElementById("posicao-card")
 
 mudarPosicaoCard(1);
 
+    // =========================
+// BOTÃO EDITAR
+// =========================
+
+document
+.getElementById("editar-card")
+?.addEventListener("click",()=>{
+
+    const editor =
+    document.querySelector(".card-editor");
+
+
+    if(editor.style.display === "block"){
+
+        editor.style.display="none";
+
+    }else{
+
+        editor.style.display="block";
+
+    }
+
+});
+
     // BOTÃO DOWNLOAD
     document
     .getElementById("download-card")

@@ -43,7 +43,7 @@
 
     <nav id="nav-menu">
 
-      <a href="index.html">INÍCIO</a>
+      <a id="home-link" href="index.html">INÍCIO</a>
 
       <a href="faccao.html">FACÇÃO</a>
 
@@ -188,6 +188,28 @@
     const app = initializeApp(firebaseConfig);
 
     const auth = getAuth(app);
+
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+    const homeLink = document.getElementById("home-link");
+
+
+    onAuthStateChanged(auth, (user) => {
+
+      if(user){
+
+        homeLink.innerHTML = "PERFIL";
+        homeLink.href = "perfil.html";
+
+      }else{
+
+        homeLink.innerHTML = "INÍCIO";
+        homeLink.href = "index.html";
+
+      }
+
+    });
 
 
     function go(page){

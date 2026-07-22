@@ -263,7 +263,7 @@
 
     right:10px;
 
-    bottom:3px;
+    bottom:0px;
 
 
     display:flex;
@@ -440,7 +440,7 @@
 
     align-items:center;
 
-    gap:10px;
+    gap:7px;
 
     width:100%;
 

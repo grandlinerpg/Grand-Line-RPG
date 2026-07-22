@@ -134,7 +134,34 @@
 
 }
 
+/* =========================
+   MOLDURA DO PERSONAGEM
+========================= */
 
+.personagem-frame{
+
+    padding:12px;
+
+    border:4px solid #d4af37;
+
+    border-radius:15px;
+
+    background:
+    linear-gradient(
+        145deg,
+        #1a1a1a,
+        #000
+    );
+
+
+    box-shadow:
+
+    0 0 15px rgba(212,175,55,.8),
+
+    inset 0 0 15px rgba(0,0,0,.8);
+
+
+}
 
 .personagem-image-area{
 
@@ -146,7 +173,7 @@
 
 .personagem-img{
 
-    width:420px;
+    width:380px;
     aspect-ratio:3/2;
     max-width:90vw;
 

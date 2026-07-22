@@ -360,48 +360,6 @@
 
 
 
-.editar-personagem,
-.download-personagem{
-
-
-    padding:10px 30px;
-
-    border:none;
-
-    border-radius:10px;
-
-
-    cursor:pointer;
-
-
-    font-family:'Cinzel',serif;
-
-    font-size:16px;
-
-    font-weight:bold;
-
-
-    background:#fff;
-
-    color:#000;
-
-
-    transition:.2s;
-
-
-}
-
-
-
-.editar-personagem:hover,
-.download-personagem:hover{
-
-    transform:scale(1.05);
-
-}
-
-
-
 
 
 /* =========================

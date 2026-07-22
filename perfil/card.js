@@ -146,7 +146,19 @@ window.abrirCard=function(skill){
 
     const base = atributosRank[skill.rank] || {};
 
+    function pegarAtributo(valor, padrao){
 
+        if(valor === 0){
+            return null;
+        }
+
+        if(valor === "" || valor === undefined || valor === null){
+            return padrao;
+        }
+
+        return valor;
+    
+    }
 
     function atualizarAtributo(id,nome,valor){
 
@@ -175,13 +187,12 @@ window.abrirCard=function(skill){
     }
 
 
-
     // ATK somente ofensivo
     atualizarAtributo(
         "card-atk",
         "ATK:",
         skill.categoria === "Ofensivo"
-        ? (skill.atributos?.atk ?? base.atk ?? null)
+        ? pegarAtributo(skill.atributos?.atk, base.atk)
         : null
     );
 
@@ -191,7 +202,7 @@ window.abrirCard=function(skill){
         "card-def",
         "DEF:",
         skill.categoria === "Defensivo"
-        ? (skill.atributos?.def ?? base.def ?? null)
+        ? pegarAtributo(skill.atributos?.def, base.def)
         : null
     );
 
@@ -200,7 +211,7 @@ window.abrirCard=function(skill){
     atualizarAtributo(
         "card-stm",
         "STM:",
-        skill.atributos?.stm ?? base.stm ?? null
+        pegarAtributo(skill.atributos?.stm, base.stm)
     );
 
     atualizarAtributo(

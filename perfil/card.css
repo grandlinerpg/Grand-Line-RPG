@@ -574,3 +574,269 @@
 .color-menu button:nth-child(7){
     background:#00aa44;
 }
+
+
+/* =========================
+   SISTEMA DE POSIÇÃO CARD
+========================= */
+
+
+/* libera os elementos */
+
+.card-bottom{
+
+    position:absolute;
+
+    inset:0;
+
+}
+
+
+
+.card-atributos,
+.card-rank{
+
+    position:absolute;
+
+}
+
+
+
+/* =========================
+   TIPO 1
+   Nome centro cima
+   Atributos esquerda baixo
+   Rank direita baixo
+========================= */
+
+
+.posicao-1 .card-nome{
+
+    top:3px;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+
+}
+
+
+.posicao-1 .card-atributos{
+
+    left:10px;
+    bottom:10px;
+
+}
+
+
+.posicao-1 .card-rank{
+
+    right:10px;
+    bottom:10px;
+
+}
+
+
+
+/* =========================
+   TIPO 2
+   Nome centro cima
+   Atributos direita baixo
+   Rank esquerda baixo
+========================= */
+
+
+.posicao-2 .card-nome{
+
+    top:3px;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+
+}
+
+
+.posicao-2 .card-atributos{
+
+    right:10px;
+    bottom:10px;
+    left:auto;
+
+}
+
+
+.posicao-2 .card-rank{
+
+    left:10px;
+    bottom:10px;
+    right:auto;
+
+}
+
+
+
+/* =========================
+   TIPO 3
+   Nome esquerda
+   Rank esquerda
+   Atributos direita
+========================= */
+
+
+.posicao-3 .card-nome{
+
+    top:20px;
+    left:10px;
+    transform:none;
+    text-align:left;
+
+}
+
+
+.posicao-3 .card-atributos{
+
+    right:10px;
+    top:50%;
+    bottom:auto;
+
+    transform:translateY(-50%);
+
+}
+
+
+.posicao-3 .card-rank{
+
+    left:10px;
+    bottom:10px;
+
+}
+
+
+
+/* =========================
+   TIPO 4
+   Nome direita
+   Rank direita
+   Atributos esquerda
+========================= */
+
+
+.posicao-4 .card-nome{
+
+    top:20px;
+    left:auto;
+    right:10px;
+    transform:none;
+    text-align:right;
+
+}
+
+
+.posicao-4 .card-atributos{
+
+    left:10px;
+    top:50%;
+    bottom:auto;
+
+    transform:translateY(-50%);
+
+}
+
+
+.posicao-4 .card-rank{
+
+    right:10px;
+    bottom:10px;
+
+}
+
+
+
+/* =========================
+   TIPO 5
+   Igual tipo 3
+   Nome inclinado /
+========================= */
+
+
+.posicao-5 .card-nome{
+
+    top:25px;
+    left:10px;
+
+    transform:none;
+
+    text-align:left;
+
+    rotate:-15deg;
+
+}
+
+
+
+.posicao-5 .card-atributos{
+
+    right:10px;
+
+    top:50%;
+    bottom:auto;
+
+    transform:translateY(-50%);
+
+}
+
+
+.posicao-5 .card-rank{
+
+    left:10px;
+
+    bottom:10px;
+
+}
+
+
+
+
+/* =========================
+   TIPO 6
+   Igual tipo 4
+   Nome inclinado \
+========================= */
+
+
+.posicao-6 .card-nome{
+
+    top:25px;
+
+    left:auto;
+    right:10px;
+
+    transform:none;
+
+    text-align:right;
+
+    rotate:15deg;
+
+}
+
+
+
+.posicao-6 .card-atributos{
+
+    left:10px;
+
+    top:50%;
+    bottom:auto;
+
+    transform:translateY(-50%);
+
+}
+
+
+
+.posicao-6 .card-rank{
+
+    right:10px;
+
+    bottom:10px;
+
+}

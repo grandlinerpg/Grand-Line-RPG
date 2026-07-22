@@ -615,6 +615,7 @@
 .posicao-1 .card-atributos{
 
     position:absolute;
+    right:0px;
 
 }
 
@@ -622,6 +623,7 @@
 .posicao-1 .card-rank{
 
     position:absolute;
+    left:0px;
 
 }
 
@@ -645,6 +647,7 @@
 .posicao-2 .card-atributos{
 
     position:absolute;
+    left:0px;
 
 }
 
@@ -652,6 +655,7 @@
 .posicao-2 .card-rank{
 
     position:absolute;
+    right:0px;
 
 }
 
@@ -678,6 +682,7 @@
 .posicao-3 .card-atributos{
 
     position:absolute;
+    right:0px;
 
 }
 
@@ -685,6 +690,7 @@
 .posicao-3 .card-rank{
 
     position:absolute;
+    left:0px;
 
 }
 
@@ -713,6 +719,7 @@
 .posicao-4 .card-atributos{
 
     position:absolute;
+    left:0px;
 
 }
 
@@ -720,6 +727,7 @@
 .posicao-4 .card-rank{
 
     position:absolute;
+    right:0px;
 
 }
 
@@ -754,6 +762,7 @@
 .posicao-5 .card-atributos{
 
     position:absolute;
+    right:0px;
 
 }
 
@@ -761,6 +770,7 @@
 .posicao-5 .card-rank{
 
     position:absolute;
+    left:0px;
 
 }
 
@@ -798,11 +808,14 @@
 
     position:absolute;
 
+    left:0px;
 }
 
 
 .posicao-6 .card-rank{
 
     position:absolute;
+
+    right:0px;
 
 }

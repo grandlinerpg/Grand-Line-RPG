@@ -172,8 +172,7 @@ window.abrirCard=function(skill){
 
             el.style.display="";
             el.innerText =
-            `${nome} ${valor}`;
-
+            `${nome} ${Number(valor).toLocaleString("pt-BR")}`;
 
         }else{
 

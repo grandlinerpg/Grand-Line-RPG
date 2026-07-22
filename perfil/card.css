@@ -189,7 +189,7 @@
 
     display:inline-block;
 
-    border:3px solid #8b6a3d;
+    box-sizing:border-box;
 
 }
 

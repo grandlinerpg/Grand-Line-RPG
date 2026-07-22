@@ -170,6 +170,31 @@ document.getElementById("fonte-atributo")
 });
 
 // =========================
+// TAMANHO DAS FONTES
+// =========================
+
+
+document.getElementById("tamanho-nome")
+?.addEventListener("change",function(){
+
+    document.getElementById("card-nome")
+    .style.fontSize =
+    this.value;
+
+});
+
+
+
+document.getElementById("tamanho-atributo")
+?.addEventListener("change",function(){
+
+    document.querySelector(".card-atributos")
+    .style.fontSize =
+    this.value;
+
+});
+
+// =========================
 // POSIÇÃO DO CARD
 // =========================
 

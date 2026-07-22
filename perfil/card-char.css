@@ -359,9 +359,6 @@
 }
 
 
-
-
-
 /* =========================
    EDITOR PERSONAGEM
 ========================= */
@@ -409,7 +406,7 @@
     align-items:center;
 
 
-    gap:10px;
+    gap:7px;
 
 
     width:100%;
@@ -468,7 +465,40 @@
 
 
 
+/* =========================
+   SELECT TAMANHO DA FONTE
+========================= */
 
+#personagem-tamanho-nome,
+#personagem-tamanho-atributo{
+
+    width:45px;
+
+    height:32px;
+
+    flex:none;
+
+    background:#111;
+
+    color:white;
+
+    border:1px solid rgba(246,211,101,.25);
+
+    border-radius:8px;
+
+    padding:0 3px;
+
+    outline:none;
+
+    cursor:pointer;
+
+    text-align:center;
+
+    font-family:Arial,sans-serif;
+
+    font-size:12px;
+
+}
 
 
 /* =========================
@@ -521,7 +551,7 @@
     right:0;
 
 
-    width:120px;
+    width:140px;
 
 
     padding:8px;

@@ -181,7 +181,44 @@
 
 }
 
+/* =========================
+   MOLDURA CARD
+========================= */
 
+
+.card-frame{
+
+    padding:12px;
+
+
+    border:5px solid #d4af37;
+
+
+    border-radius:18px;
+
+
+    background:
+    linear-gradient(
+        145deg,
+        #1a1a1a,
+        #000
+    );
+
+
+    box-shadow:
+
+
+    0 0 15px rgba(212,175,55,.8),
+
+
+    0 0 30px rgba(212,175,55,.35),
+
+
+    inset 0 0 15px rgba(0,0,0,.9);
+
+
+
+}
 
 .card-image-area{
 
@@ -193,7 +230,7 @@
 
 .card-img{
 
-    width:420px;
+    width:380px;
     aspect-ratio: 3 / 2;
     max-width:90vw;
 

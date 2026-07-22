@@ -665,7 +665,7 @@
 .personagem-posicao-1 .personagem-atributos{
 
     position:absolute;
-    right:0px;
+    left:0px;
 
 }
 
@@ -673,7 +673,7 @@
 .personagem-posicao-1 .personagem-rank{
 
     position:absolute;
-    left:0px;
+    right:0px;
 
 }
 
@@ -699,7 +699,7 @@
 .personagem-posicao-2 .personagem-atributos{
 
     position:absolute;
-    left:0px;
+    right:0px;
 
 }
 
@@ -707,7 +707,7 @@
 .personagem-posicao-2 .personagem-rank{
 
     position:absolute;
-    right:0px;
+    left:0px;
 
 }
 

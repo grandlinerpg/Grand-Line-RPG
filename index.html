@@ -19,24 +19,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-<script>
-
-if ("serviceWorker" in navigator) {
-
-  navigator.serviceWorker.register(
-    "/Grand-Line-RPG/service-worker.js"
-  )
-  .then(() => {
-    console.log("Service Worker ativo");
-  })
-  .catch(error => {
-    console.log("Erro Service Worker:", error);
-  });
-
-}
-
-</script>
-
 <body>
 
   <!-- FUNDO -->
@@ -123,6 +105,24 @@ if ("serviceWorker" in navigator) {
     });
 
   </script>
+
+<script>
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register(
+    "/Grand-Line-RPG/service-worker.js"
+  )
+  .then(() => {
+    console.log("Service Worker ativo");
+  })
+  .catch(error => {
+    console.log("Erro Service Worker:", error);
+  });
+
+}
+
+</script>
 
 </body>
 </html>

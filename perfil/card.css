@@ -187,19 +187,15 @@
 
     position:relative;
 
-    display:inline-block;
-
-    box-sizing:border-box;
-
 }
 
 
 
 .card-img{
 
-    width:380px; /* antes era 420px */
-
-    aspect-ratio:3/2;
+    width:370px;
+    aspect-ratio: 3 / 2;
+    max-width:90vw;
 
     display:block;
 

@@ -885,3 +885,17 @@
 .card-editor{
     display:none;
 }
+
+@media(max-width:700px){
+
+
+    .fonte-Eclipse .card-nome{
+        top:0px;
+    }
+
+
+    .fonte-Dopestyle .card-nome{
+        top:8px;
+    }
+
+}

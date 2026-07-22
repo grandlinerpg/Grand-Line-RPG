@@ -83,6 +83,237 @@ async function carregarCharHTML(){
 
     });
 
+        // ======================
+    // EDITOR PERSONAGEM
+    // ======================
+
+
+    document
+    .querySelectorAll(".personagem-color-picker")
+    .forEach(botao=>{
+
+
+        botao.addEventListener("click",(e)=>{
+
+
+            e.stopPropagation();
+
+
+            const menu =
+            botao.parentElement
+            .querySelector(".personagem-color-menu");
+
+
+            document
+            .querySelectorAll(".personagem-color-menu")
+            .forEach(m=>{
+
+
+                if(m !== menu)
+                m.style.display="none";
+
+
+            });
+
+
+
+            menu.style.display =
+            menu.style.display==="grid"
+            ? "none"
+            : "grid";
+
+
+        });
+
+
+    });
+
+
+
+
+
+
+
+    document
+    .querySelectorAll(".personagem-color-menu button")
+    .forEach(cor=>{
+
+
+        cor.addEventListener("click",()=>{
+
+
+            const menu =
+            cor.parentElement;
+
+
+            const botao =
+            menu.parentElement
+            .querySelector(".personagem-color-picker");
+
+
+
+            botao.style.background =
+            cor.dataset.color;
+
+
+
+            const alvo =
+            botao.dataset.target;
+
+
+
+            if(alvo==="nome-personagem"){
+
+
+                document
+                .getElementById("personagem-nome")
+                .style.color =
+                cor.dataset.color;
+
+
+            }
+
+
+
+
+            if(alvo==="atributo-personagem"){
+
+
+                document
+                .querySelector(".personagem-atributos")
+                .style.color =
+                cor.dataset.color;
+
+
+            }
+
+
+
+            menu.style.display="none";
+
+
+        });
+
+
+    });
+
+
+
+
+
+
+
+    // ======================
+    // FONTES
+    // ======================
+
+
+    document
+    .getElementById("fonte-nome-personagem")
+    ?.addEventListener("change",function(){
+
+
+        document
+        .getElementById("personagem-nome")
+        .style.fontFamily =
+        this.value;
+
+
+    });
+
+
+
+
+
+    document
+    .getElementById("fonte-atributo-personagem")
+    ?.addEventListener("change",function(){
+
+
+        document
+        .querySelector(".personagem-atributos")
+        .style.fontFamily =
+        this.value;
+
+
+    });
+
+
+
+
+
+
+
+    // ======================
+    // TAMANHOS
+    // ======================
+
+
+    document
+    .getElementById("tamanho-nome-personagem")
+    ?.addEventListener("change",function(){
+
+
+        document
+        .getElementById("personagem-nome")
+        .style.fontSize =
+        this.value;
+
+
+    });
+
+
+
+
+
+
+    document
+    .getElementById("tamanho-atributo-personagem")
+    ?.addEventListener("change",function(){
+
+
+        document
+        .querySelector(".personagem-atributos")
+        .style.fontSize =
+        this.value;
+
+
+    });
+
+
+
+
+
+
+
+    // ======================
+    // BOTÃO EDITAR
+    // ======================
+
+
+    document
+    .getElementById("editar-personagem")
+    ?.addEventListener("click",()=>{
+
+
+        const editor =
+        document.querySelector(".personagem-editor");
+
+
+
+        if(editor.style.display==="block"){
+
+            editor.style.display="none";
+
+        }else{
+
+            editor.style.display="block";
+
+        }
+
+
+    });
+
 }
 
 carregarCharHTML();

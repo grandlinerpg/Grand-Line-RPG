@@ -8,8 +8,8 @@ const FILES_TO_CACHE = [
   "/Grand-Line-RPG/style.css",
   "/Grand-Line-RPG/guia.css",
 
-  "/Grand-Line-RPG/icon-192.png",
-  "/Grand-Line-RPG/icon-512.png"
+  "/Grand-Line-RPG/icone-192.png",
+  "/Grand-Line-RPG/icone-512.png"
 
 ];
 

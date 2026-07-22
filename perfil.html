@@ -7,6 +7,14 @@
 
   <title>Perfil - Grand Line RPG</title>
 
+  <link rel="manifest" href="/Grand-Line-RPG/manifest.json">
+
+  <meta name="theme-color" content="#0f1116">
+
+  <link rel="icon" type="image/png" href="/Grand-Line-RPG/icon-192.png">
+
+  <link rel="apple-touch-icon" href="/Grand-Line-RPG/icon-192.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="perfil.css">
@@ -192,6 +200,18 @@
     });
 
   </script>
+
+<script>
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register(
+    "/Grand-Line-RPG/service-worker.js"
+  );
+
+}
+
+</script>
   
 </body>
 </html>

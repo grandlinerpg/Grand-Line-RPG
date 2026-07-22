@@ -268,3 +268,311 @@
     }
 
 }
+
+/* =========================
+   BOTÕES PERSONAGEM
+========================= */
+
+
+.personagem-buttons{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-top:10px;
+
+}
+
+
+
+.editar-personagem,
+.download-personagem{
+
+
+    padding:10px 30px;
+
+    border:none;
+
+    border-radius:10px;
+
+
+    cursor:pointer;
+
+
+    font-family:'Cinzel',serif;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+
+    background:#fff;
+
+    color:#000;
+
+
+    transition:.2s;
+
+
+}
+
+
+
+.editar-personagem:hover,
+.download-personagem:hover{
+
+    transform:scale(1.05);
+
+}
+
+
+
+
+
+/* =========================
+   EDITOR PERSONAGEM
+========================= */
+
+
+.personagem-editor{
+
+    width:420px;
+
+    max-width:90vw;
+
+
+    margin-top:15px;
+
+    padding:15px;
+
+
+    background:#111;
+
+
+    border:1px solid rgba(246,211,101,.25);
+
+    border-radius:12px;
+
+
+    color:white;
+
+
+    font-family:Arial,sans-serif;
+
+
+    display:none;
+
+}
+
+
+
+
+
+.personagem-editor-row{
+
+
+    display:flex;
+
+    align-items:center;
+
+
+    gap:10px;
+
+
+    width:100%;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+.personagem-editor-row label{
+
+
+    width:75px;
+
+
+    color:#f6d365;
+
+
+    font-size:14px;
+
+
+}
+
+
+
+
+
+.personagem-editor-row select{
+
+
+    flex:1;
+
+
+    height:32px;
+
+
+    background:#111;
+
+
+    color:white;
+
+
+    border:1px solid rgba(246,211,101,.25);
+
+
+    border-radius:8px;
+
+
+    padding:0 8px;
+
+
+}
+
+
+
+
+
+
+/* =========================
+   CORES
+========================= */
+
+
+.personagem-color-wrapper{
+
+    position:relative;
+
+}
+
+
+
+
+.personagem-color-picker{
+
+
+    width:30px;
+
+    height:30px;
+
+
+    border-radius:50%;
+
+
+    border:1px solid rgba(255,255,255,.5);
+
+
+    background:white;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+
+.personagem-color-menu{
+
+
+    position:absolute;
+
+
+    top:38px;
+
+    right:0;
+
+
+    width:120px;
+
+
+    padding:8px;
+
+
+    background:#111;
+
+
+    border:1px solid rgba(246,211,101,.25);
+
+
+    border-radius:10px;
+
+
+    display:none;
+
+
+    grid-template-columns:repeat(4,1fr);
+
+
+    gap:8px;
+
+
+    z-index:9999;
+
+
+}
+
+
+
+
+.personagem-color-menu button{
+
+
+    width:22px;
+
+    height:22px;
+
+
+    border-radius:50%;
+
+
+    border:1px solid #555;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+.personagem-color-menu button:nth-child(1){
+    background:#000;
+}
+
+
+.personagem-color-menu button:nth-child(2){
+    background:#fff;
+}
+
+
+.personagem-color-menu button:nth-child(3){
+    background:#d4af37;
+}
+
+
+.personagem-color-menu button:nth-child(4){
+    background:#c0c0c0;
+}
+
+
+.personagem-color-menu button:nth-child(5){
+    background:#ff0000;
+}
+
+
+.personagem-color-menu button:nth-child(6){
+    background:#0066ff;
+}
+
+
+.personagem-color-menu button:nth-child(7){
+    background:#00aa44;
+}
+

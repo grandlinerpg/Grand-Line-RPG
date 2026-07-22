@@ -48,12 +48,7 @@
 
     padding:20px;
 
-    background:
-    linear-gradient(
-        145deg,
-        #2b2118,
-        #120e0a
-    );
+    background:rgba(10,10,10,0.96);
 
     border-radius:18px;
 

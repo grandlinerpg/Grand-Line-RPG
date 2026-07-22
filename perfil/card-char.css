@@ -445,8 +445,8 @@
    SELECT TAMANHO DA FONTE
 ========================= */
 
-#personagem-tamanho-nome,
-#personagem-tamanho-atributo{
+#tamanho-nome-personagem,
+#tamanho-atributo-personagem{
 
     width:45px;
 

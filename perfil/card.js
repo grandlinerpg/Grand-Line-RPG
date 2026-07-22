@@ -34,6 +34,140 @@ async function carregarCardHTML(){
 
     });
 
+    // =========================
+// EDITOR DO CARD
+// =========================
+
+
+document.querySelectorAll(".color-picker").forEach(botao=>{
+
+
+    botao.addEventListener("click",(e)=>{
+
+        e.stopPropagation();
+
+
+        const menu =
+        botao.parentElement.querySelector(".color-menu");
+
+
+        document.querySelectorAll(".color-menu")
+        .forEach(m=>{
+
+            if(m !== menu)
+                m.style.display="none";
+
+        });
+
+
+        if(menu){
+
+            menu.style.display =
+            menu.style.display==="grid"
+            ? "none"
+            : "grid";
+
+        }
+
+
+    });
+
+
+});
+
+
+
+
+
+document.querySelectorAll(".color-menu button")
+.forEach(cor=>{
+
+
+    cor.addEventListener("click",()=>{
+
+
+        const menu =
+        cor.parentElement;
+
+
+        const botao =
+        menu.parentElement.querySelector(".color-picker");
+
+
+        botao.style.background =
+        cor.dataset.color;
+
+
+
+        const alvo =
+        botao.dataset.target;
+
+
+
+        if(alvo==="nome"){
+
+
+            document.getElementById("card-nome")
+            .style.color =
+            cor.dataset.color;
+
+
+        }
+
+
+        if(alvo==="atributo"){
+
+
+            document.querySelector(".card-atributos")
+            .style.color =
+            cor.dataset.color;
+
+
+        }
+
+
+
+        menu.style.display="none";
+
+
+    });
+
+
+});
+
+
+
+
+
+// =========================
+// FONTES
+// =========================
+
+
+document.getElementById("fonte-nome")
+?.addEventListener("change",function(){
+
+
+    document.getElementById("card-nome")
+    .style.fontFamily =
+    this.value;
+
+
+});
+
+
+
+
+document.getElementById("fonte-atributo")
+?.addEventListener("change",function(){
+
+
+    document.querySelector(".card-atributos")
+    .style.fontFamily =
+    this.value;
+
+
+});
 
     // BOTÃO DOWNLOAD
     document

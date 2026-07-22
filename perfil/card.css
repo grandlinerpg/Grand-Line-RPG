@@ -305,5 +305,270 @@
 
     }
 
+    /* =========================
+   EDITOR DO CARD
+========================= */
+
+
+.card-editor{
+
+    width:420px;
+    max-width:90vw;
+
+    margin-top:20px;
+
+    padding:15px;
+
+    background:rgba(20,15,10,.95);
+
+    border:1px solid #8b6a3d;
+
+    border-radius:12px;
+
+    box-shadow:
+    0 0 15px rgba(0,0,0,.8);
+
+    color:white;
+
+    font-family:'Radiant',serif;
+
+}
+
+
+
+/* ABAS */
+
+.editor-tabs{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-bottom:15px;
+
+}
+
+
+.editor-tab{
+
+    flex:1;
+
+    padding:10px;
+
+    border:none;
+
+    cursor:pointer;
+
+    border-radius:8px;
+
+    background:#302015;
+
+    color:white;
+
+    font-family:'Radiant',serif;
+
+    font-size:16px;
+
+    transition:.2s;
+
+}
+
+
+.editor-tab:hover{
+
+    transform:scale(1.05);
+
+}
+
+
+.editor-tab.active{
+
+    background:#c89b4a;
+
+    color:#000;
+
+}
+
+
+
+/* CONTEÚDO */
+
+
+.editor-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+
+.editor-panel label{
+
+    font-size:14px;
+
+    color:#d4af37;
+
+}
+
+
+
+/* SELECT */
+
+.editor-panel select{
+
+    width:100%;
+
+    padding:8px;
+
+    border-radius:8px;
+
+    border:none;
+
+    background:#fff;
+
+    color:#000;
+
+    cursor:pointer;
+
+    font-family:'Radiant',serif;
+
+}
+
+
+
+/* BOTÃO DA COR */
+
+.color-picker{
+
+    width:32px;
+
+    height:32px;
+
+    border-radius:50%;
+
+    border:2px solid white;
+
+    cursor:pointer;
+
+    background:#fff;
+
+}
+
+
+
+/* PALETA */
+
+.color-menu{
+
+    display:none;
+
+    gap:10px;
+
+    margin-top:15px;
+
+    justify-content:center;
+
+    flex-wrap:wrap;
+
+}
+
+
+
+.color-menu button{
+
+    width:28px;
+
+    height:28px;
+
+    border-radius:50%;
+
+    border:2px solid white;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+
+.color-menu button:hover{
+
+    transform:scale(1.2);
+
+}
+
+
+
+/* CORES */
+
+
+.color-menu button:nth-child(1){
+
+    background:#000000;
+
+}
+
+
+.color-menu button:nth-child(2){
+
+    background:#ffffff;
+
+}
+
+
+.color-menu button:nth-child(3){
+
+    background:#d4af37;
+
+}
+
+
+.color-menu button:nth-child(4){
+
+    background:#c0c0c0;
+
+}
+
+
+.color-menu button:nth-child(5){
+
+    background:#ff0000;
+
+}
+
+
+.color-menu button:nth-child(6){
+
+    background:#0066ff;
+
+}
+
+
+.color-menu button:nth-child(7){
+
+    background:#00aa44;
+
+}
+
+
+
+/* MOBILE */
+
+
+@media(max-width:700px){
+
+
+    .card-editor{
+
+        width:320px;
+
+    }
+
+
+}
+
 
 }

@@ -634,9 +634,14 @@
 
 .personagem-color-menu button:nth-child(7){
     background:#00aa44;
-
+}
 
     /* =========================
+   POSIÇÕES PERSONAGEM
+========================= */
+
+
+/* =========================
    POSIÇÕES PERSONAGEM
 ========================= */
 
@@ -649,7 +654,7 @@
 ========================= */
 
 
-.posicao-1 .personagem-nome{
+.personagem-posicao-1 .personagem-nome{
 
     left:50%;
     transform:translateX(-50%);
@@ -657,7 +662,7 @@
 }
 
 
-.posicao-1 .personagem-atributos{
+.personagem-posicao-1 .personagem-atributos{
 
     position:absolute;
     right:0px;
@@ -665,13 +670,12 @@
 }
 
 
-.posicao-1 .personagem-rank{
+.personagem-posicao-1 .personagem-rank{
 
     position:absolute;
     left:0px;
 
 }
-
 
 
 
@@ -684,7 +688,7 @@
 ========================= */
 
 
-.posicao-2 .personagem-nome{
+.personagem-posicao-2 .personagem-nome{
 
     left:50%;
     transform:translateX(-50%);
@@ -692,7 +696,7 @@
 }
 
 
-.posicao-2 .personagem-atributos{
+.personagem-posicao-2 .personagem-atributos{
 
     position:absolute;
     left:0px;
@@ -700,13 +704,12 @@
 }
 
 
-.posicao-2 .personagem-rank{
+.personagem-posicao-2 .personagem-rank{
 
     position:absolute;
     right:0px;
 
 }
-
 
 
 
@@ -719,7 +722,7 @@
 ========================= */
 
 
-.posicao-3 .personagem-nome{
+.personagem-posicao-3 .personagem-nome{
 
     left:10px;
 
@@ -730,7 +733,7 @@
 }
 
 
-.posicao-3 .personagem-atributos{
+.personagem-posicao-3 .personagem-atributos{
 
     position:absolute;
     right:0px;
@@ -738,13 +741,12 @@
 }
 
 
-.posicao-3 .personagem-rank{
+.personagem-posicao-3 .personagem-rank{
 
     position:absolute;
     left:0px;
 
 }
-
 
 
 
@@ -757,7 +759,7 @@
 ========================= */
 
 
-.posicao-4 .personagem-nome{
+.personagem-posicao-4 .personagem-nome{
 
     left:auto;
 
@@ -770,7 +772,7 @@
 }
 
 
-.posicao-4 .personagem-atributos{
+.personagem-posicao-4 .personagem-atributos{
 
     position:absolute;
     left:0px;
@@ -778,13 +780,12 @@
 }
 
 
-.posicao-4 .personagem-rank{
+.personagem-posicao-4 .personagem-rank{
 
     position:absolute;
     right:0px;
 
 }
-
 
 
 
@@ -795,7 +796,7 @@
 ========================= */
 
 
-.posicao-5 .personagem-nome{
+.personagem-posicao-5 .personagem-nome{
 
     left:10px;
 
@@ -816,7 +817,7 @@
 }
 
 
-.posicao-5 .personagem-atributos{
+.personagem-posicao-5 .personagem-atributos{
 
     position:absolute;
     right:0px;
@@ -824,13 +825,12 @@
 }
 
 
-.posicao-5 .personagem-rank{
+.personagem-posicao-5 .personagem-rank{
 
     position:absolute;
     left:0px;
 
 }
-
 
 
 
@@ -841,7 +841,7 @@
 ========================= */
 
 
-.posicao-6 .personagem-nome{
+.personagem-posicao-6 .personagem-nome{
 
     left:auto;
 
@@ -864,7 +864,7 @@
 }
 
 
-.posicao-6 .personagem-atributos{
+.personagem-posicao-6 .personagem-atributos{
 
     position:absolute;
     left:0px;
@@ -872,10 +872,9 @@
 }
 
 
-.posicao-6 .personagem-rank{
+.personagem-posicao-6 .personagem-rank{
 
     position:absolute;
     right:0px;
 
 }
-

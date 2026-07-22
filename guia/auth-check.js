@@ -5,9 +5,7 @@ import {
 
 import {
   getAuth,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
@@ -46,17 +44,11 @@ const auth = getAuth(app);
 
 
 
-console.log("AUTO CHECK CARREGADO");
-
-console.log(
-  "CURRENT USER ANTES:",
-  auth.currentUser
-);
+console.log("AUTH CHECK CARREGADO");
 
 
 
-const homeLink =
-document.getElementById("home-link");
+const homeLink = document.getElementById("home-link");
 
 
 
@@ -64,81 +56,40 @@ document.getElementById("home-link");
 // VERIFICAR LOGIN
 // ======================
 
-async function verificarAuth(){
+onAuthStateChanged(auth, (user)=>{
 
 
-  await setPersistence(
-    auth,
-    browserLocalPersistence
-  );
-
-
-  console.log(
-    "Persistência ativada"
-  );
+  console.log("USUARIO ATUAL:", user);
 
 
 
-  onAuthStateChanged(
-    auth,
-    (user)=>{
+  if(!homeLink){
 
+    console.log("home-link não encontrado");
 
-      console.log(
-        "AUTH CHECK:",
-        user
-      );
+    return;
 
-
-
-      if(!homeLink){
-
-        console.log(
-          "home-link não encontrado"
-        );
-
-        return;
-
-      }
+  }
 
 
 
-      if(user){
+  if(user){
 
 
-        homeLink.textContent =
-        "PERFIL";
+    homeLink.innerHTML = "PERFIL";
+
+    homeLink.href = "perfil.html";
 
 
-        homeLink.href =
-        "perfil.html";
+  }else{
 
 
-      }else{
+    homeLink.innerHTML = "INÍCIO";
+
+    homeLink.href = "index.html";
 
 
-        homeLink.textContent =
-        "INÍCIO";
+  }
 
 
-        homeLink.href =
-        "index.html";
-
-
-      }
-
-
-    }
-
-  );
-
-
-}
-
-
-
-// ======================
-// START
-// ======================
-
-verificarAuth();
+});

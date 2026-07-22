@@ -12,6 +12,10 @@ import {
 
 
 
+// ======================
+// FIREBASE CONFIG
+// ======================
+
 const firebaseConfig = {
 
   apiKey: "AIzaSyC4kgy_L79WYFQR9XZhoDuZBfqG4AGTVUQ",
@@ -32,15 +36,33 @@ const firebaseConfig = {
 
 
 
+// ======================
+// INIT
+// ======================
+
 const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
+
+
+
+console.log("AUTO CHECK CARREGADO");
+
+console.log(
+  "CURRENT USER ANTES:",
+  auth.currentUser
+);
+
 
 
 const homeLink =
 document.getElementById("home-link");
 
 
+
+// ======================
+// VERIFICAR LOGIN
+// ======================
 
 async function verificarAuth(){
 
@@ -51,32 +73,72 @@ async function verificarAuth(){
   );
 
 
-  onAuthStateChanged(auth,(user)=>{
+  console.log(
+    "Persistência ativada"
+  );
 
 
-    console.log("AUTH CHECK:", user);
+
+  onAuthStateChanged(
+    auth,
+    (user)=>{
 
 
-    if(!homeLink) return;
+      console.log(
+        "AUTH CHECK:",
+        user
+      );
 
 
-    if(user){
 
-      homeLink.textContent = "PERFIL";
-      homeLink.href = "perfil.html";
+      if(!homeLink){
 
-    }else{
+        console.log(
+          "home-link não encontrado"
+        );
 
-      homeLink.textContent = "INÍCIO";
-      homeLink.href = "index.html";
+        return;
+
+      }
+
+
+
+      if(user){
+
+
+        homeLink.textContent =
+        "PERFIL";
+
+
+        homeLink.href =
+        "perfil.html";
+
+
+      }else{
+
+
+        homeLink.textContent =
+        "INÍCIO";
+
+
+        homeLink.href =
+        "index.html";
+
+
+      }
+
 
     }
 
-
-  });
+  );
 
 
 }
 
+
+
+// ======================
+// START
+// ======================
 
 verificarAuth();

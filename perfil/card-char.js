@@ -238,13 +238,62 @@ async function carregarCharHTML(){
 
     });
 
-
-
-
-
-
-
     // ======================
+// POSIÇÃO PERSONAGEM
+// ======================
+
+
+function mudarPosicaoPersonagem(valor){
+
+
+    const area =
+    document.querySelector(".personagem-image-area");
+
+
+    if(!area) return;
+
+
+
+    area.classList.remove(
+
+        "personagem-posicao-1",
+        "personagem-posicao-2",
+        "personagem-posicao-3",
+        "personagem-posicao-4",
+        "personagem-posicao-5",
+        "personagem-posicao-6"
+
+    );
+
+
+
+    area.classList.add(
+        "personagem-posicao-" + valor
+    );
+
+
+}
+
+
+
+
+document
+.getElementById("posicao-personagem")
+?.addEventListener("change",function(){
+
+
+    mudarPosicaoPersonagem(this.value);
+
+
+});
+
+
+
+// posição inicial
+
+mudarPosicaoPersonagem(1);
+
+ // ======================
     // TAMANHOS
     // ======================
 

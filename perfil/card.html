@@ -36,6 +36,118 @@
 
     </div>
 
+    <div class="card-editor">
+
+    <div class="editor-tabs">
+
+        <button class="editor-tab active" data-tab="nome">
+            Nome
+        </button>
+
+        <button class="editor-tab" data-tab="atributo">
+            Atributo
+        </button>
+
+    </div>
+
+
+    <div class="editor-content">
+
+
+        <div id="editor-nome" class="editor-panel">
+
+
+            <label>Fonte</label>
+
+            <select id="fonte-nome">
+
+                <option value="Mishaland">
+                    Mishaland
+                </option>
+
+                <option value="Radiant">
+                    Radiant
+                </option>
+
+                <option value="serif">
+                    Clássica
+                </option>
+
+            </select>
+
+
+            <label>Cor</label>
+
+            <button 
+            class="color-picker"
+            data-target="nome">
+            </button>
+
+
+        </div>
+
+
+
+        <div id="editor-atributo" class="editor-panel" style="display:none">
+
+
+            <label>Fonte</label>
+
+            <select id="fonte-atributo">
+
+                <option value="Radiant">
+                    Radiant
+                </option>
+
+                <option value="Mishaland">
+                    Mishaland
+                </option>
+
+                <option value="serif">
+                    Clássica
+                </option>
+
+            </select>
+
+
+            <label>Cor</label>
+
+            <button 
+            class="color-picker"
+            data-target="atributo">
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- PALETA ESCONDIDA -->
+    <div class="color-menu">
+
+
+        <button data-color="#000000"></button>
+
+        <button data-color="#ffffff"></button>
+
+        <button data-color="#d4af37"></button>
+
+        <button data-color="#c0c0c0"></button>
+
+        <button data-color="#ff0000"></button>
+
+        <button data-color="#0066ff"></button>
+
+        <button data-color="#00aa44"></button>
+
+
+    </div>
+
+</div>
+
 
     <button id="download-card" class="download-card">
       BAIXAR

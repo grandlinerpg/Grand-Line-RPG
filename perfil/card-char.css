@@ -634,5 +634,248 @@
 
 .personagem-color-menu button:nth-child(7){
     background:#00aa44;
+
+
+    /* =========================
+   POSIÇÕES PERSONAGEM
+========================= */
+
+
+/* =========================
+   TIPO 1
+   Nome centro superior
+   Atributos direita inferior
+   Rank esquerda inferior
+========================= */
+
+
+.posicao-1 .personagem-nome{
+
+    left:50%;
+    transform:translateX(-50%);
+
+}
+
+
+.posicao-1 .personagem-atributos{
+
+    position:absolute;
+    right:0px;
+
+}
+
+
+.posicao-1 .personagem-rank{
+
+    position:absolute;
+    left:0px;
+
+}
+
+
+
+
+
+/* =========================
+   TIPO 2
+   Nome centro superior
+   Atributos esquerda inferior
+   Rank direita inferior
+========================= */
+
+
+.posicao-2 .personagem-nome{
+
+    left:50%;
+    transform:translateX(-50%);
+
+}
+
+
+.posicao-2 .personagem-atributos{
+
+    position:absolute;
+    left:0px;
+
+}
+
+
+.posicao-2 .personagem-rank{
+
+    position:absolute;
+    right:0px;
+
+}
+
+
+
+
+
+/* =========================
+   TIPO 3
+   Nome esquerda superior
+   Atributos direita inferior
+   Rank esquerda inferior
+========================= */
+
+
+.posicao-3 .personagem-nome{
+
+    left:10px;
+
+    transform:none;
+
+    text-align:left;
+
+}
+
+
+.posicao-3 .personagem-atributos{
+
+    position:absolute;
+    right:0px;
+
+}
+
+
+.posicao-3 .personagem-rank{
+
+    position:absolute;
+    left:0px;
+
+}
+
+
+
+
+
+/* =========================
+   TIPO 4
+   Nome direita superior
+   Atributos esquerda inferior
+   Rank direita inferior
+========================= */
+
+
+.posicao-4 .personagem-nome{
+
+    left:auto;
+
+    right:10px;
+
+    transform:none;
+
+    text-align:right;
+
+}
+
+
+.posicao-4 .personagem-atributos{
+
+    position:absolute;
+    left:0px;
+
+}
+
+
+.posicao-4 .personagem-rank{
+
+    position:absolute;
+    right:0px;
+
+}
+
+
+
+
+
+/* =========================
+   TIPO 5
+   Nome inclinado esquerda
+========================= */
+
+
+.posicao-5 .personagem-nome{
+
+    left:10px;
+
+    top:20px;
+
+    width:auto;
+
+    max-width:55%;
+
+    text-align:left;
+
+    transform:rotate(-8deg);
+
+    transform-origin:left top;
+
+    overflow-wrap:break-word;
+
+}
+
+
+.posicao-5 .personagem-atributos{
+
+    position:absolute;
+    right:0px;
+
+}
+
+
+.posicao-5 .personagem-rank{
+
+    position:absolute;
+    left:0px;
+
+}
+
+
+
+
+
+/* =========================
+   TIPO 6
+   Nome inclinado direita
+========================= */
+
+
+.posicao-6 .personagem-nome{
+
+    left:auto;
+
+    right:10px;
+
+    top:20px;
+
+    width:auto;
+
+    max-width:55%;
+
+    text-align:right;
+
+    transform:rotate(8deg);
+
+    transform-origin:right top;
+
+    overflow-wrap:break-word;
+
+}
+
+
+.posicao-6 .personagem-atributos{
+
+    position:absolute;
+    left:0px;
+
+}
+
+
+.posicao-6 .personagem-rank{
+
+    position:absolute;
+    right:0px;
+
 }
 

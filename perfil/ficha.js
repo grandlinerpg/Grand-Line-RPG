@@ -83,7 +83,7 @@ function atualizarLinha(idLinha, idTexto, valor){
 
     if(valor !== undefined && valor !== null && valor !== ""){
 
-        texto.innerText = valor;
+        texto.innerText = Number(valor).toLocaleString("pt-BR");
 
         linha.style.display = "";
 

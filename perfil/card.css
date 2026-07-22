@@ -302,10 +302,9 @@
 
 }
 
-    /* =========================
+/* =========================
    EDITOR DO CARD
 ========================= */
-
 
 .card-editor{
 
@@ -325,135 +324,99 @@
     box-shadow:
     0 0 15px rgba(0,0,0,.8);
 
-    color:white;
-
-    font-family:'Radiant',serif;
-
 }
 
 
+/* LINHAS */
 
-/* ABAS */
-
-.editor-tabs{
+.editor-row{
 
     display:flex;
 
-    gap:10px;
+    align-items:center;
 
-    margin-bottom:15px;
+    gap:12px;
 
-}
-
-
-.editor-tab{
-
-    flex:1;
-
-    padding:10px;
-
-    border:none;
-
-    cursor:pointer;
-
-    border-radius:8px;
-
-    background:#302015;
-
-    color:white;
-
-    font-family:'Radiant',serif;
-
-    font-size:16px;
-
-    transition:.2s;
+    margin-bottom:14px;
 
 }
 
 
-.editor-tab:hover{
+.editor-row:last-child{
 
-    transform:scale(1.05);
-
-}
-
-
-.editor-tab.active{
-
-    background:#c89b4a;
-
-    color:#000;
+    margin-bottom:0;
 
 }
 
 
+.editor-row label{
 
-/* CONTEÚDO */
-
-
-.editor-panel{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:8px;
-
-}
-
-
-.editor-panel label{
-
-    font-size:14px;
+    width:80px;
 
     color:#d4af37;
 
-}
+    font-family:'Radiant',serif;
 
+    font-size:15px;
+
+    font-weight:bold;
+
+}
 
 
 /* SELECT */
 
-.editor-panel select{
+.editor-row select{
 
-    width:100%;
+    flex:1;
 
-    padding:8px;
+    height:36px;
 
-    border-radius:8px;
+    padding:0 12px;
 
     border:none;
+
+    border-radius:8px;
 
     background:#fff;
 
     color:#000;
 
-    cursor:pointer;
-
     font-family:'Radiant',serif;
 
-}
+    cursor:pointer;
 
+}
 
 
 /* BOTÃO DA COR */
 
 .color-picker{
 
-    width:32px;
+    width:36px;
 
-    height:32px;
+    height:36px;
+
+    border:none;
 
     border-radius:50%;
 
-    border:2px solid white;
-
     cursor:pointer;
 
-    background:#fff;
+    background:#ffffff;
+
+    border:2px solid #555;
+
+    transition:.2s;
 
 }
 
+
+.color-picker:hover{
+
+    transform:scale(1.08);
+
+}
 
 
 /* PALETA */
@@ -462,16 +425,15 @@
 
     display:none;
 
-    gap:10px;
-
-    margin-top:15px;
-
     justify-content:center;
+
+    gap:10px;
 
     flex-wrap:wrap;
 
-}
+    margin-top:15px;
 
+}
 
 
 .color-menu button{
@@ -480,27 +442,27 @@
 
     height:28px;
 
-    border-radius:50%;
+    border:none;
 
-    border:2px solid white;
+    border-radius:50%;
 
     cursor:pointer;
 
     transition:.2s;
+
+    box-shadow:0 0 6px rgba(0,0,0,.5);
 
 }
 
 
 .color-menu button:hover{
 
-    transform:scale(1.2);
+    transform:scale(1.15);
 
 }
 
 
-
 /* CORES */
-
 
 .color-menu button:nth-child(1){
 
@@ -508,13 +470,11 @@
 
 }
 
-
 .color-menu button:nth-child(2){
 
     background:#ffffff;
 
 }
-
 
 .color-menu button:nth-child(3){
 
@@ -522,41 +482,34 @@
 
 }
 
-
 .color-menu button:nth-child(4){
 
     background:#c0c0c0;
 
 }
 
-
 .color-menu button:nth-child(5){
 
-    background:#ff0000;
+    background:#ff2d2d;
 
 }
-
 
 .color-menu button:nth-child(6){
 
-    background:#0066ff;
+    background:#2d7fff;
 
 }
-
 
 .color-menu button:nth-child(7){
 
-    background:#00aa44;
+    background:#1fb94d;
 
 }
-
 
 
 /* MOBILE */
 
-
 @media(max-width:700px){
-
 
     .card-editor{
 
@@ -564,6 +517,24 @@
 
     }
 
+    .editor-row{
+
+        gap:8px;
+
+    }
+
+    .editor-row label{
+
+        width:70px;
+
+        font-size:14px;
+
+    }
+
+    .editor-row select{
+
+        font-size:14px;
+
+    }
 
 }
-

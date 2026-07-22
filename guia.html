@@ -163,7 +163,9 @@
 
     import {
       getAuth,
-      onAuthStateChanged
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
@@ -190,24 +192,43 @@
 
     const auth = getAuth(app);
 
+
     const homeLink = document.getElementById("home-link");
 
-    onAuthStateChanged(auth, (user) => {
 
-      if(user){
+    async function verificarLogin(){
 
-        homeLink.innerHTML = "PERFIL";
-        homeLink.href = "perfil.html";
+      await setPersistence(
+        auth,
+        browserLocalPersistence
+      );
 
-      }else{
 
-        homeLink.innerHTML = "INÍCIO";
-        homeLink.href = "index.html";
+      onAuthStateChanged(auth,(user)=>{
 
-      }
 
-    });
+        console.log("LOGIN:", user);
 
+
+        if(user){
+
+          homeLink.innerHTML = "PERFIL";
+          homeLink.href = "perfil.html";
+
+        }else{
+
+          homeLink.innerHTML = "INÍCIO";
+          homeLink.href = "index.html";
+
+        }
+
+
+      });
+  
+    }
+
+
+    verificarLogin();
 
     function go(page){
 

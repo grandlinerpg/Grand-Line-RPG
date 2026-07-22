@@ -240,65 +240,27 @@
 
     position:absolute;
 
-    left:10px;
-    right:10px;
-    bottom:3px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:flex-end;
-
-}
-
-
-.card-atributos,
-.card-rank{
-
-    position:relative;
+    inset:0;
 
 }
 
 
 .card-atributos{
 
-    display:flex;
+    position:absolute;
 
-    flex-direction:column;
-
-    gap:0px;
-
-    color:#fff;
-
-    font-family:'Radiant',serif;
-
-    font-size:24px;
-
-    font-weight:bold;
-
-    text-shadow:
-    0 0 6px #000,
-    2px 2px 5px #000;
+    left:10px;
+    bottom:3px;
 
 }
 
 
 .card-rank{
 
-    color:#ffd54f;
+    position:absolute;
 
-    font-family:'Radiant',serif;
-
-    font-size:16px;
-
-    font-weight:bold;
-
-    text-align:right;
-
-    text-shadow:
-    0 0 8px #000,
-    2px 2px 6px #000;
+    right:10px;
+    bottom:3px;
 
 }
 
@@ -612,187 +574,175 @@
 
 
 
-/* =========================
-   POSIÇÕES DOS CARDS
-========================= */
+/* TIPO 1
+Nome centro
+Atributos esquerda
+Rank direita
+*/
 
+.posicao-1 .card-atributos{
 
-/* =========================
-   TIPO 1
-   Nome centro superior
-   Atributos esquerda
-   Rank direita
-========================= */
-
-.posicao-1 .card-nome{
-
-    left:50%;
-    transform:translateX(-50%);
+    left:10px;
 
 }
 
+.posicao-1 .card-rank{
 
-.posicao-1 .card-bottom{
-
-    flex-direction:row;
+    right:10px;
 
 }
 
 
 
-/* =========================
-   TIPO 2
-   Nome centro superior
-   Rank esquerda
-   Atributos direita
-========================= */
+/* TIPO 2
+Nome centro
+Rank esquerda
+Atributos direita
+*/
 
-.posicao-2 .card-nome{
+.posicao-2 .card-atributos{
 
-    left:50%;
-    transform:translateX(-50%);
+    right:10px;
+
+}
+
+.posicao-2 .card-rank{
+
+    left:10px;
 
 }
 
 
-.posicao-2 .card-bottom{
 
-    flex-direction:row-reverse;
-
-}
-
-
-
-/* =========================
-   TIPO 3
-   Nome esquerda superior
-   Rank esquerda inferior
-   Atributos direita inferior
-========================= */
+/* TIPO 3
+Nome esquerda
+Rank esquerda
+Atributos direita
+*/
 
 .posicao-3 .card-nome{
 
     left:10px;
     transform:none;
-
     text-align:left;
 
 }
 
 
-.posicao-3 .card-bottom{
+.posicao-3 .card-rank{
 
-    flex-direction:row-reverse;
+    left:10px;
+
+}
+
+
+.posicao-3 .card-atributos{
+
+    right:10px;
 
 }
 
 
 
-/* =========================
-   TIPO 4
-   Nome direita superior
-   Atributos esquerda inferior
-   Rank direita inferior
-========================= */
+/* TIPO 4
+Nome direita
+Atributos esquerda
+Rank direita
+*/
 
 .posicao-4 .card-nome{
 
     left:auto;
     right:10px;
-
     transform:none;
-
     text-align:right;
 
 }
 
 
-.posicao-4 .card-bottom{
+.posicao-4 .card-atributos{
 
-    flex-direction:row;
+    left:10px;
+
+}
+
+
+.posicao-4 .card-rank{
+
+    right:10px;
 
 }
 
 
 
-/* =========================
-   TIPO 5
-   Nome esquerda inclinado /
-   Rank esquerda inferior
-   Atributos direita inferior
-========================= */
+/* TIPO 5
+Nome inclinado /
+Rank esquerda
+Atributos direita
+*/
 
 .posicao-5 .card-nome{
 
     left:10px;
 
-    width:auto;
     max-width:65%;
 
     text-align:left;
 
-    transform:
-    rotate(-8deg);
+    transform:rotate(-8deg);
 
     transform-origin:left top;
 
-    overflow-wrap:break-word;
+}
+
+
+.posicao-5 .card-rank{
+
+    left:10px;
 
 }
 
 
-.posicao-5 .card-bottom{
+.posicao-5 .card-atributos{
 
-    flex-direction:row-reverse;
+    right:10px;
 
 }
 
 
 
-/* =========================
-   TIPO 6
-   Nome direita inclinado \
-   Atributos esquerda inferior
-   Rank direita inferior
-========================= */
+/* TIPO 6
+Nome inclinado \
+Atributos esquerda
+Rank direita
+*/
 
 .posicao-6 .card-nome{
 
     left:auto;
+
     right:10px;
 
-    width:auto;
     max-width:65%;
 
     text-align:right;
 
-    transform:
-    rotate(8deg);
+    transform:rotate(8deg);
 
     transform-origin:right top;
 
-    overflow-wrap:break-word;
+}
+
+
+.posicao-6 .card-atributos{
+
+    left:10px;
 
 }
 
 
-.posicao-6 .card-bottom{
+.posicao-6 .card-rank{
 
-    flex-direction:row;
-
-}
-
-
-
-/* =========================
-   SEGURANÇA NOME GRANDE
-========================= */
-
-
-.card-nome{
-
-    overflow:hidden;
-
-    word-break:break-word;
+    right:10px;
 
 }

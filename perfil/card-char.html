@@ -2,67 +2,272 @@
 
   <div class="personagem-window">
 
+
     <button id="close-personagem" class="close-personagem">
       ×
     </button>
 
+
+
     <div class="personagem-image-area">
+
 
       <img
         id="personagem-img"
         class="personagem-img"
         src="default-personagem.png">
 
+
+
       <!-- NOME -->
+
       <h2 id="personagem-nome" class="personagem-nome">
         -
       </h2>
 
+
+
       <div class="personagem-bottom">
 
+
         <!-- ATRIBUTOS -->
+
         <div class="personagem-atributos">
+
 
           <div id="personagem-for">
             FOR -
           </div>
 
+
           <div id="personagem-res">
             RES -
           </div>
+
 
           <div id="personagem-dex">
             DEX -
           </div>
 
+
           <div id="personagem-agi">
             AGI -
           </div>
+
 
           <div id="personagem-stm">
             STM -
           </div>
 
+
           <div id="personagem-hp">
             HP -
           </div>
 
+
         </div>
 
+
+
+
         <!-- RANK -->
+
         <div
           id="personagem-rank"
           class="personagem-rank">
+
           -
+
         </div>
+
+
 
       </div>
 
+
     </div>
+
+
+
+
+
+    <!-- EDITOR -->
+
+    <div class="personagem-editor">
+
+
+      <!-- POSIÇÃO -->
+
+      <div class="personagem-editor-row">
+
+        <label>Posição</label>
+
+
+        <select id="posicao-personagem">
+
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+
+        </select>
+
+
+      </div>
+
+
+
+
+
+      <!-- NOME -->
+
+      <div class="personagem-editor-row">
+
+
+        <label>Nome</label>
+
+
+        <select id="fonte-nome-personagem">
+
+          <option value="Mishaland">Mishaland</option>
+          <option value="Dopestyle">Dopestyle</option>
+          <option value="Eclipse Demo">Eclipse</option>
+          <option value="Martyric_PersonalUse">Martyric</option>
+
+        </select>
+
+
+
+        <select id="tamanho-nome-personagem">
+
+          <option value="20px">20</option>
+          <option value="30px">30</option>
+          <option value="40px" selected>40</option>
+          <option value="50px">50</option>
+          <option value="60px">60</option>
+          <option value="70px">70</option>
+
+        </select>
+
+
+        <div class="personagem-color-wrapper">
+
+
+          <button
+            class="personagem-color-picker"
+            data-target="nome-personagem">
+          </button>
+
+
+
+          <div class="personagem-color-menu">
+
+
+            <button data-color="#000000"></button>
+            <button data-color="#ffffff"></button>
+            <button data-color="#d4af37"></button>
+            <button data-color="#c0c0c0"></button>
+            <button data-color="#ff0000"></button>
+            <button data-color="#0066ff"></button>
+            <button data-color="#00aa44"></button>
+
+
+          </div>
+
+
+        </div>
+
+
+      </div>
+
+
+
+
+
+
+      <!-- ATRIBUTOS -->
+
+
+      <div class="personagem-editor-row">
+
+
+        <label>Atributo</label>
+
+
+        <select id="fonte-atributo-personagem">
+
+          <option value="Radiant">Radiant</option>
+          <option value="Headlight">Headlight</option>
+          <option value="Feelin Sweet">Feelin Sweet</option>
+          <option value="Pink Blue">Pink Blue</option>
+
+        </select>
+
+
+
+
+        <select id="tamanho-atributo-personagem">
+
+          <option value="14px">14</option>
+          <option value="18px">18</option>
+          <option value="24px" selected>24</option>
+          <option value="30px">30</option>
+          <option value="36px">36</option>
+
+        </select>
+
+
+
+
+        <div class="personagem-color-wrapper">
+
+
+          <button
+            class="personagem-color-picker"
+            data-target="atributo-personagem">
+          </button>
+
+
+
+
+          <div class="personagem-color-menu">
+
+
+            <button data-color="#000000"></button>
+            <button data-color="#ffffff"></button>
+            <button data-color="#d4af37"></button>
+            <button data-color="#c0c0c0"></button>
+            <button data-color="#ff0000"></button>
+            <button data-color="#0066ff"></button>
+            <button data-color="#00aa44"></button>
+
+
+          </div>
+
+
+        </div>
+
+
+      </div>
+
+
+
+    </div>
+
+
+
+
+
+
+    <!-- UPLOAD -->
 
     <label class="upload-personagem">
 
+
       UPLOAD
+
 
       <input
         type="file"
@@ -70,16 +275,42 @@
         accept="image/*"
         hidden>
 
+
     </label>
 
-    <button
-      id="download-personagem"
-      class="download-personagem">
 
-      DOWNLOAD
 
-    </button>
+
+
+    <!-- BOTÕES -->
+
+    <div class="personagem-buttons">
+
+
+      <button
+        id="editar-personagem"
+        class="editar-personagem">
+
+        EDITAR
+
+      </button>
+
+
+
+      <button
+        id="download-personagem"
+        class="download-personagem">
+
+        DOWNLOAD
+
+      </button>
+
+
+    </div>
+
+
 
   </div>
+
 
 </div>

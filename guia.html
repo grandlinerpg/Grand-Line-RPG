@@ -162,7 +162,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
     import {
-      getAuth
+      getAuth,
+      onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
@@ -189,11 +190,7 @@
 
     const auth = getAuth(app);
 
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-
     const homeLink = document.getElementById("home-link");
-
 
     onAuthStateChanged(auth, (user) => {
 

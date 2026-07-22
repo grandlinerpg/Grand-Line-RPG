@@ -169,6 +169,50 @@ document.getElementById("fonte-atributo")
 
 });
 
+// =========================
+// POSIÇÃO DO CARD
+// =========================
+
+function mudarPosicaoCard(valor){
+
+    const area =
+    document.querySelector(".card-image-area");
+
+
+    if(!area) return;
+
+
+    area.classList.remove(
+        "posicao-1",
+        "posicao-2",
+        "posicao-3",
+        "posicao-4",
+        "posicao-5",
+        "posicao-6"
+    );
+
+
+    area.classList.add(
+        "posicao-" + valor
+    );
+
+}
+
+
+// mudança pelo menu
+
+document.getElementById("posicao-card")
+?.addEventListener("change",function(){
+
+    mudarPosicaoCard(this.value);
+
+});
+
+
+// posição inicial
+
+mudarPosicaoCard(1);
+
     // BOTÃO DOWNLOAD
     document
     .getElementById("download-card")

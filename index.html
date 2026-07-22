@@ -7,9 +7,35 @@
 
   <title>Grand Line RPG</title>
 
+  <link rel="manifest" href="manifest.json">
+
+  <meta name="theme-color" content="#0f1116">
+
+  <link rel="icon" type="image/png" href="/Grand-Line-RPG/icon-192.png">
+
+  <link rel="apple-touch-icon" href="/Grand-Line-RPG/icon-192.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
+
+<script>
+
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker.register(
+    "/Grand-Line-RPG/service-worker.js"
+  )
+  .then(() => {
+    console.log("Service Worker ativo");
+  })
+  .catch(error => {
+    console.log("Erro Service Worker:", error);
+  });
+
+}
+
+</script>
 
 <body>
 

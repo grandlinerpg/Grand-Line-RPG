@@ -244,9 +244,9 @@
     color:#fff;
 
     text-shadow:
-    2px 2px 2px #000,
-    -2px -2px 2px #000,
-    0 0 2px #000;
+    0 0 6px #000,
+    0 0 12px #000,
+    2px 2px 6px #000;
 
 }
 
@@ -294,9 +294,9 @@
     font-weight:bold;
 
     text-shadow:
-    2px 2px 2px #000,
-    -2px -2px 2px #000,
-    0 0 2px #000;
+    0 0 6px #000,
+    0 0 12px #000,
+    2px 2px 6px #000;
 
 }
 
@@ -315,9 +315,9 @@
     text-align:right;
 
     text-shadow:
-    2px 2px 2px #000,
-    -2px -2px 2px #000,
-    0 0 2px #000;
+    0 0 6px #000,
+    0 0 12px #000,
+    2px 2px 6px #000;
 
 }
 

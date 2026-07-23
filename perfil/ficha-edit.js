@@ -3,13 +3,18 @@ import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.
 import {
     getDatabase,
     ref,
+    get,
     update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const app = getApp();
 const db = getDatabase(app);
 
+let listaEfeitosFirebase = {};
+
 console.log("FICHA-EDIT JS CARREGOU");
+
+
 
 async function carregarFichaEditHTML(){
 
@@ -70,6 +75,30 @@ document
 
 }
 
+async function carregarListaEfeitos(){
+
+    const snap = await get(
+        ref(db,"efeitos")
+    );
+
+
+    if(!snap.exists()){
+
+        console.log("Nenhum efeito encontrado");
+
+        return;
+
+    }
+
+
+    listaEfeitosFirebase = snap.val();
+
+    console.log(
+        "Efeitos carregados:",
+        listaEfeitosFirebase
+    );
+
+}
 
 function carregarEfeitosEdit(skill){
 
@@ -90,6 +119,10 @@ let efeitos = [];
 if(Array.isArray(skill.efeito)){
 
     efeitos = skill.efeito;
+
+}else if(typeof skill.efeito === "object"){
+
+    efeitos = Object.keys(skill.efeito);
 
 }else if(skill.efeito){
 
@@ -125,22 +158,37 @@ row.className =
 "efeito-edit-row";
 
 
-
-row.innerHTML = `
-
-<select class="efeito-select">
+let options = `
 
 <option value="">
 Escolher efeito
 </option>
 
-<option value="asfixia">
-Asfixia
+`;
+
+
+Object.entries(listaEfeitosFirebase)
+.forEach(([uid, efeito])=>{
+
+
+options += `
+
+<option value="${uid}">
+${efeito.nome}
 </option>
 
-<option value="congelamento">
-Congelamento
-</option>
+`;
+
+
+});
+
+
+
+row.innerHTML = `
+
+<select class="efeito-select">
+
+${options}
 
 </select>
 
@@ -158,6 +206,7 @@ const select =
 row.querySelector("select");
 
 
+// mantém o UID salvo
 select.value = valor;
 
 
@@ -200,6 +249,7 @@ return;
 
 }
 
+await carregarListaEfeitos();
 
 
 const modal =

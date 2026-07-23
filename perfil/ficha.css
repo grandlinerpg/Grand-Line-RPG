@@ -404,14 +404,14 @@
 
     justify-content:center;
 
-    gap:5px;
-
     width:100%;
+
+    margin-bottom:15px; /* espaço antes da tabela */
 
 }
 
 
-/* BOX DOS ATRIBUTOS */
+/* BOX ATRIBUTOS */
 
 .ficha-status{
 
@@ -422,7 +422,7 @@
 }
 
 
-/* BOX DO EFEITO */
+/* EFEITO NO CANTO DIREITO */
 
 .ficha-efeito{
 
@@ -430,9 +430,11 @@
 
     display:flex;
 
-    justify-content:center;
+    justify-content:flex-start;
 
     align-items:center;
+
+    padding-left:5px;
 
 }
 
@@ -443,8 +445,8 @@
 
     display:flex;
 
-    justify-content:center;
-
     align-items:center;
+
+    justify-content:center;
 
 }

@@ -74,7 +74,7 @@ async function carregarEfeitos(skill){
     document.getElementById("ficha-efeitoss");
 
 
-    if(!efeitoBox) {
+    if(!efeitoBox){
         console.log("ERRO: ficha-efeitoss não existe");
         return;
     }
@@ -83,7 +83,7 @@ async function carregarEfeitos(skill){
     efeitoBox.innerHTML = "";
 
 
-    if(!skill.efeito){
+    if(!skill.efeito || skill.efeito.length === 0){
 
         efeitoBox.style.display = "none";
         return;
@@ -91,8 +91,26 @@ async function carregarEfeitos(skill){
     }
 
 
-    // PEGA OS NOMES DOS EFEITOS
-    const listaEfeitos = Object.keys(skill.efeito);
+    let listaEfeitos = [];
+
+
+    // NOVO FORMATO ARRAY
+    if(Array.isArray(skill.efeito)){
+
+        listaEfeitos = skill.efeito;
+
+    }
+    // COMPATIBILIDADE COM ANTIGO
+    else if(typeof skill.efeito === "object"){
+
+        listaEfeitos = Object.keys(skill.efeito);
+
+    }
+    else{
+
+        listaEfeitos = [skill.efeito];
+
+    }
 
 
 
@@ -123,12 +141,30 @@ async function carregarEfeitos(skill){
             efeito.emoji || "❔";
 
 
+            span.title =
+            efeito.nome || "";
+
+
             efeitoBox.appendChild(span);
 
 
         }
 
     }
+
+
+
+    if(efeitoBox.children.length > 0){
+
+        efeitoBox.style.display = "flex";
+
+    }else{
+
+        efeitoBox.style.display = "none";
+
+    }
+
+}
 
 
     if(efeitoBox.children.length > 0){

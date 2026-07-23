@@ -391,44 +391,13 @@
 }
 
 /* =========================
-   EFEITOS
-========================= */
-
-
-.ficha-efeito{
-
-    width:100%;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    margin:10px 0;
-
-}
-
-
-#ficha-efeitoss{
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    gap:6px;
-
-    font-size:20px;
-
-}
-/* =========================
    EFEITO AO LADO DOS ATRIBUTOS
 ========================= */
 
 .ficha-status{
+
     position:relative;
+
 }
 
 

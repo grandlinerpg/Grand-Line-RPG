@@ -314,52 +314,6 @@
     background:#00aa44;
 }
 
-    /* =========================
-   POSIÇÕES PERSONAGEM
-========================= */
-
-#upload-personagem{
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    margin-left:10px;
-    margin-top:15px;
-    margin-bottom:5px;
-
-    padding:10px 40px;
-
-    width:auto;
-
-    box-sizing:border-box;
-
-    font-family:'Cinzel',serif;
-
-    font-size:16px;
-
-    font-weight:bold;
-
-    background:#4af37;
-
-    color:#000;
-
-    border-radius:10px;
-
-    cursor:pointer;
-
-    transition:.2s;
-
-}
-
-
-#upload-personagem:hover{
-
-    transform:scale(1.05);
-
-}
 
 /* =========================
    POSIÇÕES PERSONAGEM

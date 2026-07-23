@@ -1,3 +1,19 @@
+#upload-personagem{
+
+    padding:0px; /* diminui espaço lateral */
+
+    margin-left:0px;
+
+    font-size:24px; /* aumenta o emoji */
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
 .personagem-bottom{
 
     position:absolute;

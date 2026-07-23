@@ -387,25 +387,6 @@
 }
 
 
-.textura-fonte::before{
-
-    content:attr(data-text);
-
-    position:absolute;
-
-    inset:0;
-
-    z-index:-1;
-
-    color:#000;
-
-    -webkit-text-fill-color:#000;
-
-    filter:blur(3px);
-
-    opacity:.8;
-
-}
 
 /* BOTÃO DOWNLOAD */
 

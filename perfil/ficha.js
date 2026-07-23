@@ -1,4 +1,7 @@
-console.log("FICHA.JS CARREGOU");
+import {
+  ref,
+  get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
 const fichaContainer = document.getElementById("ficha-container");

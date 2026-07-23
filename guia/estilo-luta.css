@@ -247,3 +247,64 @@
     color:#111;
 
 }
+
+.habilidades-btn{
+
+    width:90%;
+
+    margin:20px auto 0;
+
+    padding:12px 20px;
+
+    display:block;
+
+    cursor:pointer;
+
+    font-family:'Cinzel', serif;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+
+    color:#fff;
+
+    background:
+    linear-gradient(
+        to bottom,
+        rgba(120,80,20,0.9),
+        rgba(50,30,5,0.95)
+    );
+
+    border:2px solid #c99a45;
+
+    border-radius:8px;
+
+    box-shadow:
+    0 0 10px rgba(0,0,0,0.8),
+    inset 0 0 8px rgba(255,220,120,0.25);
+
+    transition:.2s;
+
+}
+
+
+.habilidades-btn:hover{
+
+    transform:scale(1.03);
+
+    filter:brightness(1.2);
+
+    box-shadow:
+    0 0 15px rgba(201,154,69,0.8),
+    inset 0 0 10px rgba(255,220,120,0.4);
+
+}
+
+
+.habilidades-btn:active{
+
+    transform:scale(0.98);
+
+}

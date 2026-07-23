@@ -167,19 +167,6 @@ async function carregarEfeitos(skill){
 }
 
 
-    if(efeitoBox.children.length > 0){
-
-        efeitoBox.style.display = "flex";
-
-    }else{
-
-        efeitoBox.style.display = "none";
-
-    }
-
-}
-
-
 function atualizarLinha(idLinha, idTexto, valor){
 
     const linha =

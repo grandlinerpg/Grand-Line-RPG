@@ -398,26 +398,28 @@
 
 .ficha-status-area{
 
-    display:flex;
+    position:relative;
 
-    align-items:center;
+    display:flex;
 
     justify-content:center;
 
+    align-items:center;
+
     width:100%;
 
-    margin-bottom:15px; /* espaço antes da tabela */
+    margin-bottom:5px; /* aproxima da tabela */
 
 }
 
 
-/* BOX ATRIBUTOS */
+/* BOX ATRIBUTOS CENTRALIZADA */
 
 .ficha-status{
 
     width:70%;
 
-    margin:0;
+    margin:0 auto;
 
 }
 
@@ -426,15 +428,13 @@
 
 .ficha-efeito{
 
-    width:30%;
+    position:absolute;
 
-    display:flex;
+    right:0;
 
-    justify-content:flex-start;
+    top:50%;
 
-    align-items:center;
-
-    padding-left:5px;
+    transform:translateY(-50%);
 
 }
 

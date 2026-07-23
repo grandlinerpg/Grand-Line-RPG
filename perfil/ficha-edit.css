@@ -326,3 +326,81 @@ cursor:pointer;
     justify-content:center;
 
 }
+
+/* =========================
+   EFEITOS EDITAR FICHA
+========================= */
+
+#efeitos-edit-area{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+    margin-top:8px;
+
+}
+
+
+.efeito-edit-row{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+
+.efeito-select{
+
+    flex:1;
+
+}
+
+
+.remove-efeito-edit{
+
+    width:32px;
+
+    height:32px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(246,211,101,.3);
+
+    background:#111;
+
+    color:#f6d365;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+}
+
+
+#add-efeito-edit{
+
+    margin-top:8px;
+
+    width:35px;
+
+    height:35px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(246,211,101,.4);
+
+    background:#111;
+
+    color:#f6d365;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+}

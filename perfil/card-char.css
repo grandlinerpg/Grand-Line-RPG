@@ -1,3 +1,206 @@
+/* =========================
+   EDITOR PERSONAGEM
+========================= */
+
+
+.personagem-editor{
+
+    width:100%;
+
+    max-width:420px;
+
+    margin-top:15px;
+
+    padding:15px;
+
+    background:#111;
+
+    border:1px solid rgba(246,211,101,.25);
+
+    border-radius:12px;
+
+    color:white;
+
+    font-family:Arial,sans-serif;
+
+    display:none;
+
+}
+
+
+
+/* =========================
+   LINHAS
+========================= */
+
+
+.personagem-row,
+.editor-row,
+.personagem-editor-row{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    width:100%;
+
+    margin-bottom:10px;
+
+}
+
+
+
+.personagem-row label,
+.editor-row label,
+.personagem-editor-row label{
+
+    width:75px;
+
+    color:#f6d365;
+
+    font-size:14px;
+
+}
+
+
+
+/* =========================
+   SELECTS
+========================= */
+
+
+.personagem-row select,
+.editor-row select,
+.personagem-editor-row select{
+
+    flex:1;
+
+    height:32px;
+
+    background:#111;
+
+    color:white;
+
+    border:1px solid rgba(246,211,101,.25);
+
+    border-radius:8px;
+
+    padding:0 8px;
+
+    outline:none;
+
+}
+
+
+
+/* =========================
+   EDITOR COLOR WRAPPER
+========================= */
+
+
+.personagem-editor .personagem-color-wrapper{
+
+    position:relative;
+
+}
+
+
+.personagem-editor .personagem-color-picker{
+
+    width:30px;
+
+    height:30px;
+
+    min-width:30px;
+
+    border-radius:50%;
+
+    border:1px solid rgba(255,255,255,.5);
+
+    background:white;
+
+    cursor:pointer;
+
+}
+
+
+
+/* MENU CORES */
+
+
+.personagem-editor .personagem-color-menu{
+
+    position:absolute;
+
+    top:38px;
+
+    right:0;
+
+    width:140px;
+
+    padding:8px;
+
+    background:#111;
+
+    border:1px solid rgba(246,211,101,.25);
+
+    border-radius:10px;
+
+    display:none;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:8px;
+
+    z-index:9999;
+
+}
+
+
+
+.personagem-editor .personagem-color-menu button{
+
+    width:22px;
+
+    height:22px;
+
+    border-radius:50%;
+
+    border:1px solid #555;
+
+    cursor:pointer;
+
+}
+
+
+
+/* =========================
+   BOTÕES EDITOR
+========================= */
+
+
+.personagem-editor input,
+.personagem-editor select{
+
+    font-family:Arial,sans-serif;
+
+}
+
+
+
+/* =========================
+   ESCONDER INICIAL
+========================= */
+
+
+.personagem-editor{
+
+    display:none;
+
+}
+
 #upload-personagem{
 
     padding:0px; /* diminui espaço lateral */
@@ -13,6 +216,8 @@
     justify-content:center;
 
 }
+
+
 
 .personagem-bottom{
 

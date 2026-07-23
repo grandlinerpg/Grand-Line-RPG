@@ -176,38 +176,6 @@
   margin:8px 0;
 }
 
-/* BOTÕES */
-
-.modal-content button:not(.close-item-x){
-  width:100%;
-
-  margin-top:12px;
-
-  padding:12px;
-
-  border:none;
-  border-radius:10px;
-
-  cursor:pointer;
-
-  background:linear-gradient(to bottom,#8f1408,#5e0800);
-
-  border:1px solid rgba(246,211,101,0.2);
-
-  color:#f6d365;
-
-  font-family:'Cinzel', serif;
-
-  font-size:14px;
-
-  transition:0.2s;
-}
-
-.modal-content button:hover{
-  transform:scale(1.01);
-
-  border-color:#f6d365;
-}
 
 .add-skill-btn{
 

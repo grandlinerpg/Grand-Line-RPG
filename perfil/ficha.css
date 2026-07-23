@@ -393,30 +393,40 @@
 }
 
 /* =========================
-   EFEITO AO LADO DOS ATRIBUTOS
+   ÁREA STATUS + EFEITO
 ========================= */
+
+.ficha-status-area{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:5px;
+
+    width:100%;
+
+}
+
+
+/* BOX DOS ATRIBUTOS */
 
 .ficha-status{
 
-    position:relative;
+    width:70%;
+
+    margin:0;
 
 }
 
+
+/* BOX DO EFEITO */
 
 .ficha-efeito{
 
-    position:absolute;
-
-    right:-5px;
-
-    top:0%;
-
-    transform:translateY(-0%);
-
-}
-
-
-#ficha-efeitoss{
+    width:30%;
 
     display:flex;
 
@@ -424,6 +434,17 @@
 
     align-items:center;
 
+}
+
+
+#ficha-efeitoss{
+
     font-size:24px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
 
 }

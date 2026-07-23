@@ -401,16 +401,16 @@
     color:transparent !important;
     -webkit-text-fill-color:transparent;
 
-    -webkit-text-stroke:1px rgba(0,0,0,.6);
-
-    text-shadow:none !important;
+    -webkit-text-stroke:1px #000;
 }
 
 .card-nome.textura-fonte,
 .card-atributos.textura-fonte{
 
     text-shadow:
-    0 0 2px rgba(0,0,0,.8);
+    0 0 6px #000,
+    0 0 12px #000,
+    2px 2px 6px #000;
 
 }
 

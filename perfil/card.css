@@ -381,6 +381,8 @@
 
 .textura-fonte{
 
+    position:relative;
+
     background-clip:text;
     -webkit-background-clip:text;
 
@@ -390,12 +392,30 @@
 
     -webkit-text-stroke:1px rgba(255,255,255,0.35);
 
-    text-shadow:
-    0 0 2px rgba(0,0,0,0.8),
-    0 0 5px rgba(0,0,0,0.5);
+    text-shadow:none;
 
 }
 
+
+.textura-fonte::before{
+
+    content:attr(data-text);
+
+    position:absolute;
+
+    inset:0;
+
+    z-index:-1;
+
+    color:#000;
+
+    -webkit-text-fill-color:#000;
+
+    filter:blur(3px);
+
+    opacity:.8;
+
+}
 
 /* BOTÃO DOWNLOAD */
 

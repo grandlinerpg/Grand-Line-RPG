@@ -190,7 +190,7 @@
 
     padding:0px;
 
-    border:3px solid #d4af37;
+    border:2px solid #d4af37;
 
     border-radius:5px;
 
@@ -329,7 +329,7 @@
 
     margin-top:10px;
 
-    padding:10px 30px;
+    padding:10px 40px;
 
     border:none;
 
@@ -345,7 +345,7 @@
 
     background:#fff;
 
-    color:#000;
+    color:#d4af37;
 
     transition:.2s;
 

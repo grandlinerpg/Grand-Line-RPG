@@ -386,9 +386,7 @@
 
     color:transparent !important;
 
-    text-shadow:
-    2px 2px 2px #000,
-    -2px -2px 2px #000;
+    -webkit-text-stroke:1px #000;
 
 }
 

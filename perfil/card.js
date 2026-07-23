@@ -195,6 +195,130 @@ document.getElementById("tamanho-atributo")
 });
 
 // =========================
+// TEXTURA NAS FONTES
+// =========================
+
+
+document
+.querySelectorAll(".textura-btn")
+.forEach(botao=>{
+
+
+    botao.addEventListener("click",()=>{
+
+
+        const input =
+        botao.parentElement
+        .querySelector(".textura-upload");
+
+
+        if(input){
+
+            input.click();
+
+        }
+
+
+    });
+
+
+});
+
+
+
+
+
+document
+.querySelectorAll(".textura-upload")
+.forEach(input=>{
+
+
+    input.addEventListener("change",(e)=>{
+
+
+        const arquivo =
+        e.target.files[0];
+
+
+        if(!arquivo) return;
+
+
+
+        const url =
+        URL.createObjectURL(arquivo);
+
+
+
+        const menu =
+        input.parentElement;
+
+
+
+        const picker =
+        menu.parentElement
+        .querySelector(".color-picker");
+
+
+
+        const alvo =
+        picker.dataset.target;
+
+
+
+        let elemento;
+
+
+
+        if(alvo==="nome"){
+
+
+            elemento =
+            document.getElementById("card-nome");
+
+
+        }
+
+
+
+        if(alvo==="atributo"){
+
+
+            elemento =
+            document.querySelector(".card-atributos");
+
+
+        }
+
+
+
+        if(!elemento) return;
+
+
+
+        elemento.style.backgroundImage =
+        `url(${url})`;
+
+
+
+        elemento.style.backgroundSize =
+        "100% 100%";
+
+
+        elemento.style.backgroundPosition =
+        "center";
+
+
+        elemento.classList.add(
+            "textura-fonte"
+        );
+
+
+    });
+
+
+});
+
+// =========================
 // POSIÇÃO DO CARD
 // =========================
 

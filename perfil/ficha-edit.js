@@ -59,9 +59,122 @@ document
 .getElementById("upload-img-input")
 .onchange = uploadImagem;
 
+document
+.getElementById("add-efeito-edit")
+.onclick = ()=>{
+
+    criarSelectEfeito();
+
+};
+
 
 }
 
+
+function carregarEfeitosEdit(skill){
+
+
+const area =
+document.getElementById("efeitos-edit-area");
+
+
+if(!area) return;
+
+
+area.innerHTML = "";
+
+
+let efeitos = [];
+
+
+if(Array.isArray(skill.efeito)){
+
+    efeitos = skill.efeito;
+
+}else if(skill.efeito){
+
+    efeitos = [skill.efeito];
+
+}
+
+
+
+efeitos.forEach(efeito=>{
+
+    criarSelectEfeito(efeito);
+
+});
+
+
+}
+
+
+
+function criarSelectEfeito(valor=""){
+
+
+const area =
+document.getElementById("efeitos-edit-area");
+
+
+const row =
+document.createElement("div");
+
+
+row.className =
+"efeito-edit-row";
+
+
+
+row.innerHTML = `
+
+<select class="efeito-select">
+
+<option value="">
+Escolher efeito
+</option>
+
+<option value="asfixia">
+Asfixia
+</option>
+
+<option value="congelamento">
+Congelamento
+</option>
+
+</select>
+
+
+<button 
+class="remove-efeito-edit">
+×
+</button>
+
+`;
+
+
+
+const select =
+row.querySelector("select");
+
+
+select.value = valor;
+
+
+
+row.querySelector(".remove-efeito-edit")
+.onclick = ()=>{
+
+    row.remove();
+
+};
+
+
+
+area.appendChild(row);
+
+
+}
 
 
 
@@ -140,6 +253,7 @@ skill.alvos || "";
 document.getElementById("edit-cooldown").value =
 skill.cooldown || "";
 
+carregarEfeitosEdit(skill);
 
 }
 
@@ -296,6 +410,23 @@ document.getElementById("edit-alvos").value;
 
 skill.cooldown =
 document.getElementById("edit-cooldown").value;
+
+const efeitos = [];
+
+document
+.querySelectorAll(".efeito-select")
+.forEach(select=>{
+
+    if(select.value){
+
+        efeitos.push(select.value);
+
+    }
+
+});
+
+
+skill.efeito = efeitos;
 
 console.log(
 "SKILL EDITADA:",

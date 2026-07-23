@@ -65,6 +65,55 @@ async function carregarFichaHTML(){
 
 }
 
+async function carregarEfeitos(skill){
+
+    const efeitoBox =
+    document.getElementById("ficha-efeitoss");
+
+
+    if(!efeitoBox) return;
+
+
+    efeitoBox.innerHTML = "";
+
+
+    if(!skill.efeito){
+
+        efeitoBox.style.display = "none";
+        return;
+
+    }
+
+
+    const efeitoRef =
+    ref(db, "efeitos/" + skill.efeito);
+
+
+    const snap =
+    await get(efeitoRef);
+
+
+    if(snap.exists()){
+
+        const efeito =
+        snap.val();
+
+
+        efeitoBox.innerHTML =
+        efeito.emoji || "❔";
+
+
+        efeitoBox.style.display = "flex";
+
+
+    }else{
+
+        efeitoBox.style.display = "none";
+
+    }
+
+}
+
 
 function atualizarLinha(idLinha, idTexto, valor){
 
@@ -185,6 +234,12 @@ window.abrirFicha = async function(
 
     document.getElementById("ficha-description").innerText =
     skill.description || "-";
+
+    // =====================
+    // EFEITO DA SKILL
+    // =====================
+
+    carregarEfeitos(skill);
 
     // =====================
     // CUSTO DA SKILL

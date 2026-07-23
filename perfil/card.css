@@ -394,26 +394,20 @@
 /* =========================
    TEXTO COM TEXTURA
 ========================= */
-.textura-fonte{ 
+.textura-fonte{
+
     background-clip:text;
     -webkit-background-clip:text;
 
     color:transparent !important;
     -webkit-text-fill-color:transparent;
 
-    -webkit-text-stroke:1px #000;
-}
-
-.card-nome.textura-fonte,
-.card-atributos.textura-fonte{
+    -webkit-text-stroke:1.5px #000;
 
     text-shadow:
-    0 0 6px #000,
-    0 0 12px #000,
-    2px 2px 6px #000;
+    0 0 4px rgba(0,0,0,.6);
 
 }
-
 
 /* BOTÃO DOWNLOAD */
 

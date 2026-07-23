@@ -344,25 +344,21 @@ mudarPosicaoPersonagem(1);
     .getElementById("editar-personagem")
     ?.addEventListener("click",()=>{
 
-        console.log("EDITAR CLICADO");
-    
 
-        const editor = document.querySelector(".card-editor");
-
-
-        if(!editor){
-            console.log("CARD-EDITOR NÃO ENCONTRADO");
-            return;
-        }
+        const editor =
+        document.querySelector(".card-editor");
 
 
-        if(getComputedStyle(editor).display === "none"){
+        if(!editor) return;
 
-            editor.style.display = "block";
+
+        if(editor.style.display === "block"){
+
+            editor.style.display = "none";
 
         }else{
 
-            editor.style.display = "none";
+            editor.style.display = "block";
 
         }
 

@@ -67,11 +67,6 @@ async function carregarFichaHTML(){
 
 async function carregarEfeitos(skill){
 
-    console.log("CARREGANDO EFEITO");
-    console.log("SKILL:", skill);
-    console.log("EFEITO ID:", skill.efeito);
-    console.log("DB:", db);
-
 
     const efeitoBox =
     document.getElementById("ficha-efeitoss");
@@ -94,6 +89,11 @@ async function carregarEfeitos(skill){
         return;
 
     }
+    
+    console.log("CARREGANDO EFEITO");
+    console.log("SKILL:", skill);
+    console.log("EFEITO:", skill.efeito);
+    console.log("DB ATUAL:", db);
 
 
     const efeitoRef =

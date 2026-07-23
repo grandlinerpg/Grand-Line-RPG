@@ -70,7 +70,6 @@ async function carregarFichaHTML(){
 
 async function carregarEfeitos(skill){
 
-
     const efeitoBox =
     document.getElementById("ficha-efeitoss");
 
@@ -86,64 +85,55 @@ async function carregarEfeitos(skill){
 
     if(!skill.efeito){
 
-        console.log("ESSA SKILL NÃO TEM EFEITO");
-
         efeitoBox.style.display = "none";
         return;
 
     }
-    
-    console.log("CARREGANDO EFEITO");
-    console.log("SKILL:", skill);
-    console.log("EFEITO:", skill.efeito);
-    console.log("DB ATUAL:", db);
 
 
-    const efeitoRef =
-    ref(db, "efeitos/" + skill.efeito);
+    // PEGA OS NOMES DOS EFEITOS
+    const listaEfeitos = Object.keys(skill.efeito);
 
 
-    console.log("CAMINHO FIREBASE:", "efeitos/" + skill.efeito);
+
+    for(const id of listaEfeitos){
 
 
-    const snap =
-    await get(efeitoRef);
+        const efeitoRef =
+        ref(db,"efeitos/"+id);
 
 
-    console.log("EXISTE?", snap.exists());
-    console.log("VALOR:", snap.val());
+
+        const snap =
+        await get(efeitoRef);
 
 
-    if(snap.exists()){
 
-        const efeito = snap.val();
-
-
-        efeitoBox.innerHTML = "";
+        if(snap.exists()){
 
 
-        if(Array.isArray(efeito)){
+            const efeito = snap.val();
 
-            efeito.forEach(e=>{
 
-                const span = document.createElement("span");
-    
-                span.innerHTML = e.emoji || "❔";
+            const span =
+            document.createElement("span");
 
-                efeitoBox.appendChild(span);
 
-            });
-
-        }else{
-
-            efeitoBox.innerHTML =
+            span.innerHTML =
             efeito.emoji || "❔";
+
+
+            efeitoBox.appendChild(span);
+
 
         }
 
+    }
+
+
+    if(efeitoBox.children.length > 0){
 
         efeitoBox.style.display = "flex";
-
 
     }else{
 

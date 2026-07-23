@@ -346,7 +346,7 @@ mudarPosicaoPersonagem(1);
 
 
         const editor =
-        document.querySelector(".card-editor");
+        document.querySelector(".personagem-editor");
 
 
         if(!editor) return;

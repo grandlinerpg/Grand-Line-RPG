@@ -1,7 +1,14 @@
+import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
-  ref,
-  get
+    getDatabase,
+    ref,
+    get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+const app = getApp();
+const db = getDatabase(app);
 
 
 const fichaContainer = document.getElementById("ficha-container");

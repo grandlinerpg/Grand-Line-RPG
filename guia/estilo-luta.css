@@ -250,6 +250,8 @@
 
 /* BOTÃO VER HABILIDADES */
 
+/* BOTÃO VER HABILIDADES */
+
 .habilidades-btn{
 
   width:100%;
@@ -289,9 +291,4 @@
 
   box-shadow:0 0 12px rgba(246,211,101,.18);
 
-  font-size:14px;
-
-  cursor:pointer;
-
-  transition:.25s ease;
 }

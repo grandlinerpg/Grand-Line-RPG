@@ -249,62 +249,42 @@
 }
 
 .habilidades-btn{
-
-    width:90%;
-
-    margin:20px auto 0;
-
-    padding:12px 20px;
-
-    display:block;
-
-    cursor:pointer;
-
-    font-family:'Cinzel', serif;
-
-    font-size:15px;
-
-    font-weight:700;
-
-    letter-spacing:1px;
-
-    color:#fff;
-
-    background:
-    linear-gradient(
-        to bottom,
-        rgba(120,80,20,0.9),
-        rgba(50,30,5,0.95)
-    );
-
-    border:2px solid #c99a45;
-
-    border-radius:8px;
-
-    box-shadow:
-    0 0 10px rgba(0,0,0,0.8),
-    inset 0 0 8px rgba(255,220,120,0.25);
-
-    transition:.2s;
-
+  display:flex;
+  width:100%;
+  gap:10px;
+  margin-top:12px;
 }
 
+.habilidades-btn button{
+  flex:1;
 
-.habilidades-btn:hover{
+  padding:12px;
 
-    transform:scale(1.03);
+  border:1px solid rgba(246,211,101,.25);
+  border-radius:10px;
 
-    filter:brightness(1.2);
+  background:rgba(255,255,255,.04);
 
-    box-shadow:
-    0 0 15px rgba(201,154,69,0.8),
-    inset 0 0 10px rgba(255,220,120,0.4);
+  color:#f6d365;
 
+  font-family:'Cinzel',serif;
+  font-size:14px;
+
+  cursor:pointer;
+
+  transition:.25s ease;
 }
 
+.habilidades-btn button:hover{
 
-.habilidades-btn:active{
+  background:rgba(246,211,101,.12);
 
-    transform:scale(0.98);
+  border-color:rgba(246,211,101,.7);
+
+  color:#fff;
+
+  transform:translateY(-1px);
+
+  box-shadow:0 0 12px rgba(246,211,101,.18);
 
 }

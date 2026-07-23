@@ -318,6 +318,22 @@
    POSIÇÕES PERSONAGEM
 ========================= */
 
+#upload-personagem{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:45px;
+    height:45px;
+
+    padding:0;
+
+    font-size:22px;
+    line-height:1;
+
+    cursor:pointer;
+}
+
 
 /* =========================
    POSIÇÕES PERSONAGEM

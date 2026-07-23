@@ -346,31 +346,39 @@ window.abrirFicha = async function(
 
 
 
-    // =====================
-    // COOLDOWN PADRÃO POR RANK
-    // =====================
-
     const cooldownRank = {
-
-        1:1,
-        2:2,
-        3:3,
-        4:4,
-        5:5
-
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 4,
+        5: 5
     };
 
+    let cooldownValor;
 
-    const cooldownBase =
-    cooldownRank[skill.rank] ?? "-";
+    console.log(skill);
+    console.log("Categoria:", skill.categoria);
+    console.log("Cooldown:", skill.cooldown);
+    if (skill.categoria === "Equipamento") {
 
+        // Equipamentos não usam cooldown padrão
+        cooldownValor = skill.cooldown || "";
+    
+    } else {
+
+        const cooldownBase = cooldownRank[skill.rank] ?? "-";
+    
+        cooldownValor =
+            skill.cooldown !== ""
+                ? (skill.cooldown ?? cooldownBase)
+                : cooldownBase;
+
+    }
 
     atualizarLinha(
         "linha-cooldown",
         "ficha-cooldown",
-        skill.cooldown !== ""
-            ? (skill.cooldown ?? cooldownBase)
-            : cooldownBase
+        cooldownValor
     );
 
 

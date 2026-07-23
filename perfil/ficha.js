@@ -119,8 +119,27 @@ async function carregarEfeitos(skill){
         const efeito = snap.val();
 
 
-        efeitoBox.innerHTML =
-        efeito.emoji || "❔";
+        efeitoBox.innerHTML = "";
+
+
+        if(Array.isArray(efeito)){
+
+            efeito.forEach(e=>{
+
+                const span = document.createElement("span");
+    
+                span.innerHTML = e.emoji || "❔";
+
+                efeitoBox.appendChild(span);
+
+            });
+
+        }else{
+
+            efeitoBox.innerHTML =
+            efeito.emoji || "❔";
+
+        }
 
 
         efeitoBox.style.display = "flex";

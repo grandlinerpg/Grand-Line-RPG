@@ -389,3 +389,33 @@
   margin-top:0;
 
 }
+
+/* =========================
+   EEFEITOS
+========================= */
+
+
+.ficha-efeito{
+
+    position:absolute;
+
+    right:25px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+}
+
+
+#ficha-efeitoss{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:6px;
+
+    font-size:24px;
+
+}

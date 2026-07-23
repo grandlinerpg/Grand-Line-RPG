@@ -54,7 +54,7 @@ font-family:Cinzel,serif;
 
 
 
-#close-ficha-edit{
+.close-ficha-edit{
 
 position:absolute;
 
@@ -165,7 +165,7 @@ gap:10px;
 
 
 
-#salvar-ficha-edit{
+.salvar-ficha-edit{
 
 
 margin-top:15px;

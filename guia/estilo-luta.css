@@ -248,19 +248,18 @@
 
 }
 
-.habilidades-btn{
-  display:flex;
-  width:100%;
-  gap:10px;
-  margin-top:12px;
-}
+/* BOTÃO VER HABILIDADES */
 
-.habilidades-btn button{
-  flex:1;
+.habilidades-btn{
+
+  width:100%;
+
+  margin-top:12px;
 
   padding:12px;
 
   border:1px solid rgba(246,211,101,.25);
+
   border-radius:10px;
 
   background:rgba(255,255,255,.04);
@@ -268,14 +267,17 @@
   color:#f6d365;
 
   font-family:'Cinzel',serif;
+
   font-size:14px;
 
   cursor:pointer;
 
   transition:.25s ease;
+
 }
 
-.habilidades-btn button:hover{
+
+.habilidades-btn:hover{
 
   background:rgba(246,211,101,.12);
 
@@ -287,4 +289,9 @@
 
   box-shadow:0 0 12px rgba(246,211,101,.18);
 
+  font-size:14px;
+
+  cursor:pointer;
+
+  transition:.25s ease;
 }

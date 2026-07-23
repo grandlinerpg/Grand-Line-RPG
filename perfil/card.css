@@ -327,6 +327,7 @@
 
 .download-card{
 
+    margin-left:10px;
     margin-top:10px;
 
     padding:10px 40px;
@@ -343,9 +344,9 @@
 
     font-weight:bold;
 
-    background:#fff;
+    background:#4af37;
 
-    color:#d4af37;
+    color:#000;
 
     transition:.2s;
 

@@ -21,7 +21,7 @@ window.verificarPermissao = async function(nivelNecessario){
 
 
     const snap = await get(
-        ref(db,"usuarios/"+user.uid+"/cargo")
+        ref(db,"players/"+user.uid+"/cargo")
     );
 
 

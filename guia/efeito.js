@@ -45,7 +45,7 @@ async function carregarEfeitoHTML(){
 
 
     const close =
-    document.getElementById("close-efeito");
+    document.querySelector(".efeito-close");
 
 
     close?.addEventListener("click",()=>{
@@ -95,32 +95,32 @@ window.abrirEfeito = async function(id){
 
 
 
-    document.getElementById("m-title")
+    document.querySelector(".efeito-title")
     .innerText =
     efeito.nome || "-";
 
 
 
-    document.getElementById("m-desc")
+    document.querySelector(".efeito-desc")
     .innerText =
     efeito.description || "";
 
 
 
-    document.getElementById("m-func")
+    document.querySelector(".efeito-func")
     .innerText =
     efeito.funcionamento || "";
 
 
 
-    document.getElementById("m-extras")
+    document.querySelector(".efeito-extras")
     .innerText =
     efeito.extras || "";
 
 
 
     const img =
-    document.getElementById("m-img");
+    document.querySelector(".efeito-img");
 
 
     if(img){
@@ -130,7 +130,9 @@ window.abrirEfeito = async function(id){
 
     }
 
-    document.getElementById("editar-efeito-btn")
+
+
+    document.querySelector(".efeito-edit-btn")
     .onclick = ()=>{
 
         window.efeitoAtual = efeito;

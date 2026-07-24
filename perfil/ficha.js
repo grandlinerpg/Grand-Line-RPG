@@ -152,26 +152,44 @@ async function carregarEfeitos(skill){
             efeito.nome || "";
 
 
+            // ABRIR FICHA DO EFEITO AO CLICAR
+            span.style.cursor = "pointer";
+
+            span.onclick = ()=>{
+
+                if(window.abrirEfeitoFicha){
+
+                    window.abrirEfeitoFicha(id);
+
+                }else{
+
+                    console.log("efeito-ficha.js não carregou");
+
+                }
+
+            };
+
+
             efeitoBox.appendChild(span);
 
 
-        }
+                    }
 
-    }
+                }
 
 
 
-    if(efeitoBox.children.length > 0){
+                if(efeitoBox.children.length > 0){
 
-        efeitoBox.style.display = "flex";
+                    efeitoBox.style.display = "flex";
 
-    }else{
+                }else{
 
-        efeitoBox.style.display = "none";
+                    efeitoBox.style.display = "none";
 
-    }
+                }
 
-}
+            }
 
 
 function atualizarLinha(idLinha, idTexto, valor){

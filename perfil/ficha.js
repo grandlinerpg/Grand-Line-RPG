@@ -10,59 +10,6 @@ import {
 const app = getApp();
 const db = getDatabase(app);
 
-window.abrirEfeitoFicha = async function(id){
-
-
-    const snap =
-    await get(
-        ref(db,"efeitos/"+id)
-    );
-
-
-    if(!snap.exists()){
-
-        console.log("Efeito não encontrado");
-        return;
-
-    }
-
-
-    const efeito = snap.val();
-
-
-
-    document.getElementById("efeito-modal")
-    .style.display = "flex";
-
-
-    document.getElementById("efeito-nome")
-    .innerText =
-    efeito.nome || "-";
-
-
-    const img =
-    document.getElementById("efeito-img");
-
-    if(img){
-
-        img.src =
-        `https://res.cloudinary.com/djh45admn/image/upload/v1784283109/${efeito.img}.jpg`;
-
-    }
-
-
-    document.getElementById("efeito-desc")
-    .innerText =
-    efeito.description || "";
-
-
-    document.getElementById("efeito-func")
-    .innerText =
-    efeito.funcionamento || "";
-
-
-};
-
 
 const fichaContainer = document.getElementById("ficha-container");
 let skillAtual = null;
@@ -210,13 +157,13 @@ async function carregarEfeitos(skill){
 
             span.onclick = ()=>{
 
-                if(window.abrirEfeitoFicha){
+                if(window.abrirEfeito){
 
-                    window.abrirEfeitoFicha(id);
+                    window.abrirEfeito(id);
 
                 }else{
 
-                    console.log("efeito-ficha.js não carregou");
+                    console.log("efeito.js não carregou");
 
                 }
 

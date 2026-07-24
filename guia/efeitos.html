@@ -69,43 +69,7 @@
 
   <main id="list"></main>
 
-  <div id="modal" class="modal">
-
-    <div class="modal-content">
-
-      <button
-        class="close-item-x"
-        onclick="closeModal()"
-      >
-        ×
-      </button>
-
-      <h2 id="m-title"></h2>
-
-      <img
-        id="m-img"
-        class="ficha-img"
-      >
-
-      <p id="m-desc"></p>
-
-      <p id="m-desc"></p>
-
-      <h3 id="m-func-title">
-        FUNCIONAMENTO
-      </h3>
-
-      <p id="m-func"></p>
-
-      <p id="m-extras"></p>
-
-      <button id="editar-efeito-btn">
-        EDITAR
-      </button>
-
-    </div>
-
-  </div>
+  <div id="efeito-container"></div>
 
   <script type="module">
 
@@ -153,9 +117,6 @@
 
     const db =
       getDatabase(app);
-
-    const CLOUD =
-      "https://res.cloudinary.com/djh45admn/image/upload/v1784283109/";
     
     const list =
       document.getElementById("list");
@@ -194,7 +155,7 @@
         `;
 
         card.onclick =
-          () => openModal(efeito);
+          () => abrirEfeito(efeito.id);
 
         list.appendChild(card);
 
@@ -204,54 +165,6 @@
 
     loadEfeitos();
 
-    function openModal(efeito) {
-
-      document.getElementById("modal")
-      .style.display = "flex";
-
-
-      document.getElementById("m-title")
-      .innerText =
-      efeito.nome;
-
-
-      document.getElementById("m-desc")
-      .innerText =
-      efeito.description || "";
-
-
-      document.getElementById("m-func")
-      .innerText =
-      efeito.funcionamento || efeito.description || "";
-
-
-      document.getElementById("m-extras")
-      .innerText =
-      efeito.extras || "";
-
-
-      document.getElementById("m-img")
-      .src =
-      CLOUD + efeito.img + ".jpg";
-
-
-      document.getElementById("editar-efeito-btn")
-      .onclick = () => {
-
-          window.efeitoAtual = efeito;
-
-          abrirEfeitoEdit();
-
-      };
-
-    }
-
-    window.closeModal = function () {
-
-      document.getElementById("modal")
-      .style.display = "none";
-
-    }
 
     window.voltar = function () {
 
@@ -261,6 +174,7 @@
 
   </script>
 
+  <script type="module" src="efeito.js"></script>
   <script type="module" src="efeito-edit.js"></script>
 
 </body>

@@ -151,14 +151,38 @@ window.abrirEfeito = async function(id){
 
 
 
-    document.querySelector(".efeito-edit-btn")
-    .onclick = ()=>{
+    const editBtn =
+    document.querySelector(".efeito-edit-btn");
 
-        window.efeitoAtual = efeito;
 
-        abrirEfeitoEdit();
+    if(editBtn){
 
-    };
+        const podeEditar =
+        await verificarPermissao(2);
+
+
+        if(podeEditar){
+
+            editBtn.style.display = "block";
+
+
+            editBtn.onclick = ()=>{
+
+                window.efeitoAtual = efeito;
+
+                abrirEfeitoEdit();
+
+            };
+
+
+        }else{
+
+            editBtn.style.display = "none";
+            editBtn.onclick = null;
+
+        }
+
+    }
 
 
 };

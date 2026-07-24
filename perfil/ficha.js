@@ -144,8 +144,20 @@ async function carregarEfeitos(skill){
             document.createElement("span");
 
 
-            span.innerHTML =
-            efeito.emoji || "❔";
+            if(efeito.figure){
+
+                span.innerHTML = `
+                    <img 
+                    src="https://res.cloudinary.com/djh45admn/image/upload/v1784283109/${efeito.figure}.png"
+                    class="efeito-icon">
+                `;
+
+            }else{
+
+                span.innerHTML =
+                efeito.emoji || "❔";
+
+            }
 
 
             span.title =

@@ -112,9 +112,11 @@ window.verificarPermissao = async function(nivelNecessario){
 
             moderador:1,
 
-            admin:2,
+            gm: 2,
 
-            dono:3
+            admin:3,
+
+            dono:4
 
 
         };

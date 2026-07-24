@@ -101,7 +101,7 @@ console.log("EFEITO-EDIT JS CARREGOU");
 
 async function carregarListaEfeitos(){
 
-    const snap = await get(
+    const snap =  get(
         ref(db,"efeitos")
     );
 
@@ -421,14 +421,11 @@ efeito.extras = extras;
 
 
 await update(
-
-ref(
-db,
-`efeitos/${efeito.id}`
-),
-
-efeito
-
+    ref(
+        db,
+        `efeitos/${efeito.nome.toLowerCase()}`
+    ),
+    efeito
 );
 
 

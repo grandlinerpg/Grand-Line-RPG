@@ -30,9 +30,14 @@ async function carregarEfeitoHTML(){
     if(document.getElementById("efeito-modal")) return;
 
 
-    const res =
-    await fetch("efeito.html");
+    const caminhoEfeito =
+    window.location.pathname.includes("/guia/")
+    ? "efeito.html"
+    : "guia/efeito.html";
 
+
+    const res =
+    await fetch(caminhoEfeito);
 
     const html =
     await res.text();

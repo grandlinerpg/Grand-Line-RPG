@@ -3,6 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
     getDatabase,
     ref,
+    get,
     update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -24,8 +25,111 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
 
+let listaEfeitosFirebase = {};
+
+function carregarExtrasEdit(efeito){
+
+    const area =
+    document.getElementById("extras-edit-area");
+
+    if(!area) return;
+
+    area.innerHTML = "";
+
+    let extras = [];
+
+    if(Array.isArray(efeito.extras)){
+
+        extras = efeito.extras;
+
+    }else if(
+    efeito.extras &&
+    typeof efeito.extras === "object"
+){
+
+    extras = Object.keys(efeito.extras);
+
+    }else if(efeito.extras){
+
+        extras = [efeito.extras];
+
+    }
+
+    extras.forEach(extra=>{
+
+        criarSelectExtra(extra);
+
+    });
+
+}
+
+function criarSelectExtra(valor=""){
+
+    const area =
+    document.getElementById("extras-edit-area");
+
+    const row =
+    document.createElement("div");
+
+    row.className =
+    "efeito-edit-row";
+
+    let options = `
+<option value="">
+Escolher efeito
+</option>
+`;
+
+    Object.entries(listaEfeitosFirebase)
+    .forEach(([uid, efeito])=>{
+
+        options += `
+<option value="${uid}">
+${efeito.nome}
+</option>
+`;
+
+    });
+
+    row.innerHTML = `
+<select class="extra-select">
+
+${options}
+
+</select>
+
+<button
+class="remove-efeito-edit">
+×
+</button>
+`;
+
+    row.querySelector("select").value = valor;
+
+    row.querySelector(".remove-efeito-edit").onclick = ()=>{
+
+        row.remove();
+
+    };
+
+    area.appendChild(row);
+
+}
+
 
 console.log("EFEITO-EDIT JS CARREGOU");
+
+async function carregarListaEfeitos(){
+
+    const snap = await get(
+        ref(db,"efeitos")
+    );
+
+    if(!snap.exists()) return;
+
+    listaEfeitosFirebase = snap.val();
+
+}
 
 
 
@@ -72,6 +176,14 @@ document
 .getElementById("upload-efeito-img-input")
 .onchange = uploadImagem;
 
+document
+.getElementById("add-extra-edit")
+.onclick = ()=>{
+
+    criarSelectExtra();
+
+};
+
 
 }
 
@@ -92,6 +204,7 @@ if(!document.getElementById("efeito-edit")){
 
 }
 
+await carregarListaEfeitos();
 
 
 if(!efeito){
@@ -153,10 +266,7 @@ efeito.funcionamento || "";
 
 
 
-document
-.getElementById("efeito-edit-extras")
-.value =
-efeito.extras || "";
+carregarExtrasEdit(efeito);
 
 
 
@@ -311,10 +421,21 @@ document
 
 
 
-efeito.extras =
+const extras = [];
+
 document
-.getElementById("efeito-edit-extras")
-.value;
+.querySelectorAll(".extra-select")
+.forEach(select=>{
+
+    if(select.value){
+
+        extras.push(select.value);
+
+    }
+
+});
+
+efeito.extras = extras;
 
 
 

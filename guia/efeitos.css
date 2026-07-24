@@ -242,3 +242,50 @@
 
 }
 
+/* =========================
+   SCROLL EFEITO
+========================= */
+
+.efeito-scroll{
+
+  flex:1;
+
+  min-height:0;
+
+  overflow-y:auto;
+  overflow-x:hidden;
+
+  padding-right:5px;
+
+  margin-right:-10px;
+
+  box-sizing:border-box;
+
+}
+
+.efeito-scroll::-webkit-scrollbar{
+
+  width:6px;
+
+}
+
+.efeito-scroll::-webkit-scrollbar-track{
+
+  background:transparent;
+
+}
+
+.efeito-scroll::-webkit-scrollbar-thumb{
+
+  background:rgba(246,211,101,0.25);
+
+  border-radius:999px;
+
+}
+
+.efeito-scroll::-webkit-scrollbar-thumb:hover{
+
+  background:rgba(246,211,101,0.45);
+
+}
+

@@ -419,7 +419,12 @@ document
 
 efeito.extras = extras;
 
-
+const chave =
+efeito.nome
+.toLowerCase()
+.trim()
+.replaceAll(" ","_");
+    
 await update(
     ref(
         db,

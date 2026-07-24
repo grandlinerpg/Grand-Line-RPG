@@ -76,17 +76,42 @@
 }
 
 
+/* =========================
+   EXTRAS EM BOX
+========================= */
+
 .efeito-extras{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+
+  margin:15px 0;
+
+}
+
+
+.efeito-extra-box{
+
+  background:rgba(255,215,120,0.08);
+
+  border:1px solid rgba(246,211,101,0.25);
+
+  border-radius:10px;
+
+  padding:12px;
 
   color:#ddd;
 
-  line-height:1.5;
+  font-size:14px;
+
+  line-height:1.4;
 
   text-align:left;
 
-  font-size:14px;
-
-  margin:15px 0 8px;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
 
 }
 

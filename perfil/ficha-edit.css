@@ -332,7 +332,7 @@ cursor:pointer;
    EFEITOS EDITAR FICHA
 ========================= */
 
-#efeitos-edit-area{
+.efeitos-edit-area{
 
     display:flex;
 
@@ -384,7 +384,7 @@ cursor:pointer;
 }
 
 
-#add-efeito-edit{
+.add-efeito-edit{
 
     margin-top:8px;
 

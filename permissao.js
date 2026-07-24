@@ -1,156 +1,48 @@
 import {
-    getApp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-
-import {
-    getAuth,
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-
-import {
     getDatabase,
     ref,
     get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
+const db = getDatabase();
 
-const app = getApp();
 
-const auth = getAuth(app);
+window.verificarPermissao = async function(nivelNecessario){
 
-const db = getDatabase(app);
+    const user = JSON.parse(
+        localStorage.getItem("usuario")
+    );
 
 
+    if(!user){
+        return false;
+    }
 
-let nivelAdminAtual = 0;
 
+    const snap = await get(
+        ref(db,"usuarios/"+user.uid+"/cargo")
+    );
 
 
-export async function carregarPermissao(){
+    if(!snap.exists()){
+        return false;
+    }
 
 
-    return new Promise((resolve)=>{
+    const cargo = snap.val();
 
 
-        onAuthStateChanged(auth, async(user)=>{
+    const niveis = {
 
+        jogador:0,
+        moderador:1,
+        admin:2,
+        dono:3
 
-            if(!user){
+    };
 
-                nivelAdminAtual = 0;
 
-                resolve(0);
-
-                return;
-
-            }
-
-
-
-            const snap =
-            await get(
-                ref(db,"usuarios/"+user.uid)
-            );
-
-
-
-            if(!snap.exists()){
-
-                nivelAdminAtual = 0;
-
-                resolve(0);
-
-                return;
-
-            }
-
-
-
-            const dados =
-            snap.val();
-
-
-
-            nivelAdminAtual =
-            Number(dados.nivelAdmin || 0);
-
-
-
-            resolve(nivelAdminAtual);
-
-
-        });
-
-
-    });
-
-
-}
-
-
-
-
-
-export function pegarNivelAdmin(){
-
-    return nivelAdminAtual;
-
-}
-
-
-
-
-
-export async function temPermissao(nivel){
-
-
-    const atual =
-    await carregarPermissao();
-
-
-    return atual >= Number(nivel);
-
-
-}
-
-
-
-
-
-export async function aplicarPermissoes(){
-
-
-    const nivel =
-    await carregarPermissao();
-
-
-
-    document
-    .querySelectorAll("[data-nivel]")
-    .forEach(botao=>{
-
-
-        const necessario =
-        Number(botao.dataset.nivel);
-
-
-
-        if(nivel >= necessario){
-
-            botao.style.display = "";
-
-
-        }else{
-
-            botao.style.display = "none";
-
-        }
-
-
-    });
-
+    return niveis[cargo] >= nivelNecessario;
 
 }

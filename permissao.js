@@ -19,7 +19,7 @@ import {
 
 const firebaseConfig = {
 
-    apiKey:"AIzaC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+    apiKey:"AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
 
     authDomain:"grand-line-rpg-dcda9.firebaseapp.com",
 
@@ -47,13 +47,41 @@ const auth = getAuth(app);
 
 
 
+console.log("PERMISSAO.JS CARREGADO");
+
+
+
 let usuarioAtual = null;
 
 
 
 onAuthStateChanged(auth,(user)=>{
 
+
     usuarioAtual = user;
+
+
+    console.log(
+        "AUTH ALTERADO:",
+        user
+    );
+
+
+    if(user){
+
+        console.log(
+            "UID:",
+            user.uid
+        );
+
+    }else{
+
+        console.log(
+            "NENHUM USUARIO LOGADO"
+        );
+
+    }
+
 
 });
 
@@ -64,7 +92,20 @@ onAuthStateChanged(auth,(user)=>{
 window.verificarPermissao = async function(nivelNecessario){
 
 
+    console.log(
+        "VERIFICANDO PERMISSÃO:",
+        nivelNecessario
+    );
+
+
+
     if(!usuarioAtual){
+
+
+        console.log(
+            "ERRO: usuarioAtual vazio"
+        );
+
 
         return false;
 
@@ -77,8 +118,22 @@ window.verificarPermissao = async function(nivelNecessario){
 
 
 
+    console.log(
+        "UID USADO:",
+        uid
+    );
+
+
+
     const caminho =
     "players/"+uid+"/cargo";
+
+
+
+    console.log(
+        "BUSCANDO FIREBASE:",
+        caminho
+    );
 
 
 
@@ -92,7 +147,26 @@ window.verificarPermissao = async function(nivelNecessario){
 
 
 
+        console.log(
+            "SNAP EXISTE:",
+            snap.exists()
+        );
+
+
+        console.log(
+            "VALOR CARGO:",
+            snap.val()
+        );
+
+
+
         if(!snap.exists()){
+
+
+            console.log(
+                "CARGO NÃO ENCONTRADO"
+            );
+
 
             return false;
 
@@ -112,11 +186,9 @@ window.verificarPermissao = async function(nivelNecessario){
 
             moderador:1,
 
-            gm: 2,
+            admin:2,
 
-            admin:3,
-
-            dono:4
+            dono:3
 
 
         };
@@ -128,11 +200,48 @@ window.verificarPermissao = async function(nivelNecessario){
 
 
 
-        return nivelUsuario >= nivelNecessario;
+        console.log(
+            "CARGO:",
+            cargo
+        );
+
+
+        console.log(
+            "NIVEL USUARIO:",
+            nivelUsuario
+        );
+
+
+        console.log(
+            "NIVEL NECESSARIO:",
+            nivelNecessario
+        );
+
+
+
+        const permitido =
+        nivelUsuario >= nivelNecessario;
+
+
+
+        console.log(
+            "PERMITIDO:",
+            permitido
+        );
+
+
+
+        return permitido;
 
 
 
     }catch(err){
+
+
+        console.error(
+            "ERRO PERMISSÃO:",
+            err
+        );
 
 
         return false;

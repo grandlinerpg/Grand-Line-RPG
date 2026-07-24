@@ -21,6 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+
 console.log("FIREBASE DB:", db);
 
 async function carregarHabilidadesHTML(){
@@ -142,9 +143,22 @@ window.abrirHabilidades = async function(estiloNome){
 
   if(addBtn){
 
-      addBtn.onclick = ()=>{
+    const podeAdicionar =
+    await verificarPermissao(2);
 
-          window.skillAtual = {
+
+    if(!podeAdicionar){
+
+        addBtn.style.display="none";
+
+    }else{
+
+        addBtn.style.display="block";
+
+
+        addBtn.onclick = ()=>{
+
+            window.skillAtual = {
 
               nome:"",
               description:"",
@@ -177,10 +191,11 @@ window.abrirHabilidades = async function(estiloNome){
 
           abrirFichaEdit();
 
-      };
+        };
 
-  }
-
+      }
+  
+    }
 
   if(title){
 

@@ -404,10 +404,10 @@
 
     -webkit-text-stroke:1px rgba(0,0,0,.8);
 
-    filter:
-    drop-shadow(0 0 5px #000)
-    drop-shadow(0 0 10px #000)
-    drop-shadow(2px 2px 5px #000);
+    text-shadow:
+    0 0 6px #000,
+    0 0 12px #000,
+    2px 2px 6px #000;
 
 }
 

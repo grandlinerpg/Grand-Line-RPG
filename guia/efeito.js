@@ -118,9 +118,23 @@ window.abrirEfeito = async function(id){
 
 
 
-    document.querySelector(".efeito-extras")
-    .innerText =
-    efeito.extras || "";
+    const extras =
+    document.querySelector(".efeito-extras");
+
+
+    extras.innerHTML = "";
+
+
+    Object.values(efeito.extras || {})
+    .forEach(extra=>{
+
+        extras.innerHTML += `
+            <div class="efeito-extra-box">
+                ${extra}
+            </div>
+        `;
+
+    });
 
 
 

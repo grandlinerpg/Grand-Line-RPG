@@ -179,16 +179,20 @@
 
     <div class="modal-content">
 
-        <button onclick="
-        document.getElementById('efeito-modal').style.display='none'
-        ">
-        ×
+        <button
+          class="close-item-x"
+          onclick="closeEfeitoModal()"
+        >
+          ×
         </button>
 
 
         <h2 id="efeito-nome"></h2>
 
-        <div id="efeito-emoji"></div>
+        <img
+          id="efeito-img"
+          class="ficha-img"
+        >
 
         <p id="efeito-desc"></p>
 

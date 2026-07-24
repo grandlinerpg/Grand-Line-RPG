@@ -42,28 +42,29 @@ function carregarExtrasEdit(efeito){
 
         extras = efeito.extras;
 
-    }else if(
-    efeito.extras &&
-    typeof efeito.extras === "object"
-){
-
-    extras = Object.keys(efeito.extras);
-
     }else if(efeito.extras){
 
         extras = [efeito.extras];
 
     }
 
+    if(extras.length === 0){
+
+        criarExtraTexto();
+
+        return;
+
+    }
+
     extras.forEach(extra=>{
 
-        criarSelectExtra(extra);
+        criarExtraTexto(extra);
 
     });
 
 }
 
-function criarSelectExtra(valor=""){
+function criarExtraTexto(valor=""){
 
     const area =
     document.getElementById("extras-edit-area");
@@ -74,37 +75,17 @@ function criarSelectExtra(valor=""){
     row.className =
     "efeito-edit-row";
 
-    let options = `
-<option value="">
-Escolher efeito
-</option>
-`;
-
-    Object.entries(listaEfeitosFirebase)
-    .forEach(([uid, efeito])=>{
-
-        options += `
-<option value="${uid}">
-${efeito.nome}
-</option>
-`;
-
-    });
-
     row.innerHTML = `
-<select class="extra-select">
-
-${options}
-
-</select>
+<textarea
+class="extra-text"
+placeholder="Digite um extra...">${valor}</textarea>
 
 <button
-class="remove-efeito-edit">
+class="remove-efeito-edit"
+type="button">
 ×
 </button>
 `;
-
-    row.querySelector("select").value = valor;
 
     row.querySelector(".remove-efeito-edit").onclick = ()=>{
 
@@ -115,7 +96,6 @@ class="remove-efeito-edit">
     area.appendChild(row);
 
 }
-
 
 console.log("EFEITO-EDIT JS CARREGOU");
 
@@ -180,7 +160,7 @@ document
 .getElementById("add-extra-edit")
 .onclick = ()=>{
 
-    criarSelectExtra();
+    criarExtraTexto();
 
 };
 
@@ -424,20 +404,20 @@ document
 const extras = [];
 
 document
-.querySelectorAll(".extra-select")
-.forEach(select=>{
+.querySelectorAll(".extra-text")
+.forEach(textarea=>{
 
-    if(select.value){
+    const texto = textarea.value.trim();
 
-        extras.push(select.value);
+    if(texto){
+
+        extras.push(texto);
 
     }
 
 });
 
 efeito.extras = extras;
-
-
 
 
 await update(

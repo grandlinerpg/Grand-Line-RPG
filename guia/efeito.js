@@ -159,5 +159,14 @@ window.abrirEfeito = async function(id){
 
     }
 
+    document.getElementById("editar-efeito-btn")
+    .onclick = ()=>{
+
+        window.efeitoAtual = efeito;
+
+        abrirEfeitoEdit();
+
+    };
+
 
 };

@@ -147,9 +147,16 @@
         card.className = "item";
 
         card.innerHTML = `
-          <div class="item-emoji">
-            ${efeito.emoji || "✨"}
-          </div>
+          ${
+            efeito.figure
+              ? `<img class="item-img" src="https://res.cloudinary.com/djh45admn/image/upload/v1784283109/${efeito.figure}.png">`
+              : `<div class="item-emoji">
+                  ${efeito.emoji || "✨"}
+                </div>`
+          }  
+
+          <span>${efeito.nome}</span>
+        `;
 
           <span>${efeito.nome}</span>
         `;

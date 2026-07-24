@@ -2,7 +2,7 @@
    TITULO FUNCIONAMENTO
 ========================= */
 
-#m-func-title{
+.efeito-func-title{
 
   color:#f6d365;
 
@@ -21,7 +21,7 @@
    TEXTOS
 ========================= */
 
-#m-func{
+.efeito-func{
 
   color:#ddd;
 
@@ -36,7 +36,7 @@
 }
 
 
-#m-extras{
+.efeito-extras{
 
   color:#ddd;
 
@@ -55,7 +55,7 @@
    BOTÃO EDITAR
 ========================= */
 
-#editar-efeito-btn{
+.efeito-edit-btn{
 
   width:100%;
 
@@ -84,7 +84,7 @@
 }
 
 
-#editar-efeito-btn:hover{
+.efeito-edit-btn:hover{
 
   transform:scale(1.02);
 
@@ -97,11 +97,12 @@
    BOTÃO FECHAR
 ========================= */
 
-#close-efeito{
+.efeito-close{
 
   position:absolute;
 
   top:10px;
+
   right:15px;
 
   background:none;
@@ -111,6 +112,7 @@
   padding:0;
 
   width:auto;
+
   height:auto;
 
   color:#f6d365;
@@ -126,10 +128,47 @@
 }
 
 
-#close-efeito:hover{
+.efeito-close:hover{
 
   transform:scale(1.1);
 
   color:#fff;
+
+}
+
+
+/* =========================
+   TITULO E IMAGEM
+========================= */
+
+.efeito-title{
+
+  color:#f6d365;
+
+  font-family:'Cinzel',serif;
+
+}
+
+
+.efeito-img{
+
+  max-width:100%;
+
+  display:block;
+
+  margin:auto;
+
+}
+
+
+.efeito-desc{
+
+  color:#ddd;
+
+  line-height:1.5;
+
+  text-align:center;
+
+  font-size:14px;
 
 }

@@ -144,7 +144,7 @@ window.abrirHabilidades = async function(estiloNome){
   if(addBtn){
 
     const podeAdicionar =
-    await verificarPermissao(2);
+    await verificarPermissao(3);
 
 
     if(!podeAdicionar){

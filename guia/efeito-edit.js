@@ -101,7 +101,7 @@ console.log("EFEITO-EDIT JS CARREGOU");
 
 async function carregarListaEfeitos(){
 
-    const snap =  get(
+    const snap = await get(
         ref(db,"efeitos")
     );
 

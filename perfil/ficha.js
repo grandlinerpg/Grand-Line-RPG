@@ -40,9 +40,15 @@ window.abrirEfeitoFicha = async function(id){
     efeito.nome || "-";
 
 
-    document.getElementById("efeito-emoji")
-    .innerText =
-    efeito.emoji || "✨";
+    const img =
+    document.getElementById("efeito-img");
+
+    if(img){
+
+        img.src =
+        `https://res.cloudinary.com/djh45admn/image/upload/v1784283109/${efeito.img}.jpg`;
+
+    }
 
 
     document.getElementById("efeito-desc")

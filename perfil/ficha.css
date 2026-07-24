@@ -454,3 +454,19 @@
     gap:3px;
 
 }
+
+/* =========================
+   ICONE DOS EFEITOS
+========================= */
+
+.efeito-icon{
+
+    width:32px;
+
+    height:32px;
+
+    object-fit:contain;
+
+    display:block;
+
+}

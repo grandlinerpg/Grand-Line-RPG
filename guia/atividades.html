@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Atividades - Grand Line RPG</title>
+
+  <link rel="icon" type="image/png" href="/Grand-Line-RPG/icon-192.png">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../guia.css">
+  <link rel="stylesheet" href="estilo-luta.css">
+  <link rel="stylesheet" href="../perfil/inventario.css">
+  <link rel="stylesheet" href="../perfil/ficha.css">
+  <link rel="stylesheet" href="../perfil/ficha-edit.css">
+  <link rel="stylesheet" href="../perfil/skills.css">
+  <link rel="stylesheet" href="efeitos.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body id="atividades-page">
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <header class="navbar">
+
+    <div class="logo-area">
+
+      <img
+        src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
+        class="logo">
+
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+
+    </div>
+
+    <nav>
+
+      <a href="../index.html">INÍCIO</a>
+
+      <a href="../faccao.html">FACÇÃO</a>
+
+      <a href="../mapa.html">MAPA</a>
+
+      <a href="../guia.html">GUIA</a>
+
+    </nav>
+
+  </header>
+
+  <section class="guide-title">
+
+    <h1>ATIVIDADES</h1>
+
+    <p>
+      Todas as atividades disponíveis no Grand Line RPG.
+    </p>
+
+  </section>
+
+  <main id="list"></main>
+
+  <script type="module">
+
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import {
+      getDatabase,
+      ref,
+      get
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+
+      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+      projectId: "grand-line-rpg-dcda9",
+      storageBucket: "grand-line-rpg-dcda9.appspot.com",
+      messagingSenderId: "172042779786",
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+
+    };
+
+    const app = initializeApp(firebaseConfig);
+
+    const db = getDatabase(app);
+
+    const list =
+      document.getElementById("list");
+
+    async function loadAtividades(){
+
+      list.innerHTML = "";
+
+      const snap =
+      await get(ref(db,"faccoes"));
+
+      if(!snap.exists()) return;
+
+      const faccoes = snap.val();
+
+      Object.entries(faccoes).forEach(([id,faccao])=>{
+
+        const titulo =
+        document.createElement("div");
+
+        titulo.className =
+        "skill-rank";
+
+        titulo.innerText =
+        faccao.nome || id;
+
+        list.appendChild(titulo);
+
+        if(!faccao.atividades) return;
+
+        Object.entries(faccao.atividades).forEach(([atividadeId,atividade])=>{
+
+          const card =
+          document.createElement("div");
+
+          card.className =
+          "item";
+
+          card.innerHTML = `
+            <div class="item-emoji">
+              ${atividade.emoji || "📋"}
+            </div>
+
+            <span>
+              ${atividade.nome}
+            </span>
+          `;
+
+          card.onclick = ()=>{
+
+            console.log({
+              faccao:id,
+              id:atividadeId,
+              atividade
+            });
+
+            // abrirAtividade(
+            //   atividade,
+            //   atividadeId,
+            //   id
+            // );
+
+          };
+
+          list.appendChild(card);
+
+        });
+
+      });
+
+    }
+
+    loadAtividades();
+
+  </script>
+
+</body>
+
+</html>

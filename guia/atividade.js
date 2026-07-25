@@ -59,7 +59,7 @@ async function carregarAtividadeHTML(){
 
 
     const close =
-    document.querySelector(".atividade-close");
+    document.querySelector(".efeito-close");
 
 
 
@@ -129,7 +129,7 @@ window.abrirAtividade = async function(
 
 
 
-    document.querySelector(".atividade-title")
+    document.querySelector(".efeito-title")
     .innerText =
     atividade.nome || "-";
 
@@ -137,7 +137,7 @@ window.abrirAtividade = async function(
 
 
 
-    document.querySelector(".atividade-desc")
+    document.querySelector(".efeito-desc")
     .innerText =
     atividade.description || "";
 
@@ -145,7 +145,7 @@ window.abrirAtividade = async function(
 
 
 
-    document.querySelector(".atividade-info")
+    document.querySelector(".efeito-info")
     .innerText =
     atividade.funcionamento || "";
 
@@ -154,7 +154,7 @@ window.abrirAtividade = async function(
 
 
     const extras =
-    document.querySelector(".atividade-extras");
+    document.querySelector(".efeito-extras");
 
 
 
@@ -168,7 +168,7 @@ window.abrirAtividade = async function(
 
         extras.innerHTML += `
 
-            <div class="atividade-extra-box">
+            <div class="efeito-extra-box">
 
                 ${extra}
 
@@ -184,7 +184,7 @@ window.abrirAtividade = async function(
 
 
     const img =
-    document.querySelector(".atividade-img");
+    document.querySelector(".efeito-img");
 
 
 
@@ -252,7 +252,7 @@ window.abrirAtividade = async function(
 
 
     const editBtn =
-    document.querySelector(".atividade-edit-btn");
+    document.querySelector(".efeito-edit-btn");
 
 
 

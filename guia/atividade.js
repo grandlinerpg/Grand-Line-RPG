@@ -260,7 +260,7 @@ window.abrirAtividade = async function(
 
 
         const podeEditar =
-        await verificarPermissao(2);
+        await verificarPermissao(3);
 
 
 

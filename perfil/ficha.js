@@ -624,7 +624,9 @@ window.abrirFicha = async function(
         const podeEditar =
         await verificarPermissao(3);
 
-
+        console.log("mostrarEditar:", mostrarEditar);
+        console.log("podeEditar:", podeEditar);
+        
         if(mostrarEditar && podeEditar){
 
             editBtn.style.display = "block";

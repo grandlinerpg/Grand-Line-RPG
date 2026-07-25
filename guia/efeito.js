@@ -158,7 +158,7 @@ window.abrirEfeito = async function(id){
     if(editBtn){
 
         const podeEditar =
-        await verificarPermissao(2);
+        await verificarPermissao(3);
 
 
         if(podeEditar){

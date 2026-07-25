@@ -1,0 +1,205 @@
+/* ========================= */
+/* ATIVIDADES */
+/* ========================= */
+
+#list{
+
+    width:90%;
+    max-width:900px;
+
+    margin:40px auto 80px;
+
+    display:flex;
+    flex-direction:column;
+
+    gap:20px;
+
+}
+
+
+/* TITULO DA FACÇÃO */
+
+.skill-rank{
+
+    width:100%;
+
+    margin-top:25px;
+    margin-bottom:5px;
+
+    padding:14px 20px;
+
+    background:
+    linear-gradient(
+        90deg,
+        rgba(180,140,60,0.25),
+        rgba(0,0,0,0.4)
+    );
+
+    border-left:4px solid #c9a34e;
+
+    color:#e8c76b;
+
+    font-family:'Cinzel',serif;
+
+    font-size:22px;
+
+    text-transform:uppercase;
+
+    letter-spacing:2px;
+
+}
+
+
+/* CARD DA ATIVIDADE */
+
+.item{
+
+    width:100%;
+
+    min-height:70px;
+
+    display:flex;
+    align-items:center;
+
+    gap:20px;
+
+
+    padding:15px 20px;
+
+
+    background:
+
+    linear-gradient(
+        145deg,
+        rgba(30,30,30,0.95),
+        rgba(10,10,10,0.95)
+    );
+
+
+    border:1px solid rgba(201,163,78,0.35);
+
+    border-radius:10px;
+
+
+    cursor:pointer;
+
+
+    transition:
+
+    transform .2s,
+    border .2s,
+    background .2s;
+
+
+}
+
+
+/* EMOJI */
+
+.item-emoji{
+
+    width:45px;
+    height:45px;
+
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+
+    font-size:28px;
+
+
+    background:
+
+    rgba(0,0,0,0.5);
+
+
+    border-radius:8px;
+
+
+    border:1px solid rgba(255,255,255,0.1);
+
+}
+
+
+
+/* TEXTO */
+
+.item span{
+
+    color:#ddd;
+
+    font-family:'Cinzel',serif;
+
+    font-size:17px;
+
+}
+
+
+
+/* HOVER */
+
+.item:hover{
+
+
+    transform:translateX(8px);
+
+
+    border-color:#c9a34e;
+
+
+    background:
+
+    linear-gradient(
+        145deg,
+        rgba(50,40,20,0.95),
+        rgba(15,15,15,0.95)
+    );
+
+
+}
+
+
+.item:hover span{
+
+    color:#e8c76b;
+
+}
+
+
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+
+    #list{
+
+        width:94%;
+
+    }
+
+
+    .skill-rank{
+
+        font-size:18px;
+
+    }
+
+
+    .item{
+
+        padding:12px;
+
+    }
+
+
+    .item span{
+
+        font-size:15px;
+
+    }
+
+
+}

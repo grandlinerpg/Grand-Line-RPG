@@ -145,7 +145,7 @@ window.abrirAtividade = async function(
 
 
 
-    document.querySelector(".efeito-info")
+    document.querySelector(".efeito-func")
     .innerText =
     atividade.funcionamento || "";
 

@@ -231,7 +231,7 @@ window.abrirAtividade = async function(
     if(saldo){
 
         saldo.innerText =
-        atividade.recompensa?.saldo || 0;
+        atividade.recompensa?.dinheiro || 0;
 
     }
 

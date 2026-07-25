@@ -273,13 +273,13 @@ window.abrirAtividade = async function(
 
             editBtn.onclick = ()=>{
 
+                window.atividadeAtual = atividade;
 
-                window.atividadeAtual =
-                atividade;
+                window.atividadeAtualId = atividadeId;
 
+                window.faccaoAtualId = faccaoId;
 
                 abrirAtividadeEdit();
-
 
             };
 

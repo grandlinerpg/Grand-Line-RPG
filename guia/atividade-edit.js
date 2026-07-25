@@ -132,7 +132,9 @@ async function carregarAtividadeEditHTML(){
     );
 
 
-    document.body.insertAdjacentHTML(
+    document
+    .getElementById("atividade-edit-container")
+    .insertAdjacentHTML(
         "beforeend",
         await res.text()
     );

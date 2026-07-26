@@ -1,7 +1,8 @@
 import {
-    initializeApp
+    initializeApp,
+    getApp,
+    getApps
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 
 import {
     getDatabase,
@@ -31,13 +32,17 @@ const firebaseConfig = {
 
     appId:"1:172042779786:web:ecdff9eaf4fee36eca8173",
 
+    measurementId: "G-1H48YJSFXQ",
+
     databaseURL:"https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 
 };
 
 
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length
+    ? getApp()
+    : initializeApp(firebaseConfig);
 
 
 const db = getDatabase(app);

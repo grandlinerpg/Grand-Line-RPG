@@ -302,25 +302,22 @@ nav a:hover::after{
     justify-content:space-between;
     align-items:center;
 
-    height:10vh;
-    min-height:55px;
-    max-height:90px;
-
-    padding:1.5vh 4vw;
+    padding:10px 15px;
   }
-
+  
   .logo{
-    width:50px;
+    width:clamp(40px,8vw,65px);
   }
 
   .logo-text h1{
-    font-size:22px;
+    font-size:clamp(18px,4vw,28px);
   }
 
   /* BOTÃO MENU */
 
   .menu-toggle{
     display:block;
+    font-size:clamp(25px,7vw,34px);
   }
 
   /* MENU ESCONDIDO */

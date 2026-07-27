@@ -235,15 +235,15 @@
 
 
   .char-image img{
-    width:14dvh;
-    height:14dvh;
+    width:22dvh;
+    height:22dvh;
   }
 
 
   .char-info{
     align-items:center;
     gap:.5dvh;
-    font-size:1.7dvh;
+    font-size:3dvh;
   }
 
 
@@ -254,20 +254,20 @@
     right:auto;
     transform:none;
 
-    width:9dvh;
-    height:9dvh;
+    width:12dvh;
+    height:12dvh;
 
     margin-top:.5dvh;
   }
 
 
   .level-badge span{
-    font-size:2.6dvh;
+    font-size:3.5dvh;
   }
 
 
   .title-center{
-    font-size:2.7dvh;
+    font-size:3.5dvh;
     margin:.8dvh 0;
   }
 
@@ -280,7 +280,7 @@
 
   .stat-box{
     padding:1dvh;
-    font-size:1.6dvh;
+    font-size:2dvh;
   }
 
 
@@ -294,7 +294,7 @@
 
   .profile-grid div{
     padding:1dvh;
-    font-size:1.6dvh;
+    font-size:2dvh;
   }
 
 
@@ -308,7 +308,7 @@
 
   .stats div{
     padding:1dvh;
-    font-size:1.6dvh;
+    font-size:2dvh;
   }
 
 
@@ -319,7 +319,7 @@
 
 
   .image-button img{
-    width:7dvh;
+    width:12dvh;
   }
 
 }

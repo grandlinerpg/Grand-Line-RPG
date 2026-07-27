@@ -235,15 +235,15 @@
 
 
   .char-image img{
-    width:18dvh;
-    height:18dvh;
+    width:17dvh;
+    height:17dvh;
   }
 
 
   .char-info{
     align-items:center;
     gap:.5dvh;
-    font-size:2dvh;
+    font-size:2.2dvh;
   }
 
 
@@ -254,15 +254,15 @@
     right:auto;
     transform:none;
 
-    width:12dvh;
-    height:12dvh;
+    width:11dvh;
+    height:11dvh;
 
     margin-top:.5dvh;
   }
 
 
   .level-badge span{
-    font-size:3.5dvh;
+    font-size:3.2dvh;
   }
 
 

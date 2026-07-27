@@ -189,22 +189,41 @@
 ========================= */
 @media (max-width:700px){
 
-  .profile-container{
-    height:100dvh;
-    padding:0;
+  html, body{
+    margin:0;
+    width:100%;
+    height:100%;
     overflow:hidden;
   }
+
+
+  .profile-container{
+    width:100%;
+    height:100dvh;
+    min-height:100dvh;
+
+    padding:0;
+
+    display:block;
+    overflow:hidden;
+  }
+
 
   .profile-card{
     width:100%;
     height:100dvh;
+    min-height:100dvh;
+
     box-sizing:border-box;
 
     border:none;
     border-radius:0;
 
     padding:2dvh;
+
+    overflow:hidden;
   }
+
 
   .profile-header{
     flex-direction:column;
@@ -214,10 +233,12 @@
     padding:1.5dvh;
   }
 
+
   .char-image img{
     width:14dvh;
     height:14dvh;
   }
+
 
   .char-info{
     align-items:center;
@@ -225,8 +246,10 @@
     font-size:1.7dvh;
   }
 
+
   .level-badge{
     position:relative;
+
     top:auto;
     right:auto;
     transform:none;
@@ -237,51 +260,63 @@
     margin-top:.5dvh;
   }
 
+
   .level-badge span{
     font-size:2.6dvh;
   }
+
 
   .title-center{
     font-size:2.7dvh;
     margin:.8dvh 0;
   }
 
+
   .top-stats{
     gap:1dvh;
     margin:1dvh 0;
   }
+
 
   .stat-box{
     padding:1dvh;
     font-size:1.6dvh;
   }
 
+
   .profile-grid{
     grid-template-columns:1fr;
+
     gap:1dvh;
     margin:1dvh 0;
   }
+
 
   .profile-grid div{
     padding:1dvh;
     font-size:1.6dvh;
   }
 
+
   .stats{
     grid-template-columns:1fr;
+
     gap:1dvh;
     margin:1dvh 0;
   }
+
 
   .stats div{
     padding:1dvh;
     font-size:1.6dvh;
   }
 
+
   .profile-buttons{
     gap:1dvh;
     margin-top:1dvh;
   }
+
 
   .image-button img{
     width:7dvh;

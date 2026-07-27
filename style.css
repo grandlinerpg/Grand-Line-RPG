@@ -302,7 +302,11 @@ nav a:hover::after{
     justify-content:space-between;
     align-items:center;
 
-    padding:10px 15px;
+    height:10vh;
+    min-height:55px;
+    max-height:90px;
+
+    padding:1.5vh 4vw;
   }
 
   .logo{

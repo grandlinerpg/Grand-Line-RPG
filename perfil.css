@@ -235,8 +235,8 @@
 
 
   .char-image img{
-    width:22dvh;
-    height:22dvh;
+    width:20dvh;
+    height:20dvh;
   }
 
 
@@ -254,8 +254,8 @@
     right:auto;
     transform:none;
 
-    width:12dvh;
-    height:12dvh;
+    width:10dvh;
+    height:10dvh;
 
     margin-top:.5dvh;
   }
@@ -267,7 +267,7 @@
 
 
   .title-center{
-    font-size:3.5dvh;
+    font-size:3dvh;
     margin:.8dvh 0;
   }
 

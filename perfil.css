@@ -1,349 +1,247 @@
 /* =========================
    CONTAINER
 ========================= */
-
-.profile-container{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:40px 20px;
+.profile-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
 }
 
 /* CARD */
-
-.profile-card{
-    width:100%;
-    max-width:780px;
-    background:rgba(0,0,0,.80);
-    border-radius:15px;
-    padding:30px 30px 20px;
-    border:1px solid rgba(255,215,120,.25);
+.profile-card {
+  width: 100%;
+  max-width: 780px;
+  background: rgba(0,0,0,0.80);
+  border-radius: 15px;
+  padding: 30px 30px 20px;
+  border: 1px solid rgba(255,215,120,0.25);
 }
 
 /* =========================
    TITULO
 ========================= */
-
-.title-center{
-    text-align:center;
-    font-family:'Cinzel',serif;
-    color:#f6d365;
-    margin:10px 0;
-    font-size:20px;
+.title-center {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  color: #f6d365;
+  margin: 10px 0;
+  font-size: 20px;
 }
 
 /* =========================
    HEADER PERSONAGEM
 ========================= */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 
-.profile-header{
-    display:flex;
-    align-items:center;
-    gap:20px;
-    background:rgba(255,255,255,.03);
-    padding:15px;
-    border-radius:12px;
-    position:relative;
+  background: rgba(255,255,255,0.03);
+  padding: 15px;
+  border-radius: 12px;
+
+  position: relative;
 }
 
 /* IMAGEM */
-
-.char-image img{
-    width:135px;
-    height:135px;
-    border-radius:12px;
-    border:2px solid #f6d365;
-    object-fit:cover;
+.char-image img {
+  width: 135px;
+  height: 135px;
+  border-radius: 12px;
+  border: 2px solid #f6d365;
+  object-fit: cover;
 }
 
 /* INFO */
-
-.char-info{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    font-family:'Cinzel',serif;
-    color:#f6d365;
+.char-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: 'Cinzel', serif;
+  color: #f6d365;
 }
 
 /* =========================
    LEVEL
 ========================= */
+.level-badge {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 
-.level-badge{
-    position:absolute;
-    right:20px;
-    top:50%;
-    transform:translateY(-50%);
-    width:85px;
-    height:85px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+  width: 85px;
+  height: 85px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.level-badge img{
-    width:100%;
-    height:100%;
-    object-fit:contain;
+.level-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.level-badge span{
-    position:absolute;
-    font-size:22px;
-    font-weight:bold;
-    color:#f6d365;
-    text-shadow:0 0 6px rgba(0,0,0,.9);
+.level-badge span {
+  position: absolute;
+  font-weight: bold;
+  font-size: 22px;
+  color:#f6d365;
+  text-shadow: 0 0 6px rgba(0,0,0,0.9);
 }
 
 /* =========================
    SALDO + EXP
 ========================= */
-
-.top-stats{
-    display:flex;
-    gap:10px;
-    margin:12px 0;
+.top-stats {
+  display: flex;
+  gap: 10px;
+  margin: 12px 0;
 }
 
-.stat-box{
-    flex:1;
-    background:rgba(255,255,255,.05);
-    padding:12px;
-    border-radius:10px;
-    text-align:center;
-    color:#f6d365;
-    font-family:'Cinzel',serif;
+.stat-box {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  border-radius: 10px;
+
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  color: #f6d365;
 }
 
-.stat-box span{
-    color:#ffe6a7;
-    font-weight:bold;
+.stat-box span {
+  color: #ffe6a7;
+  font-weight: bold;
 }
 
 /* =========================
    INFORMAÇÕES
 ========================= */
-
-.profile-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin:20px 0;
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0;
 }
 
-.profile-grid div{
-    background:rgba(255,255,255,.04);
-    padding:10px;
-    border-radius:10px;
+.profile-grid div {
+  background: rgba(255,255,255,0.04);
+  padding: 10px;
+  border-radius: 10px;
 }
 
-.profile-grid span{
-    color:#ffe6a7;
-    font-weight:bold;
+.profile-grid span {
+  color: #ffe6a7;
+  font-weight: bold;
 }
 
 /* =========================
    ATRIBUTOS
 ========================= */
-
-.stats{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin:15px 0;
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 15px 0;
 }
 
-.stats div{
-    background:rgba(255,255,255,.04);
-    padding:12px;
-    border-radius:10px;
-    color:#f6d365;
-    font-family:'Cinzel',serif;
+.stats div {
+  background: rgba(255,255,255,0.04);
+  padding: 12px;
+  border-radius: 10px;
+  color: #f6d365;
+  font-family: 'Cinzel', serif;
 }
 
 /* =========================
-   BOTÕES
+   BOTÕES COM IMAGEM
 ========================= */
 
 .profile-buttons{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-top:15px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:15px;
 }
 
 .image-button{
-    border:none;
-    background:none;
-    padding:0;
-    cursor:pointer;
+  padding:0;
+  border:none;
+  background:none;
+  cursor:pointer;
 }
 
 .image-button img{
-    width:80px;
-    height:auto;
-    display:block;
+  display:block;
+  width:80px; /* ajuste conforme necessário */
+  height:auto;
 }
 
 /* =========================
    MOBILE
 ========================= */
+@media(max-width:700px) {
 
-@media (max-width:700px){
+  .profile-container {
+    min-height: 100dvh;
+    padding: 0;
+  }
 
-html,
-body{
-    width:100%;
-    height:100dvh;
-    overflow:hidden;
-}
+  .profile-card {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
 
-.profile-container{
-    width:100%;
-    height:100dvh;
-    min-height:100dvh;
-    padding:0;
-}
+    padding: 20px 20px 10px;
 
-.profile-card{
+    border-radius: 0;
+    border: none;
+  }
 
-    width:100%;
-    height:100%;
+  .profile-grid,
+  .stats {
+    grid-template-columns: 1fr;
+  }
 
-    max-width:none;
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    padding-bottom: 25px;
+  }
 
-    border:none;
-    border-radius:0;
+  .char-image img {
+    width: 120px;
+    height: 120px;
+  }
 
-    padding:clamp(8px,2dvh,18px);
+  .char-info {
+    align-items: center;
+  }
 
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
+  .level-badge {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    margin-top: 10px;
 
-    overflow:hidden;
-}
+    width: 85px;
+    height: 85px;
+  }
 
-/* Título */
+  .level-badge span {
+    color:#f6d365;
+  }
 
-.title-center{
-    margin:0;
-    font-size:clamp(15px,2.4dvh,22px);
-}
-
-/* Header */
-
-.profile-header{
-
-    flex-direction:column;
-
-    text-align:center;
-
-    gap:clamp(4px,1dvh,12px);
-
-    padding:clamp(6px,1dvh,12px);
-}
-
-.char-info{
-    align-items:center;
-    gap:clamp(2px,.5dvh,6px);
-    font-size:clamp(11px,1.8dvh,16px);
-}
-
-.char-image img{
-
-    width:clamp(70px,13dvh,125px);
-    height:clamp(70px,13dvh,125px);
-}
-
-.level-badge{
-
-    position:relative;
-
-    top:auto;
-    right:auto;
-
-    transform:none;
-
-    margin-top:0;
-
-    width:clamp(50px,9dvh,85px);
-    height:clamp(50px,9dvh,85px);
-}
-
-.level-badge span{
-
-    font-size:clamp(14px,2.8dvh,22px);
-}
-
-/* Saldo */
-
-.top-stats{
-
-    gap:clamp(4px,.8dvh,10px);
-
-    margin:clamp(4px,.8dvh,10px) 0;
-}
-
-.stat-box{
-
-    padding:clamp(5px,.8dvh,10px);
-
-    font-size:clamp(11px,1.7dvh,15px);
-}
-
-/* Informações */
-
-.profile-grid{
-
-    grid-template-columns:1fr;
-
-    gap:clamp(4px,.8dvh,8px);
-
-    margin:clamp(4px,.8dvh,10px) 0;
-}
-
-.profile-grid div{
-
-    padding:clamp(5px,.8dvh,9px);
-
-    font-size:clamp(11px,1.7dvh,15px);
-}
-
-/* Atributos */
-
-.stats{
-
-    grid-template-columns:1fr;
-
-    gap:clamp(4px,.8dvh,8px);
-
-    margin:clamp(4px,.8dvh,10px) 0;
-}
-
-.stats div{
-
-    padding:clamp(5px,.8dvh,9px);
-
-    font-size:clamp(11px,1.7dvh,15px);
-}
-
-/* Botões */
-
-.profile-buttons{
-
-    gap:clamp(5px,1dvh,10px);
-
-    margin-top:clamp(4px,.8dvh,10px);
-}
-
-.image-button img{
-
-    width:clamp(45px,8dvh,75px);
-}
-
+  .top-stats {
+    flex-direction: row;
+  }
 }

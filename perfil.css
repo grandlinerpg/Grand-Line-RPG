@@ -235,15 +235,15 @@
 
 
   .char-image img{
-    width:20dvh;
-    height:20dvh;
+    width:18dvh;
+    height:18dvh;
   }
 
 
   .char-info{
     align-items:center;
     gap:.5dvh;
-    font-size:3dvh;
+    font-size:2dvh;
   }
 
 
@@ -254,8 +254,8 @@
     right:auto;
     transform:none;
 
-    width:10dvh;
-    height:10dvh;
+    width:12dvh;
+    height:12dvh;
 
     margin-top:.5dvh;
   }

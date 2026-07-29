@@ -231,7 +231,7 @@
 
   .profile-card{
     position:relative;
-    padding-right:85px; /* espaço para os botões */
+    padding-right:95px; /* espaço para os botões */
   }
 
 
@@ -239,7 +239,7 @@
 
     position:absolute;
 
-    right:20px;
+    right:15px;
     top:50%;
 
     transform:translateY(-50%);

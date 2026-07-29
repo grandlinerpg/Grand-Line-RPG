@@ -284,15 +284,15 @@
     right:auto;
     transform:none;
 
-    width:11dvh;
-    height:11dvh;
+    width:10dvh;
+    height:10dvh;
 
     margin-top:.5dvh;
   }
 
 
   .level-badge span{
-    font-size:3.2dvh;
+    font-size:3dvh;
   }
 
 
@@ -353,7 +353,7 @@
   }
 
   .title-center{
-    font-size:3dvh;
+    font-size:2.5dvh;
     gap:2dvh;
   }
 

@@ -176,13 +176,16 @@ window.db = db;
 
 const clickSound = new Audio("sounds/sound1.mp3");
 
-document.querySelectorAll(".image-button").forEach(botao => {
+document.addEventListener("click", (e)=>{
 
-  botao.addEventListener("click", () => {
+  const botao = e.target.closest(".image-button");
 
-    clickSound.currentTime = 0;
-    clickSound.play();
+  if(!botao) return;
 
+  clickSound.currentTime = 0;
+
+  clickSound.play().catch(err=>{
+    console.log("Som bloqueado:", err);
   });
 
 });

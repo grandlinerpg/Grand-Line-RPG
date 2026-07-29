@@ -165,3 +165,24 @@ startAuth();
 // ======================================================
 window.auth = auth;
 window.db = db;
+
+window.auth = auth;
+window.db = db;
+
+
+// ======================
+// SOM DOS BOTÕES
+// ======================
+
+const clickSound = new Audio("sounds/sound1.mp3");
+
+document.querySelectorAll(".image-button").forEach(botao => {
+
+  botao.addEventListener("click", () => {
+
+    clickSound.currentTime = 0;
+    clickSound.play();
+
+  });
+
+});

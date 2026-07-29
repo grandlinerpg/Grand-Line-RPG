@@ -297,8 +297,14 @@
 
 
   .title-center{
-    font-size:3dvh;
-    margin:.8dvh 0;
+    font-size:2.5dvh;
+    margin: 1.2dvh 0;
+    gap:2dvh;
+  }
+   
+  .title-center::before,
+  .title-center::after{
+    max-width:30%;
   }
 
 
@@ -323,7 +329,7 @@
 
 
   .profile-grid div{
-    padding:1.5dvh;
+    padding:1.2dvh;
     font-size:2dvh;
   }
 
@@ -350,16 +356,6 @@
 
   .image-button img{
     width:11dvh;
-  }
-
-  .title-center{
-    font-size:2.5dvh;
-    gap:2dvh;
-  }
-
-  .title-center::before,
-  .title-center::after{
-    max-width:30%;
   }
 
 }

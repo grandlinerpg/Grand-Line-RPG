@@ -225,6 +225,40 @@
 }
 
 /* =========================
+   BOTÕES LATERAIS PC
+========================= */
+@media (min-width:701px){
+
+  .profile-card{
+    position:relative;
+    padding-right:110px; /* espaço para os botões */
+  }
+
+
+  .profile-buttons{
+
+    position:absolute;
+
+    right:20px;
+    top:50%;
+
+    transform:translateY(-50%);
+
+    flex-direction:column;
+
+    gap:15px;
+
+    margin-top:0;
+  }
+
+
+  .image-button img{
+    width:70px;
+  }
+
+}
+
+/* =========================
    MOBILE
 ========================= */
 @media (max-width:700px){

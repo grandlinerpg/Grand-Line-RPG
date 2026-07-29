@@ -22,12 +22,42 @@
 /* =========================
    TITULO
 ========================= */
-.title-center {
-  text-align: center;
-  font-family: 'Cinzel', serif;
-  color: #f6d365;
-  margin: 10px 0;
-  font-size: 20px;
+.title-center{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:15px;
+
+  margin:12px 0;
+
+  font-family:'Cinzel', serif;
+  font-size:20px;
+  color:#f6d365;
+
+  text-align:center;
+}
+
+.title-center::before,
+.title-center::after{
+  content:"";
+
+  flex:1;
+  max-width:220px;
+  height:1px;
+
+  background:linear-gradient(
+    to right,
+    transparent,
+    rgba(246,211,101,.85)
+  );
+}
+
+.title-center::after{
+  background:linear-gradient(
+    to left,
+    transparent,
+    rgba(246,211,101,.85)
+  );
 }
 
 /* =========================
@@ -321,5 +351,17 @@
   .image-button img{
     width:11dvh;
   }
+
+  .title-center{
+    font-size:3dvh;
+    gap:2dvh;
+  }
+
+  .title-center::before,
+  .title-center::after{
+    max-width:30%;
+  }
+
+}
 
 }

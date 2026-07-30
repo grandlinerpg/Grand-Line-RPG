@@ -1,4 +1,4 @@
-const CACHE_NAME = "grand-line-rpg-v1.1.3";
+const CACHE_NAME = "grand-line-rpg-v1.1.4";
 
 const FILES_TO_CACHE = [
 

@@ -349,8 +349,8 @@
     right:auto;
     transform:none;
 
-    width:18%;
-    height:18%;
+    width:22%;
+    height:22%;
 
     margin-top:2%;
   }
@@ -361,7 +361,7 @@
   }
 
   .level-badge span{
-    font-size:120%;
+    font-size:130%;
   }
 
   /* =========================

@@ -400,16 +400,14 @@
     gap:3%;
   }
 
-  .stat-box{
-
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-
+.stat-box{
     padding:2%;
-
+    text-align:center;
     font-size:90%;
-  }
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+   }
 
   /* =========================
      INFO
@@ -417,16 +415,15 @@
 
   .profile-grid{
 
-    flex:1;
+    height:18%;
 
     display:grid;
-
     grid-template-columns:1fr;
 
     gap:3%;
 
     margin:2% 0;
-  }
+}
 
   .profile-grid div{
 

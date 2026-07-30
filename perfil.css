@@ -389,9 +389,6 @@
      SALDO
   ========================= */
 
-  /* =========================
-   SALDO
-========================= */
 
 .top-stats{
 
@@ -414,13 +411,13 @@
   justify-content:center;
   align-items:center;
 
-  padding:1% 2%; /* menor */
+  padding:1% 2%;
 
   font-size:90%;
 
   border-radius:10px;
 
-  white-space:nowrap;
+  line-height:1.2;
 }
    
   /* =========================

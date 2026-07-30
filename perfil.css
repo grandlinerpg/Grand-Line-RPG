@@ -389,26 +389,40 @@
      SALDO
   ========================= */
 
-  .top-stats{
+  /* =========================
+   SALDO
+========================= */
 
-    height:12%;
+.top-stats{
 
-    margin:2% 0;
+  height:9%; /* antes era 12% */
 
-    display:flex;
+  margin:1.5% 0;
 
-    gap:3%;
-  }
+  display:flex;
+  gap:3%;
+
+  align-items:center;
+}
 
 .stat-box{
-    padding:2%;
-    text-align:center;
-    font-size:90%;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-   }
 
+  flex:1;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+
+  padding:1% 2%; /* menor */
+
+  font-size:90%;
+
+  border-radius:10px;
+
+  white-space:nowrap;
+}
+   
   /* =========================
      INFO
   ========================= */
@@ -430,7 +444,7 @@
     display:flex;
     align-items:center;
 
-    padding:3%;
+    padding:2.5%;
 
     font-size:95%;
   }
@@ -456,8 +470,8 @@
   .image-button img{
 
     width:18vw;
-    max-width:80px;
-    min-width:55px;
+    max-width:90px;
+    min-width:60px;
 
     height:auto;
   }

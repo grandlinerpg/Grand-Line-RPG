@@ -391,33 +391,35 @@
 
 
 .top-stats{
+    height:8%;
+    margin:1% 0;
 
-  height:9%; /* antes era 12% */
-
-  margin:1.5% 0;
-
-  display:flex;
-  gap:3%;
-
-  align-items:center;
+    display:flex;
+    gap:3%;
 }
 
 .stat-box{
+    flex:1;
 
-  flex:1;
+    background:rgba(255,255,255,.05);
 
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
+    padding:6px;
 
-  padding:1% 2%;
+    border-radius:10px;
 
-  font-size:90%;
+    text-align:center;
 
-  border-radius:10px;
+    font-family:'Cinzel', serif;
 
-  line-height:1.2;
+    color:#f6d365;
+
+    font-size:85%;
+}
+
+.stat-box span{
+    color:#ffe6a7;
+    font-weight:bold;
+    white-space:nowrap;
 }
    
   /* =========================

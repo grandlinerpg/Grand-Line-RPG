@@ -336,10 +336,11 @@
     align-items:center;
     flex-direction:column;
 
-    gap:4%;
+    gap:5%;          /* antes 4% */
+    margin-top:1px;  /* adiciona */
 
-    font-size:95%;
-  }
+    font-size:98%;   /* antes 95% */
+}
 
   .level-badge{
 
@@ -349,8 +350,8 @@
     right:auto;
     transform:none;
 
-    width:22%;
-    height:22%;
+    width:23%;
+    height:23%;
 
     margin-top:2%;
   }
@@ -360,9 +361,9 @@
     height:100%;
   }
 
-  .level-badge span{
-    font-size:130%;
-  }
+.level-badge span{
+    font-size:135%; /* antes 130% */
+}
 
   /* =========================
      TÍTULO
@@ -392,28 +393,30 @@
 
 .top-stats{
     height:8%;
+
     margin:1% 0;
 
     display:flex;
+    align-items:center;   /* adiciona */
     gap:3%;
 }
 
 .stat-box{
     flex:1;
 
+    display:flex;          /* adiciona */
+    flex-direction:column; /* adiciona */
+    justify-content:center;/* adiciona */
+    align-items:center;    /* adiciona */
+
     background:rgba(255,255,255,.05);
 
-    padding:6px;
+    padding:4px 6px;
 
     border-radius:10px;
 
-    text-align:center;
-
-    font-family:'Cinzel', serif;
-
-    color:#f6d365;
-
-    font-size:85%;
+    font-size:90%; /* antes 85% */
+    line-height:1.2;
 }
 
 .stat-box span{

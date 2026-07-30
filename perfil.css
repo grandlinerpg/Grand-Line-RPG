@@ -260,114 +260,209 @@
 
 @media (max-width:700px){
 
-  html,body{
-    margin:0;
+  html,
+  body{
     width:100%;
     height:100%;
+    margin:0;
     overflow:hidden;
   }
 
   .profile-container{
     width:100%;
-    height:calc(100vh - 60px);
+    height:100%;
     padding:0;
-    display:block;
-    overflow:hidden;
+    display:flex;
   }
 
   .profile-card{
+
     width:100%;
-    height:calc(100vh - 60px);
+    height:100%;
 
     border:none;
     border-radius:0;
+
     box-sizing:border-box;
 
-    padding:clamp(10px,2vw,18px);
+    padding:3%;
+
+    display:flex;
+    flex-direction:column;
 
     overflow:hidden;
   }
 
+  /* =========================
+     HEADER
+  ========================= */
+
   .profile-header{
+
+    height:38%;
+
+    display:flex;
     flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    gap:3%;
+    padding:3%;
+
     text-align:center;
 
-    gap:clamp(6px,1vw,12px);
-    padding:clamp(10px,2vw,16px);
+    position:relative;
+  }
+
+  .char-image{
+    height:48%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
 
   .char-image img{
-    width:clamp(100px,28vw,140px);
-    height:clamp(100px,28vw,140px);
+    height:100%;
+    width:auto;
+    aspect-ratio:1/1;
   }
 
   .char-info{
+
+    height:28%;
+
+    display:flex;
+    justify-content:center;
     align-items:center;
-    gap:clamp(2px,.6vw,6px);
-    font-size:clamp(14px,3.5vw,18px);
+    flex-direction:column;
+
+    gap:4%;
+
+    font-size:95%;
   }
 
   .level-badge{
+
     position:relative;
+
     top:auto;
     right:auto;
     transform:none;
 
-    width:clamp(60px,16vw,90px);
-    height:clamp(60px,16vw,90px);
+    width:18%;
+    height:18%;
 
-    margin-top:6px;
+    margin-top:2%;
+  }
+
+  .level-badge img{
+    width:100%;
+    height:100%;
   }
 
   .level-badge span{
-    font-size:clamp(20px,5vw,28px);
+    font-size:120%;
   }
+
+  /* =========================
+     TÍTULO
+  ========================= */
 
   .title-center{
-    font-size:clamp(18px,5vw,24px);
-    gap:12px;
-    margin:12px 0;
+
+    height:6%;
+
+    margin:0;
+
+    display:flex;
+    align-items:center;
+
+    font-size:120%;
   }
 
+  .title-center::before,
+  .title-center::after{
+    max-width:30%;
+  }
+
+  /* =========================
+     SALDO
+  ========================= */
+
   .top-stats{
-    gap:10px;
-    margin:10px 0;
+
+    height:12%;
+
+    margin:2% 0;
+
+    display:flex;
+
+    gap:3%;
   }
 
   .stat-box{
-    padding:clamp(8px,2vw,14px);
-    font-size:clamp(14px,3.5vw,18px);
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    padding:2%;
+
+    font-size:90%;
   }
 
+  /* =========================
+     INFO
+  ========================= */
+
   .profile-grid{
+
+    flex:1;
+
+    display:grid;
+
     grid-template-columns:1fr;
-    gap:10px;
-    margin:10px 0;
+
+    gap:3%;
+
+    margin:2% 0;
   }
 
   .profile-grid div{
-    padding:clamp(10px,2vw,14px);
-    font-size:clamp(14px,3.5vw,18px);
+
+    display:flex;
+    align-items:center;
+
+    padding:3%;
+
+    font-size:95%;
   }
 
-  .stats{
-    grid-template-columns:1fr;
-    gap:10px;
-    margin:10px 0;
-  }
-
-  .stats div{
-    padding:clamp(10px,2vw,14px);
-    font-size:clamp(14px,3.5vw,18px);
-  }
+  /* =========================
+     BOTÕES
+  ========================= */
 
   .profile-buttons{
-    gap:10px;
-    margin-top:10px;
+
+    height:12%;
+
+    display:flex;
+
+    justify-content:center;
+    align-items:center;
+
+    gap:4%;
+
+    margin:0;
   }
 
   .image-button img{
-    width:clamp(60px,18vw,90px);
+
+    width:18vw;
+    max-width:80px;
+    min-width:55px;
+
+    height:auto;
   }
 
 }

@@ -258,224 +258,148 @@
 
 }
 
+/* =========================
+   MOBILE
+========================= */
 @media (max-width:700px){
 
-  html,
-  body{
+  html, body{
+    margin:0;
     width:100%;
     height:100%;
-    margin:0;
     overflow:hidden;
   }
 
+
   .profile-container{
     width:100%;
-    height:100%;
+    height:calc(100dvh - 9dvh);
+    min-height:calc(100dvh - 9dvh);
+
     padding:0;
-    display:flex;
+
+    display:block;
+    overflow:hidden;
   }
 
-  .profile-card{
 
+  .profile-card{
     width:100%;
-    height:100%;
+    height:calc(100dvh - 9dvh);
+    min-height:calc(100dvh - 9dvh);
+
+    box-sizing:border-box;
 
     border:none;
     border-radius:0;
 
-    box-sizing:border-box;
-
-    padding:3%;
-
-    display:flex;
-    flex-direction:column;
+    padding:2dvh;
 
     overflow:hidden;
   }
 
-  /* =========================
-     HEADER
-  ========================= */
 
   .profile-header{
-
-    height:38%;
-
-    display:flex;
     flex-direction:column;
-    justify-content:center;
-    align-items:center;
-
-    gap:3%;
-    padding:3%;
-
     text-align:center;
 
-    position:relative;
+    gap:1dvh;
+    padding:1.5dvh;
   }
 
-  .char-image{
-    height:48%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
 
   .char-image img{
-    height:100%;
-    width:auto;
-    aspect-ratio:1/1;
+    width:17dvh;
+    height:17dvh;
   }
 
+
   .char-info{
-
-    height:28%;
-
-    display:flex;
-    justify-content:center;
     align-items:center;
-    flex-direction:column;
+    gap:.5dvh;
+    font-size:2.2dvh;
+  }
 
-    gap:5%;          /* antes 4% */
-    margin-top:1px;  /* adiciona */
-
-    font-size:98%;   /* antes 95% */
-}
 
   .level-badge{
-
     position:relative;
 
     top:auto;
     right:auto;
     transform:none;
 
-    width:23%;
-    height:23%;
+    width:10dvh;
+    height:10dvh;
 
-    margin-top:2%;
+    margin-top:.5dvh;
   }
 
-  .level-badge img{
-    width:100%;
-    height:100%;
+
+  .level-badge span{
+    font-size:3dvh;
   }
 
-.level-badge span{
-    font-size:135%; /* antes 130% */
-}
-
-  /* =========================
-     TÍTULO
-  ========================= */
 
   .title-center{
-
-    height:6%;
-
-    margin:0;
-
-    display:flex;
-    align-items:center;
-
-    font-size:120%;
+    font-size:2.5dvh;
+    margin: 1.3dvh 0;
+    gap:2dvh;
   }
-
+   
   .title-center::before,
   .title-center::after{
     max-width:30%;
   }
 
-  /* =========================
-     SALDO
-  ========================= */
+
+  .top-stats{
+    gap:1dvh;
+    margin:1dvh 0;
+  }
 
 
-.top-stats{
-    height:8%;
+  .stat-box{
+    padding:1dvh;
+    font-size:2dvh;
+  }
 
-    margin:1% 0;
-
-    display:flex;
-    align-items:center;   /* adiciona */
-    gap:3%;
-}
-
-.stat-box{
-    flex:1;
-
-    display:flex;          /* adiciona */
-    flex-direction:column; /* adiciona */
-    justify-content:center;/* adiciona */
-    align-items:center;    /* adiciona */
-
-    background:rgba(255,255,255,.05);
-
-    padding:4px 6px;
-
-    border-radius:10px;
-
-    font-size:90%; /* antes 85% */
-    line-height:1.2;
-}
-
-.stat-box span{
-    color:#ffe6a7;
-    font-weight:bold;
-    white-space:nowrap;
-}
-   
-  /* =========================
-     INFO
-  ========================= */
 
   .profile-grid{
-
-    height:18%;
-
-    display:grid;
     grid-template-columns:1fr;
 
-    gap:3%;
+    gap:1dvh;
+    margin:1dvh 0;
+  }
 
-    margin:2% 0;
-}
 
   .profile-grid div{
-
-    display:flex;
-    align-items:center;
-
-    padding:2.5%;
-
-    font-size:95%;
+    padding:1.3dvh;
+    font-size:2dvh;
   }
 
-  /* =========================
-     BOTÕES
-  ========================= */
+
+  .stats{
+    grid-template-columns:1fr;
+
+    gap:1dvh;
+    margin:1dvh 0;
+  }
+
+
+  .stats div{
+    padding:1dvh;
+    font-size:2dvh;
+  }
+
 
   .profile-buttons{
-
-    height:12%;
-
-    display:flex;
-
-    justify-content:center;
-    align-items:center;
-
-    gap:4%;
-
-    margin:0;
+    gap:0.8dvh;
+    margin-top:1dvh;
   }
 
+
   .image-button img{
-
-    width:18vw;
-    max-width:90px;
-    min-width:60px;
-
-    height:auto;
+    width:11dvh;
   }
 
 }

@@ -71,7 +71,6 @@ function controlarEstilo(valor) {
 // FILTRAR PERSONAGENS OCUPADOS
 // ======================
 async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDoUsuario) {
-  // Puxa a lista global de ocupados no Firebase
   const takenSnap = await get(ref(db, "personagens"));
   const ocupados = takenSnap.exists() ? takenSnap.val() : {};
 
@@ -79,7 +78,6 @@ async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDo
 
   todasOpcoes.forEach(opt => {
     const dono = ocupados[opt.value];
-    // Exibe o personagem no select só se estiver livre ou se pertencer ao próprio usuário logado
     if (!dono || dono === uidUsuarioAtual) {
       const optionEl = document.createElement("option");
       optionEl.value = opt.value;
@@ -100,7 +98,7 @@ selectPersonagem.addEventListener("change", () => {
 });
 
 // ======================
-// CRIAR / TROCAR PERSONAGEM (COM CONCORRÊNCIA)
+// CRIAR / TROCAR PERSONAGEM
 // ======================
 window.criarPersonagem = async function () {
   const user = auth.currentUser;
@@ -123,9 +121,25 @@ window.criarPersonagem = async function () {
     const data = snap.exists() ? snap.val() : {};
     const antigoPersonagem = data.charName || null;
 
+    // Se escolheu o mesmo personagem que já possui, apenas volta pro perfil
     if (antigoPersonagem === novoPersonagem) {
       window.location.href = "perfil.html";
       return;
+    }
+
+    // --- VERIFICAÇÃO DO ITEM DE TROCA ---
+    // Se o jogador já tinha um personagem e está trocando, precisa do item "trocadepersonagem"
+    const itemRef = ref(db, `players/${user.uid}/inventory/trocadepersonagem`);
+    let qtdItem = 0;
+
+    if (antigoPersonagem) {
+      const itemSnap = await get(itemRef);
+      qtdItem = itemSnap.exists() ? Number(itemSnap.val()) || 0 : 0;
+
+      if (qtdItem <= 0) {
+        alert("Você não possui o item 'Troca de Personagem' no inventário para realizar essa troca!");
+        return;
+      }
     }
 
     // Tenta travar o novo personagem de forma atômica no banco
@@ -144,13 +158,26 @@ window.criarPersonagem = async function () {
       return;
     }
 
-    // Se trocou de personagem, libera o antigo na lista
+    // Se trocou de personagem, libera o antigo na lista global
     if (antigoPersonagem && antigoPersonagem !== novoPersonagem) {
       await update(ref(db, "personagens"), {
         [antigoPersonagem]: null
       });
+
+      // --- DESCONTO DO ITEM DE TROCA ---
+      if (qtdItem > 1) {
+        await update(ref(db, `players/${user.uid}/inventory`), {
+          trocadepersonagem: qtdItem - 1
+        });
+      } else {
+        // Se só tinha 1, remove a chave do inventário
+        await update(ref(db, `players/${user.uid}/inventory`), {
+          trocadepersonagem: null
+        });
+      }
     }
 
+    // Atualiza o personagem do jogador
     const updates = {
       charName: novoPersonagem,
       image: gerarUrl(novoPersonagem)

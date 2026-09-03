@@ -1,9 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, update, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, update, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
-// FIREBASE
+// FIREBASE CONFIG
 // ======================
 const firebaseConfig = {
   apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
@@ -27,8 +27,14 @@ const selectEstilo = document.getElementById("estilo");
 const grupoEstilo = document.getElementById("grupo-estilo");
 const img = document.getElementById("preview-img");
 
+// Copia as opções do HTML no carregamento para poder filtrar dinamicamente
+const todasOpcoes = Array.from(selectPersonagem.options).map(opt => ({
+  value: opt.value,
+  text: opt.text
+}));
+
 // ======================
-// IMAGEM
+// AUXILIARES
 // ======================
 function gerarUrl(nome) {
   return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${
@@ -41,96 +47,127 @@ function gerarUrl(nome) {
   }.png`;
 }
 
-// ======================
-// PREVIEW
-// ======================
 function atualizarImagem() {
-  img.src = gerarUrl(selectPersonagem.value);
+  if (selectPersonagem.value) {
+    img.src = gerarUrl(selectPersonagem.value);
+  } else {
+    img.src = "";
+  }
 }
 
-selectPersonagem.addEventListener("change", async () => {
-  atualizarImagem();
-
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const snap = await get(ref(db, `players/${user.uid}/character`));
-
-  if (snap.exists()) {
-    const data = snap.val();
-    controlarEstilo(data.style || "—");
-  } else {
-    controlarEstilo("—");
-  }
-});
-
-atualizarImagem();
-
-// ======================
-// CONTROLAR ESTILO (SEM BUG VISUAL)
-// ======================
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
-
-  const container = grupoEstilo;
-
   if (!v || v === "—") {
-    // MOSTRAR SEM QUEBRAR LAYOUT
-    container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.opacity = "1";
-    container.style.height = "auto";
+    grupoEstilo.style.display = "flex";
+    grupoEstilo.style.flexDirection = "column";
+    grupoEstilo.style.opacity = "1";
+    grupoEstilo.style.height = "auto";
   } else {
-    // ESCONDER
-    container.style.display = "none";
+    grupoEstilo.style.display = "none";
   }
 }
 
 // ======================
-// CRIAR PERSONAGEM
+// FILTRAR PERSONAGENS OCUPADOS
+// ======================
+async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDoUsuario) {
+  // Puxa a lista global de ocupados no Firebase
+  const takenSnap = await get(ref(db, "takenCharacters"));
+  const ocupados = takenSnap.exists() ? takenSnap.val() : {};
+
+  selectPersonagem.innerHTML = "";
+
+  todasOpcoes.forEach(opt => {
+    const dono = ocupados[opt.value];
+    // Exibe o personagem no select só se estiver livre ou se pertencer ao próprio usuário logado
+    if (!dono || dono === uidUsuarioAtual) {
+      const optionEl = document.createElement("option");
+      optionEl.value = opt.value;
+      optionEl.textContent = opt.text;
+      selectPersonagem.appendChild(optionEl);
+    }
+  });
+
+  if (personagemAtualDoUsuario && ocupados[personagemAtualDoUsuario] === uidUsuarioAtual) {
+    selectPersonagem.value = personagemAtualDoUsuario;
+  }
+
+  atualizarImagem();
+}
+
+selectPersonagem.addEventListener("change", () => {
+  atualizarImagem();
+});
+
+// ======================
+// CRIAR / TROCAR PERSONAGEM (COM CONCORRÊNCIA)
 // ======================
 window.criarPersonagem = async function () {
-
   const user = auth.currentUser;
-
   if (!user) {
     alert("Você não está logado!");
     return;
   }
 
-  const personagem = selectPersonagem.value;
+  const novoPersonagem = selectPersonagem.value;
   const estilo = selectEstilo.value;
 
-  try {
+  if (!novoPersonagem) {
+    alert("Selecione um personagem válido.");
+    return;
+  }
 
+  try {
     const charRef = ref(db, `players/${user.uid}/character`);
     const snap = await get(charRef);
+    const data = snap.exists() ? snap.val() : {};
+    const antigoPersonagem = data.charName || null;
 
-    if (!snap.exists()) {
-      alert("Personagem não encontrado.");
+    if (antigoPersonagem === novoPersonagem) {
+      window.location.href = "perfil.html";
       return;
     }
 
-    const data = snap.val();
+    // Tenta travar o novo personagem de forma atômica no banco
+    const novoCharRef = ref(db, `takenCharacters/${novoPersonagem}`);
+    const txResult = await runTransaction(novoCharRef, (currentOwner) => {
+      if (currentOwner === null || currentOwner === user.uid) {
+        return user.uid;
+      } else {
+        return; // Alguém pegou primeiro
+      }
+    });
+
+    if (!txResult.committed) {
+      alert("Ops! Alguém acabou de escolher este personagem. Por favor, selecione outro.");
+      await carregarPersonagensDisponiveis(user.uid, antigoPersonagem);
+      return;
+    }
+
+    // Se trocou de personagem, libera o antigo na lista
+    if (antigoPersonagem && antigoPersonagem !== novoPersonagem) {
+      await update(ref(db, "takenCharacters"), {
+        [antigoPersonagem]: null
+      });
+    }
 
     const updates = {
-      charName: personagem,
-      image: gerarUrl(personagem)
+      charName: novoPersonagem,
+      image: gerarUrl(novoPersonagem)
     };
 
-    // Só altera o estilo se ainda não possuir um
     if (!data.style || data.style === "—") {
       updates.style = estilo;
     }
 
     await update(charRef, updates);
 
-    alert("Sucesso!");
+    alert("Personagem escolhido com sucesso!");
     window.location.href = "perfil.html";
 
   } catch (err) {
     console.error(err);
-    alert("Erro ao escolher personagem");
+    alert("Erro ao escolher personagem.");
   }
 };
 
@@ -144,17 +181,15 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const snap = await get(ref(db, `players/${user.uid}/character`));
+  let personagemAtual = null;
+  let estiloAtual = "—";
 
   if (snap.exists()) {
     const data = snap.val();
-
-    if (data.charName) {
-      selectPersonagem.value = data.charName;
-      atualizarImagem();
-    }
-
-    controlarEstilo(data.style || "—");
-  } else {
-    controlarEstilo("—");
+    personagemAtual = data.charName || null;
+    estiloAtual = data.style || "—";
   }
+
+  controlarEstilo(estiloAtual);
+  await carregarPersonagensDisponiveis(user.uid, personagemAtual);
 });

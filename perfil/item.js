@@ -260,7 +260,7 @@ async function usarTipo1(item) {
 
   // Se for Akuma no Mi, registra na lista de existentes no Firebase
   if (item.categoria === "Akuma no Mi") {
-    await set(ref(db, `akumasExistentes/${itemFinal.id}`), true);
+    await set(ref(db, `akumas-existentes/${itemFinal.id}`), true);
   }
 
   // Remove o item consumível usado (ex: baú/caixa de fruta)
@@ -586,7 +586,7 @@ async function usarTipo5(item) {
 
           if (nomeLimpo === nomeFruta) {
             // 🔥 Libera a fruta para o mundo de novo
-            await remove(ref(db, `akumasExistentes/${id}`));
+            await remove(ref(db, `akumas-existentes/${id}`));
             break;
           }
         }

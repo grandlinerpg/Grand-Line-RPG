@@ -208,7 +208,7 @@ async function usarTipo1(item) {
   // ==========================================
   let akumasExistentes = [];
   if (item.categoria === "Akuma no Mi") {
-    const akumasSnap = await get(ref(db, "akumasExistentes"));
+    const akumasSnap = await get(ref(db, "akumas-existentes"));
     if (akumasSnap.exists()) {
       // Cria uma lista de IDs de Akumas que já existem no jogo
       akumasExistentes = Object.keys(akumasSnap.val());

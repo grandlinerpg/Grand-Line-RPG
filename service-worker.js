@@ -1,12 +1,9 @@
-const CACHE_NAME = "grand-line-rpg-v1.1.5";
+const CACHE_NAME = "grand-line-rpg-v1.1.6";
 
-const FILES_TO_CACHE = [
+const STATIC_FILES = [
 
   "/Grand-Line-RPG/",
   "/Grand-Line-RPG/index.html",
-
-  "/Grand-Line-RPG/style.css",
-  "/Grand-Line-RPG/guia.css",
 
   "/Grand-Line-RPG/icon-192.png",
   "/Grand-Line-RPG/icon-512.png"
@@ -20,12 +17,12 @@ self.addEventListener("install", event => {
   event.waitUntil(
 
     caches.open(CACHE_NAME)
-
-      .then(cache => cache.addAll(FILES_TO_CACHE))
+      .then(cache => cache.addAll(STATIC_FILES))
 
   );
 
 });
+
 
 self.addEventListener("activate", event => {
 
@@ -38,9 +35,7 @@ self.addEventListener("activate", event => {
         keys.map(key => {
 
           if (key !== CACHE_NAME) {
-
             return caches.delete(key);
-
           }
 
         })
@@ -55,17 +50,89 @@ self.addEventListener("activate", event => {
 
 });
 
+
 self.addEventListener("fetch", event => {
 
   if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+
+  // Apenas arquivos do seu próprio site
+  if (url.origin !== self.location.origin) return;
+
+
+  // ==========================================
+  // HTML / CSS / JS
+  // INTERNET PRIMEIRO
+  // ==========================================
+
+  if (
+    event.request.destination === "document" ||
+    event.request.destination === "style" ||
+    event.request.destination === "script"
+  ) {
+
+    event.respondWith(
+
+      fetch(event.request)
+
+        .then(networkResponse => {
+
+          if (
+            networkResponse &&
+            networkResponse.status === 200
+          ) {
+
+            const copy = networkResponse.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, copy);
+              });
+
+          }
+
+          return networkResponse;
+
+        })
+
+        .catch(() => {
+
+          return caches.match(event.request)
+            .then(cachedResponse => {
+
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+
+              return caches.match(
+                "/Grand-Line-RPG/index.html"
+              );
+
+            });
+
+        })
+
+    );
+
+    return;
+  }
+
+
+  // ==========================================
+  // IMAGENS / FONTES / OUTROS
+  // CACHE PRIMEIRO
+  // ==========================================
 
   event.respondWith(
 
     caches.match(event.request)
 
-      .then(response => {
+      .then(cachedResponse => {
 
-        if (response) return response;
+        if (cachedResponse) {
+          return cachedResponse;
+        }
 
         return fetch(event.request)
 
@@ -80,16 +147,15 @@ self.addEventListener("fetch", event => {
               const copy = networkResponse.clone();
 
               caches.open(CACHE_NAME)
-
-                .then(cache => cache.put(event.request, copy));
+                .then(cache => {
+                  cache.put(event.request, copy);
+                });
 
             }
 
             return networkResponse;
 
-          })
-
-          .catch(() => caches.match("/Grand-Line-RPG/index.html"));
+          });
 
       })
 

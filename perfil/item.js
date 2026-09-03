@@ -190,26 +190,38 @@ function sortearTier() {
 
 // =========================
 // TIPO 1
-// GERA ITEM ALEATÓRIO
+// GERA ITEM ALEATÓRIO (COM SUPORTE A UNICIDADE DE AKUMA NO MI)
 // =========================
 async function usarTipo1(item) {
-
   const db = window.db;
 
-  const categoriaRef =
-    ref(db, `itens/${item.categoria}`);
-
+  const categoriaRef = ref(db, `itens/${item.categoria}`);
   const snap = await get(categoriaRef);
 
   if (!snap.exists()) return;
 
   const itens = snap.val();
-
   const lista = [];
 
-  for (const itemId in itens) {
+  // ==========================================
+  // SE FOR AKUMA NO MI: VERIFICA UNICIDADE
+  // ==========================================
+  let akumasExistentes = [];
+  if (item.categoria === "Akuma no Mi") {
+    const akumasSnap = await get(ref(db, "akumasExistentes"));
+    if (akumasSnap.exists()) {
+      // Cria uma lista de IDs de Akumas que já existem no jogo
+      akumasExistentes = Object.keys(akumasSnap.val());
+    }
+  }
 
+  for (const itemId in itens) {
     if (itemId === item.id) continue;
+
+    // Se for Akuma no Mi e já existir no jogo, ignora este item
+    if (item.categoria === "Akuma no Mi" && akumasExistentes.includes(itemId)) {
+      continue;
+    }
 
     lista.push({
       id: itemId,
@@ -217,49 +229,51 @@ async function usarTipo1(item) {
     });
   }
 
-  if (!lista.length) return;
-
-  // sorteia tier
-  const tierSorteado = sortearTier();
-
-  // filtra tier
-  let filtrados =
-    lista.filter(i =>
-      Number(i.tier) === tierSorteado
+  // Caso todas as Akumas no Mi já tenham sido sorteadas
+  if (!lista.length) {
+    window.mostrarResultado(
+      "AÇÃO NEGADA!",
+      "Todas as <b>Akuma no Mi</b> desta categoria já foram encontradas no jogo!",
+      "❌"
     );
-
-  // fallback
-  if (!filtrados.length) {
-
-    filtrados =
-      lista.filter(i =>
-        Number(i.tier) < tierSorteado
-      );
+    return;
   }
 
-  // fallback final
+  // Sorteia tier
+  const tierSorteado = sortearTier();
+
+  // Filtra tier
+  let filtrados = lista.filter(i => Number(i.tier) === tierSorteado);
+
+  // Fallback 1: tiers menores
+  if (!filtrados.length) {
+    filtrados = lista.filter(i => Number(i.tier) < tierSorteado);
+  }
+
+  // Fallback 2: qualquer disponível da lista
   if (!filtrados.length) {
     filtrados = lista;
   }
 
-  // sorteia item
-  const itemFinal =
-    filtrados[
-      Math.floor(Math.random() * filtrados.length)
-    ];
+  // Sorteia o item final
+  const itemFinal = filtrados[Math.floor(Math.random() * filtrados.length)];
 
-  // remove usado
+  // Se for Akuma no Mi, registra na lista de existentes no Firebase
+  if (item.categoria === "Akuma no Mi") {
+    await set(ref(db, `akumasExistentes/${itemFinal.id}`), true);
+  }
+
+  // Remove o item consumível usado (ex: baú/caixa de fruta)
   await removerItem(item.id);
 
-  // adiciona novo
+  // Adiciona o novo item sorteado ao inventário
   await adicionarItem(itemFinal.id);
 
   window.mostrarResultado(
     "ITEM SORTEADO!",
     `Você recebeu um(a) <b>${itemFinal.nome || itemFinal.id}</b>.`,
     itemFinal.img
-      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemFinal.img}.png"
-          class="item-open-img">`
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemFinal.img}.png" class="item-open-img">`
       : (itemFinal.item || itemFinal.emoji || itemFinal.icon || "🎁")
   );
 }
@@ -545,34 +559,57 @@ function usarTipo3(item) {
 // TIPO 5
 // REMOVE AKUMA NO MI
 // =========================
-  async function usarTipo5(item) {
+async function usarTipo5(item) {
+  const auth = window.auth;
+  const db = window.db;
 
-    const auth = window.auth;
-    const db = window.db;
+  const user = auth.currentUser;
+  if (!user) return;
 
-    const user = auth.currentUser;
+  const charRef = ref(db, `players/${user.uid}/character`);
+  const charSnap = await get(charRef);
 
-    if (!user) return;
+  if (charSnap.exists()) {
+    const personagem = charSnap.val();
+    const nomeFruta = personagem.fruit;
 
-    const charRef =
-      ref(db, `players/${user.uid}/character`);
+    // Se o player possui uma fruta registrada
+    if (nomeFruta && nomeFruta !== "—") {
+      const itensSnap = await get(ref(db, "itens/Akuma no Mi"));
 
-    await update(charRef, {
-      fruit: "—"
-    });
+      if (itensSnap.exists()) {
+        const akumas = itensSnap.val();
 
-    await removerItem(item.id);
+        // Encontra o ID do item que possui o mesmo nome limpo registrado no player
+        for (const id in akumas) {
+          const nomeLimpo = limparNome(akumas[id].nome || id, "Akuma no Mi");
 
-    window.mostrarResultado(
-      "AKUMA NO MI REMOVIDA!",
-      "Você renunciou ao poder da sua <b>Akuma no Mi</b>.",
-      item.img
-        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png"
-            class="item-open-img">`
-        : (item.item || item.emoji || item.icon || "🍎")
-    );
+          if (nomeLimpo === nomeFruta) {
+            // 🔥 Libera a fruta para o mundo de novo
+            await remove(ref(db, `akumasExistentes/${id}`));
+            break;
+          }
+        }
+      }
+    }
   }
 
+  // Reseta a fruta do personagem no Firebase
+  await update(charRef, {
+    fruit: "—"
+  });
+
+  // Consome o item de remoção
+  await removerItem(item.id);
+
+  window.mostrarResultado(
+    "AKUMA NO MI REMOVIDA!",
+    "Você renunciou ao poder da sua <b>Akuma no Mi</b>.",
+    item.img
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.img}.png" class="item-open-img">`
+      : (item.item || item.emoji || item.icon || "🍎")
+  );
+}
 // =========================
 // TIPO 6
 // RECUPERA SKILL PERDIDA

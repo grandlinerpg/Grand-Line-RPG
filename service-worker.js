@@ -1,4 +1,4 @@
-const CACHE_NAME = "grand-line-rpg-v1.1.6";
+const CACHE_NAME = "grand-line-rpg-v1.1.7";
 
 const STATIC_FILES = [
 

@@ -72,7 +72,7 @@ function controlarEstilo(valor) {
 // ======================
 async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDoUsuario) {
   // Puxa a lista global de ocupados no Firebase
-  const takenSnap = await get(ref(db, "takenCharacters"));
+  const takenSnap = await get(ref(db, "personagens"));
   const ocupados = takenSnap.exists() ? takenSnap.val() : {};
 
   selectPersonagem.innerHTML = "";
@@ -129,7 +129,7 @@ window.criarPersonagem = async function () {
     }
 
     // Tenta travar o novo personagem de forma atômica no banco
-    const novoCharRef = ref(db, `takenCharacters/${novoPersonagem}`);
+    const novoCharRef = ref(db, `personagens/${novoPersonagem}`);
     const txResult = await runTransaction(novoCharRef, (currentOwner) => {
       if (currentOwner === null || currentOwner === user.uid) {
         return user.uid;
@@ -146,7 +146,7 @@ window.criarPersonagem = async function () {
 
     // Se trocou de personagem, libera o antigo na lista
     if (antigoPersonagem && antigoPersonagem !== novoPersonagem) {
-      await update(ref(db, "takenCharacters"), {
+      await update(ref(db, "personagens"), {
         [antigoPersonagem]: null
       });
     }

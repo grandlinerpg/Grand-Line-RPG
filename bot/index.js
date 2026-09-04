@@ -38,10 +38,12 @@ try {
         serviceAccount = require('./firebase-key.json');
     }
 
+    // Tratamento rigoroso para corrigir quebras de linha enviadas pela Render
     if (serviceAccount && serviceAccount.private_key) {
         serviceAccount.private_key = serviceAccount.private_key
             .replace(/\\n/g, '\n')
-            .replace(/^"|"$/g, '');
+            .replace(/^"|"$/g, '')
+            .trim();
     }
 
     if (!admin.apps.length) {
@@ -51,7 +53,7 @@ try {
         });
     }
 
-    console.log('✅ [Firebase] SDK Admin conectado com sucesso!');
+    console.log('✅ [Firebase] SDK Admin inicializado!');
 } catch (e) {
     console.error('❌ [Firebase] Erro ao carregar credenciais:', e.message);
 }
@@ -164,8 +166,6 @@ async function connectToWhatsApp() {
 
                     Object.keys(playersData).forEach(uid => {
                         const player = playersData[uid];
-                        
-                        // Busca o nome do personagem dentro da estrutura do jogador
                         const nome = player?.character?.charName || player?.nome || player?.name || 'Sem Nome';
 
                         rankText += `${contador}. ${nome}\n`;

@@ -2,9 +2,25 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const express = require('express');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const Groq = require('groq-sdk');
 
 // NÚMERO DO BOT CONFIGURADO:
 const NUMERO_BOT = "5511918448331"; 
+
+// CHAVE DA GROQ (Cole sua chave 'gsk_...' aqui se não for usar variáveis na Render):
+const GROQ_KEY = process.env.GROQ_API_KEY || "COLE_SUA_CHAVE_GSK_AQUI";
+
+// INICIALIZAÇÃO DA IA GROQ
+const groq = new Groq({ apiKey: GROQ_KEY });
+
+// PERSONALIDADE DO PERSONAGEM (SYSTEM PROMPT)
+const PERSONALIDADE_PERSONAGEM = `
+Você é Monkey D. Luffy, capitão dos Chapéus de Palha do universo de One Piece.
+- Responda SEMPRE como o personagem (use risadas típicas como "Nishishishi!", fale de carne, aventuras, mar de forma empolgada e simples).
+- Responda sempre em Português.
+- Mantenha respostas curtas e diretas (máximo de 2 a 3 frases), ideais para mensagens de WhatsApp.
+- NUNCA saia do personagem, independentemente do que o usuário perguntar.
+`;
 
 // 1. SERVIDOR WEB + AUTO-PING (Render 24/7)
 const app = express();
@@ -38,7 +54,6 @@ try {
         serviceAccount = require('./firebase-key.json');
     }
 
-    // Tratamento robusto da private_key para a Render
     if (serviceAccount && serviceAccount.private_key) {
         let key = serviceAccount.private_key;
         key = key.replace(/^"|"$/g, '');
@@ -179,6 +194,43 @@ async function connectToWhatsApp() {
                     await sock.sendMessage(from, { text: '❌ Erro ao buscar lista no Firebase.' }, { quoted: m });
                 }
             }
+
+            // COMANDO DE PERSONAGEM COM IA (!LUFFY)
+            if (text === '!luffy' || text.startsWith('!luffy ')) {
+                console.log('➡️ Executando conversa com IA (!luffy)...');
+                
+                const pergunta = rawText.replace(/^!luffy\s*/i, '').trim();
+
+                if (!pergunta) {
+                    return await sock.sendMessage(from, { 
+                        text: '🍖 *Luffy:* "O que foi? Tá querendo me pedir carne?!" (Digite algo após !luffy)' 
+                    }, { quoted: m });
+                }
+
+                try {
+                    const chatCompletion = await groq.chat.completions.create({
+                        messages: [
+                            { role: "system", content: PERSONALIDADE_PERSONAGEM },
+                            { role: "user", content: pergunta }
+                        ],
+                        model: "llama-3.3-70b-versatile",
+                        temperature: 0.8,
+                        max_tokens: 200
+                    });
+
+                    const respostaIA = chatCompletion.choices[0]?.message?.content || "Nishishishi! Fiquei confuso e esqueci o que ia falar!";
+
+                    await sock.sendMessage(from, { text: `🍖 *Luffy:* ${respostaIA}` }, { quoted: m });
+                    console.log('✅ Resposta da IA enviada com sucesso!');
+
+                } catch (iaErr) {
+                    console.error('❌ Erro na API do Groq:', iaErr.message);
+                    await sock.sendMessage(from, { 
+                        text: '⚠️ *Luffy:* "Eita, deu um nó na minha cabeça!" (Erro ao conectar com a IA)' 
+                    }, { quoted: m });
+                }
+            }
+
         } catch (err) {
             console.error('❌ Erro no processamento de mensagens:', err);
         }

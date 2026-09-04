@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');   
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
 const express = require('express');
 const axios = require('axios');
 const admin = require('firebase-admin');
@@ -38,7 +38,6 @@ try {
         serviceAccount = require('./firebase-key.json');
     }
 
-    // Corrige explicitamente as quebras de linha da chave privada
     if (serviceAccount && serviceAccount.private_key) {
         serviceAccount.private_key = serviceAccount.private_key
             .replace(/\\n/g, '\n')
@@ -102,7 +101,6 @@ async function connectToWhatsApp() {
             const m = messages[0];
             if (!m || !m.message || m.key.fromMe) return;
 
-            // Pega o texto de mensagens normais, respostas ou mídias com legenda
             const rawText = m.message.conversation || 
                             m.message.extendedTextMessage?.text || 
                             m.message.imageMessage?.caption || 
@@ -122,11 +120,7 @@ async function connectToWhatsApp() {
             // COMANDO !DADO (1d100)
             if (text.startsWith('!dado')) {
                 console.log('➡️ Executando !dado...');
-                
-                // Gera número aleatório de 1 a 100
                 const resultado = Math.floor(Math.random() * 100) + 1;
-                
-                // Identifica quem mandou (funciona em grupos e no privado)
                 const senderJid = m.key.participant || from;
                 const senderNumber = senderJid.split('@')[0];
 
@@ -142,7 +136,7 @@ async function connectToWhatsApp() {
                 console.log(`✅ [Dado] Resultado ${resultado} enviado para @${senderNumber}!`);
             }
 
-            // COMANDO !RANK
+            // COMANDO !RANK (Leitura direta de players -> UID -> character -> charName)
             if (text.startsWith('!rank')) {
                 console.log('➡️ Executando !rank...');
 
@@ -151,37 +145,36 @@ async function connectToWhatsApp() {
                     return await sock.sendMessage(from, { text: '⚠️ Firebase não conectado.' }, { quoted: m });
                 }
 
-                console.log('🔍 Lendo nó "players" no Firebase...');
-                const playersRef = db.ref('players');
-                const snapshot = await playersRef.once('value');
+                try {
+                    console.log('🔍 Lendo o nó "players"...');
+                    const snapshot = await db.ref('players').once('value');
 
-                if (!snapshot.exists()) {
-                    console.log('⚠️ Nó "players" está vazio no banco.');
-                    return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
+                    if (!snapshot.exists()) {
+                        console.log('⚠️ O nó "players" está vazio no Realtime Database.');
+                        return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
+                    }
+
+                    const playersData = snapshot.val();
+                    let listaTexto = '🏴‍☠️ *LISTA DE JOGADORES* 🏴‍☠️\n\n';
+                    let contador = 1;
+
+                    // Itera sobre as chaves de UID
+                    Object.keys(playersData).forEach(uid => {
+                        const player = playersData[uid];
+                        
+                        // Extrai charName dentro do objeto character
+                        const charName = player?.character?.charName || 'Personagem Sem Nome';
+
+                        listaTexto += `${contador}. *${charName}*\n`;
+                        contador++;
+                    });
+
+                    await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
+                    console.log('✅ Comando !rank executado com sucesso!');
+                } catch (rankErr) {
+                    console.error('❌ Erro na consulta do Firebase no !rank:', rankErr.message);
+                    await sock.sendMessage(from, { text: '❌ Erro ao acessar o banco de dados.' }, { quoted: m });
                 }
-
-                const playersData = snapshot.val();
-                console.log('📦 Dados recebidos do Firebase com sucesso!');
-
-                let listaTexto = '🏴‍☠️ *LISTA DE JOGADORES* 🏴‍☠️\n\n';
-                let contador = 1;
-
-                Object.keys(playersData).forEach(uid => {
-                    const player = playersData[uid];
-                    
-                    // Busca charName em variações comuns de salvamento
-                    const charName = player.character?.charName 
-                                  || player.charName 
-                                  || player.characterName 
-                                  || 'Sem Personagem';
-
-                    listaTexto += `${contador}. *${charName}*\n`;
-                    contador++;
-                });
-
-                console.log('📤 Enviando lista para o WhatsApp...');
-                await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
-                console.log('✅ Comando !rank finalizado!');
             }
         } catch (err) {
             console.error('❌ Erro crítico no processador de mensagens:', err);

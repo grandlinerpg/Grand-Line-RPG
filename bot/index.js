@@ -38,12 +38,12 @@ try {
         serviceAccount = require('./firebase-key.json');
     }
 
-    // Tratamento rigoroso para corrigir quebras de linha enviadas pela Render
+    // Tratamento robusto da private_key para a Render
     if (serviceAccount && serviceAccount.private_key) {
-        serviceAccount.private_key = serviceAccount.private_key
-            .replace(/\\n/g, '\n')
-            .replace(/^"|"$/g, '')
-            .trim();
+        let key = serviceAccount.private_key;
+        key = key.replace(/^"|"$/g, '');
+        key = key.split('\\n').join('\n');
+        serviceAccount.private_key = key.trim();
     }
 
     if (!admin.apps.length) {

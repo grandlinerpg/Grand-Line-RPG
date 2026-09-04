@@ -26,7 +26,7 @@ app.listen(PORT, () => {
     }
 });
 
-// 2. CONEXÃO COM O FIREBASE (FIRESTORE)
+// 2. CONEXÃO COM O FIREBASE
 try {
     const serviceAccount = require('./firebase-key.json');
     admin.initializeApp({
@@ -95,40 +95,6 @@ async function connectToWhatsApp() {
         // Comando !ping (Funciona em PV e Grupos)
         if (text === '!ping') {
             await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
-        }
-
-        // COMANDO !RANK
-        if (text === '!rank') {
-            if (!db) {
-                return await sock.sendMessage(from, { text: '⚠️ Firebase não conectado.' }, { quoted: m });
-            }
-
-            try {
-                // Busca a coleção 'players' no Firestore
-                const snapshot = await db.collection('players').get();
-
-                if (snapshot.empty) {
-                    return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
-                }
-
-                let listaTexto = '🏴‍☠️ *LISTA DE JOGADORES* 🏴‍☠️\n\n';
-                let contador = 1;
-
-                snapshot.forEach(doc => {
-                    const playerData = doc.data();
-                    // Acessa players/{uid}/character/charName
-                    const charName = playerData.character?.charName || 'Sem Personagem';
-
-                    listaTexto += `${contador}. *${charName}*\n`;
-                    contador++;
-                });
-
-                await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
-
-            } catch (err) {
-                console.error('[Firebase] Erro ao buscar lista:', err);
-                await sock.sendMessage(from, { text: '❌ Erro ao consultar a lista de jogadores.' }, { quoted: m });
-            }
         }
     });
 }

@@ -31,24 +31,20 @@ try {
     let serviceAccount;
 
     if (process.env.FIREBASE_KEY) {
-        // Se estiver usando Variável de Ambiente na Render
         serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
     } else {
-        // Se estiver rodando localmente com o arquivo JSON
         serviceAccount = require('./firebase-key.json');
     }
 
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        // URL do Realtime Database
         databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
     });
-    console.log('✅ [Firebase] SDK Admin (Realtime Database) conectado com sucesso!');
+    console.log('✅ [Firebase] SDK Admin conectado com sucesso!');
 } catch (e) {
     console.log('❌ [Firebase] Erro ao carregar credenciais:', e.message);
 }
 
-// Configurado para Realtime Database (.database())
 const db = admin.apps.length ? admin.database() : null;
 
 // 3. WHATSAPP (BAILEYS VIA CÓDIGO DE PAREAMENTO)
@@ -62,7 +58,6 @@ async function connectToWhatsApp() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    // Se ainda não estiver conectado, pede o código de 8 dígitos
     if (!sock.authState.creds.registered) {
         setTimeout(async () => {
             try {
@@ -81,72 +76,80 @@ async function connectToWhatsApp() {
 
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('🔴 Conexão encerrada. Reconectando:', shouldReconnect);
             if (shouldReconnect) {
                 connectToWhatsApp();
-            } else {
-                console.log('🔴 Conexão encerrada.');
             }
         } else if (connection === 'open') {
-            console.log('✅ [WhatsApp] Bot conectado com sucesso!');
+            console.log('✅ [WhatsApp] Bot conectado e pronto para receber comandos!');
         }
     });
 
-    sock.ev.on('messages.upsert', async ({ messages }) => {
-        const m = messages[0];
-        if (!m.message || m.key.fromMe) return;
+    sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        try {
+            const m = messages[0];
+            if (!m || !m.message || m.key.fromMe) return;
 
-        // Trata mensagens simples ou com formatação/mídia acompanhada de texto
-        const rawText = m.message.conversation || 
-                        m.message.extendedTextMessage?.text || 
-                        m.message.imageMessage?.caption || 
-                        m.message.videoMessage?.caption || '';
-        
-        const text = rawText.trim().toLowerCase();
-        const from = m.key.remoteJid;
+            // Pega o texto de mensagens normais, respostas ou mídias com legenda
+            const rawText = m.message.conversation || 
+                            m.message.extendedTextMessage?.text || 
+                            m.message.imageMessage?.caption || 
+                            m.message.videoMessage?.caption || '';
+            
+            const text = rawText.trim().toLowerCase();
+            const from = m.key.remoteJid;
 
-        // Comando !ping (Funciona em PV e Grupos)
-        if (text === '!ping') {
-            await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
-        }
+            console.log(`📩 [MSG RECEBIDA]: "${text}" | De: ${from}`);
 
-        // COMANDO !RANK (Realtime Database)
-        if (text === '!rank') {
-            if (!db) {
-                return await sock.sendMessage(from, { text: '⚠️ Firebase não conectado.' }, { quoted: m });
+            // COMANDO !PING
+            if (text.startsWith('!ping')) {
+                console.log('➡️ Executando !ping...');
+                await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
             }
 
-            try {
-                // Leitura do nó "players" no Realtime Database
+            // COMANDO !RANK
+            if (text.startsWith('!rank')) {
+                console.log('➡️ Executando !rank...');
+
+                if (!db) {
+                    console.log('❌ DB não inicializado.');
+                    return await sock.sendMessage(from, { text: '⚠️ Firebase não conectado.' }, { quoted: m });
+                }
+
+                console.log('🔍 Lendo nó "players" no Firebase...');
                 const playersRef = db.ref('players');
                 const snapshot = await playersRef.once('value');
 
                 if (!snapshot.exists()) {
+                    console.log('⚠️ Nó "players" está vazio no banco.');
                     return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
                 }
 
                 const playersData = snapshot.val();
+                console.log('📦 Dados recebidos do Firebase com sucesso!');
+
                 let listaTexto = '🏴‍☠️ *LISTA DE JOGADORES* 🏴‍☠️\n\n';
                 let contador = 1;
 
-                // Percorre cada UID registrado dentro de players/
                 Object.keys(playersData).forEach(uid => {
                     const player = playersData[uid];
                     
-                    // Acessa a chave character.charName
+                    // Busca charName em variações comuns de salvamento
                     const charName = player.character?.charName 
                                   || player.charName 
+                                  || player.characterName 
                                   || 'Sem Personagem';
 
                     listaTexto += `${contador}. *${charName}*\n`;
                     contador++;
                 });
 
+                console.log('📤 Enviando lista para o WhatsApp...');
                 await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
-
-            } catch (err) {
-                console.error('❌ [Firebase] Erro ao consultar lista:', err);
-                await sock.sendMessage(from, { text: `❌ Erro ao consultar a lista: ${err.message}` }, { quoted: m });
+                console.log('✅ Comando !rank finalizado!');
             }
+        } catch (err) {
+            console.error('❌ Erro crítico no processador de mensagens:', err);
         }
     });
 }

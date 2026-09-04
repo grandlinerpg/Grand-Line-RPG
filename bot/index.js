@@ -38,10 +38,11 @@ try {
         serviceAccount = require('./firebase-key.json');
     }
 
+    // Tratamento correto de quebras de linha e remoção segura de aspas nas extremidades
     if (serviceAccount && serviceAccount.private_key) {
         serviceAccount.private_key = serviceAccount.private_key
             .replace(/\\n/g, '\n')
-            .replace(/"/g, '');
+            .replace(/^"|"$/g, '');
     }
 
     if (!admin.apps.length) {
@@ -96,29 +97,35 @@ async function connectToWhatsApp() {
         }
     });
 
-    sock.ev.on('messages.upsert', async ({ messages, type }) => {
+    sock.ev.on('messages.upsert', async (chatUpdate) => {
         try {
-            const m = messages[0];
-            if (!m || !m.message || m.key.fromMe) return;
+            if (!chatUpdate.messages || !chatUpdate.messages[0]) return;
+            const m = chatUpdate.messages[0];
 
+            // Ignora mensagens enviadas pelo próprio bot ou sem conteúdo
+            if (m.key.fromMe || !m.message) return;
+
+            // Extração segura do texto
             const rawText = m.message.conversation || 
                             m.message.extendedTextMessage?.text || 
                             m.message.imageMessage?.caption || 
                             m.message.videoMessage?.caption || '';
-            
+
             const text = rawText.trim().toLowerCase();
             const from = m.key.remoteJid;
 
-            console.log(`📩 [MSG RECEBIDA]: "${text}" | De: ${from}`);
+            if (!text) return;
+
+            console.log(`📩 [MSG RECEBIDA]: "${text}" | Remetente: ${from}`);
 
             // COMANDO !PING
-            if (text.startsWith('!ping')) {
+            if (text === '!ping' || text.startsWith('!ping ')) {
                 console.log('➡️ Executando !ping...');
                 await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
             }
 
             // COMANDO !DADO (1d100)
-            if (text.startsWith('!dado')) {
+            if (text === '!dado' || text.startsWith('!dado ')) {
                 console.log('➡️ Executando !dado...');
                 const resultado = Math.floor(Math.random() * 100) + 1;
                 const senderJid = m.key.participant || from;
@@ -132,25 +139,25 @@ async function connectToWhatsApp() {
                     text: mensagemDado, 
                     mentions: [senderJid] 
                 }, { quoted: m });
-                
-                console.log(`✅ [Dado] Resultado ${resultado} enviado para @${senderNumber}!`);
+
+                console.log(`✅ [Dado] Resultado ${resultado} enviado!`);
             }
 
-            // COMANDO !RANK (Leitura direta de players -> UID -> character -> charName)
-            if (text.startsWith('!rank')) {
+            // COMANDO !RANK
+            if (text === '!rank' || text.startsWith('!rank ')) {
                 console.log('➡️ Executando !rank...');
 
                 if (!db) {
-                    console.log('❌ DB não inicializado.');
+                    console.log('❌ DB (Firebase) não inicializado.');
                     return await sock.sendMessage(from, { text: '⚠️ Firebase não conectado.' }, { quoted: m });
                 }
 
                 try {
-                    console.log('🔍 Lendo o nó "players"...');
+                    console.log('🔍 Buscando dados no nó "players"...');
                     const snapshot = await db.ref('players').once('value');
 
                     if (!snapshot.exists()) {
-                        console.log('⚠️ O nó "players" está vazio no Realtime Database.');
+                        console.log('⚠️ Nó "players" retornou nulo.');
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
                     }
 
@@ -158,13 +165,9 @@ async function connectToWhatsApp() {
                     let listaTexto = '🏴‍☠️ *LISTA DE JOGADORES* 🏴‍☠️\n\n';
                     let contador = 1;
 
-                    // Itera sobre as chaves de UID
                     Object.keys(playersData).forEach(uid => {
                         const player = playersData[uid];
-                        
-                        // Extrai charName dentro do objeto character
                         const charName = player?.character?.charName || 'Personagem Sem Nome';
-
                         listaTexto += `${contador}. *${charName}*\n`;
                         contador++;
                     });
@@ -172,12 +175,12 @@ async function connectToWhatsApp() {
                     await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
                     console.log('✅ Comando !rank executado com sucesso!');
                 } catch (rankErr) {
-                    console.error('❌ Erro na consulta do Firebase no !rank:', rankErr.message);
+                    console.error('❌ Erro na consulta ao Firebase:', rankErr.message);
                     await sock.sendMessage(from, { text: '❌ Erro ao acessar o banco de dados.' }, { quoted: m });
                 }
             }
         } catch (err) {
-            console.error('❌ Erro crítico no processador de mensagens:', err);
+            console.error('❌ Erro no processamento de mensagens:', err);
         }
     });
 }

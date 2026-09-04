@@ -2,7 +2,9 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const express = require('express');
 const axios = require('axios');
 const admin = require('firebase-admin');
-const qrcode = require('qrcode-terminal');
+
+// NÚMERO DO BOT CONFIGURADO:
+const NUMERO_BOT = "5511943566512"; 
 
 // 1. SERVIDOR WEB + AUTO-PING (Render 24/7)
 const app = express();
@@ -37,32 +39,40 @@ try {
 
 const db = admin.apps.length ? admin.firestore() : null;
 
-// 3. WHATSAPP (BAILEYS)
+// 3. WHATSAPP (BAILEYS VIA CÓDIGO DE PAREAMENTO)
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
-    
-    // Removido o printQRInTerminal descontinuado
+
     const sock = makeWASocket({
-        auth: state
+        auth: state,
+        printQRInTerminal: false
     });
 
     sock.ev.on('creds.update', saveCreds);
 
-    sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect, qr } = update;
+    // Se ainda não estiver conectado, pede o código de 8 dígitos
+    if (!sock.authState.creds.registered) {
+        setTimeout(async () => {
+            try {
+                const code = await sock.requestPairingCode(NUMERO_BOT);
+                console.log('\n========================================');
+                console.log(`🔑 CÓDIGO DE PAREAMENTO: ${code}`);
+                console.log('========================================\n');
+            } catch (err) {
+                console.error('[Pareamento] Erro ao solicitar código:', err.message);
+            }
+        }, 5000);
+    }
 
-        // Captura o evento de QR Code e imprime via qrcode-terminal
-        if (qr) {
-            console.log('\n ESCANEE O QR CODE ABAIXO PARA CONECTAR O WHATSAPP:\n');
-            qrcode.generate(qr, { small: true });
-        }
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update;
 
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) {
                 connectToWhatsApp();
             } else {
-                console.log('🔴 [WhatsApp] Conexão encerrada. Apague a pasta auth_info_baileys para gerar novo QR.');
+                console.log('🔴 Conexão encerrada.');
             }
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado com sucesso!');

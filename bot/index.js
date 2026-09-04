@@ -4,7 +4,7 @@ const axios = require('axios');
 const admin = require('firebase-admin');
 
 // NÚMERO DO BOT CONFIGURADO:
-const NUMERO_BOT = "5511943566512"; 
+const NUMERO_BOT = "5511918448331"; 
 
 // 1. SERVIDOR WEB + AUTO-PING (Render 24/7)
 const app = express();
@@ -83,35 +83,18 @@ async function connectToWhatsApp() {
         const m = messages[0];
         if (!m.message || m.key.fromMe) return;
 
-        const text = m.message.conversation || m.message.extendedTextMessage?.text || '';
+        // Trata mensagens simples ou com formatação/mídia acompanhada de texto
+        const rawText = m.message.conversation || 
+                        m.message.extendedTextMessage?.text || 
+                        m.message.imageMessage?.caption || 
+                        m.message.videoMessage?.caption || '';
+        
+        const text = rawText.trim().toLowerCase();
         const from = m.key.remoteJid;
 
-        // Comando !ping
-        if (text.toLowerCase() === '!ping') {
-            await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' });
-        }
-
-        // Comando !rank
-        if (text.toLowerCase() === '!rank') {
-            if (!db) {
-                return await sock.sendMessage(from, { text: '⚠️ Firebase não configurado no servidor.' });
-            }
-            try {
-                const snapshot = await db.collection('jogadores').orderBy('level', 'desc').limit(10).get();
-                if (snapshot.empty) {
-                    return await sock.sendMessage(from, { text: 'Nenhum jogador encontrado.' });
-                }
-                let msg = '🏆 *RANKING GRAND LINE RPG* 🏆\n\n';
-                let pos = 1;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    msg += `${pos}º - *${data.nome || 'Pirata'}* | Level: ${data.level || 1}\n`;
-                    pos++;
-                });
-                await sock.sendMessage(from, { text: msg });
-            } catch (err) {
-                await sock.sendMessage(from, { text: '❌ Erro ao puxar ranking.' });
-            }
+        // Comando !ping (Funciona em PV e Grupos)
+        if (text === '!ping') {
+            await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
         }
     });
 }

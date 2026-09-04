@@ -2,6 +2,7 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const express = require('express');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const qrcode = require('qrcode-terminal');
 
 // 1. SERVIDOR WEB + AUTO-PING (Render 24/7)
 const app = express();
@@ -39,20 +40,32 @@ const db = admin.apps.length ? admin.firestore() : null;
 // 3. WHATSAPP (BAILEYS)
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    
+    // Removido o printQRInTerminal descontinuado
     const sock = makeWASocket({
-        auth: state,
-        printQRInTerminal: true
+        auth: state
     });
 
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect } = update;
+        const { connection, lastDisconnect, qr } = update;
+
+        // Captura o evento de QR Code e imprime via qrcode-terminal
+        if (qr) {
+            console.log('\n ESCANEE O QR CODE ABAIXO PARA CONECTAR O WHATSAPP:\n');
+            qrcode.generate(qr, { small: true });
+        }
+
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) connectToWhatsApp();
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            if (shouldReconnect) {
+                connectToWhatsApp();
+            } else {
+                console.log('🔴 [WhatsApp] Conexão encerrada. Apague a pasta auth_info_baileys para gerar novo QR.');
+            }
         } else if (connection === 'open') {
-            console.log('✅ [WhatsApp] Bot conectado!');
+            console.log('✅ [WhatsApp] Bot conectado com sucesso!');
         }
     });
 

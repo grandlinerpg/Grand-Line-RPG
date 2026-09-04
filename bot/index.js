@@ -26,18 +26,30 @@ app.listen(PORT, () => {
     }
 });
 
-// 2. CONEXÃO COM O FIREBASE (FIRESTORE)
+// 2. CONEXÃO COM O FIREBASE (REALTIME DATABASE)
 try {
-    const serviceAccount = require('./firebase-key.json');
+    let serviceAccount;
+
+    if (process.env.FIREBASE_KEY) {
+        // Se estiver usando Variável de Ambiente na Render
+        serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+    } else {
+        // Se estiver rodando localmente com o arquivo JSON
+        serviceAccount = require('./firebase-key.json');
+    }
+
     admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+        credential: admin.credential.cert(serviceAccount),
+        // URL do Realtime Database
+        databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
     });
-    console.log('[Firebase] SDK Admin conectado com sucesso!');
+    console.log('✅ [Firebase] SDK Admin (Realtime Database) conectado com sucesso!');
 } catch (e) {
-    console.log('[Firebase] Rodando sem chave ou arquivo firebase-key.json ainda não adicionado.');
+    console.log('❌ [Firebase] Erro ao carregar credenciais:', e.message);
 }
 
-const db = admin.apps.length ? admin.firestore() : null;
+// Configurado para Realtime Database (.database())
+const db = admin.apps.length ? admin.database() : null;
 
 // 3. WHATSAPP (BAILEYS VIA CÓDIGO DE PAREAMENTO)
 async function connectToWhatsApp() {
@@ -97,27 +109,33 @@ async function connectToWhatsApp() {
             await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
         }
 
-        // COMANDO !RANK
+        // COMANDO !RANK (Realtime Database)
         if (text === '!rank') {
             if (!db) {
                 return await sock.sendMessage(from, { text: '⚠️ Firebase não conectado.' }, { quoted: m });
             }
 
             try {
-                // Busca a coleção 'players' no Firestore
-                const snapshot = await db.collection('players').get();
+                // Leitura do nó "players" no Realtime Database
+                const playersRef = db.ref('players');
+                const snapshot = await playersRef.once('value');
 
-                if (snapshot.empty) {
+                if (!snapshot.exists()) {
                     return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
                 }
 
+                const playersData = snapshot.val();
                 let listaTexto = '🏴‍☠️ *LISTA DE JOGADORES* 🏴‍☠️\n\n';
                 let contador = 1;
 
-                snapshot.forEach(doc => {
-                    const playerData = doc.data();
-                    // Acessa players/{uid}/character/charName
-                    const charName = playerData.character?.charName || 'Sem Personagem';
+                // Percorre cada UID registrado dentro de players/
+                Object.keys(playersData).forEach(uid => {
+                    const player = playersData[uid];
+                    
+                    // Acessa a chave character.charName
+                    const charName = player.character?.charName 
+                                  || player.charName 
+                                  || 'Sem Personagem';
 
                     listaTexto += `${contador}. *${charName}*\n`;
                     contador++;
@@ -126,8 +144,8 @@ async function connectToWhatsApp() {
                 await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
 
             } catch (err) {
-                console.error('[Firebase] Erro ao buscar lista:', err);
-                await sock.sendMessage(from, { text: '❌ Erro ao consultar a lista de jogadores.' }, { quoted: m });
+                console.error('❌ [Firebase] Erro ao consultar lista:', err);
+                await sock.sendMessage(from, { text: `❌ Erro ao consultar a lista: ${err.message}` }, { quoted: m });
             }
         }
     });

@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');  
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
 const express = require('express');
 const axios = require('axios');
 const admin = require('firebase-admin');
@@ -117,29 +117,6 @@ async function connectToWhatsApp() {
             if (text.startsWith('!ping')) {
                 console.log('➡️ Executando !ping...');
                 await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
-            }
-
-            // COMANDO !DADO (1d100)
-            if (text.startsWith('!dado')) {
-                console.log('➡️ Executando !dado...');
-                
-                // Gera número aleatório de 1 a 100
-                const resultado = Math.floor(Math.random() * 100) + 1;
-                
-                // Identifica quem mandou (funciona em grupos e no privado)
-                const senderJid = m.key.participant || from;
-                const senderNumber = senderJid.split('@')[0];
-
-                const mensagemDado = `🎲 *ROLAGEM DE DADO (1d100)*\n\n` +
-                                     `👤 *Jogador:* @${senderNumber}\n` +
-                                     `🎯 *Resultado:* *${resultado}*`;
-
-                await sock.sendMessage(from, { 
-                    text: mensagemDado, 
-                    mentions: [senderJid] 
-                }, { quoted: m });
-                
-                console.log(`✅ [Dado] Resultado ${resultado} enviado para @${senderNumber}!`);
             }
 
             // COMANDO !RANK

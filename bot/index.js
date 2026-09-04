@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
+const { default: makeWASocket, DisconnectReason, initAuthCreds, proto } = require('@whiskeysockets/baileys'); 
 const express = require('express');
 const axios = require('axios');
 const admin = require('firebase-admin');
@@ -59,9 +59,77 @@ try {
 
 const db = admin.apps.length ? admin.database() : null;
 
-// 3. WHATSAPP (BAILEYS VIA CÓDIGO DE PAREAMENTO)
+// ADAPTADOR DE SESSÃO PERSISTENTE NO FIREBASE
+async function useFirebaseAuthState(dbRef) {
+    const readData = async (key) => {
+        try {
+            const snapshot = await dbRef.child(key).once('value');
+            return snapshot.exists() ? snapshot.val() : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const writeData = async (key, data) => {
+        try {
+            if (data === null || data === undefined) {
+                await dbRef.child(key).remove();
+            } else {
+                await dbRef.child(key).set(data);
+            }
+        } catch (e) {
+            console.error('❌ Erro ao salvar sessão no Firebase:', e.message);
+        }
+    };
+
+    const creds = (await readData('creds')) || initAuthCreds();
+
+    return {
+        state: {
+            creds,
+            keys: {
+                get: async (type, ids) => {
+                    const data = {};
+                    await Promise.all(
+                        ids.map(async (id) => {
+                            let value = await readData(`${type}-${id}`);
+                            if (type === 'app-state-sync-key' && value) {
+                                value = proto.Message.AppStateSyncKeyData.fromObject(value);
+                            }
+                            data[id] = value;
+                        })
+                    );
+                    return data;
+                },
+                set: async (data) => {
+                    const tasks = [];
+                    for (const category in data) {
+                        for (const id in data[category]) {
+                            const value = data[category][id];
+                            const key = `${category}-${id}`;
+                            tasks.push(writeData(key, value));
+                        }
+                    }
+                    await Promise.all(tasks);
+                }
+            }
+        },
+        saveCreds: async () => {
+            await writeData('creds', creds);
+        }
+    };
+}
+
+// 3. WHATSAPP (BAILEYS VIA SESSÃO PERSISTENTE NO FIREBASE)
 async function connectToWhatsApp() {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    if (!db) {
+        console.error('❌ Não é possível conectar ao WhatsApp sem conexão com o Firebase.');
+        return;
+    }
+
+    // Salva a sessão no nó 'whatsapp_session' no Firebase
+    const sessionRef = db.ref('whatsapp_session');
+    const { state, saveCreds } = await useFirebaseAuthState(sessionRef);
 
     const sock = makeWASocket({
         auth: state,
@@ -102,10 +170,8 @@ async function connectToWhatsApp() {
             if (!chatUpdate.messages || !chatUpdate.messages[0]) return;
             const m = chatUpdate.messages[0];
 
-            // Ignora mensagens enviadas pelo próprio bot ou sem conteúdo
             if (m.key.fromMe || !m.message) return;
 
-            // Extração segura do texto
             const rawText = m.message.conversation || 
                             m.message.extendedTextMessage?.text || 
                             m.message.imageMessage?.caption || 
@@ -154,7 +220,16 @@ async function connectToWhatsApp() {
 
                 try {
                     console.log('🔍 Buscando dados no nó "players"...');
-                    const snapshot = await db.ref('players').once('value');
+
+                    // Timeout de 8 segundos para não travar a aplicação
+                    const promiseTimeout = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Timeout de conexão com o Firebase (8s)')), 8000)
+                    );
+
+                    const snapshot = await Promise.race([
+                        db.ref('players').once('value'),
+                        promiseTimeout
+                    ]);
 
                     if (!snapshot.exists()) {
                         console.log('⚠️ Nó "players" retornou nulo.');
@@ -176,7 +251,7 @@ async function connectToWhatsApp() {
                     console.log('✅ Comando !rank executado com sucesso!');
                 } catch (rankErr) {
                     console.error('❌ Erro na consulta ao Firebase:', rankErr.message);
-                    await sock.sendMessage(from, { text: '❌ Erro ao acessar o banco de dados.' }, { quoted: m });
+                    await sock.sendMessage(from, { text: `❌ Erro ao acessar o banco: ${rankErr.message}` }, { quoted: m });
                 }
             }
         } catch (err) {

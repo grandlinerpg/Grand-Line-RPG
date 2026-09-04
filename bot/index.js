@@ -4,7 +4,7 @@ const axios = require('axios');
 const admin = require('firebase-admin');
 
 // NÚMERO DO BOT CONFIGURADO:
-const NUMERO_BOT = "5511943566512";  
+const NUMERO_BOT = "5511943566512"; 
 
 // 1. SERVIDOR WEB + AUTO-PING (Render 24/7)
 const app = express();
@@ -31,18 +31,30 @@ try {
     let serviceAccount;
 
     if (process.env.FIREBASE_KEY) {
-        serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+        serviceAccount = typeof process.env.FIREBASE_KEY === 'string' 
+            ? JSON.parse(process.env.FIREBASE_KEY) 
+            : process.env.FIREBASE_KEY;
     } else {
         serviceAccount = require('./firebase-key.json');
     }
 
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
-    });
+    // Corrige explicitamente as quebras de linha da chave privada
+    if (serviceAccount && serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key
+            .replace(/\\n/g, '\n')
+            .replace(/"/g, '');
+    }
+
+    if (!admin.apps.length) {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+        });
+    }
+
     console.log('✅ [Firebase] SDK Admin conectado com sucesso!');
 } catch (e) {
-    console.log('❌ [Firebase] Erro ao carregar credenciais:', e.message);
+    console.error('❌ [Firebase] Erro ao carregar credenciais:', e.message);
 }
 
 const db = admin.apps.length ? admin.database() : null;

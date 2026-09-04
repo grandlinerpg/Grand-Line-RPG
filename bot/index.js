@@ -4,7 +4,7 @@ const axios = require('axios');
 const admin = require('firebase-admin');
 
 // NÚMERO DO BOT CONFIGURADO:
-const NUMERO_BOT = "5511918448331"; 
+const NUMERO_BOT = "5511943566512"; 
 
 // 1. SERVIDOR WEB + AUTO-PING (Render 24/7)
 const app = express();

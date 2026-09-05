@@ -138,29 +138,24 @@ async function connectToWhatsApp() {
 
                     let rankText = `🏆 *RANK DE JOGADORES*\n\n`;
                     let contador = 1;
-                    const totalPlayers = Object.keys(playersData).length;
 
-                    Object.keys(playersData).forEach((uid, index) => {
+                    Object.keys(playersData).forEach((uid) => {
                         const player = playersData[uid];
                         const nome = player?.character?.charName || player?.nome || player?.name || 'Sem Nome';
 
-                        // Define o emoji de medalha para os 3 primeiros
-                        let medalha = '';
-                        if (contador === 1) medalha = ' 🥇';
-                        else if (contador === 2) medalha = ' 🥈';
-                        else if (contador === 3) medalha = ' 🥉';
+                        // Troca os 3 primeiros pelas medalhas no inicio
+                        let prefixo = `${contador}º`;
+                        if (contador === 1) prefixo = '🥇';
+                        else if (contador === 2) prefixo = '🥈';
+                        else if (contador === 3) prefixo = '🥉';
 
-                        rankText += `${contador}º ${nome}${medalha}\n`;
-
-                        // Adiciona linha de separação entre os nomes (exceto após o último)
-                        if (index < totalPlayers - 1) {
-                            rankText += `------------------------------\n`;
-                        }
+                        // Nome do jogador com linha em branco para espaçamento
+                        rankText += `${prefixo} ${nome}\n\n`;
 
                         contador++;
                     });
 
-                    await sock.sendMessage(from, { text: rankText }, { quoted: m });
+                    await sock.sendMessage(from, { text: rankText.trim() }, { quoted: m });
                     console.log('✅ Lista do !rank enviada com sucesso!');
                 } catch (rankErr) {
                     console.error('❌ Erro no !rank REST:', rankErr.message);

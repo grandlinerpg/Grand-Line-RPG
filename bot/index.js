@@ -1,14 +1,13 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
 const express = require('express');
 const axios = require('axios');
-const admin = require('firebase-admin');
 const Groq = require('groq-sdk');
 
 // NÚMERO DO BOT CONFIGURADO:
 const NUMERO_BOT = "5511918448331"; 
 
-// CHAVE DA GROQ (Cole sua chave 'gsk_...' aqui se não for usar variáveis na Render):
-const GROQ_KEY = process.env.GROQ_API_KEY || "COLE_SUA_CHAVE_GSK_AQUI";
+// CHAVE DA GROQ:
+const GROQ_KEY = process.env.GROQ_API_KEY || "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";
 
 // INICIALIZAÇÃO DA IA GROQ
 const groq = new Groq({ apiKey: GROQ_KEY });
@@ -42,40 +41,7 @@ app.listen(PORT, () => {
     }
 });
 
-// 2. CONEXÃO COM O FIREBASE (REALTIME DATABASE)
-try {
-    let serviceAccount;
-
-    if (process.env.FIREBASE_KEY) {
-        serviceAccount = typeof process.env.FIREBASE_KEY === 'string' 
-            ? JSON.parse(process.env.FIREBASE_KEY) 
-            : process.env.FIREBASE_KEY;
-    } else {
-        serviceAccount = require('./firebase-key.json');
-    }
-
-    if (serviceAccount && serviceAccount.private_key) {
-        let key = serviceAccount.private_key;
-        key = key.replace(/^"|"$/g, '');
-        key = key.split('\\n').join('\n');
-        serviceAccount.private_key = key.trim();
-    }
-
-    if (!admin.apps.length) {
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
-            databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
-        });
-    }
-
-    console.log('✅ [Firebase] SDK Admin inicializado!');
-} catch (e) {
-    console.error('❌ [Firebase] Erro ao carregar credenciais:', e.message);
-}
-
-const db = admin.apps.length ? admin.database() : null;
-
-// 3. WHATSAPP (BAILEYS VIA CÓDIGO DE PAREAMENTO)
+// 2. WHATSAPP (BAILEYS VIA CÓDIGO DE PAREAMENTO)
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
@@ -157,25 +123,19 @@ async function connectToWhatsApp() {
                 console.log(`✅ [Dado] Resultado ${resultado} enviado!`);
             }
 
-            // COMANDO !RANK (LISTA SIMPLES DE JOGADORES)
+            // COMANDO !RANK (BUSCA DIRETO DA REST API DO FIREBASE)
             if (text === '!rank' || text.startsWith('!rank ')) {
-                console.log('➡️ Executando !rank...');
-
-                if (!db) {
-                    console.log('❌ DB (Firebase) não inicializado.');
-                    return await sock.sendMessage(from, { text: '⚠️ Firebase não inicializado.' }, { quoted: m });
-                }
+                console.log('➡️ Executando !rank via REST API...');
 
                 try {
-                    console.log('🔍 Buscando dados no nó "players"...');
-                    const snapshot = await db.ref('players').once('value');
+                    const response = await axios.get('https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com/players.json');
+                    const playersData = response.data;
 
-                    if (!snapshot.exists()) {
+                    if (!playersData) {
                         console.log('⚠️ Nó "players" está vazio no Firebase.');
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
                     }
 
-                    const playersData = snapshot.val();
                     let rankText = `📋 *LISTA DE JOGADORES*\n\n`;
                     let contador = 1;
 
@@ -190,7 +150,7 @@ async function connectToWhatsApp() {
                     await sock.sendMessage(from, { text: rankText }, { quoted: m });
                     console.log('✅ Lista do !rank enviada com sucesso!');
                 } catch (rankErr) {
-                    console.error('❌ Erro no !rank:', rankErr.message);
+                    console.error('❌ Erro no !rank REST:', rankErr.message);
                     await sock.sendMessage(from, { text: '❌ Erro ao buscar lista no Firebase.' }, { quoted: m });
                 }
             }

@@ -136,14 +136,27 @@ async function connectToWhatsApp() {
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado no banco de dados.' }, { quoted: m });
                     }
 
-                    let rankText = `📋 *LISTA DE JOGADORES*\n\n`;
+                    let rankText = `🏆 *RANK DE JOGADORES*\n\n`;
                     let contador = 1;
+                    const totalPlayers = Object.keys(playersData).length;
 
-                    Object.keys(playersData).forEach(uid => {
+                    Object.keys(playersData).forEach((uid, index) => {
                         const player = playersData[uid];
                         const nome = player?.character?.charName || player?.nome || player?.name || 'Sem Nome';
 
-                        rankText += `${contador}. ${nome}\n`;
+                        // Define o emoji de medalha para os 3 primeiros
+                        let medalha = '';
+                        if (contador === 1) medalha = ' 🥇';
+                        else if (contador === 2) medalha = ' 🥈';
+                        else if (contador === 3) medalha = ' 🥉';
+
+                        rankText += `${contador}º ${nome}${medalha}\n`;
+
+                        // Adiciona linha de separação entre os nomes (exceto após o último)
+                        if (index < totalPlayers - 1) {
+                            rankText += `------------------------------\n`;
+                        }
+
                         contador++;
                     });
 

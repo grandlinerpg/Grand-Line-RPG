@@ -24,33 +24,49 @@ app.listen(PORT, () => {
     }
 });
 
-// Controle em memória dos Quizzes e Combates
+// Armazenamento em memória
 const jogosQuiz = {};
 const batalhas = {};
 
-// Função auxiliar para mapear o emoji de facção
+// --- FUNÇÕES UTILITÁRIAS ---
+
 function obterEmojiFaccao(faccao) {
     if (!faccao) return '🏴‍☠️';
     const faccaoLimpa = String(faccao).trim().toLowerCase();
-    if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) {
-        return '⚔️';
-    }
-    if (faccaoLimpa.includes('governo mundial')) {
-        return '⚓';
-    }
-    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) {
-        return '🏴‍☠️';
-    }
+    if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) return '⚔️';
+    if (faccaoLimpa.includes('governo mundial')) return '⚓';
+    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) return '🏴‍☠️';
     return '🏴‍☠️';
 }
 
-// Limpa timers do combate
+async function buscarNomePersonagem(lid) {
+    try {
+        const response = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersData = response.data || {};
+        const playerUid = Object.keys(playersData).find(uid => 
+            String(playersData[uid]?.number?.LID || '').trim() === lid
+        );
+
+        if (playerUid) {
+            return {
+                uid: playerUid,
+                nome: playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador",
+                dados: playersData[playerUid]
+            };
+        }
+    } catch (e) {
+        console.error("Erro ao buscar dados do jogador no Firebase:", e.message);
+    }
+    return { uid: null, nome: "Lutador", dados: null };
+}
+
+// --- NÚCLEO DO SISTEMA DE COMBATE (REUTILIZÁVEL) ---
+
 function limparTimersBatalha(batalha) {
     if (batalha.timerApresentacao) clearTimeout(batalha.timerApresentacao);
     if (batalha.timerTurno) clearTimeout(batalha.timerTurno);
 }
 
-// Inicia/Reinicia o timer de 30 minutos para a VEZ do jogador atual
 function iniciarTimerTurnoMaximo(groupId, sock) {
     const bat = batalhas[groupId];
     if (!bat) return;
@@ -60,27 +76,16 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
     bat.timerTurno = setTimeout(async () => {
         if (!batalhas[groupId]) return;
 
-        await sock.sendMessage(groupId, { 
-            text: `⏰ *TEMPO ESGOTADO!* O limite de 30 minutos para a jogada do *Jogador ${bat.jogadorVez}* (Turno ${bat.turnoAtual}) acabou!\nPassando a vez...` 
-        });
-
-        // Alterna o jogador e avança o número do turno se for o Jogador 2
-        if (bat.jogadorVez === 1) {
-            bat.jogadorVez = 2;
-        } else {
-            bat.jogadorVez = 1;
-            bat.turnoAtual++;
-        }
+        const nomeDoVez = bat.jogadorVez === 1 ? bat.p1Nome : bat.p2Nome;
 
         await sock.sendMessage(groupId, { 
-            text: `🔄 *TURNO ${bat.turnoAtual} — VEZ DO JOGADOR ${bat.jogadorVez}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`
+            text: `⏰ *TEMPO ESGOTADO!* O limite de 30 minutos para a jogada de *${nomeDoVez}* (Turno ${bat.turnoAtual}) acabou!\nPassando a vez...` 
         });
 
-        iniciarTimerTurnoMaximo(groupId, sock);
+        avancarTurno(groupId, sock);
     }, 30 * 60 * 1000);
 }
 
-// Começa o combate de fato (Turno 1 - Jogador 1)
 async function comecarCombateDeFato(groupId, sock) {
     const bat = batalhas[groupId];
     if (!bat || bat.fase !== 'apresentacao') return;
@@ -93,13 +98,75 @@ async function comecarCombateDeFato(groupId, sock) {
 
     const msgComeco = `⏰ *TEMPO DE APRESENTAÇÃO ENCERRADO!*\n\n` +
                       `⚔️ *TURNO 1 INICIADO*\n` +
-                      `👤 *Vez do:* Jogador 1\n` +
+                      `👤 *Vez de:* ${bat.p1Nome}\n` +
                       `⏳ *Tempo limite para esta jogada:* 30 minutos.\n\n` +
                       `👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`;
 
     await sock.sendMessage(groupId, { text: msgComeco });
     iniciarTimerTurnoMaximo(groupId, sock);
 }
+
+// Inicializador genérico: pode ser invocado por !battle, !duelo, !arena, etc.
+async function criarSessaoCombate(groupId, p1Lid, p1Nome, p2Lid = null, p2Nome = "Jogador 2", tipoCombate = "Livre", sock) {
+    if (batalhas[groupId]) return false;
+
+    batalhas[groupId] = {
+        tipo: tipoCombate,
+        fase: 'apresentacao',
+        turnoAtual: 1,
+        jogadorVez: 1,
+        p1Lid: p1Lid,
+        p1Nome: p1Nome,
+        p2Lid: p2Lid,
+        p2Nome: p2Nome,
+        timerApresentacao: null,
+        timerTurno: null
+    };
+
+    const msgInicio = `⚔️ *COMBATE INICIADO (${tipoCombate.toUpperCase()})!* ⚔️\n\n` +
+                      `🥊 *Desafiante:* ${p1Nome}\n` +
+                      `🎯 *Oponente:* ${p2Nome}\n\n` +
+                      `📝 Os lutadores têm *5 minutos* para apresentar seu *Card Combatente* no grupo!\n\n` +
+                      `👉 Digite *!iniciar* para começar o Turno 1 imediatamente.`;
+
+    await sock.sendMessage(groupId, { text: msgInicio });
+
+    batalhas[groupId].timerApresentacao = setTimeout(() => {
+        comecarCombateDeFato(groupId, sock);
+    }, 5 * 60 * 1000);
+
+    return true;
+}
+
+async function avancarTurno(groupId, sock) {
+    const bat = batalhas[groupId];
+    if (!bat || bat.fase !== 'em_combate') return;
+
+    if (bat.jogadorVez === 1) {
+        bat.jogadorVez = 2;
+    } else {
+        bat.jogadorVez = 1;
+        bat.turnoAtual++;
+    }
+
+    const proximoNome = bat.jogadorVez === 1 ? bat.p1Nome : bat.p2Nome;
+
+    const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${proximoNome.toUpperCase()}*\n\n` +
+                         `⏳ *Tempo limite desta jogada:* 30 minutos.\n` +
+                         `👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`;
+
+    await sock.sendMessage(groupId, { text: msgNovoTurno });
+    iniciarTimerTurnoMaximo(groupId, sock);
+}
+
+function encerrarCombate(groupId) {
+    if (!batalhas[groupId]) return false;
+    limparTimersBatalha(batalhas[groupId]);
+    delete batalhas[groupId];
+    return true;
+}
+
+// --- CONEXÃO WHATSAPP ---
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
@@ -148,36 +215,21 @@ async function connectToWhatsApp() {
 
             if (!text) return;
 
+            const rawSender = m.key.participant || m.key.remoteJid || from;
+            const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+
             // COMANDO !PING
             if (text === '!ping' || text.startsWith('!ping ')) {
                 await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
             }
 
-            // COMANDO !DADO (1d100) — Exibe charName do jogador
+            // COMANDO !DADO
             if (text === '!dado' || text.startsWith('!dado ')) {
                 const resultado = Math.floor(Math.random() * 100) + 1;
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
-
-                let nomeJogador = "Lutador";
-
-                try {
-                    const response = await axios.get(`${FIREBASE_URL}/players.json`);
-                    const playersData = response.data || {};
-
-                    const playerUid = Object.keys(playersData).find(uid => {
-                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
-                    });
-
-                    if (playerUid) {
-                        nomeJogador = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
-                    }
-                } catch (dadoErr) {
-                    console.error('Erro ao buscar nome para o dado:', dadoErr.message);
-                }
+                const player = await buscarNomePersonagem(senderLid);
 
                 const mensagemDado = `🎲 *ROLAGEM DE DADO (1d100)*\n\n` +
-                                     `👤 *Jogador:* ${nomeJogador}\n` +
+                                     `👤 *Jogador:* ${player.nome}\n` +
                                      `🎯 *Resultado:* *${resultado}*`;
 
                 await sock.sendMessage(from, { text: mensagemDado }, { quoted: m });
@@ -185,42 +237,24 @@ async function connectToWhatsApp() {
 
             // COMANDO !INFO
             if (text === '!info' || text.startsWith('!info ')) {
-                try {
-                    const response = await axios.get(`${FIREBASE_URL}/players.json`);
-                    const playersData = response.data;
+                const player = await buscarNomePersonagem(senderLid);
 
-                    if (!playersData) {
-                        return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
-                    }
-
-                    const rawSender = m.key.participant || m.key.remoteJid || from;
-                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
-
-                    const playerUid = Object.keys(playersData).find(uid => {
-                        const storedLid = String(playersData[uid]?.number?.LID || '').trim();
-                        return storedLid === senderLid;
-                    });
-
-                    if (!playerUid) {
-                        return await sock.sendMessage(from, { text: `❌ *LID não cadastrado!* (${senderLid})` }, { quoted: m });
-                    }
-
-                    const player = playersData[playerUid];
-                    const nome = player?.character?.charName || player?.nome || 'Sem Nome';
-                    const nivel = player?.info?.level ?? 1;
-                    const exp = player?.info?.exp ?? 0;
-                    const saldo = player?.info?.saldo ?? 0;
-
-                    const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n` +
-                                     `👤 *Nome:* ${nome}\n` +
-                                     `⭐ *Nível:* ${nivel}\n` +
-                                     `✨ *EXP:* ${exp}\n` +
-                                     `💰 *Saldo:* ฿ ${saldo}`;
-
-                    await sock.sendMessage(from, { text: infoText }, { quoted: m });
-                } catch (infoErr) {
-                    await sock.sendMessage(from, { text: '❌ Erro ao buscar informações do jogador.' }, { quoted: m });
+                if (!player.uid) {
+                    return await sock.sendMessage(from, { text: `❌ *LID não cadastrado!* (${senderLid})` }, { quoted: m });
                 }
+
+                const data = player.dados;
+                const nivel = data?.info?.level ?? 1;
+                const exp = data?.info?.exp ?? 0;
+                const saldo = data?.info?.saldo ?? 0;
+
+                const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n` +
+                                 `👤 *Nome:* ${player.nome}\n` +
+                                 `⭐ *Nível:* ${nivel}\n` +
+                                 `✨ *EXP:* ${exp}\n` +
+                                 `💰 *Saldo:* ฿ ${saldo}`;
+
+                await sock.sendMessage(from, { text: infoText }, { quoted: m });
             }
 
             // COMANDO !RANK
@@ -233,7 +267,6 @@ async function connectToWhatsApp() {
 
                     const rankingObj = rankRes.data || {};
                     const playersData = playersRes.data || {};
-
                     const posicoesOrdenadas = Object.keys(rankingObj).sort((a, b) => parseInt(a) - parseInt(b));
 
                     if (posicoesOrdenadas.length === 0) {
@@ -260,7 +293,6 @@ async function connectToWhatsApp() {
             }
 
             // --- SISTEMA DE QUIZ ---
-
             if (text === '!iniciarquiz') {
                 if (jogosQuiz[from]) {
                     return await sock.sendMessage(from, { text: '⚠️ Já existe um Quiz rodando neste grupo!' }, { quoted: m });
@@ -271,14 +303,11 @@ async function connectToWhatsApp() {
                     const quizObj = quizRes.data;
 
                     if (!quizObj) {
-                        return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhuma pergunta encontrada no nó /quiz do Firebase.' }, { quoted: m });
+                        return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhuma pergunta encontrada.' }, { quoted: m });
                     }
 
                     let listaPerguntas = Object.values(quizObj);
-
-                    if (listaPerguntas.length === 0) {
-                        return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhuma pergunta disponível.' }, { quoted: m });
-                    }
+                    if (listaPerguntas.length === 0) return;
 
                     for (let i = listaPerguntas.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
@@ -297,22 +326,19 @@ async function connectToWhatsApp() {
                         ativo: true
                     };
 
-                    const totalRodada = perguntasSorteadas.length;
-
                     await sock.sendMessage(from, { 
-                        text: `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}` 
+                        text: `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${perguntasSorteadas.length}` 
                     });
 
                     setTimeout(async () => {
-                        const primeiraPerguntaObj = perguntasSorteadas[0];
                         await sock.sendMessage(from, {
-                            text: `❓ *PRIMEIRA PERGUNTA (1/${totalRodada}):*\n\n${primeiraPerguntaObj.pergunta}`
+                            text: `❓ *PRIMEIRA PERGUNTA (1/${perguntasSorteadas.length}):*\n\n${perguntasSorteadas[0].pergunta}`
                         });
                     }, 2000);
 
                     return;
                 } catch (quizErr) {
-                    return await sock.sendMessage(from, { text: '❌ Erro ao carregar as perguntas do Firebase.' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: '❌ Erro ao carregar o Quiz.' }, { quoted: m });
                 }
             }
 
@@ -321,30 +347,17 @@ async function connectToWhatsApp() {
                 const perguntaObj = quiz.perguntas[quiz.perguntaAtual];
 
                 if (text === String(perguntaObj.resposta).trim().toLowerCase()) {
-                    const rawSender = m.key.participant || m.key.remoteJid || from;
-                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
-
-                    const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
-                    const playersData = playersRes.data || {};
-
-                    const playerUidAcertador = Object.keys(playersData).find(uid => {
-                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
-                    });
-
-                    const nomeAcertador = playersData[playerUidAcertador]?.character?.charName || 
-                                          playersData[playerUidAcertador]?.nome || 
-                                          `Jogador (${senderLid})`;
+                    const player = await buscarNomePersonagem(senderLid);
 
                     quiz.pontos[senderLid] = (quiz.pontos[senderLid] || 0) + 1;
 
-                    let tabela = `🎯 *ACERTOU!* *${nomeAcertador}* ganhou +1 ponto!\n\n📊 *TABELA DE PONTOS:*`;
+                    let tabela = `🎯 *ACERTOU!* *${player.nome}* ganhou +1 ponto!\n\n📊 *TABELA DE PONTOS:*`;
                     const ranking = Object.entries(quiz.pontos).sort((a, b) => b[1] - a[1]);
 
-                    ranking.forEach(([lid, pts], idx) => {
-                        const uid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === lid);
-                        const charName = playersData[uid]?.character?.charName || playersData[uid]?.nome || lid;
-                        tabela += `\n${idx + 1}º | *${charName}*: *${pts} pt(s)*`;
-                    });
+                    for (const [lid, pts] of ranking) {
+                        const pData = await buscarNomePersonagem(lid);
+                        tabela += `\n*${pData.nome}*: *${pts} pt(s)*`;
+                    }
 
                     await sock.sendMessage(from, { text: tabela }, { quoted: m });
 
@@ -356,30 +369,19 @@ async function connectToWhatsApp() {
                         const totalPontos = Object.values(quiz.pontos).reduce((a, b) => a + b, 0);
                         let textoFinal = `🏆 *QUIZ FINALIZADO!*\n\n🎁 *DIVISÃO DO PRÊMIO (฿ ${quiz.premioTotal}):*\n`;
 
-                        if (totalPontos === 0) {
-                            textoFinal += "\nNinguém acertou nada! O prêmio não foi distribuído.";
-                        } else {
+                        if (totalPontos > 0) {
                             const valorPorPonto = quiz.premioTotal / totalPontos;
 
                             for (const [lid, pts] of Object.entries(quiz.pontos)) {
                                 const premioJogador = Math.floor(pts * valorPorPonto);
+                                const pData = await buscarNomePersonagem(lid);
 
-                                const playerUid = Object.keys(playersData).find(uid => {
-                                    return String(playersData[uid]?.number?.LID || '').trim() === lid;
-                                });
+                                textoFinal += `\n👤 *${pData.nome}*: *${pts} acerto(s)* ➔ Recebeu *฿ ${premioJogador}*`;
 
-                                const charName = playersData[playerUid]?.character?.charName || 
-                                                 playersData[playerUid]?.nome || 
-                                                 `Jogador (${lid})`;
-
-                                textoFinal += `\n👤 *${charName}*: *${pts} acerto(s)* ➔ Recebeu *฿ ${premioJogador}*`;
-
-                                if (playerUid) {
-                                    const saldoAtual = playersData[playerUid]?.info?.saldo ?? 0;
-                                    const novoSaldo = saldoAtual + premioJogador;
-
-                                    await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, {
-                                        saldo: novoSaldo
+                                if (pData.uid) {
+                                    const saldoAtual = pData.dados?.info?.saldo ?? 0;
+                                    await axios.patch(`${FIREBASE_URL}/players/${pData.uid}/info.json`, {
+                                        saldo: saldoAtual + premioJogador
                                     });
                                 }
                             }
@@ -392,83 +394,49 @@ async function connectToWhatsApp() {
 
                     setTimeout(async () => {
                         const proxima = quiz.perguntas[quiz.perguntaAtual];
-                        const numPergunta = quiz.perguntaAtual + 1;
-                        const totalRodada = quiz.perguntas.length;
-
                         await sock.sendMessage(from, { 
-                            text: `❓ *PRÓXIMA PERGUNTA (${numPergunta}/${totalRodada}):*\n\n${proxima.pergunta}` 
+                            text: `❓ *PRÓXIMA PERGUNTA (${quiz.perguntaAtual + 1}/${quiz.perguntas.length}):*\n\n${proxima.pergunta}` 
                         });
                     }, 2000);
                 }
             }
 
-            // --- SISTEMA DE COMBATE (!battle) ---
+            // --- SISTEMA DE COMBATE E COMANDOS DEDICADOS ---
 
+            // 1. Comando principal de início rápido
             if (text === '!battle') {
-                if (batalhas[from]) {
-                    return await sock.sendMessage(from, { text: '⚠️ Já existe um combate em andamento neste grupo!' }, { quoted: m });
+                const player = await buscarNomePersonagem(senderLid);
+                const iniciado = await criarSessaoCombate(from, senderLid, player.nome, null, "Jogador 2", "Treino", sock);
+                
+                if (!iniciado) {
+                    await sock.sendMessage(from, { text: '⚠️ Já existe um combate em andamento neste grupo!' }, { quoted: m });
                 }
-
-                batalhas[from] = {
-                    fase: 'apresentacao',
-                    turnoAtual: 1,
-                    jogadorVez: 1,
-                    timerApresentacao: null,
-                    timerTurno: null
-                };
-
-                const msgInicio = `⚔️ *COMBATE INICIADO!* ⚔️\n\n` +
-                                  `📝 Os lutadores têm *5 minutos* para apresentarem seu *Card Combatente* no grupo!\n\n` +
-                                  `👉 Caso já tenham enviado os cards, digite *!iniciar* para começar o Turno 1 imediatamente.`;
-
-                await sock.sendMessage(from, { text: msgInicio });
-
-                // Timer de 5 minutos para os cards
-                batalhas[from].timerApresentacao = setTimeout(() => {
-                    comecarCombateDeFato(from, sock);
-                }, 5 * 60 * 1000);
-
                 return;
             }
 
-            // Comando para acelerar o início se os cards já foram enviados
+            // 2. Acelerador da fase de cards
             if (text === '!iniciar') {
                 const bat = batalhas[from];
                 if (!bat || bat.fase !== 'apresentacao') return;
-
                 await comecarCombateDeFato(from, sock);
                 return;
             }
 
-            // Avançar a vez do jogador no combate
+            // 3. Controle manual de passagem de turno
             if (text === '!passar' || text === '!prox') {
                 const bat = batalhas[from];
                 if (!bat || bat.fase !== 'em_combate') return;
-
-                // Alterna entre Jogador 1 e Jogador 2
-                if (bat.jogadorVez === 1) {
-                    bat.jogadorVez = 2;
-                } else {
-                    bat.jogadorVez = 1;
-                    bat.turnoAtual++;
-                }
-
-                const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DO JOGADOR ${bat.jogadorVez}*\n\n` +
-                                     `⏳ *Tempo limite desta jogada:* 30 minutos.\n` +
-                                     `👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`;
-
-                await sock.sendMessage(from, { text: msgNovoTurno });
-
-                iniciarTimerTurnoMaximo(from, sock);
+                await avancarTurno(from, sock);
                 return;
             }
 
-            // Encerrar combate
+            // 4. Encerramento forçado
             if (text === '!fimcombate') {
-                if (!batalhas[from]) return;
-                limparTimersBatalha(batalhas[from]);
-                delete batalhas[from];
-                return await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
+                const encerrado = encerrarCombate(from);
+                if (encerrado) {
+                    await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
+                }
+                return;
             }
 
         } catch (err) {

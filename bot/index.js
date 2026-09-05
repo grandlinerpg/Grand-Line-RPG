@@ -1,8 +1,8 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const express = require('express');
-const axios = require('axios'); 
+const axios = require('axios');
 
-const NUMERO_BOT = "5511918448331"; 
+const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
 // Servidor Web + Auto-Ping
@@ -153,7 +153,7 @@ async function connectToWhatsApp() {
                 await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
             }
 
-            // COMANDO !DADO (1d100) — Atualizado para exibir charName
+            // COMANDO !DADO (1d100) — Exibe charName do jogador
             if (text === '!dado' || text.startsWith('!dado ')) {
                 const resultado = Math.floor(Math.random() * 100) + 1;
                 const rawSender = m.key.participant || m.key.remoteJid || from;

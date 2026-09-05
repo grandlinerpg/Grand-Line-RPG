@@ -50,7 +50,7 @@ function limparTimersBatalha(batalha) {
     if (batalha.timerTurno) clearTimeout(batalha.timerTurno);
 }
 
-// Inicia/Reinicia o timer de 30 minutos para o turno
+// Inicia/Reinicia o timer de 30 minutos para a VEZ do jogador atual
 function iniciarTimerTurnoMaximo(groupId, sock) {
     const bat = batalhas[groupId];
     if (!bat) return;
@@ -61,20 +61,26 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         if (!batalhas[groupId]) return;
 
         await sock.sendMessage(groupId, { 
-            text: `⏰ *TEMPO ESGOTADO!* O limite de 30 minutos do Turno ${bat.turnoAtual} acabou!\nAvançando para o próximo turno...` 
+            text: `⏰ *TEMPO ESGOTADO!* O limite de 30 minutos para a jogada do *Jogador ${bat.jogadorVez}* (Turno ${bat.turnoAtual}) acabou!\nPassando a vez...` 
         });
 
-        bat.turnoAtual++;
+        // Alterna o jogador e avança o número do turno se for o Jogador 2
+        if (bat.jogadorVez === 1) {
+            bat.jogadorVez = 2;
+        } else {
+            bat.jogadorVez = 1;
+            bat.turnoAtual++;
+        }
 
         await sock.sendMessage(groupId, { 
-            text: `🔄 *INÍCIO DO TURNO ${bat.turnoAtual}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!passar* ou *!prox* ao concluir as jogadas.`
+            text: `🔄 *TURNO ${bat.turnoAtual} — VEZ DO JOGADOR ${bat.jogadorVez}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`
         });
 
         iniciarTimerTurnoMaximo(groupId, sock);
     }, 30 * 60 * 1000);
 }
 
-// Começa o combate de fato (Turno 1)
+// Começa o combate de fato (Turno 1 - Jogador 1)
 async function comecarCombateDeFato(groupId, sock) {
     const bat = batalhas[groupId];
     if (!bat || bat.fase !== 'apresentacao') return;
@@ -83,11 +89,13 @@ async function comecarCombateDeFato(groupId, sock) {
 
     bat.fase = 'em_combate';
     bat.turnoAtual = 1;
+    bat.jogadorVez = 1;
 
     const msgComeco = `⏰ *TEMPO DE APRESENTAÇÃO ENCERRADO!*\n\n` +
                       `⚔️ *TURNO 1 INICIADO*\n` +
-                      `⏳ *Tempo máximo do turno (combo dos 2 jogadores):* 30 minutos.\n\n` +
-                      `👉 Digite *!passar* ou *!prox* ao concluir a jogada para ir ao próximo turno.`;
+                      `👤 *Vez do:* Jogador 1\n` +
+                      `⏳ *Tempo limite para esta jogada:* 30 minutos.\n\n` +
+                      `👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`;
 
     await sock.sendMessage(groupId, { text: msgComeco });
     iniciarTimerTurnoMaximo(groupId, sock);
@@ -145,17 +153,34 @@ async function connectToWhatsApp() {
                 await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
             }
 
-            // COMANDO !DADO (1d100)
+            // COMANDO !DADO (1d100) — Atualizado para exibir charName
             if (text === '!dado' || text.startsWith('!dado ')) {
                 const resultado = Math.floor(Math.random() * 100) + 1;
-                const senderJid = m.key.participant || from;
-                const senderIdentifier = senderJid.split('@')[0].split(':')[0];
+                const rawSender = m.key.participant || m.key.remoteJid || from;
+                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+
+                let nomeJogador = "Lutador";
+
+                try {
+                    const response = await axios.get(`${FIREBASE_URL}/players.json`);
+                    const playersData = response.data || {};
+
+                    const playerUid = Object.keys(playersData).find(uid => {
+                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
+                    });
+
+                    if (playerUid) {
+                        nomeJogador = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
+                    }
+                } catch (dadoErr) {
+                    console.error('Erro ao buscar nome para o dado:', dadoErr.message);
+                }
 
                 const mensagemDado = `🎲 *ROLAGEM DE DADO (1d100)*\n\n` +
-                                     `👤 *Jogador:* @${senderIdentifier}\n` +
+                                     `👤 *Jogador:* ${nomeJogador}\n` +
                                      `🎯 *Resultado:* *${resultado}*`;
 
-                await sock.sendMessage(from, { text: mensagemDado, mentions: [senderJid] }, { quoted: m });
+                await sock.sendMessage(from, { text: mensagemDado }, { quoted: m });
             }
 
             // COMANDO !INFO
@@ -387,6 +412,7 @@ async function connectToWhatsApp() {
                 batalhas[from] = {
                     fase: 'apresentacao',
                     turnoAtual: 1,
+                    jogadorVez: 1,
                     timerApresentacao: null,
                     timerTurno: null
                 };
@@ -414,16 +440,22 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // Avançar turno
+            // Avançar a vez do jogador no combate
             if (text === '!passar' || text === '!prox') {
                 const bat = batalhas[from];
                 if (!bat || bat.fase !== 'em_combate') return;
 
-                bat.turnoAtual++;
+                // Alterna entre Jogador 1 e Jogador 2
+                if (bat.jogadorVez === 1) {
+                    bat.jogadorVez = 2;
+                } else {
+                    bat.jogadorVez = 1;
+                    bat.turnoAtual++;
+                }
 
-                const msgNovoTurno = `🔄 *INÍCIO DO TURNO ${bat.turnoAtual}*\n\n` +
-                                     `⏳ *Novo tempo limite:* 30 minutos.\n` +
-                                     `👉 Digite *!passar* ou *!prox* ao concluir a jogada.`;
+                const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DO JOGADOR ${bat.jogadorVez}*\n\n` +
+                                     `⏳ *Tempo limite desta jogada:* 30 minutos.\n` +
+                                     `👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`;
 
                 await sock.sendMessage(from, { text: msgNovoTurno });
 

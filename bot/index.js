@@ -24,25 +24,25 @@ app.listen(PORT, () => {
     }
 });
 
-// Controle em memória das sessões ativas (Quiz, Batalhas e Timers de Desafios)
+// Controle em memória das sessões ativas
 const jogosQuiz = {};
 const batalhas = {};
-const timersDesafio = {}; // Guarda os timeouts de 24h para W.O.
+const timersDesafio = {};
 
 // Função auxiliar para mapear o emoji de facção
 function obterEmojiFaccao(faccao) {
-    if (!faccao) return '🏴‍☠️';
+    if (!faccao) return '';
     const faccaoLimpa = String(faccao).trim().toLowerCase();
     if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) {
         return '⚔️';
     }
     if (faccaoLimpa.includes('governo mundial')) {
-        return '⚓';
+        return '⚓️';
     }
     if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) {
         return '🏴‍☠️';
     }
-    return '🏴‍☠️';
+    return '';
 }
 
 // Limpa timers de qualquer combate ativo
@@ -52,7 +52,7 @@ function limparTimersBatalha(batalha) {
     if (batalha.timerTurno) clearTimeout(batalha.timerTurno);
 }
 
-// Função auxiliar para formatar JID individual (PV) a partir de um LID/Número
+// Formata JID para mensagem privada (PV)
 function formatarJidPv(lid) {
     if (!lid) return null;
     const cleanLid = String(lid).split('@')[0].split(':')[0].trim();
@@ -90,7 +90,6 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
 
         await sock.sendMessage(groupId, { text: msgProxTurno });
 
-        // Notifica no PV do jogador da vez
         const jidPvProx = formatarJidPv(proxJogador?.lid);
         if (jidPvProx) {
             try {
@@ -127,7 +126,6 @@ async function comecarCombateDeFato(groupId, sock) {
 
     await sock.sendMessage(groupId, { text: msgComeco });
 
-    // Notifica P1 no PV
     const p1Jid = formatarJidPv(bat.p1?.lid);
     if (p1Jid) {
         try {
@@ -140,7 +138,7 @@ async function comecarCombateDeFato(groupId, sock) {
     iniciarTimerTurnoMaximo(groupId, sock);
 }
 
-// Estrutura modular para disparar combates em qualquer sistema (!battle, PVP, PVE, Boss)
+// Estrutura modular para disparar combates
 function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', sock) {
     if (batalhas[groupId]) {
         limparTimersBatalha(batalhas[groupId]);
@@ -214,7 +212,7 @@ async function connectToWhatsApp() {
                 await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
             }
 
-            // COMANDO !DADO (1d100)
+            // COMANDO !DADO
             if (text === '!dado' || text.startsWith('!dado ')) {
                 const resultado = Math.floor(Math.random() * 100) + 1;
                 const rawSender = m.key.participant || m.key.remoteJid || from;
@@ -258,8 +256,7 @@ async function connectToWhatsApp() {
                     const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
                     const playerUid = Object.keys(playersData).find(uid => {
-                        const storedLid = String(playersData[uid]?.number?.LID || '').trim();
-                        return storedLid === senderLid;
+                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
                     });
 
                     if (!playerUid) {
@@ -317,6 +314,129 @@ async function connectToWhatsApp() {
                     await sock.sendMessage(from, { text: rankText.trim() }, { quoted: m });
                 } catch (rankErr) {
                     await sock.sendMessage(from, { text: '❌ Erro ao carregar o ranking do Firebase.' }, { quoted: m });
+                }
+            }
+
+            // --- SISTEMA DO COLISEU ---
+
+            // COMANDO !INSCREVER (Custa ฿ 20.000)
+            if (text === '!inscrever' || text.startsWith('!inscrever ')) {
+                try {
+                    const rawSender = m.key.participant || m.key.remoteJid || from;
+                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+
+                    const [playersRes, coliseuRes] = await Promise.all([
+                        axios.get(`${FIREBASE_URL}/players.json`),
+                        axios.get(`${FIREBASE_URL}/coliseu/jogadores.json`)
+                    ]);
+
+                    const playersData = playersRes.data || {};
+                    const coliseuData = coliseuRes.data || {};
+
+                    const playerUid = Object.keys(playersData).find(uid => {
+                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
+                    });
+
+                    if (!playerUid) {
+                        return await sock.sendMessage(from, { text: '❌ Você precisa de um personagem cadastrado no sistema para se inscrever!' }, { quoted: m });
+                    }
+
+                    if (coliseuData[playerUid]) {
+                        return await sock.sendMessage(from, { text: '⚠️ Você já está inscrito na temporada atual do Coliseu!' }, { quoted: m });
+                    }
+
+                    const saldoAtual = playersData[playerUid]?.info?.saldo ?? 0;
+                    const TAXA_INSCRICAO = 20000;
+
+                    if (saldoAtual < TAXA_INSCRICAO) {
+                        return await sock.sendMessage(from, { text: `❌ Saldo insuficiente! A taxa de inscrição no Coliseu custa *฿ ${TAXA_INSCRICAO}* e você possui apenas *฿ ${saldoAtual}*.` }, { quoted: m });
+                    }
+
+                    // Desconta a taxa e inscreve o jogador
+                    const novoSaldo = saldoAtual - TAXA_INSCRICAO;
+                    await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { saldo: novoSaldo });
+
+                    await axios.put(`${FIREBASE_URL}/coliseu/jogadores/${playerUid}.json`, {
+                        vitorias: 0,
+                        derrotas: 0,
+                        pontos: 0,
+                        inscritoEm: Date.now()
+                    });
+
+                    const nomeChar = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || 'Combatente';
+
+                    const msgSucesso = `🏟 *INSCRIÇÃO CONFIRMADA NO COLISEU!* 🏟\n\n` +
+                                       `👤 *Lutador:* ${nomeChar}\n` +
+                                       `💰 *Taxa Paga:* ฿ ${TAXA_INSCRICAO}\n` +
+                                       `💳 *Novo Saldo:* ฿ ${novoSaldo}\n\n` +
+                                       `⚔️ Boa sorte na Corrida da Temporada! Digite *!coliseu* para conferir a tabela.`;
+
+                    return await sock.sendMessage(from, { text: msgSucesso }, { quoted: m });
+                } catch (inscErr) {
+                    console.error('Erro na inscrição do coliseu:', inscErr.message);
+                    return await sock.sendMessage(from, { text: '❌ Ocorreu um erro ao processar sua inscrição no Coliseu.' }, { quoted: m });
+                }
+            }
+
+            // COMANDO !COLISEU
+            if (text === '!coliseu' || text.startsWith('!coliseu ')) {
+                try {
+                    const [coliseuRes, playersRes, infoColiseuRes] = await Promise.all([
+                        axios.get(`${FIREBASE_URL}/coliseu/jogadores.json`),
+                        axios.get(`${FIREBASE_URL}/players.json`),
+                        axios.get(`${FIREBASE_URL}/coliseu/info.json`)
+                    ]);
+
+                    const coliseuData = coliseuRes.data || {};
+                    const playersData = playersRes.data || {};
+                    const coliseuInfo = infoColiseuRes.data || { temporada: 1, periodo: '01/09 ~ 31/09' };
+
+                    const inscritosUids = Object.keys(coliseuData);
+
+                    if (inscritosUids.length === 0) {
+                        return await sock.sendMessage(from, { text: '🏟 *O Coliseu ainda não possui lutadores inscritos nesta temporada!*\n\n👉 Digite *!inscrever* por ฿ 20.000 para participar.' }, { quoted: m });
+                    }
+
+                    // Ordena por Pontos desc, Vitórias desc, Derrotas asc
+                    inscritosUids.sort((a, b) => {
+                        const pA = coliseuData[a];
+                        const pB = coliseuData[b];
+                        if ((pB.pontos || 0) !== (pA.pontos || 0)) {
+                            return (pB.pontos || 0) - (pA.pontos || 0);
+                        }
+                        if ((pB.vitorias || 0) !== (pA.vitorias || 0)) {
+                            return (pB.vitorias || 0) - (pA.vitorias || 0);
+                        }
+                        return (pA.derrotas || 0) - (pB.derrotas || 0);
+                    });
+
+                    let coliseuText = `🏟 *— COLISEU CORRIDA —* 🏟\n` +
+                                      `🏆 *— TEMPORADA ${coliseuInfo.temporada} — 🏆*\n\n` +
+                                      `*Período: ${coliseuInfo.periodo}*\n\n`;
+
+                    inscritosUids.forEach((uid, index) => {
+                        const dadosCol = coliseuData[uid];
+                        const player = playersData[uid];
+
+                        const nome = player?.character?.charName || player?.nome || 'Lutador';
+                        const nivel = player?.info?.level ?? 1;
+                        const faccao = player?.character?.faction || '';
+                        const emojiFaccao = obterEmojiFaccao(faccao);
+
+                        const vitorias = dadosCol.vitorias ?? 0;
+                        const derrotas = dadosCol.derrotas ?? 0;
+                        const pontos = dadosCol.pontos ?? 0;
+
+                        const espacoEmoji = emojiFaccao ? ` ${emojiFaccao}` : '';
+
+                        coliseuText += `${index + 1}º ${nome} (${nivel})${espacoEmoji}\n`;
+                        coliseuText += `> *✔️ ${vitorias} | ✖️ ${derrotas} | 🏅${pontos}*\n\n`;
+                    });
+
+                    await sock.sendMessage(from, { text: coliseuText.trim() }, { quoted: m });
+                } catch (colErr) {
+                    console.error('Erro ao exibir coliseu:', colErr.message);
+                    await sock.sendMessage(from, { text: '❌ Erro ao carregar as informações do Coliseu.' }, { quoted: m });
                 }
             }
 
@@ -442,7 +562,6 @@ async function connectToWhatsApp() {
                                         saldo: novoSaldo
                                     });
 
-                                    // Envio do comprovante individual no PV
                                     const pvJid = formatarJidPv(lid);
                                     if (pvJid) {
                                         try {
@@ -476,7 +595,7 @@ async function connectToWhatsApp() {
                 }
             }
 
-            // --- SISTEMA DE DESAFIOS NO FIREBASE (/desafios) COM REGRAS DE 24H ---
+            // --- DESAFIOS & BATALHAS ---
 
             // COMANDO !DESAFIAR (@mencao)
             if (text.startsWith('!desafiar')) {
@@ -517,7 +636,7 @@ async function connectToWhatsApp() {
                 const nomeDesafiado = playersData[desafiadoUid]?.character?.charName || playersData[desafiadoUid]?.nome || 'Desafiado';
 
                 const agora = Date.now();
-                const tempoExpiracao = 24 * 60 * 60 * 1000; // 24 Horas
+                const tempoExpiracao = 24 * 60 * 60 * 1000;
 
                 const desafioPayload = {
                     desafianteLid: senderLid,
@@ -531,10 +650,8 @@ async function connectToWhatsApp() {
 
                 await axios.put(`${FIREBASE_URL}/desafios/${groupIdClean}.json`, desafioPayload);
 
-                // Limpa timer anterior caso exista
                 if (timersDesafio[groupIdClean]) clearTimeout(timersDesafio[groupIdClean]);
 
-                // Configura a Derrota Automática por W.O. em 24 Horas
                 timersDesafio[groupIdClean] = setTimeout(async () => {
                     try {
                         const checkDesafio = await axios.get(`${FIREBASE_URL}/desafios/${groupIdClean}.json`);
@@ -547,13 +664,11 @@ async function connectToWhatsApp() {
 
                             await sock.sendMessage(from, { text: msgWO });
 
-                            // Avisa o perdedor por W.O. no PV
                             const targetPvJid = formatarJidPv(targetLid);
                             if (targetPvJid) {
                                 await sock.sendMessage(targetPvJid, { text: `💀 *DERROTA POR W.O.!*\nVocê não respondeu ao desafio de *${nomeDesafiante}* no prazo de 24 horas e acumulou uma derrota.` });
                             }
 
-                            // Avisa o vencedor por W.O. no PV
                             const senderPvJid = formatarJidPv(senderLid);
                             if (senderPvJid) {
                                 await sock.sendMessage(senderPvJid, { text: `🏆 *VITÓRIA POR W.O.!*\nO jogador *${nomeDesafiado}* não aceitou seu desafio a tempo. Você venceu automaticamente!` });
@@ -572,7 +687,6 @@ async function connectToWhatsApp() {
 
                 await sock.sendMessage(from, { text: msgDesafio, mentions: [mentionedJid] }, { quoted: m });
 
-                // Notifica o Desafiado no PV
                 const pvTargetJid = formatarJidPv(targetLid);
                 if (pvTargetJid) {
                     try {
@@ -607,7 +721,6 @@ async function connectToWhatsApp() {
                     return await sock.sendMessage(from, { text: '❌ Apenas o jogador desafiado pode aceitar este duelo!' }, { quoted: m });
                 }
 
-                // Cancela o Timer do W.O. de 24h
                 if (timersDesafio[groupIdClean]) {
                     clearTimeout(timersDesafio[groupIdClean]);
                     delete timersDesafio[groupIdClean];
@@ -628,7 +741,7 @@ async function connectToWhatsApp() {
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
-            // COMANDO !CANCELAR (Cancelamento do Desafio pelo Desafiante)
+            // COMANDO !CANCELAR
             if (text === '!cancelar') {
                 const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
                 const rawSender = m.key.participant || m.key.remoteJid || from;
@@ -654,9 +767,7 @@ async function connectToWhatsApp() {
                 return await sock.sendMessage(from, { text: '🚫 *Desafio cancelado pelo desafiante!*' });
             }
 
-            // --- GERENCIAMENTO DE COMBATE INDEPENDENTE DA ORIGEM ---
-
-            // COMANDO !BATTLE (Combate rápido/avulso)
+            // COMANDO !BATTLE
             if (text === '!battle') {
                 if (batalhas[from]) {
                     return await sock.sendMessage(from, { text: '⚠️ Já existe um combate em andamento neste grupo!' }, { quoted: m });
@@ -674,7 +785,7 @@ async function connectToWhatsApp() {
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
-            // COMANDO !INICIAR (Acelera fase de apresentação)
+            // COMANDO !INICIAR
             if (text === '!iniciar') {
                 const bat = batalhas[from];
                 if (!bat || bat.fase !== 'apresentacao') return;
@@ -683,7 +794,7 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !PROX (Passa o turno)
+            // COMANDO !PROX
             if (text === '!prox') {
                 const bat = batalhas[from];
                 if (!bat || bat.fase !== 'em_combate') return;
@@ -704,7 +815,6 @@ async function connectToWhatsApp() {
 
                 await sock.sendMessage(from, { text: msgNovoTurno });
 
-                // Notifica jogador da vez no PV
                 const jidPvProx = formatarJidPv(proximoJogadorObj?.lid);
                 if (jidPvProx) {
                     try {
@@ -718,7 +828,7 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !WIN (Declarar Vencedor)
+            // COMANDO !WIN (Com Atualização Automática do Coliseu)
             if (text.startsWith('!win')) {
                 const bat = batalhas[from];
                 if (!bat) {
@@ -729,24 +839,59 @@ async function connectToWhatsApp() {
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
                 let vencedorObj = null;
+                let perdedorObj = null;
 
-                // Verifica se mencionou alguém no comando (!win @vencedor)
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
                 if (mentionedJid) {
                     const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
-                    if (bat.p1?.lid === targetLid) vencedorObj = bat.p1;
-                    if (bat.p2?.lid === targetLid) vencedorObj = bat.p2;
+                    if (bat.p1?.lid === targetLid) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+                    if (bat.p2?.lid === targetLid) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
                 } else {
-                    // Se quem enviou o comando for P1 ou P2, assume ele como vencedor
-                    if (bat.p1?.lid === senderLid) vencedorObj = bat.p1;
-                    else if (bat.p2?.lid === senderLid) vencedorObj = bat.p2;
-                    else vencedorObj = bat[`p${bat.jogadorVez}`]; // Caso seja um admin, assume o jogador da vez
+                    if (bat.p1?.lid === senderLid) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+                    else if (bat.p2?.lid === senderLid) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
+                    else {
+                        vencedorObj = bat[`p${bat.jogadorVez}`];
+                        perdedorObj = bat.jogadorVez === 1 ? bat.p2 : bat.p1;
+                    }
                 }
 
                 const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
 
-                // Atualiza o registro no Firebase caso seja um desafio registrado
+                // Lógica de Atualização Automática das Pontuações do COLISEU
+                try {
+                    const [playersRes, coliseuRes] = await Promise.all([
+                        axios.get(`${FIREBASE_URL}/players.json`),
+                        axios.get(`${FIREBASE_URL}/coliseu/jogadores.json`)
+                    ]);
+
+                    const playersData = playersRes.data || {};
+                    const coliseuData = coliseuRes.data || {};
+
+                    const uidVencedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === vencedorObj?.lid);
+                    const uidPerdedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === perdedorObj?.lid);
+
+                    // Se ambos estiverem cadastrados no Coliseu, atualiza os pontos: +2 pro Vencedor, +1 pro Perdedor
+                    if (uidVencedor && coliseuData[uidVencedor]) {
+                        const vCol = coliseuData[uidVencedor];
+                        await axios.patch(`${FIREBASE_URL}/coliseu/jogadores/${uidVencedor}.json`, {
+                            vitorias: (vCol.vitorias || 0) + 1,
+                            pontos: (vCol.pontos || 0) + 2
+                        });
+                    }
+
+                    if (uidPerdedor && coliseuData[uidPerdedor]) {
+                        const pCol = coliseuData[uidPerdedor];
+                        await axios.patch(`${FIREBASE_URL}/coliseu/jogadores/${uidPerdedor}.json`, {
+                            derrotas: (pCol.derrotas || 0) + 1,
+                            pontos: (pCol.pontos || 0) + 1
+                        });
+                    }
+                } catch (colUpdateErr) {
+                    console.error('Erro ao atualizar pontuação do coliseu:', colUpdateErr.message);
+                }
+
+                // Atualiza no Firebase o status do desafio
                 const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
                 await axios.patch(`${FIREBASE_URL}/desafios/${groupIdClean}.json`, { 
                     status: 'finalizado',
@@ -755,23 +900,21 @@ async function connectToWhatsApp() {
 
                 const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
                                `🎉 O combatente *${nomeVencedor}* saiu vitorioso deste duelo após *${bat.turnoAtual} rodadas*!\n\n` +
-                               `⚔️ O combate foi encerrado com sucesso.`;
+                               `⚔️ O combate foi encerrado e os pontos do Coliseu foram computados com sucesso.`;
 
                 await sock.sendMessage(from, { text: msgWin });
 
-                // Notifica o Vencedor no PV
                 const pvVencedorJid = formatarJidPv(vencedorObj?.lid);
                 if (pvVencedorJid) {
                     try {
                         await sock.sendMessage(pvVencedorJid, { 
-                            text: `🏆 *PARABÉNS PELA VITÓRIA!*\n\nSua vitória no duelo de RPG em grupo foi confirmada pelo bot!` 
+                            text: `🏆 *PARABÉNS PELA VITÓRIA!*\n\nSua vitória no duelo de RPG foi confirmada e seus pontos no Coliseu foram computados!` 
                         });
                     } catch (pvErr) {
                         console.error('[PV] Erro ao enviar declaração de vitória no PV:', pvErr.message);
                     }
                 }
 
-                // Encerra a batalha e limpa da memória
                 limparTimersBatalha(bat);
                 delete batalhas[from];
                 return;

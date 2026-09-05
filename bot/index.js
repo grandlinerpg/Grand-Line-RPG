@@ -27,7 +27,7 @@ app.listen(PORT, () => {
 // Controle em memória das sessões ativas (Quiz, Batalhas e Timers de Desafios)
 const jogosQuiz = {};
 const batalhas = {};
-const timersDesafio = {}; // Guarda os timouts de 24h para W.O.
+const timersDesafio = {}; // Guarda os timeouts de 24h para W.O.
 
 // Função auxiliar para mapear o emoji de facção
 function obterEmojiFaccao(faccao) {
@@ -50,6 +50,13 @@ function limparTimersBatalha(batalha) {
     if (!batalha) return;
     if (batalha.timerApresentacao) clearTimeout(batalha.timerApresentacao);
     if (batalha.timerTurno) clearTimeout(batalha.timerTurno);
+}
+
+// Função auxiliar para formatar JID individual (PV) a partir de um LID/Número
+function formatarJidPv(lid) {
+    if (!lid) return null;
+    const cleanLid = String(lid).split('@')[0].split(':')[0].trim();
+    return `${cleanLid}@s.whatsapp.net`;
 }
 
 // Inicia/Reinicia o timer de 30 minutos para o turno do jogador atual
@@ -79,15 +86,25 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         const proxJogador = bat[`p${bat.jogadorVez}`];
         const nomeProx = proxJogador?.nome || `Jogador ${bat.jogadorVez}`;
 
-        await sock.sendMessage(groupId, { 
-            text: `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeProx.toUpperCase()}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`
-        });
+        const msgProxTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeProx.toUpperCase()}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!prox* ao concluir sua jogada.`;
+
+        await sock.sendMessage(groupId, { text: msgProxTurno });
+
+        // Notifica no PV do jogador da vez
+        const jidPvProx = formatarJidPv(proxJogador?.lid);
+        if (jidPvProx) {
+            try {
+                await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* É o Turno ${bat.turnoAtual} no seu combate em grupo!\n\n👉 Responda no grupo e digite *!prox* ao concluir.` });
+            } catch (pvErr) {
+                console.error('[PV] Erro ao avisar turno no PV:', pvErr.message);
+            }
+        }
 
         iniciarTimerTurnoMaximo(groupId, sock);
     }, 30 * 60 * 1000);
 }
 
-// Transição do tempo de apresentação para o Turno 1 (Reaproveitável)
+// Transição do tempo de apresentação para o Turno 1
 async function comecarCombateDeFato(groupId, sock) {
     const bat = batalhas[groupId];
     if (!bat || bat.fase !== 'apresentacao') return;
@@ -106,9 +123,20 @@ async function comecarCombateDeFato(groupId, sock) {
                       `👥 *Luta:* ${p1Nome} VS ${p2Nome}\n` +
                       `👤 *Vez inicial:* ${p1Nome}\n` +
                       `⏳ *Tempo limite para esta jogada:* 30 minutos.\n\n` +
-                      `👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`;
+                      `👉 Digite *!prox* ao concluir sua jogada.`;
 
     await sock.sendMessage(groupId, { text: msgComeco });
+
+    // Notifica P1 no PV
+    const p1Jid = formatarJidPv(bat.p1?.lid);
+    if (p1Jid) {
+        try {
+            await sock.sendMessage(p1Jid, { text: `⚔️ *O COMBATE COMEÇOU!* É a sua vez (Turno 1) contra *${p2Nome}*.\n\n👉 Envie sua jogada no grupo e digite *!prox*.` });
+        } catch (pvErr) {
+            console.error('[PV] Erro ao enviar início para P1:', pvErr.message);
+        }
+    }
+
     iniciarTimerTurnoMaximo(groupId, sock);
 }
 
@@ -413,6 +441,20 @@ async function connectToWhatsApp() {
                                     await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, {
                                         saldo: novoSaldo
                                     });
+
+                                    // Envio do comprovante individual no PV
+                                    const pvJid = formatarJidPv(lid);
+                                    if (pvJid) {
+                                        try {
+                                            await sock.sendMessage(pvJid, { 
+                                                text: `💰 *PREMIAÇÃO DO QUIZ!*\n\nParabéns! Você acertou *${pts}* pergunta(s) e recebeu *฿ ${premioJogador}* na sua conta!\n\n` +
+                                                      `💳 *Saldo Anterior:* ฿ ${saldoAtual}\n` +
+                                                      `💳 *Novo Saldo:* ฿ ${novoSaldo}` 
+                                            });
+                                        } catch (pvErr) {
+                                            console.error('[PV] Erro ao enviar prêmio no PV:', pvErr.message);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -489,7 +531,7 @@ async function connectToWhatsApp() {
 
                 await axios.put(`${FIREBASE_URL}/desafios/${groupIdClean}.json`, desafioPayload);
 
-                // Limpa timer anterior caso exita
+                // Limpa timer anterior caso exista
                 if (timersDesafio[groupIdClean]) clearTimeout(timersDesafio[groupIdClean]);
 
                 // Configura a Derrota Automática por W.O. em 24 Horas
@@ -504,6 +546,18 @@ async function connectToWhatsApp() {
                                           `🏆 *Vitória automática concedida a:* ${nomeDesafiante}`;
 
                             await sock.sendMessage(from, { text: msgWO });
+
+                            // Avisa o perdedor por W.O. no PV
+                            const targetPvJid = formatarJidPv(targetLid);
+                            if (targetPvJid) {
+                                await sock.sendMessage(targetPvJid, { text: `💀 *DERROTA POR W.O.!*\nVocê não respondeu ao desafio de *${nomeDesafiante}* no prazo de 24 horas e acumulou uma derrota.` });
+                            }
+
+                            // Avisa o vencedor por W.O. no PV
+                            const senderPvJid = formatarJidPv(senderLid);
+                            if (senderPvJid) {
+                                await sock.sendMessage(senderPvJid, { text: `🏆 *VITÓRIA POR W.O.!*\nO jogador *${nomeDesafiado}* não aceitou seu desafio a tempo. Você venceu automaticamente!` });
+                            }
                         }
                     } catch (woErr) {
                         console.error('Erro ao processar W.O.:', woErr.message);
@@ -514,9 +568,26 @@ async function connectToWhatsApp() {
                                    `👤 *Desafiante:* ${nomeDesafiante}\n` +
                                    `🎯 *Desafiado:* ${nomeDesafiado}\n\n` +
                                    `⏳ @${targetLid}, você tem *24 horas* para responder digitando *!aceitar*.\n` +
-                                   `⚠️ *Aviso:* Caso não aceite a tempo, será declarada *Derrota por W.O.* automáticas!`;
+                                   `⚠️ *Aviso:* Caso não aceite a tempo, será declarada *Derrota por W.O.* automática!`;
 
-                return await sock.sendMessage(from, { text: msgDesafio, mentions: [mentionedJid] }, { quoted: m });
+                await sock.sendMessage(from, { text: msgDesafio, mentions: [mentionedJid] }, { quoted: m });
+
+                // Notifica o Desafiado no PV
+                const pvTargetJid = formatarJidPv(targetLid);
+                if (pvTargetJid) {
+                    try {
+                        await sock.sendMessage(pvTargetJid, { 
+                            text: `⚔️ *VOCÊ FOI DESAFIADO!*\n\n` +
+                                  `👤 *Desafiante:* ${nomeDesafiante}\n` +
+                                  `⏳ *Prazo:* 24 Horas\n\n` +
+                                  `👉 Vá até o grupo e digite *!aceitar* para encarar o duelo ou perca por W.O.!` 
+                        });
+                    } catch (pvErr) {
+                        console.error('[PV] Erro ao notificar desafio no PV:', pvErr.message);
+                    }
+                }
+
+                return;
             }
 
             // COMANDO !ACEITAR
@@ -612,8 +683,8 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !PASSAR / !PROX
-            if (text === '!passar' || text === '!prox') {
+            // COMANDO !PROX (Passa o turno)
+            if (text === '!prox') {
                 const bat = batalhas[from];
                 if (!bat || bat.fase !== 'em_combate') return;
 
@@ -629,10 +700,80 @@ async function connectToWhatsApp() {
 
                 const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeDoVez.toUpperCase()}*\n\n` +
                                      `⏳ *Tempo limite desta jogada:* 30 minutos.\n` +
-                                     `👉 Digite *!passar* ou *!prox* ao concluir sua jogada.`;
+                                     `👉 Digite *!prox* ao concluir sua jogada.`;
 
                 await sock.sendMessage(from, { text: msgNovoTurno });
+
+                // Notifica jogador da vez no PV
+                const jidPvProx = formatarJidPv(proximoJogadorObj?.lid);
+                if (jidPvProx) {
+                    try {
+                        await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* Turno ${bat.turnoAtual} iniciado no grupo!\n\n👉 Responda no grupo e digite *!prox* ao terminar.` });
+                    } catch (pvErr) {
+                        console.error('[PV] Erro ao notificar vez no PV:', pvErr.message);
+                    }
+                }
+
                 iniciarTimerTurnoMaximo(from, sock);
+                return;
+            }
+
+            // COMANDO !WIN (Declarar Vencedor)
+            if (text.startsWith('!win')) {
+                const bat = batalhas[from];
+                if (!bat) {
+                    return await sock.sendMessage(from, { text: '❌ Não há nenhuma batalha ativa neste grupo para declarar um vencedor!' }, { quoted: m });
+                }
+
+                const rawSender = m.key.participant || m.key.remoteJid || from;
+                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+
+                let vencedorObj = null;
+
+                // Verifica se mencionou alguém no comando (!win @vencedor)
+                const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+
+                if (mentionedJid) {
+                    const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
+                    if (bat.p1?.lid === targetLid) vencedorObj = bat.p1;
+                    if (bat.p2?.lid === targetLid) vencedorObj = bat.p2;
+                } else {
+                    // Se quem enviou o comando for P1 ou P2, assume ele como vencedor
+                    if (bat.p1?.lid === senderLid) vencedorObj = bat.p1;
+                    else if (bat.p2?.lid === senderLid) vencedorObj = bat.p2;
+                    else vencedorObj = bat[`p${bat.jogadorVez}`]; // Caso seja um admin, assume o jogador da vez
+                }
+
+                const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
+
+                // Atualiza o registro no Firebase caso seja um desafio registrado
+                const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
+                await axios.patch(`${FIREBASE_URL}/desafios/${groupIdClean}.json`, { 
+                    status: 'finalizado',
+                    vencedor: nomeVencedor 
+                }).catch(() => {});
+
+                const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
+                               `🎉 O combatente *${nomeVencedor}* saiu vitorioso deste duelo após *${bat.turnoAtual} rodadas*!\n\n` +
+                               `⚔️ O combate foi encerrado com sucesso.`;
+
+                await sock.sendMessage(from, { text: msgWin });
+
+                // Notifica o Vencedor no PV
+                const pvVencedorJid = formatarJidPv(vencedorObj?.lid);
+                if (pvVencedorJid) {
+                    try {
+                        await sock.sendMessage(pvVencedorJid, { 
+                            text: `🏆 *PARABÉNS PELA VITÓRIA!*\n\nSua vitória no duelo de RPG em grupo foi confirmada pelo bot!` 
+                        });
+                    } catch (pvErr) {
+                        console.error('[PV] Erro ao enviar declaração de vitória no PV:', pvErr.message);
+                    }
+                }
+
+                // Encerra a batalha e limpa da memória
+                limparTimersBatalha(bat);
+                delete batalhas[from];
                 return;
             }
 
@@ -641,7 +782,7 @@ async function connectToWhatsApp() {
                 if (!batalhas[from]) return;
 
                 const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
-                await axios.delete(`${FIREBASE_URL}/desafios/${groupIdClean}.json`);
+                await axios.delete(`${FIREBASE_URL}/desafios/${groupIdClean}.json`).catch(() => {});
 
                 limparTimersBatalha(batalhas[from]);
                 delete batalhas[from];

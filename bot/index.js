@@ -1,7 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
 const express = require('express');
 const axios = require('axios');
-const Groq = require('groq-sdk');
+const Groq = require('groq-sdk'); 
 
 // NÚMERO DO BOT CONFIGURADO:
 const NUMERO_BOT = "5511918448331"; 

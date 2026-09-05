@@ -148,7 +148,7 @@ async function connectToWhatsApp() {
                     const exp = player?.info?.exp ?? 0;
                     const saldo = player?.info?.saldo ?? 0;
 
-                    const infoText = `📜 *INFORMAÇÕES DO PERSONAGEM*\n\n` +
+                    const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n` +
                                      `👤 *Nome:* ${nome}\n` +
                                      `⭐ *Nível:* ${nivel}\n` +
                                      `✨ *EXP:* ${exp}\n` +
@@ -163,30 +163,37 @@ async function connectToWhatsApp() {
             // COMANDO !RANK
             if (text === '!rank' || text.startsWith('!rank ')) {
                 try {
-                    const response = await axios.get(`${FIREBASE_URL}/players.json`);
-                    const playersData = response.data;
+                    const [rankRes, playersRes] = await Promise.all([
+                        axios.get(`${FIREBASE_URL}/ranking.json`),
+                        axios.get(`${FIREBASE_URL}/players.json`)
+                    ]);
 
-                    if (!playersData) {
-                        return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado.' }, { quoted: m });
+                    const rankingObj = rankRes.data || {};
+                    const playersData = playersRes.data || {};
+
+                    // Obtém e ordena numericamente as posições (1, 2, 3...)
+                    const posicoesOrdenadas = Object.keys(rankingObj).sort((a, b) => parseInt(a) - parseInt(b));
+
+                    if (posicoesOrdenadas.length === 0) {
+                        return await sock.sendMessage(from, { text: '🏴‍☠️ O ranking ainda não possui nenhum jogador.' }, { quoted: m });
                     }
 
                     let rankText = `*🏆 — RANKING ARENA — 🏆*\n\n`;
-                    let contador = 1;
 
-                    Object.keys(playersData).forEach((uid) => {
+                    posicoesOrdenadas.forEach((pos) => {
+                        const uid = rankingObj[pos];
                         const player = playersData[uid];
                         const nome = player?.character?.charName || player?.nome || 'Sem Nome';
                         const nivel = player?.info?.level ?? 1;
                         const faccao = player?.character?.faction || '';
                         const emojiFaccao = obterEmojiFaccao(faccao);
 
-                        rankText += `${contador}. ${nome} (${nivel}) ${emojiFaccao}\n`;
-                        contador++;
+                        rankText += `${parseInt(pos)}º ${nome} (${nivel}) ${emojiFaccao}\n`;
                     });
 
                     await sock.sendMessage(from, { text: rankText.trim() }, { quoted: m });
                 } catch (rankErr) {
-                    await sock.sendMessage(from, { text: '❌ Erro ao buscar lista no Firebase.' }, { quoted: m });
+                    await sock.sendMessage(from, { text: '❌ Erro ao carregar o ranking do Firebase.' }, { quoted: m });
                 }
             }
 

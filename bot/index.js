@@ -1,21 +1,9 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
 const express = require('express');
 const axios = require('axios');
-const Groq = require('groq-sdk'); 
 
 const NUMERO_BOT = "5511918448331"; 
-const GROQ_KEY = process.env.GROQ_API_KEY || "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";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
-
-const groq = new Groq({ apiKey: GROQ_KEY });
-
-const PERSONALIDADE_PERSONAGEM = `
-Você é Monkey D. Luffy, capitão dos Chapéus de Palha do universo de One Piece.
-- Responda SEMPRE como o personagem (use risadas típicas como "Nishishishi!", fale de carne, aventuras, mar de forma empolgada e simples).
-- Responda sempre em Português.
-- Mantenha respostas curtas e diretas (máximo de 2 a 3 frases), ideais para mensagens de WhatsApp.
-- NUNCA saia do personagem, independentemente do que o usuário perguntar.
-`;
 
 // Servidor Web + Auto-Ping
 const app = express();
@@ -171,7 +159,6 @@ async function connectToWhatsApp() {
                     const rankingObj = rankRes.data || {};
                     const playersData = playersRes.data || {};
 
-                    // Obtém e ordena numericamente as posições (1, 2, 3...)
                     const posicoesOrdenadas = Object.keys(rankingObj).sort((a, b) => parseInt(a) - parseInt(b));
 
                     if (posicoesOrdenadas.length === 0) {
@@ -194,31 +181,6 @@ async function connectToWhatsApp() {
                     await sock.sendMessage(from, { text: rankText.trim() }, { quoted: m });
                 } catch (rankErr) {
                     await sock.sendMessage(from, { text: '❌ Erro ao carregar o ranking do Firebase.' }, { quoted: m });
-                }
-            }
-
-            // COMANDO !LUFFY
-            if (text === '!luffy' || text.startsWith('!luffy ')) {
-                const pergunta = rawText.replace(/^!luffy\s*/i, '').trim();
-                if (!pergunta) {
-                    return await sock.sendMessage(from, { text: '🍖 *Luffy:* "O que foi? Tá querendo me pedir carne?!"' }, { quoted: m });
-                }
-
-                try {
-                    const chatCompletion = await groq.chat.completions.create({
-                        messages: [
-                            { role: "system", content: PERSONALIDADE_PERSONAGEM },
-                            { role: "user", content: pergunta }
-                        ],
-                        model: "llama-3.3-70b-versatile",
-                        temperature: 0.8,
-                        max_tokens: 200
-                    });
-
-                    const respostaIA = chatCompletion.choices[0]?.message?.content || "Nishishishi! Fiquei confuso!";
-                    await sock.sendMessage(from, { text: `🍖 *Luffy:* ${respostaIA}` }, { quoted: m });
-                } catch (iaErr) {
-                    await sock.sendMessage(from, { text: '⚠️ *Luffy:* "Eita, deu um nó na minha cabeça!"' }, { quoted: m });
                 }
             }
 
@@ -262,13 +224,21 @@ async function connectToWhatsApp() {
                         ativo: true
                     };
 
-                    const primeiraPergunta = perguntasSorteadas[0].pergunta;
-                    const numPerguntaAtual = 1;
                     const totalRodada = perguntasSorteadas.length;
 
+                    // Mensagem de anúncio de início do Quiz
                     await sock.sendMessage(from, { 
-                        text: `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}\n\n*Pergunta ${numPerguntaAtual}/${totalRodada}:*\n${primeiraPergunta}` 
+                        text: `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}` 
                     });
+
+                    // Envia a PRIMEIRA pergunta separada após 2 segundos
+                    setTimeout(async () => {
+                        const primeiraPerguntaObj = perguntasSorteadas[0];
+                        await sock.sendMessage(from, {
+                            text: `❓ *PRIMEIRA PERGUNTA (1/${totalRodada}):*\n\n${primeiraPerguntaObj.pergunta}`
+                        });
+                    }, 2000);
+
                     return;
                 } catch (quizErr) {
                     console.error('❌ Erro ao buscar quiz no Firebase:', quizErr.message);
@@ -285,7 +255,6 @@ async function connectToWhatsApp() {
                     const rawSender = m.key.participant || m.key.remoteJid || from;
                     const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
-                    // Busca dados dos jogadores para identificar o charName do acertador
                     const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
                     const playersData = playersRes.data || {};
 

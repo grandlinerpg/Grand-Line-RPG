@@ -141,16 +141,21 @@ async function connectToWhatsApp() {
 
                     Object.keys(playersData).forEach((uid) => {
                         const player = playersData[uid];
+                        
+                        // Busca o nome do personagem
                         const nome = player?.character?.charName || player?.nome || player?.name || 'Sem Nome';
+                        
+                        // Busca o nível em players.uid.info.level
+                        const nivel = player?.info?.level ?? 1;
 
-                        // Troca os 3 primeiros pelas medalhas no inicio
+                        // Troca os 3 primeiros pelas medalhas no início
                         let prefixo = `${contador}º`;
                         if (contador === 1) prefixo = '🥇';
                         else if (contador === 2) prefixo = '🥈';
                         else if (contador === 3) prefixo = '🥉';
 
-                        // Nome do jogador com linha em branco para espaçamento
-                        rankText += `${prefixo} ${nome}\n\n`;
+                        // Formatação final: Ícone + Nome + (Nível)
+                        rankText += `${prefixo} ${nome} (${nivel})\n\n`;
 
                         contador++;
                     });

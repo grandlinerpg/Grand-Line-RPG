@@ -24,8 +24,9 @@ app.listen(PORT, () => {
     }
 });
 
-// Controle em memória dos Quizzes em andamento
+// Controle em memória dos Quizzes e Combates
 const jogosQuiz = {};
+const batalhas = {};
 
 // Função auxiliar para mapear o emoji de facção
 function obterEmojiFaccao(faccao) {
@@ -41,6 +42,55 @@ function obterEmojiFaccao(faccao) {
         return '🏴‍☠️';
     }
     return '🏴‍☠️';
+}
+
+// Limpa timers do combate
+function limparTimersBatalha(batalha) {
+    if (batalha.timerApresentacao) clearTimeout(batalha.timerApresentacao);
+    if (batalha.timerTurno) clearTimeout(batalha.timerTurno);
+}
+
+// Inicia/Reinicia o timer de 30 minutos para o turno
+function iniciarTimerTurnoMaximo(groupId, sock) {
+    const bat = batalhas[groupId];
+    if (!bat) return;
+
+    if (bat.timerTurno) clearTimeout(bat.timerTurno);
+
+    bat.timerTurno = setTimeout(async () => {
+        if (!batalhas[groupId]) return;
+
+        await sock.sendMessage(groupId, { 
+            text: `⏰ *TEMPO ESGOTADO!* O limite de 30 minutos do Turno ${bat.turnoAtual} acabou!\nAvançando para o próximo turno...` 
+        });
+
+        bat.turnoAtual++;
+
+        await sock.sendMessage(groupId, { 
+            text: `🔄 *INÍCIO DO TURNO ${bat.turnoAtual}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!passar* ou *!prox* ao concluir as jogadas.`
+        });
+
+        iniciarTimerTurnoMaximo(groupId, sock);
+    }, 30 * 60 * 1000);
+}
+
+// Começa o combate de fato (Turno 1)
+async function comecarCombateDeFato(groupId, sock) {
+    const bat = batalhas[groupId];
+    if (!bat || bat.fase !== 'apresentacao') return;
+
+    if (bat.timerApresentacao) clearTimeout(bat.timerApresentacao);
+
+    bat.fase = 'em_combate';
+    bat.turnoAtual = 1;
+
+    const msgComeco = `⏰ *TEMPO DE APRESENTAÇÃO ENCERRADO!*\n\n` +
+                      `⚔️ *TURNO 1 INICIADO*\n` +
+                      `⏳ *Tempo máximo do turno (combo dos 2 jogadores):* 30 minutos.\n\n` +
+                      `👉 Digite *!passar* ou *!prox* ao concluir a jogada para ir ao próximo turno.`;
+
+    await sock.sendMessage(groupId, { text: msgComeco });
+    iniciarTimerTurnoMaximo(groupId, sock);
 }
 
 async function connectToWhatsApp() {
@@ -186,7 +236,6 @@ async function connectToWhatsApp() {
 
             // --- SISTEMA DE QUIZ ---
 
-            // 1. INICIAR QUIZ
             if (text === '!iniciarquiz') {
                 if (jogosQuiz[from]) {
                     return await sock.sendMessage(from, { text: '⚠️ Já existe um Quiz rodando neste grupo!' }, { quoted: m });
@@ -206,7 +255,6 @@ async function connectToWhatsApp() {
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhuma pergunta disponível.' }, { quoted: m });
                     }
 
-                    // Embaralha perguntas
                     for (let i = listaPerguntas.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [listaPerguntas[i], listaPerguntas[j]] = [listaPerguntas[j], listaPerguntas[i]];
@@ -226,12 +274,10 @@ async function connectToWhatsApp() {
 
                     const totalRodada = perguntasSorteadas.length;
 
-                    // Mensagem de anúncio de início do Quiz
                     await sock.sendMessage(from, { 
                         text: `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}` 
                     });
 
-                    // Envia a PRIMEIRA pergunta separada após 2 segundos
                     setTimeout(async () => {
                         const primeiraPerguntaObj = perguntasSorteadas[0];
                         await sock.sendMessage(from, {
@@ -241,12 +287,10 @@ async function connectToWhatsApp() {
 
                     return;
                 } catch (quizErr) {
-                    console.error('❌ Erro ao buscar quiz no Firebase:', quizErr.message);
                     return await sock.sendMessage(from, { text: '❌ Erro ao carregar as perguntas do Firebase.' }, { quoted: m });
                 }
             }
 
-            // 2. VERIFICAR RESPOSTAS DO QUIZ
             if (jogosQuiz[from] && jogosQuiz[from].ativo) {
                 const quiz = jogosQuiz[from];
                 const perguntaObj = quiz.perguntas[quiz.perguntaAtual];
@@ -266,10 +310,8 @@ async function connectToWhatsApp() {
                                           playersData[playerUidAcertador]?.nome || 
                                           `Jogador (${senderLid})`;
 
-                    // Computa acerto
                     quiz.pontos[senderLid] = (quiz.pontos[senderLid] || 0) + 1;
 
-                    // Monta Tabela utilizando charName
                     let tabela = `🎯 *ACERTOU!* *${nomeAcertador}* ganhou +1 ponto!\n\n📊 *TABELA DE PONTOS:*`;
                     const ranking = Object.entries(quiz.pontos).sort((a, b) => b[1] - a[1]);
 
@@ -283,7 +325,6 @@ async function connectToWhatsApp() {
 
                     quiz.perguntaAtual++;
 
-                    // 3. FINALIZAR QUIZ E ENVIAR RECOMPENSA
                     if (quiz.perguntaAtual >= quiz.perguntas.length) {
                         quiz.ativo = false;
 
@@ -315,7 +356,6 @@ async function connectToWhatsApp() {
                                     await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, {
                                         saldo: novoSaldo
                                     });
-                                    console.log(`✅ Saldo de ${charName} (${playerUid}) atualizado para ฿ ${novoSaldo}`);
                                 }
                             }
                         }
@@ -325,7 +365,6 @@ async function connectToWhatsApp() {
                         return;
                     }
 
-                    // Próxima Pergunta Sorteada
                     setTimeout(async () => {
                         const proxima = quiz.perguntas[quiz.perguntaAtual];
                         const numPergunta = quiz.perguntaAtual + 1;
@@ -336,6 +375,68 @@ async function connectToWhatsApp() {
                         });
                     }, 2000);
                 }
+            }
+
+            // --- SISTEMA DE COMBATE (!battle) ---
+
+            if (text === '!battle') {
+                if (batalhas[from]) {
+                    return await sock.sendMessage(from, { text: '⚠️ Já existe um combate em andamento neste grupo!' }, { quoted: m });
+                }
+
+                batalhas[from] = {
+                    fase: 'apresentacao',
+                    turnoAtual: 1,
+                    timerApresentacao: null,
+                    timerTurno: null
+                };
+
+                const msgInicio = `⚔️ *COMBATE INICIADO!* ⚔️\n\n` +
+                                  `📝 Os lutadores têm *5 minutos* para apresentarem seu *Card Combatente* no grupo!\n\n` +
+                                  `👉 Caso já tenham enviado os cards, digite *!iniciar* para começar o Turno 1 imediatamente.`;
+
+                await sock.sendMessage(from, { text: msgInicio });
+
+                // Timer de 5 minutos para os cards
+                batalhas[from].timerApresentacao = setTimeout(() => {
+                    comecarCombateDeFato(from, sock);
+                }, 5 * 60 * 1000);
+
+                return;
+            }
+
+            // Comando para acelerar o início se os cards já foram enviados
+            if (text === '!iniciar') {
+                const bat = batalhas[from];
+                if (!bat || bat.fase !== 'apresentacao') return;
+
+                await comecarCombateDeFato(from, sock);
+                return;
+            }
+
+            // Avançar turno
+            if (text === '!passar' || text === '!prox') {
+                const bat = batalhas[from];
+                if (!bat || bat.fase !== 'em_combate') return;
+
+                bat.turnoAtual++;
+
+                const msgNovoTurno = `🔄 *INÍCIO DO TURNO ${bat.turnoAtual}*\n\n` +
+                                     `⏳ *Novo tempo limite:* 30 minutos.\n` +
+                                     `👉 Digite *!passar* ou *!prox* ao concluir a jogada.`;
+
+                await sock.sendMessage(from, { text: msgNovoTurno });
+
+                iniciarTimerTurnoMaximo(from, sock);
+                return;
+            }
+
+            // Encerrar combate
+            if (text === '!fimcombate') {
+                if (!batalhas[from]) return;
+                limparTimersBatalha(batalhas[from]);
+                delete batalhas[from];
+                return await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
             }
 
         } catch (err) {

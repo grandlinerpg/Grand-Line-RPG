@@ -39,6 +39,22 @@ app.listen(PORT, () => {
 // Controle em memória dos Quizzes em andamento
 const jogosQuiz = {};
 
+// Função auxiliar para mapear o emoji de facção
+function obterEmojiFaccao(faccao) {
+    if (!faccao) return '🏴‍☠️';
+    const faccaoLimpa = String(faccao).trim().toLowerCase();
+    if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) {
+        return '⚔️';
+    }
+    if (faccaoLimpa.includes('governo mundial')) {
+        return '⚓';
+    }
+    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) {
+        return '🏴‍☠️';
+    }
+    return '🏴‍☠️';
+}
+
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
@@ -154,20 +170,17 @@ async function connectToWhatsApp() {
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhum jogador encontrado.' }, { quoted: m });
                     }
 
-                    let rankText = `🏆 *RANK DE JOGADORES*\n\n`;
+                    let rankText = `*🏆 — RANKING ARENA — 🏆*\n\n`;
                     let contador = 1;
 
                     Object.keys(playersData).forEach((uid) => {
                         const player = playersData[uid];
                         const nome = player?.character?.charName || player?.nome || 'Sem Nome';
                         const nivel = player?.info?.level ?? 1;
+                        const faccao = player?.character?.faction || '';
+                        const emojiFaccao = obterEmojiFaccao(faccao);
 
-                        let prefixo = `${contador}º`;
-                        if (contador === 1) prefixo = '🥇';
-                        else if (contador === 2) prefixo = '🥈';
-                        else if (contador === 3) prefixo = '🥉';
-
-                        rankText += `${prefixo} ${nome} (${nivel})\n\n`;
+                        rankText += `${contador}. ${nome} (${nivel}) ${emojiFaccao}\n`;
                         contador++;
                     });
 
@@ -202,7 +215,7 @@ async function connectToWhatsApp() {
                 }
             }
 
-            // --- SISTEMA DE QUIZ COM PERGUNTAS RANDÔMICAS ---
+            // --- SISTEMA DE QUIZ ---
 
             // 1. INICIAR QUIZ
             if (text === '!iniciarquiz') {
@@ -218,23 +231,20 @@ async function connectToWhatsApp() {
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhuma pergunta encontrada no nó /quiz do Firebase.' }, { quoted: m });
                     }
 
-                    // Transforma o objeto de chaves ("001", "002", ...) em um Array
                     let listaPerguntas = Object.values(quizObj);
 
                     if (listaPerguntas.length === 0) {
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Nenhuma pergunta disponível.' }, { quoted: m });
                     }
 
-                    // Sorteia/Embaralha as perguntas (Algoritmo Fisher-Yates)
+                    // Embaralha perguntas
                     for (let i = listaPerguntas.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
                         [listaPerguntas[i], listaPerguntas[j]] = [listaPerguntas[j], listaPerguntas[i]];
                     }
 
-                    // Quantidade de perguntas por rodada
                     const QTD_PERGUNTAS = 5;
                     const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
-
                     const PREMIO_TOTAL = 3000;
 
                     jogosQuiz[from] = {
@@ -268,25 +278,36 @@ async function connectToWhatsApp() {
                     const rawSender = m.key.participant || m.key.remoteJid || from;
                     const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
+                    // Busca dados dos jogadores para identificar o charName do acertador
+                    const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+                    const playersData = playersRes.data || {};
+
+                    const playerUidAcertador = Object.keys(playersData).find(uid => {
+                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
+                    });
+
+                    const nomeAcertador = playersData[playerUidAcertador]?.character?.charName || 
+                                          playersData[playerUidAcertador]?.nome || 
+                                          `Jogador (${senderLid})`;
+
                     // Computa acerto
                     quiz.pontos[senderLid] = (quiz.pontos[senderLid] || 0) + 1;
 
-                    // Monta Tabela
-                    let tabela = `🎯 *ACERTOU!* @${senderLid} ganhou +1 ponto!\n\n📊 *TABELA DE PONTOS:*`;
+                    // Monta Tabela utilizando charName
+                    let tabela = `🎯 *ACERTOU!* *${nomeAcertador}* ganhou +1 ponto!\n\n📊 *TABELA DE PONTOS:*`;
                     const ranking = Object.entries(quiz.pontos).sort((a, b) => b[1] - a[1]);
 
                     ranking.forEach(([lid, pts], idx) => {
-                        tabela += `\n${idx + 1}º | @${lid}: *${pts} pt(s)*`;
+                        const uid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === lid);
+                        const charName = playersData[uid]?.character?.charName || playersData[uid]?.nome || lid;
+                        tabela += `\n${idx + 1}º | *${charName}*: *${pts} pt(s)*`;
                     });
 
-                    await sock.sendMessage(from, { 
-                        text: tabela, 
-                        mentions: ranking.map(([lid]) => `${lid}@lid`) 
-                    }, { quoted: m });
+                    await sock.sendMessage(from, { text: tabela }, { quoted: m });
 
                     quiz.perguntaAtual++;
 
-                    // 3. FINALIZAR QUIZ E ENVIAR RECOMPENSA PARA O FIREBASE
+                    // 3. FINALIZAR QUIZ E ENVIAR RECOMPENSA
                     if (quiz.perguntaAtual >= quiz.perguntas.length) {
                         quiz.ativo = false;
 
@@ -298,16 +319,18 @@ async function connectToWhatsApp() {
                         } else {
                             const valorPorPonto = quiz.premioTotal / totalPontos;
 
-                            const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
-                            const playersData = playersRes.data || {};
-
                             for (const [lid, pts] of Object.entries(quiz.pontos)) {
                                 const premioJogador = Math.floor(pts * valorPorPonto);
-                                textoFinal += `\n👤 @${lid}: *${pts} acerto(s)* ➔ Recebeu *฿ ${premioJogador}*`;
 
                                 const playerUid = Object.keys(playersData).find(uid => {
                                     return String(playersData[uid]?.number?.LID || '').trim() === lid;
                                 });
+
+                                const charName = playersData[playerUid]?.character?.charName || 
+                                                 playersData[playerUid]?.nome || 
+                                                 `Jogador (${lid})`;
+
+                                textoFinal += `\n👤 *${charName}*: *${pts} acerto(s)* ➔ Recebeu *฿ ${premioJogador}*`;
 
                                 if (playerUid) {
                                     const saldoAtual = playersData[playerUid]?.info?.saldo ?? 0;
@@ -316,7 +339,7 @@ async function connectToWhatsApp() {
                                     await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, {
                                         saldo: novoSaldo
                                     });
-                                    console.log(`✅ Saldo de ${playerUid} (LID ${lid}) atualizado para ฿ ${novoSaldo}`);
+                                    console.log(`✅ Saldo de ${charName} (${playerUid}) atualizado para ฿ ${novoSaldo}`);
                                 }
                             }
                         }

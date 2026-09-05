@@ -109,10 +109,10 @@ async function connectToWhatsApp() {
                 console.log('➡️ Executando !dado...');
                 const resultado = Math.floor(Math.random() * 100) + 1;
                 const senderJid = m.key.participant || from;
-                const senderNumber = senderJid.split('@')[0];
+                const senderIdentifier = senderJid.split('@')[0].split(':')[0];
 
                 const mensagemDado = `🎲 *ROLAGEM DE DADO (1d100)*\n\n` +
-                                     `👤 *Jogador:* @${senderNumber}\n` +
+                                     `👤 *Jogador:* @${senderIdentifier}\n` +
                                      `🎯 *Resultado:* *${resultado}*`;
 
                 await sock.sendMessage(from, { 
@@ -123,7 +123,7 @@ async function connectToWhatsApp() {
                 console.log(`✅ [Dado] Resultado ${resultado} enviado!`);
             }
 
-            // COMANDO !INFO (BUSCA DADOS DO PRÓPRIO JOGADOR PELO NÚMERO)
+            // COMANDO !INFO (BUSCA COMPARANDO O CAMPO "LID" DENTRO DE "number")
             if (text === '!info' || text.startsWith('!info ')) {
                 console.log('➡️ Executando !info...');
 
@@ -135,41 +135,26 @@ async function connectToWhatsApp() {
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
                     }
 
-                    // Trata LID do WhatsApp e extrai os números limpos
-                    let rawSender = m.key.participant || m.key.remoteJid || from;
-                    if (rawSender.includes('@lid')) {
-                        rawSender = m.key.senderPhoneNumber || rawSender;
-                    }
+                    // Captura o LID que veio na mensagem do WhatsApp
+                    const rawSender = m.key.participant || m.key.remoteJid || from;
+                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
-                    const senderNumber = rawSender.split('@')[0].split(':')[0].replace(/\D/g, '');
-                    console.log(`🔎 [Debug Info] Buscando número no Firebase: ${senderNumber}`);
+                    console.log(`🔎 [Debug Info] Buscando LID no Firebase: ${senderLid}`);
 
-                    // Procura no Firebase aceitando chave direta no objeto number ou string
+                    // Procura o jogador comparando o valor da propriedade "LID"
                     const playerUid = Object.keys(playersData).find(uid => {
-                        const playerNumbers = playersData[uid]?.number;
-                        if (!playerNumbers) return false;
+                        const playerNumberObj = playersData[uid]?.number;
+                        if (!playerNumberObj) return false;
 
-                        if (typeof playerNumbers === 'object') {
-                            // Procura chave exata ou ignorando o 9 extra (ex: 5511943566512 vs 551143566512)
-                            return Object.keys(playerNumbers).some(numKey => {
-                                const cleanKey = numKey.replace(/\D/g, '');
-                                return cleanKey === senderNumber || 
-                                       cleanKey.replace(/^55(\d\d)9/, '55$1') === senderNumber.replace(/^55(\d\d)9/, '55$1');
-                            });
-                        }
+                        // Obtém o valor armazenado na chave LID (pode vir como número ou string)
+                        const storedLid = String(playerNumberObj.LID || '').trim();
 
-                        if (typeof playerNumbers === 'string' || typeof playerNumbers === 'number') {
-                            const cleanNum = String(playerNumbers).replace(/\D/g, '');
-                            return cleanNum === senderNumber || 
-                                   cleanNum.replace(/^55(\d\d)9/, '55$1') === senderNumber.replace(/^55(\d\d)9/, '55$1');
-                        }
-
-                        return false;
+                        return storedLid === senderLid;
                     });
 
                     if (!playerUid) {
                         return await sock.sendMessage(from, { 
-                            text: `❌ *Número não cadastrado!* (${senderNumber})` 
+                            text: `❌ *LID não cadastrado!* (${senderLid})` 
                         }, { quoted: m });
                     }
 
@@ -213,19 +198,14 @@ async function connectToWhatsApp() {
                     Object.keys(playersData).forEach((uid) => {
                         const player = playersData[uid];
                         
-                        // Busca o nome do personagem
                         const nome = player?.character?.charName || player?.nome || player?.name || 'Sem Nome';
-                        
-                        // Busca o nível em players.uid.info.level
                         const nivel = player?.info?.level ?? 1;
 
-                        // Troca os 3 primeiros pelas medalhas no início
                         let prefixo = `${contador}º`;
                         if (contador === 1) prefixo = '🥇';
                         else if (contador === 2) prefixo = '🥈';
                         else if (contador === 3) prefixo = '🥉';
 
-                        // Formatação final: Ícone + Nome + (Nível)
                         rankText += `${prefixo} ${nome} (${nivel})\n\n`;
 
                         contador++;

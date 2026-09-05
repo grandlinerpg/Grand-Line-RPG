@@ -1,7 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys'); 
 const express = require('express');
 const axios = require('axios');
-const Groq = require('groq-sdk');  
+const Groq = require('groq-sdk'); 
 
 // NÚMERO DO BOT CONFIGURADO:
 const NUMERO_BOT = "5511918448331"; 
@@ -135,13 +135,36 @@ async function connectToWhatsApp() {
                         return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
                     }
 
-                    const senderJid = m.key.participant || from;
-                    const senderNumber = senderJid.split('@')[0];
+                    // Trata LID do WhatsApp e extrai os números limpos
+                    let rawSender = m.key.participant || m.key.remoteJid || from;
+                    if (rawSender.includes('@lid')) {
+                        rawSender = m.key.senderPhoneNumber || rawSender;
+                    }
 
-                    // Procura o UID onde number[senderNumber] existe
+                    const senderNumber = rawSender.split('@')[0].split(':')[0].replace(/\D/g, '');
+                    console.log(`🔎 [Debug Info] Buscando número no Firebase: ${senderNumber}`);
+
+                    // Procura no Firebase aceitando chave direta no objeto number ou string
                     const playerUid = Object.keys(playersData).find(uid => {
                         const playerNumbers = playersData[uid]?.number;
-                        return playerNumbers && playerNumbers[senderNumber] !== undefined;
+                        if (!playerNumbers) return false;
+
+                        if (typeof playerNumbers === 'object') {
+                            // Procura chave exata ou ignorando o 9 extra (ex: 5511943566512 vs 551143566512)
+                            return Object.keys(playerNumbers).some(numKey => {
+                                const cleanKey = numKey.replace(/\D/g, '');
+                                return cleanKey === senderNumber || 
+                                       cleanKey.replace(/^55(\d\d)9/, '55$1') === senderNumber.replace(/^55(\d\d)9/, '55$1');
+                            });
+                        }
+
+                        if (typeof playerNumbers === 'string' || typeof playerNumbers === 'number') {
+                            const cleanNum = String(playerNumbers).replace(/\D/g, '');
+                            return cleanNum === senderNumber || 
+                                   cleanNum.replace(/^55(\d\d)9/, '55$1') === senderNumber.replace(/^55(\d\d)9/, '55$1');
+                        }
+
+                        return false;
                     });
 
                     if (!playerUid) {

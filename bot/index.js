@@ -123,6 +123,54 @@ async function connectToWhatsApp() {
                 console.log(`✅ [Dado] Resultado ${resultado} enviado!`);
             }
 
+            // COMANDO !INFO (BUSCA DADOS DO PRÓPRIO JOGADOR PELO NÚMERO)
+            if (text === '!info' || text.startsWith('!info ')) {
+                console.log('➡️ Executando !info...');
+
+                try {
+                    const response = await axios.get('https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com/players.json');
+                    const playersData = response.data;
+
+                    if (!playersData) {
+                        return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
+                    }
+
+                    const senderJid = m.key.participant || from;
+                    const senderNumber = senderJid.split('@')[0];
+
+                    // Procura o UID onde number[senderNumber] existe
+                    const playerUid = Object.keys(playersData).find(uid => {
+                        const playerNumbers = playersData[uid]?.number;
+                        return playerNumbers && playerNumbers[senderNumber] !== undefined;
+                    });
+
+                    if (!playerUid) {
+                        return await sock.sendMessage(from, { 
+                            text: `❌ *Número não cadastrado!* (${senderNumber})` 
+                        }, { quoted: m });
+                    }
+
+                    const player = playersData[playerUid];
+                    const nome = player?.character?.charName || player?.nome || player?.name || 'Sem Nome';
+                    const nivel = player?.info?.level ?? 1;
+                    const exp = player?.info?.exp ?? 0;
+                    const saldo = player?.info?.saldo ?? 0;
+
+                    const infoText = `📜 *INFORMAÇÕES DO PERSONAGEM*\n\n` +
+                                     `👤 *Nome:* ${nome}\n` +
+                                     `⭐ *Nível:* ${nivel}\n` +
+                                     `✨ *EXP:* ${exp}\n` +
+                                     `💰 *Saldo:* ฿ ${saldo}`;
+
+                    await sock.sendMessage(from, { text: infoText }, { quoted: m });
+                    console.log(`✅ [Info] Dados de ${nome} enviados com sucesso!`);
+
+                } catch (infoErr) {
+                    console.error('❌ Erro no !info:', infoErr.message);
+                    await sock.sendMessage(from, { text: '❌ Erro ao buscar informações do jogador.' }, { quoted: m });
+                }
+            }
+
             // COMANDO !RANK (BUSCA DIRETO DA REST API DO FIREBASE)
             if (text === '!rank' || text.startsWith('!rank ')) {
                 console.log('➡️ Executando !rank via REST API...');

@@ -1,6 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const express = require('express');
 const axios = require('axios');
+const cron = require('node-cron');
 
 const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
@@ -28,7 +29,17 @@ app.listen(PORT, () => {
 const jogosQuiz = {};
 const batalhas = {};
 const timersDesafio = {};
-const timersDesafioColiseu = {};
+
+// Função para buscar a Temporada Atual do Coliseu no Firebase
+async function obterTemporadaAtual() {
+    try {
+        const infoRes = await axios.get(`${FIREBASE_URL}/coliseu/info.json`);
+        const info = infoRes.data;
+        return info?.temporada || 1;
+    } catch (e) {
+        return 1;
+    }
+}
 
 // Função auxiliar para mapear o emoji de facção
 function obterEmojiFaccao(faccao) {
@@ -92,9 +103,7 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         if (jidPvProx) {
             try {
                 await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* É o Turno ${bat.turnoAtual} no seu combate em grupo!\n\n👉 Responda no grupo e digite *!prox* ao concluir.` });
-            } catch (pvErr) {
-                console.error('[PV] Erro ao avisar turno no PV:', pvErr.message);
-            }
+            } catch (pvErr) {}
         }
 
         iniciarTimerTurnoMaximo(groupId, sock);
@@ -127,9 +136,7 @@ async function comecarCombateDeFato(groupId, sock) {
     if (p1Jid) {
         try {
             await sock.sendMessage(p1Jid, { text: `⚔️ *O COMBATE COMEÇOU!* É a sua vez (Turno 1) contra *${p2Nome}*.\n\n👉 Envie sua jogada no grupo e digite *!prox*.` });
-        } catch (pvErr) {
-            console.error('[PV] Erro ao enviar início para P1:', pvErr.message);
-        }
+        } catch (pvErr) {}
     }
 
     iniciarTimerTurnoMaximo(groupId, sock);
@@ -141,7 +148,7 @@ function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', s
     }
 
     batalhas[groupId] = {
-        tipo: tipoCombate, // 'PVP' (Arena) ou 'COLISEU'
+        tipo: tipoCombate,
         fase: 'apresentacao',
         turnoAtual: 1,
         jogadorVez: 1,
@@ -154,6 +161,54 @@ function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', s
     batalhas[groupId].timerApresentacao = setTimeout(() => {
         comecarCombateDeFato(groupId, sock);
     }, 5 * 60 * 1000);
+}
+
+// Função para disparar o Quiz em um grupo específico
+async function dispararQuizNoGrupo(chatJid, sock) {
+    if (jogosQuiz[chatJid]) return;
+
+    try {
+        const quizRes = await axios.get(`${FIREBASE_URL}/quiz.json`);
+        const quizObj = quizRes.data;
+
+        if (!quizObj) return;
+
+        let listaPerguntas = Object.values(quizObj);
+        if (listaPerguntas.length === 0) return;
+
+        for (let i = listaPerguntas.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [listaPerguntas[i], listaPerguntas[j]] = [listaPerguntas[j], listaPerguntas[i]];
+        }
+
+        const QTD_PERGUNTAS = 5;
+        const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
+        const PREMIO_TOTAL = 3000;
+
+        jogosQuiz[chatJid] = {
+            perguntas: perguntasSorteadas,
+            perguntaAtual: 0,
+            pontos: {},
+            premioTotal: PREMIO_TOTAL,
+            ativo: true
+        };
+
+        const totalRodada = perguntasSorteadas.length;
+
+        await sock.sendMessage(chatJid, { 
+            text: `⏰ *HORÁRIO DO QUIZ DIÁRIO (21:10)!* ⏰\n\n🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}` 
+        });
+
+        setTimeout(async () => {
+            const primeiraPerguntaObj = perguntasSorteadas[0];
+            await sock.sendMessage(chatJid, {
+                text: `❓ *PRIMEIRA PERGUNTA (1/${totalRodada}):*\n\n${primeiraPerguntaObj.pergunta}`
+            });
+        }, 2000);
+
+    } catch (err) {
+        console.error('Erro ao disparar quiz automático:', err.message);
+    }
 }
 
 async function connectToWhatsApp() {
@@ -184,6 +239,14 @@ async function connectToWhatsApp() {
             if (shouldReconnect) connectToWhatsApp();
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
+
+            // ⏰ PROGRAMAÇÃO DO QUIZ DIÁRIO (21:10)
+            // Altere "SEU_JID_DO_GRUPO@g.us" pelo ID real do grupo
+            cron.schedule('10 21 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 21:10...');
+                const GRUPO_QUIZ_JID = "120363000000000000@g.us"; 
+                dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
+            });
         }
     });
 
@@ -227,9 +290,7 @@ async function connectToWhatsApp() {
                     if (playerUid) {
                         nomeJogador = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
                     }
-                } catch (dadoErr) {
-                    console.error('Erro ao buscar nome para o dado:', dadoErr.message);
-                }
+                } catch (dadoErr) {}
 
                 const mensagemDado = `🎲 *ROLAGEM DE DADO (1d100)*\n\n` +
                                      `👤 *Jogador:* ${nomeJogador}\n` +
@@ -309,21 +370,22 @@ async function connectToWhatsApp() {
 
                     await sock.sendMessage(from, { text: rankText.trim() }, { quoted: m });
                 } catch (rankErr) {
-                    await sock.sendMessage(from, { text: '❌ Erro ao carregar o ranking do Firebase.' }, { quoted: m });
+                    await sock.sendMessage(from, { text: '❌ Erro ao carregar o ranking.' }, { quoted: m });
                 }
             }
 
-            // --- COLISEU (SISTEMA SEPARADO) ---
+            // --- SISTEMA DO COLISEU COM TEMPORADAS ---
 
             // COMANDO !INSCREVER
             if (text === '!inscrever' || text.startsWith('!inscrever ')) {
                 try {
                     const rawSender = m.key.participant || m.key.remoteJid || from;
                     const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                    const tempAtual = await obterTemporadaAtual();
 
                     const [playersRes, coliseuRes] = await Promise.all([
                         axios.get(`${FIREBASE_URL}/players.json`),
-                        axios.get(`${FIREBASE_URL}/coliseu/jogadores.json`)
+                        axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
                     ]);
 
                     const playersData = playersRes.data || {};
@@ -338,20 +400,20 @@ async function connectToWhatsApp() {
                     }
 
                     if (coliseuData[playerUid]) {
-                        return await sock.sendMessage(from, { text: '⚠️ Você já está inscrito na temporada do Coliseu!' }, { quoted: m });
+                        return await sock.sendMessage(from, { text: `⚠️ Você já está inscrito na Temporada ${tempAtual} do Coliseu!` }, { quoted: m });
                     }
 
                     const saldoAtual = playersData[playerUid]?.info?.saldo ?? 0;
                     const TAXA_INSCRICAO = 20000;
 
                     if (saldoAtual < TAXA_INSCRICAO) {
-                        return await sock.sendMessage(from, { text: `❌ Saldo insuficiente! A inscrição no Coliseu custa *฿ ${TAXA_INSCRICAO}* e você tem *฿ ${saldoAtual}*.` }, { quoted: m });
+                        return await sock.sendMessage(from, { text: `❌ Saldo insuficiente! A inscrição custa *฿ ${TAXA_INSCRICAO}* e você tem *฿ ${saldoAtual}*.` }, { quoted: m });
                     }
 
                     const novoSaldo = saldoAtual - TAXA_INSCRICAO;
                     await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { saldo: novoSaldo });
 
-                    await axios.put(`${FIREBASE_URL}/coliseu/jogadores/${playerUid}.json`, {
+                    await axios.put(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${playerUid}.json`, {
                         vitorias: 0,
                         derrotas: 0,
                         pontos: 0,
@@ -360,7 +422,8 @@ async function connectToWhatsApp() {
 
                     const nomeChar = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || 'Combatente';
 
-                    const msgSucesso = `🏟 *INSCRIÇÃO CONFIRMADA NO COLISEU!* 🏟\n\n` +
+                    const msgSucesso = `🏟 *INSCRIÇÃO CONFIRMADA NO COLISEU!* 🏟\n` +
+                                       `🏆 *Temporada ${tempAtual}*\n\n` +
                                        `👤 *Lutador:* ${nomeChar}\n` +
                                        `💰 *Taxa Paga:* ฿ ${TAXA_INSCRICAO}\n` +
                                        `💳 *Novo Saldo:* ฿ ${novoSaldo}\n\n` +
@@ -372,23 +435,27 @@ async function connectToWhatsApp() {
                 }
             }
 
-            // COMANDO !COLISEU
+            // COMANDO !COLISEU (Suporta busca por temporada específica ex: !coliseu 1)
             if (text === '!coliseu' || text.startsWith('!coliseu ')) {
                 try {
+                    const args = text.split(' ');
+                    const tempPadrao = await obterTemporadaAtual();
+                    const tempDesejada = args[1] ? parseInt(args[1]) : tempPadrao;
+
                     const [coliseuRes, playersRes, infoColiseuRes] = await Promise.all([
-                        axios.get(`${FIREBASE_URL}/coliseu/jogadores.json`),
+                        axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempDesejada}/jogadores.json`),
                         axios.get(`${FIREBASE_URL}/players.json`),
                         axios.get(`${FIREBASE_URL}/coliseu/info.json`)
                     ]);
 
                     const coliseuData = coliseuRes.data || {};
                     const playersData = playersRes.data || {};
-                    const coliseuInfo = infoColiseuRes.data || { temporada: 1, periodo: '01/09 ~ 31/09' };
+                    const coliseuInfo = infoColiseuRes.data || { periodo: '01/09 ~ 31/09' };
 
                     const inscritosUids = Object.keys(coliseuData);
 
                     if (inscritosUids.length === 0) {
-                        return await sock.sendMessage(from, { text: '🏟 *Nenhum lutador inscrito no Coliseu ainda!*\n\n👉 Digite *!inscrever* por ฿ 20.000 para participar.' }, { quoted: m });
+                        return await sock.sendMessage(from, { text: `🏟 *O Coliseu não possui inscritos na Temporada ${tempDesejada}!*` }, { quoted: m });
                     }
 
                     inscritosUids.sort((a, b) => {
@@ -400,7 +467,7 @@ async function connectToWhatsApp() {
                     });
 
                     let coliseuText = `🏟 *— COLISEU CORRIDA —* 🏟\n` +
-                                      `🏆 *— TEMPORADA ${coliseuInfo.temporada} — 🏆*\n\n` +
+                                      `🏆 *— TEMPORADA ${tempDesejada} — 🏆*\n\n` +
                                       `*Período: ${coliseuInfo.periodo}*\n\n`;
 
                     inscritosUids.forEach((uid, index) => {
@@ -424,11 +491,11 @@ async function connectToWhatsApp() {
 
                     await sock.sendMessage(from, { text: coliseuText.trim() }, { quoted: m });
                 } catch (colErr) {
-                    await sock.sendMessage(from, { text: '❌ Erro ao carregar o Coliseu.' }, { quoted: m });
+                    await sock.sendMessage(from, { text: '❌ Erro ao carregar as informações do Coliseu.' }, { quoted: m });
                 }
             }
 
-            // COMANDO !DESAFIARCOLISEU (Exclusivo para o Coliseu)
+            // COMANDO !DESAFIARCOLISEU (Sem limite de tempo/WO)
             if (text.startsWith('!desafiarcoliseu')) {
                 const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
 
@@ -450,9 +517,11 @@ async function connectToWhatsApp() {
                     return await sock.sendMessage(from, { text: '❌ Você não pode desafiar a si mesmo!' }, { quoted: m });
                 }
 
+                const tempAtual = await obterTemporadaAtual();
+
                 const [playersRes, coliseuRes] = await Promise.all([
                     axios.get(`${FIREBASE_URL}/players.json`),
-                    axios.get(`${FIREBASE_URL}/coliseu/jogadores.json`)
+                    axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
                 ]);
 
                 const playersData = playersRes.data || {};
@@ -462,17 +531,14 @@ async function connectToWhatsApp() {
                 const desafiadoUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === targetLid);
 
                 if (!coliseuData[desafianteUid]) {
-                    return await sock.sendMessage(from, { text: '❌ Você precisa estar inscrito no Coliseu para lançar este desafio! Digite *!inscrever*.' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: '❌ Você precisa estar inscrito na temporada atual do Coliseu!' }, { quoted: m });
                 }
                 if (!coliseuData[desafiadoUid]) {
-                    return await sock.sendMessage(from, { text: '❌ O jogador desafiado NÃO está inscrito no Coliseu!' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: '❌ O jogador desafiado NÃO está inscrito nesta temporada do Coliseu!' }, { quoted: m });
                 }
 
                 const nomeDesafiante = playersData[desafianteUid]?.character?.charName || playersData[desafianteUid]?.nome || 'Desafiante';
                 const nomeDesafiado = playersData[desafiadoUid]?.character?.charName || playersData[desafiadoUid]?.nome || 'Desafiado';
-
-                const agora = Date.now();
-                const tempoExpiracao = 24 * 60 * 60 * 1000;
 
                 const desafioPayload = {
                     desafianteLid: senderLid,
@@ -480,54 +546,22 @@ async function connectToWhatsApp() {
                     desafiadoLid: targetLid,
                     desafiadoNome: nomeDesafiado,
                     status: 'pendente',
-                    criadoEm: agora,
-                    expiraEm: agora + tempoExpiracao
+                    criadoEm: Date.now()
                 };
 
                 await axios.put(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`, desafioPayload);
 
-                if (timersDesafioColiseu[groupIdClean]) clearTimeout(timersDesafioColiseu[groupIdClean]);
-
-                timersDesafioColiseu[groupIdClean] = setTimeout(async () => {
-                    try {
-                        const checkDesafio = await axios.get(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`);
-                        if (checkDesafio.data && checkDesafio.data.status === 'pendente') {
-                            await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`);
-                            
-                            // Aplica W.O. no Coliseu (+2 pts e +1 vit pro desafiante, +1 pt e +1 der pro desafiado)
-                            await axios.patch(`${FIREBASE_URL}/coliseu/jogadores/${desafianteUid}.json`, {
-                                vitorias: (coliseuData[desafianteUid]?.vitorias || 0) + 1,
-                                pontos: (coliseuData[desafianteUid]?.pontos || 0) + 2
-                            });
-                            await axios.patch(`${FIREBASE_URL}/coliseu/jogadores/${desafiadoUid}.json`, {
-                                derrotas: (coliseuData[desafiadoUid]?.derrotas || 0) + 1,
-                                pontos: (coliseuData[desafiadoUid]?.pontos || 0) + 1
-                            });
-
-                            const msgWO = `🏟️ *W.O. NO COLISEU!* 🏟️\n\n` +
-                                          `🎯 *${nomeDesafiado}* não aceitou o desafio no prazo de 24 horas!\n` +
-                                          `🏆 *Vitória atribuída a:* ${nomeDesafiante} (+2 pts)\n` +
-                                          `💀 *Derrota atribuída a:* ${nomeDesafiado} (+1 pt)`;
-
-                            await sock.sendMessage(from, { text: msgWO });
-                        }
-                    } catch (woErr) {
-                        console.error('Erro W.O. Coliseu:', woErr.message);
-                    }
-                }, tempoExpiracao);
-
                 const msgDesafio = `🏟️ *DESAFIO DO COLISEU LANÇADO!* 🏟️\n\n` +
                                    `👤 *Desafiante:* ${nomeDesafiante}\n` +
                                    `🎯 *Desafiado:* ${nomeDesafiado}\n\n` +
-                                   `⏳ @${targetLid}, você tem *24 horas* para responder com *!aceitarcoliseu*.\n` +
-                                   `⚠️ Caso não aceite, sofrerá W.O. na pontuação!`;
+                                   `📢 @${targetLid}, responda no grupo com *!aceitarcoliseu* quando estiver pronto para o confronto!`;
 
                 await sock.sendMessage(from, { text: msgDesafio, mentions: [mentionedJid] }, { quoted: m });
 
                 const pvTargetJid = formatarJidPv(targetLid);
                 if (pvTargetJid) {
                     try {
-                        await sock.sendMessage(pvTargetJid, { text: `🏟️ *VOCÊ FOI DESAFIADO NO COLISEU!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Responda com *!aceitarcoliseu* no grupo!` });
+                        await sock.sendMessage(pvTargetJid, { text: `🏟️ *VOCÊ FOI DESAFIADO NO COLISEU!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Responda com *!aceitarcoliseu* no grupo quando desejar lutar!` });
                     } catch (e) {}
                 }
                 return;
@@ -550,11 +584,6 @@ async function connectToWhatsApp() {
                     return await sock.sendMessage(from, { text: '❌ Apenas o desafiado pode aceitar este confronto!' }, { quoted: m });
                 }
 
-                if (timersDesafioColiseu[groupIdClean]) {
-                    clearTimeout(timersDesafioColiseu[groupIdClean]);
-                    delete timersDesafioColiseu[groupIdClean];
-                }
-
                 await axios.patch(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`, { status: 'aceito' });
 
                 const p1 = { lid: desafio.desafianteLid, nome: desafio.desafianteNome };
@@ -564,14 +593,14 @@ async function connectToWhatsApp() {
 
                 const msgInicio = `🏟️ *DESAFIO DO COLISEU ACEITO!* 🏟️\n\n` +
                                    `🥊 *${p1.nome}* VS *${p2.nome}*\n\n` +
-                                   `📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar* para começar.`;
+                                   `📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
 
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
-            // --- ARENA COMUM (SISTEMA SEPARADO) ---
+            // --- ARENA COMUM ---
 
-            // COMANDO !DESAFIAR (Arena Normal)
+            // COMANDO !DESAFIAR (Com tempo de 24h)
             if (text.startsWith('!desafiar') && !text.startsWith('!desafiarcoliseu')) {
                 const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
 
@@ -584,7 +613,7 @@ async function connectToWhatsApp() {
 
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
                 if (!mentionedJid) {
-                    return await sock.sendMessage(from, { text: '❌ Você precisa marcar o jogador que deseja desafiar!' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: '❌ Marque quem deseja desafiar!\nExemplo: *!desafiar @jogador*' }, { quoted: m });
                 }
 
                 const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
@@ -628,7 +657,7 @@ async function connectToWhatsApp() {
                         const checkDesafio = await axios.get(`${FIREBASE_URL}/desafios/${groupIdClean}.json`);
                         if (checkDesafio.data && checkDesafio.data.status === 'pendente') {
                             await axios.delete(`${FIREBASE_URL}/desafios/${groupIdClean}.json`);
-                            await sock.sendMessage(from, { text: `💀 *DERROTA POR W.O.!* O jogador *${nomeDesafiado}* não aceitou o desafio a tempo.` });
+                            await sock.sendMessage(from, { text: `💀 *DERROTA POR W.O.!* O jogador *${nomeDesafiado}* não aceitou o desafio de Arena a tempo.` });
                         }
                     } catch (e) {}
                 }, tempoExpiracao);
@@ -642,7 +671,7 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !ACEITAR (Arena Normal)
+            // COMANDO !ACEITAR
             if (text === '!aceitar') {
                 const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
                 const rawSender = m.key.participant || m.key.remoteJid || from;
@@ -710,7 +739,7 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !WIN (Com Separação estrita de Lógica para COLISEU vs ARENA)
+            // COMANDO !WIN (Atualiza a Temporada do Coliseu)
             if (text.startsWith('!win')) {
                 const bat = batalhas[from];
                 if (!bat) {
@@ -740,12 +769,13 @@ async function connectToWhatsApp() {
 
                 const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
 
-                // SE A BATALHA FOR DO COLISEU, ATUALIZA A PONTUAÇÃO DO COLISEU
                 if (bat.tipo === 'COLISEU') {
                     try {
+                        const tempAtual = await obterTemporadaAtual();
+
                         const [playersRes, coliseuRes] = await Promise.all([
                             axios.get(`${FIREBASE_URL}/players.json`),
-                            axios.get(`${FIREBASE_URL}/coliseu/jogadores.json`)
+                            axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
                         ]);
 
                         const playersData = playersRes.data || {};
@@ -755,14 +785,14 @@ async function connectToWhatsApp() {
                         const uidPerdedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === perdedorObj?.lid);
 
                         if (uidVencedor && coliseuData[uidVencedor]) {
-                            await axios.patch(`${FIREBASE_URL}/coliseu/jogadores/${uidVencedor}.json`, {
+                            await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidVencedor}.json`, {
                                 vitorias: (coliseuData[uidVencedor].vitorias || 0) + 1,
                                 pontos: (coliseuData[uidVencedor].pontos || 0) + 2
                             });
                         }
 
                         if (uidPerdedor && coliseuData[uidPerdedor]) {
-                            await axios.patch(`${FIREBASE_URL}/coliseu/jogadores/${uidPerdedor}.json`, {
+                            await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidPerdedor}.json`, {
                                 derrotas: (coliseuData[uidPerdedor].derrotas || 0) + 1,
                                 pontos: (coliseuData[uidPerdedor].pontos || 0) + 1
                             });
@@ -774,7 +804,6 @@ async function connectToWhatsApp() {
                     const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
                     await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`).catch(() => {});
                 } else {
-                    // SE FOR ARENA NORMAL, APENAS LIMPA O DESAFIO DE ARENA
                     const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
                     await axios.delete(`${FIREBASE_URL}/desafios/${groupIdClean}.json`).catch(() => {});
                 }

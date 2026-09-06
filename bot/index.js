@@ -195,7 +195,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         const totalRodada = perguntasSorteadas.length;
 
         await sock.sendMessage(chatJid, { 
-            text: `⏰ *HORÁRIO DO QUIZ DIÁRIO (21:18)!* ⏰\n\n🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}` 
+            text: `⏰ *HORÁRIO DO QUIZ DIÁRIO (21:45)!* ⏰\n\n🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}` 
         });
 
         setTimeout(async () => {
@@ -239,10 +239,10 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            // ⏰ PROGRAMAÇÃO DO QUIZ DIÁRIO (21:18 Horário de Brasília = 00:18 UTC)
-            cron.schedule('18 0 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 21:18...');
-                const GRUPO_QUIZ_JID = "120363000000000000@g.us"; // Lembre-se de colocar o JID correto
+            // ⏰ PROGRAMAÇÃO DO QUIZ DIÁRIO (21:45 Brasil = 00:45 UTC)
+            cron.schedule('45 0 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 21:45...');
+                const GRUPO_QUIZ_JID = "120363409325935641@g.us";
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
             });
         }
@@ -264,7 +264,7 @@ async function connectToWhatsApp() {
 
             if (!text) return;
 
-            // COMANDO !JID (Para descobrir o ID do grupo)
+            // COMANDO !JID
             if (text === '!jid') {
                 await sock.sendMessage(from, { text: `🆔 *ID deste chat:* \`${from}\`` }, { quoted: m });
             }
@@ -352,7 +352,6 @@ async function connectToWhatsApp() {
                     const rankingObj = rankRes.data || {};
                     const playersData = playersRes.data || {};
 
-                    // Ignora chave 0 e ordena numericamente a partir do 1
                     const posicoesOrdenadas = Object.keys(rankingObj)
                         .map(Number)
                         .filter(p => p > 0 && !isNaN(p))
@@ -820,13 +819,11 @@ async function connectToWhatsApp() {
                         const uidVencedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === vencedorObj?.lid);
 
                         if (uidVencedor) {
-                            // Localiza a posição atual do vencedor
                             const posAtualStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
 
                             if (posAtualStr) {
                                 const posAtual = parseInt(posAtualStr);
 
-                                // Se não for o 1º lugar, ele troca de posição com o jogador imediatamente acima (posAtual - 1)
                                 if (posAtual > 1) {
                                     const posAcima = posAtual - 1;
                                     const uidAcima = rankingObj[posAcima];

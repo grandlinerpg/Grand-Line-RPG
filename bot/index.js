@@ -6,6 +6,10 @@ const cron = require('node-cron');
 const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
+// CONFIGURAÇÃO DE RECOMPENSAS DA ARENA
+const RECOMPENSA_ARENA_SALDO = 5000;
+const RECOMPENSA_ARENA_EXP = 500;
+
 // GRUPOS
 const GRUPO_COLISEU = "120363411146386806@g.us";
 const GRUPO_QUIZ_JID = "120363409325935641@g.us";
@@ -296,7 +300,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
             mentions = groupMetadata.participants.map(p => p.id);
         } catch (e) {}
 
-        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:15)!* ⏰\n\n` +
+        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:25)!* ⏰\n\n` +
                           `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n` +
                           `🎯 *Total de Perguntas:* ${QTD_PERGUNTAS}\n\n` +
                           `📢 @todos fiquem atentos! A primeira pergunta será enviada em instantes!`;
@@ -341,8 +345,8 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            cron.schedule('15 22 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:15...');
+            cron.schedule('25 22 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:25...');
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
             });
         }
@@ -689,7 +693,6 @@ async function connectToWhatsApp() {
 
                 const msgDesafio = `⚔️ *DESAFIO DE ARENA LANÇADO!* ⚔️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n⏳ @${targetLid}, você tem *24 horas* para aceitar marcando o desafiante em um dos grupos da Arena: *!aceitar @${senderLid}*`;
                 
-                // Mensagem enviada para o Grupo do Quiz
                 await sock.sendMessage(GRUPO_QUIZ_JID, { text: msgDesafio, mentions: [mentionedJid] });
 
                 if (from !== GRUPO_QUIZ_JID) {
@@ -780,7 +783,7 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !WIN
+            // COMANDO !WIN (COM RECOMPENSA DE SALDO E EXP NA ARENA)
             if (text.startsWith('!win')) {
                 const bat = batalhas[from];
                 if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
@@ -840,6 +843,7 @@ async function connectToWhatsApp() {
                     const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
                     await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});
                 } else {
+                    // ARENA (PVP)
                     try {
                         const [rankRes, playersRes] = await Promise.all([
                             axios.get(`${FIREBASE_URL}/ranking.json`),
@@ -851,6 +855,7 @@ async function connectToWhatsApp() {
                         const uidVencedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === vencedorObj?.lid);
 
                         if (uidVencedor) {
+                            // Subir no ranking
                             const posAtualStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
                             if (posAtualStr) {
                                 const posAtual = parseInt(posAtualStr);
@@ -864,14 +869,28 @@ async function connectToWhatsApp() {
                                     await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
                                 }
                             }
+
+                            // Entrega das recompensas de Saldo e EXP
+                            const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
+                            const expAtual = playersData[uidVencedor]?.info?.exp || 0;
+
+                            await axios.patch(`${FIREBASE_URL}/players/${uidVencedor}/info.json`, {
+                                saldo: saldoAtual + RECOMPENSA_ARENA_SALDO,
+                                exp: expAtual + RECOMPENSA_ARENA_EXP
+                            });
                         }
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error('Erro ao atualizar recompensa/ranking da Arena:', e.message);
+                    }
 
                     const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
                     await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
                 }
 
-                const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n🎉 O combatente *${nomeVencedor}* venceu no *${bat.tipo === 'COLISEU' ? 'COLISEU' : 'ARENA'}* após *${bat.turnoAtual} rodadas*!\n\n${bat.tipo === 'COLISEU' ? '🏟️ Pontuação do Coliseu atualizada!' : '⚔️ *Ranking atualizado:* O vencedor subiu 1 posição!'}`;
+                const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
+                               `🎉 O combatente *${nomeVencedor}* venceu no *${bat.tipo === 'COLISEU' ? 'COLISEU' : 'ARENA'}* após *${bat.turnoAtual} rodadas*!\n\n` +
+                               `${bat.tipo === 'COLISEU' ? '🏟️ Pontuação do Coliseu atualizada!' : `⚔️ *Ranking atualizado:* O vencedor subiu 1 posição!\n🎁 *Recompensas do Combate:*\n💰 +฿ ${RECOMPENSA_ARENA_SALDO}\n✨ +${RECOMPENSA_ARENA_EXP} EXP`}`;
+                
                 await sock.sendMessage(from, { text: msgWin });
 
                 limparTimersBatalha(bat);

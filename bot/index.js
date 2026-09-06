@@ -6,8 +6,9 @@ const cron = require('node-cron');
 const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
-// GRUPOS PERMITIDOS
+// GRUPOS
 const GRUPO_COLISEU = "120363411146386806@g.us";
+const GRUPO_QUIZ_JID = "120363409325935641@g.us";
 const GRUPOS_ARENA = [
     "120363413442959158@g.us",
     "120363432609327730@g.us",
@@ -166,7 +167,7 @@ function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', s
     }, 5 * 60 * 1000);
 }
 
-// SISTEMA DE QUIZ RESTAURADO
+// SISTEMA DE QUIZ COM TABELA DE PONTUAÇÃO
 async function enviarProximaPergunta(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo || !jogo.ativo) return;
@@ -193,6 +194,28 @@ async function enviarProximaPergunta(chatJid, sock) {
             setTimeout(() => enviarProximaPergunta(chatJid, sock), 3000);
         }
     }, 15000);
+}
+
+async function gerarTabelaPontuacao(pontosObj) {
+    const participantes = Object.keys(pontosObj);
+    if (participantes.length === 0) return "Ninguém pontuou ainda.";
+
+    participantes.sort((a, b) => pontosObj[b] - pontosObj[a]);
+
+    try {
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersData = playersRes.data || {};
+
+        let tabela = `📊 *RANKING DE PONTUAÇÃO (RODADA):*\n`;
+        participantes.forEach((lid, idx) => {
+            const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === lid);
+            const nome = playerUid ? (playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador") : `@${lid}`;
+            tabela += `${idx + 1}º ${nome} — ${pontosObj[lid]} Ponto(s)\n`;
+        });
+        return tabela.trim();
+    } catch (e) {
+        return "Erro ao carregar ranking.";
+    }
 }
 
 async function finalizarQuiz(chatJid, sock) {
@@ -256,7 +279,6 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         const QTD_PERGUNTAS = 5;
         const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
         const PREMIO_TOTAL = 3000;
-        const VALOR_POR_ACERTO = PREMIO_TOTAL / QTD_PERGUNTAS;
 
         jogosQuiz[chatJid] = {
             perguntas: perguntasSorteadas,
@@ -274,17 +296,9 @@ async function dispararQuizNoGrupo(chatJid, sock) {
             mentions = groupMetadata.participants.map(p => p.id);
         } catch (e) {}
 
-        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:05)!* ⏰\n\n` +
+        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:15)!* ⏰\n\n` +
                           `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n` +
-                          `💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n` +
-                          `🎯 *Total de Perguntas:* ${QTD_PERGUNTAS}\n` +
-                          `💵 *Valor por Acerto:* ฿ ${VALOR_POR_ACERTO}\n\n` +
-                          `📊 *TABELA DE RECOMPENSAS:*\n` +
-                          `• 1 Acerto: ฿ ${VALOR_POR_ACERTO * 1}\n` +
-                          `• 2 Acertos: ฿ ${VALOR_POR_ACERTO * 2}\n` +
-                          `• 3 Acertos: ฿ ${VALOR_POR_ACERTO * 3}\n` +
-                          `• 4 Acertos: ฿ ${VALOR_POR_ACERTO * 4}\n` +
-                          `• 5 Acertos: ฿ ${VALOR_POR_ACERTO * 5}\n\n` +
+                          `🎯 *Total de Perguntas:* ${QTD_PERGUNTAS}\n\n` +
                           `📢 @todos fiquem atentos! A primeira pergunta será enviada em instantes!`;
 
         await sock.sendMessage(chatJid, { text: msgInicio, mentions: mentions });
@@ -327,10 +341,8 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            // ⏰ CRON AJUSTADO PARA 22:05 BRASIL (01:05 UTC)
-            cron.schedule('5 1 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:05...');
-                const GRUPO_QUIZ_JID = "120363409325935641@g.us";
+            cron.schedule('15 22 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:15...');
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
             });
         }
@@ -352,7 +364,7 @@ async function connectToWhatsApp() {
 
             if (!text) return;
 
-            // RESPOSTAS QUIZ
+            // RESPOSTAS QUIZ (Mensagem de acerto + Tabela de Pontuação)
             if (jogosQuiz[from] && jogosQuiz[from].ativo && !jogosQuiz[from].respondida) {
                 const jogo = jogosQuiz[from];
                 const qAtual = jogo.perguntas[jogo.perguntaAtual];
@@ -366,8 +378,12 @@ async function connectToWhatsApp() {
 
                     jogo.pontos[senderLid] = (jogo.pontos[senderLid] || 0) + 1;
 
+                    const tabelaPontos = await gerarTabelaPontuacao(jogo.pontos);
+
+                    const msgAcerto = `🎉 *RESPOSTA CORRETA!* @${senderLid} acertou e pontuou!\n\n${tabelaPontos}`;
+
                     await sock.sendMessage(from, {
-                        text: `🎉 *RESPOSTA CORRETA!* @${senderLid} acertou e pontuou!`,
+                        text: msgAcerto,
                         mentions: [rawSender]
                     }, { quoted: m });
 
@@ -524,7 +540,7 @@ async function connectToWhatsApp() {
                 }
             }
 
-            // COMANDO !DESAFIARCOLISEU (Pode ser enviado em qualquer grupo)
+            // COMANDO !DESAFIARCOLISEU
             if (text.startsWith('!desafiarcoliseu')) {
                 const rawSender = m.key.participant || m.key.remoteJid || from;
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
@@ -562,13 +578,11 @@ async function connectToWhatsApp() {
                     criadoEm: Date.now()
                 };
 
-                // Salva o desafio chaveado por Desafiante + Desafiado para permitir múltiplos desafios pendentes
                 const desafioKey = `${senderLid}_VS_${targetLid}`;
                 await axios.put(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`, desafioPayload);
 
                 const msgDesafioColiseu = `🏟️ *DESAFIO DO COLISEU LANÇADO!* 🏟️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n📢 @${targetLid}, responda no grupo do Coliseu marcando o desafiante: *!aceitarcoliseu @${senderLid}*`;
 
-                // Envia o aviso no grupo oficial do Coliseu
                 await sock.sendMessage(GRUPO_COLISEU, { text: msgDesafioColiseu, mentions: [mentionedJid] });
 
                 if (from !== GRUPO_COLISEU) {
@@ -584,7 +598,7 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !ACEITARCOLISEU (Apenas no Grupo do Coliseu)
+            // COMANDO !ACEITARCOLISEU
             if (text.startsWith('!aceitarcoliseu')) {
                 if (from !== GRUPO_COLISEU) {
                     return await sock.sendMessage(from, { text: '❌ O comando *!aceitarcoliseu* só pode ser usado no grupo oficial do Coliseu!' }, { quoted: m });
@@ -623,7 +637,7 @@ async function connectToWhatsApp() {
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
-            // COMANDO !DESAFIAR (Arena Comum - Qualquer grupo)
+            // COMANDO !DESAFIAR (Envia a notificação no GRUPO DO QUIZ)
             if (text.startsWith('!desafiar') && !text.startsWith('!desafiarcoliseu')) {
                 const rawSender = m.key.participant || m.key.remoteJid || from;
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
@@ -668,17 +682,23 @@ async function connectToWhatsApp() {
                         const checkDesafio = await axios.get(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
                         if (checkDesafio.data && checkDesafio.data.status === 'pendente') {
                             await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
-                            await sock.sendMessage(from, { text: `💀 *DERROTA POR W.O.!* O jogador *${nomeDesafiado}* não aceitou o desafio a tempo.` });
+                            await sock.sendMessage(GRUPO_QUIZ_JID, { text: `💀 *DERROTA POR W.O.!* O jogador *${nomeDesafiado}* não aceitou o desafio de *${nomeDesafiante}* a tempo.` });
                         }
                     } catch (e) {}
                 }, tempoExpiracao);
 
                 const msgDesafio = `⚔️ *DESAFIO DE ARENA LANÇADO!* ⚔️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n⏳ @${targetLid}, você tem *24 horas* para aceitar marcando o desafiante em um dos grupos da Arena: *!aceitar @${senderLid}*`;
-                await sock.sendMessage(from, { text: msgDesafio, mentions: [mentionedJid] }, { quoted: m });
+                
+                // Mensagem enviada para o Grupo do Quiz
+                await sock.sendMessage(GRUPO_QUIZ_JID, { text: msgDesafio, mentions: [mentionedJid] });
+
+                if (from !== GRUPO_QUIZ_JID) {
+                    await sock.sendMessage(from, { text: `✅ Desafio enviado para o grupo do Quiz!` }, { quoted: m });
+                }
                 return;
             }
 
-            // COMANDO !ACEITAR e !BATTLE (Apenas nos 6 Grupos da Arena)
+            // COMANDO !ACEITAR e !BATTLE
             if (text.startsWith('!aceitar') || text.startsWith('!battle')) {
                 if (!GRUPOS_ARENA.includes(from)) {
                     return await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos oficiais de Arena!' }, { quoted: m });
@@ -722,7 +742,7 @@ async function connectToWhatsApp() {
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
-            // COMANDO !INICIAR (Acelera apresentação)
+            // COMANDO !INICIAR
             if (text === '!iniciar') {
                 const bat = batalhas[from];
                 if (bat && bat.fase === 'apresentacao') {

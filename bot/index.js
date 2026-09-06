@@ -6,6 +6,17 @@ const cron = require('node-cron');
 const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
+// GRUPOS PERMITIDOS
+const GRUPO_COLISEU = "120363411146386806@g.us";
+const GRUPOS_ARENA = [
+    "120363413442959158@g.us",
+    "120363432609327730@g.us",
+    "120363427539819874@g.us",
+    "120363430639159195@g.us",
+    "120363412001808092@g.us",
+    "120363429534972500@g.us"
+];
+
 // Servidor Web + Auto-Ping
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,7 +41,6 @@ const jogosQuiz = {};
 const batalhas = {};
 const timersDesafio = {};
 
-// Função para buscar a Temporada Atual do Coliseu
 async function obterTemporadaAtual() {
     try {
         const infoRes = await axios.get(`${FIREBASE_URL}/coliseu/info.json`);
@@ -41,19 +51,12 @@ async function obterTemporadaAtual() {
     }
 }
 
-// Função auxiliar para mapear o emoji de facção
 function obterEmojiFaccao(faccao) {
     if (!faccao) return '';
     const faccaoLimpa = String(faccao).trim().toLowerCase();
-    if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) {
-        return '⚔️';
-    }
-    if (faccaoLimpa.includes('governo mundial')) {
-        return '⚓️';
-    }
-    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) {
-        return '🏴‍☠️';
-    }
+    if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) return '⚔️';
+    if (faccaoLimpa.includes('governo mundial')) return '⚓️';
+    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) return '🏴‍☠️';
     return '';
 }
 
@@ -95,14 +98,14 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         const proxJogador = bat[`p${bat.jogadorVez}`];
         const nomeProx = proxJogador?.nome || `Jogador ${bat.jogadorVez}`;
 
-        const msgProxTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeProx.toUpperCase()}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!prox* ao concluir sua jogada.`;
-
-        await sock.sendMessage(groupId, { text: msgProxTurno });
+        await sock.sendMessage(groupId, { 
+            text: `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeProx.toUpperCase()}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!prox* ao concluir sua jogada.` 
+        });
 
         const jidPvProx = formatarJidPv(proxJogador?.lid);
         if (jidPvProx) {
             try {
-                await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* É o Turno ${bat.turnoAtual} no seu combate em grupo!\n\n👉 Responda no grupo e digite *!prox* ao concluir.` });
+                await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* Turno ${bat.turnoAtual} iniciado no seu combate em grupo!\n\n👉 Responda no grupo e digite *!prox* ao concluir.` });
             } catch (pvErr) {}
         }
 
@@ -163,7 +166,7 @@ function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', s
     }, 5 * 60 * 1000);
 }
 
-// LÓGICA COMPLETA DO QUIZ
+// SISTEMA DE QUIZ RESTAURADO
 async function enviarProximaPergunta(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo || !jogo.ativo) return;
@@ -184,7 +187,7 @@ async function enviarProximaPergunta(chatJid, sock) {
     jogo.timerPergunta = setTimeout(async () => {
         if (jogosQuiz[chatJid] && !jogosQuiz[chatJid].respondida) {
             await sock.sendMessage(chatJid, {
-                text: `⏰ *TEMPO ESGOTADO!* Ninguém acertou. A resposta correta era: *${q.resposta}*`
+                text: `⏰ *TEMPO ESGOTADO!* Ninguém acertou esta pergunta.`
             });
             jogo.perguntaAtual++;
             setTimeout(() => enviarProximaPergunta(chatJid, sock), 3000);
@@ -253,6 +256,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         const QTD_PERGUNTAS = 5;
         const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
         const PREMIO_TOTAL = 3000;
+        const VALOR_POR_ACERTO = PREMIO_TOTAL / QTD_PERGUNTAS;
 
         jogosQuiz[chatJid] = {
             perguntas: perguntasSorteadas,
@@ -264,24 +268,33 @@ async function dispararQuizNoGrupo(chatJid, sock) {
             timerPergunta: null
         };
 
-        // MARCAR TODOS NO GRUPO
         let mentions = [];
         try {
             const groupMetadata = await sock.groupMetadata(chatJid);
             mentions = groupMetadata.participants.map(p => p.id);
         } catch (e) {}
 
-        await sock.sendMessage(chatJid, { 
-            text: `⏰ *HORÁRIO DO QUIZ DIÁRIO (21:52)!* ⏰\n\n🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${perguntasSorteadas.length}\n\n📢 @todos fiquem atentos!`,
-            mentions: mentions
-        });
+        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:05)!* ⏰\n\n` +
+                          `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n` +
+                          `💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n` +
+                          `🎯 *Total de Perguntas:* ${QTD_PERGUNTAS}\n` +
+                          `💵 *Valor por Acerto:* ฿ ${VALOR_POR_ACERTO}\n\n` +
+                          `📊 *TABELA DE RECOMPENSAS:*\n` +
+                          `• 1 Acerto: ฿ ${VALOR_POR_ACERTO * 1}\n` +
+                          `• 2 Acertos: ฿ ${VALOR_POR_ACERTO * 2}\n` +
+                          `• 3 Acertos: ฿ ${VALOR_POR_ACERTO * 3}\n` +
+                          `• 4 Acertos: ฿ ${VALOR_POR_ACERTO * 4}\n` +
+                          `• 5 Acertos: ฿ ${VALOR_POR_ACERTO * 5}\n\n` +
+                          `📢 @todos fiquem atentos! A primeira pergunta será enviada em instantes!`;
+
+        await sock.sendMessage(chatJid, { text: msgInicio, mentions: mentions });
 
         setTimeout(() => {
             enviarProximaPergunta(chatJid, sock);
-        }, 3000);
+        }, 5000);
 
     } catch (err) {
-        console.error('Erro ao disparar quiz automático:', err.message);
+        console.error('Erro ao disparar quiz:', err.message);
     }
 }
 
@@ -314,9 +327,9 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            // ⏰ PROGRAMAÇÃO DO QUIZ DIÁRIO (21:52 Brasil = 00:52 UTC)
-            cron.schedule('52 0 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 21:52...');
+            // ⏰ CRON AJUSTADO PARA 22:05 BRASIL (01:05 UTC)
+            cron.schedule('5 1 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:05...');
                 const GRUPO_QUIZ_JID = "120363409325935641@g.us";
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
             });
@@ -339,7 +352,7 @@ async function connectToWhatsApp() {
 
             if (!text) return;
 
-            // VERIFICAÇÃO DE RESPOSTAS DO QUIZ
+            // RESPOSTAS QUIZ
             if (jogosQuiz[from] && jogosQuiz[from].ativo && !jogosQuiz[from].respondida) {
                 const jogo = jogosQuiz[from];
                 const qAtual = jogo.perguntas[jogo.perguntaAtual];
@@ -354,7 +367,7 @@ async function connectToWhatsApp() {
                     jogo.pontos[senderLid] = (jogo.pontos[senderLid] || 0) + 1;
 
                     await sock.sendMessage(from, {
-                        text: `🎉 *RESPOSTA CORRETA!* @${senderLid} acertou e pontuou!\nResposta: *${qAtual.resposta}*`,
+                        text: `🎉 *RESPOSTA CORRETA!* @${senderLid} acertou e pontuou!`,
                         mentions: [rawSender]
                     }, { quoted: m });
 
@@ -364,129 +377,80 @@ async function connectToWhatsApp() {
                 }
             }
 
-            // COMANDO !INICIARQUIZ (Manual)
             if (text === '!iniciarquiz') {
                 await dispararQuizNoGrupo(from, sock);
                 return;
             }
 
-            // COMANDO !JID
             if (text === '!jid') {
                 await sock.sendMessage(from, { text: `🆔 *ID deste chat:* \`${from}\`` }, { quoted: m });
             }
 
-            // COMANDO !PING
             if (text === '!ping' || text.startsWith('!ping ')) {
                 await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
             }
 
-            // COMANDO !DADO
             if (text === '!dado' || text.startsWith('!dado ')) {
                 const resultado = Math.floor(Math.random() * 100) + 1;
                 const rawSender = m.key.participant || m.key.remoteJid || from;
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
                 let nomeJogador = "Lutador";
-
                 try {
                     const response = await axios.get(`${FIREBASE_URL}/players.json`);
                     const playersData = response.data || {};
+                    const playerUid = Object.keys(playersData).find(uid => String(playersData[uid]?.number?.LID || '').trim() === senderLid);
+                    if (playerUid) nomeJogador = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
+                } catch (e) {}
 
-                    const playerUid = Object.keys(playersData).find(uid => {
-                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
-                    });
-
-                    if (playerUid) {
-                        nomeJogador = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
-                    }
-                } catch (dadoErr) {}
-
-                const mensagemDado = `🎲 *ROLAGEM DE DADO (1d100)*\n\n` +
-                                     `👤 *Jogador:* ${nomeJogador}\n` +
-                                     `🎯 *Resultado:* *${resultado}*`;
-
-                await sock.sendMessage(from, { text: mensagemDado }, { quoted: m });
+                await sock.sendMessage(from, { text: `🎲 *ROLAGEM DE DADO (1d100)*\n\n👤 *Jogador:* ${nomeJogador}\n🎯 *Resultado:* *${resultado}*` }, { quoted: m });
             }
 
-            // COMANDO !INFO
             if (text === '!info' || text.startsWith('!info ')) {
                 try {
                     const response = await axios.get(`${FIREBASE_URL}/players.json`);
                     const playersData = response.data;
-
-                    if (!playersData) {
-                        return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
-                    }
+                    if (!playersData) return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
 
                     const rawSender = m.key.participant || m.key.remoteJid || from;
                     const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                    const playerUid = Object.keys(playersData).find(uid => String(playersData[uid]?.number?.LID || '').trim() === senderLid);
 
-                    const playerUid = Object.keys(playersData).find(uid => {
-                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
-                    });
-
-                    if (!playerUid) {
-                        return await sock.sendMessage(from, { text: `❌ *LID não cadastrado!* (${senderLid})` }, { quoted: m });
-                    }
+                    if (!playerUid) return await sock.sendMessage(from, { text: `❌ *LID não cadastrado!* (${senderLid})` }, { quoted: m });
 
                     const player = playersData[playerUid];
-                    const nome = player?.character?.charName || player?.nome || 'Sem Nome';
-                    const nivel = player?.info?.level ?? 1;
-                    const exp = player?.info?.exp ?? 0;
-                    const saldo = player?.info?.saldo ?? 0;
-
-                    const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n` +
-                                     `👤 *Nome:* ${nome}\n` +
-                                     `⭐ *Nível:* ${nivel}\n` +
-                                     `✨ *EXP:* ${exp}\n` +
-                                     `💰 *Saldo:* ฿ ${saldo}`;
-
+                    const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n👤 *Nome:* ${player?.character?.charName || player?.nome || 'Sem Nome'}\n⭐ *Nível:* ${player?.info?.level ?? 1}\n✨ *EXP:* ${player?.info?.exp ?? 0}\n💰 *Saldo:* ฿ ${player?.info?.saldo ?? 0}`;
                     await sock.sendMessage(from, { text: infoText }, { quoted: m });
-                } catch (infoErr) {
-                    await sock.sendMessage(from, { text: '❌ Erro ao buscar informações do jogador.' }, { quoted: m });
+                } catch (e) {
+                    await sock.sendMessage(from, { text: '❌ Erro ao buscar informações.' }, { quoted: m });
                 }
             }
 
-            // COMANDO !RANK (Sem Posição 0)
             if (text === '!rank' || text.startsWith('!rank ')) {
                 try {
                     const [rankRes, playersRes] = await Promise.all([
                         axios.get(`${FIREBASE_URL}/ranking.json`),
                         axios.get(`${FIREBASE_URL}/players.json`)
                     ]);
-
                     const rankingObj = rankRes.data || {};
                     const playersData = playersRes.data || {};
+                    const posicoesOrdenadas = Object.keys(rankingObj).map(Number).filter(p => p > 0 && !isNaN(p)).sort((a, b) => a - b);
 
-                    const posicoesOrdenadas = Object.keys(rankingObj)
-                        .map(Number)
-                        .filter(p => p > 0 && !isNaN(p))
-                        .sort((a, b) => a - b);
-
-                    if (posicoesOrdenadas.length === 0) {
-                        return await sock.sendMessage(from, { text: '🏴‍☠️ O ranking ainda não possui nenhum jogador.' }, { quoted: m });
-                    }
+                    if (posicoesOrdenadas.length === 0) return await sock.sendMessage(from, { text: '🏴‍☠️ Ranking vazio.' }, { quoted: m });
 
                     let rankText = `*🏆 — RANKING ARENA — 🏆*\n\n`;
-
                     posicoesOrdenadas.forEach((pos) => {
                         const uid = rankingObj[pos];
                         const player = playersData[uid];
-                        const nome = player?.character?.charName || player?.nome || 'Sem Nome';
-                        const nivel = player?.info?.level ?? 1;
-                        const faccao = player?.character?.faction || '';
-                        const emojiFaccao = obterEmojiFaccao(faccao);
-
-                        rankText += `${pos}º ${nome} (${nivel}) ${emojiFaccao}\n`;
+                        const emoji = obterEmojiFaccao(player?.character?.faction);
+                        rankText += `${pos}º ${player?.character?.charName || player?.nome || 'Sem Nome'} (${player?.info?.level ?? 1}) ${emoji}\n`;
                     });
-
                     await sock.sendMessage(from, { text: rankText.trim() }, { quoted: m });
-                } catch (rankErr) {
-                    await sock.sendMessage(from, { text: '❌ Erro ao carregar o ranking.' }, { quoted: m });
+                } catch (e) {
+                    await sock.sendMessage(from, { text: '❌ Erro ao carregar ranking.' }, { quoted: m });
                 }
             }
 
-            // COMANDO !INSCREVER (Coliseu)
             if (text === '!inscrever' || text.startsWith('!inscrever ')) {
                 try {
                     const rawSender = m.key.participant || m.key.remoteJid || from;
@@ -500,57 +464,31 @@ async function connectToWhatsApp() {
 
                     const playersData = playersRes.data || {};
                     const coliseuData = coliseuRes.data || {};
+                    const playerUid = Object.keys(playersData).find(uid => String(playersData[uid]?.number?.LID || '').trim() === senderLid);
 
-                    const playerUid = Object.keys(playersData).find(uid => {
-                        return String(playersData[uid]?.number?.LID || '').trim() === senderLid;
-                    });
-
-                    if (!playerUid) {
-                        return await sock.sendMessage(from, { text: '❌ Você precisa de um personagem cadastrado para se inscrever!' }, { quoted: m });
-                    }
-
-                    if (coliseuData[playerUid]) {
-                        return await sock.sendMessage(from, { text: `⚠️ Você já está inscrito na Temporada ${tempAtual} do Coliseu!` }, { quoted: m });
-                    }
+                    if (!playerUid) return await sock.sendMessage(from, { text: '❌ Personagem não cadastrado!' }, { quoted: m });
+                    if (coliseuData[playerUid]) return await sock.sendMessage(from, { text: `⚠️ Você já está inscrito na Temporada ${tempAtual}!` }, { quoted: m });
 
                     const saldoAtual = playersData[playerUid]?.info?.saldo ?? 0;
-                    const TAXA_INSCRICAO = 20000;
+                    const TAXA = 20000;
+                    if (saldoAtual < TAXA) return await sock.sendMessage(from, { text: `❌ Saldo insuficiente! Taxa: *฿ ${TAXA}*. Seu saldo: *฿ ${saldoAtual}*.` }, { quoted: m });
 
-                    if (saldoAtual < TAXA_INSCRICAO) {
-                        return await sock.sendMessage(from, { text: `❌ Saldo insuficiente! A inscrição custa *฿ ${TAXA_INSCRICAO}* e você tem *฿ ${saldoAtual}*.` }, { quoted: m });
-                    }
-
-                    const novoSaldo = saldoAtual - TAXA_INSCRICAO;
+                    const novoSaldo = saldoAtual - TAXA;
                     await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { saldo: novoSaldo });
-
                     await axios.put(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${playerUid}.json`, {
-                        vitorias: 0,
-                        derrotas: 0,
-                        pontos: 0,
-                        inscritoEm: Date.now()
+                        vitorias: 0, derrotas: 0, pontos: 0, inscritoEm: Date.now()
                     });
 
-                    const nomeChar = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || 'Combatente';
-
-                    const msgSucesso = `🏟 *INSCRIÇÃO CONFIRMADA NO COLISEU!* 🏟\n` +
-                                       `🏆 *Temporada ${tempAtual}*\n\n` +
-                                       `👤 *Lutador:* ${nomeChar}\n` +
-                                       `💰 *Taxa Paga:* ฿ ${TAXA_INSCRICAO}\n` +
-                                       `💳 *Novo Saldo:* ฿ ${novoSaldo}\n\n` +
-                                       `⚔️ Use *!desafiarcoliseu @jogador* para desafiar outros inscritos!`;
-
-                    return await sock.sendMessage(from, { text: msgSucesso }, { quoted: m });
-                } catch (inscErr) {
-                    return await sock.sendMessage(from, { text: '❌ Erro ao processar inscrição no Coliseu.' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: `🏟 *INSCRIÇÃO CONFIRMADA NO COLISEU!*\n🏆 *Temporada ${tempAtual}*\n\n👤 *Lutador:* ${playersData[playerUid]?.character?.charName || 'Combatente'}\n💰 *Taxa Paga:* ฿ ${TAXA}\n💳 *Novo Saldo:* ฿ ${novoSaldo}` }, { quoted: m });
+                } catch (e) {
+                    return await sock.sendMessage(from, { text: '❌ Erro na inscrição.' }, { quoted: m });
                 }
             }
 
-            // COMANDO !COLISEU
             if (text === '!coliseu' || text.startsWith('!coliseu ')) {
                 try {
-                    const args = text.split(' ');
                     const tempPadrao = await obterTemporadaAtual();
-                    const tempDesejada = args[1] ? parseInt(args[1]) : tempPadrao;
+                    const tempDesejada = text.split(' ')[1] ? parseInt(text.split(' ')[1]) : tempPadrao;
 
                     const [coliseuRes, playersRes, infoColiseuRes] = await Promise.all([
                         axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempDesejada}/jogadores.json`),
@@ -561,74 +499,43 @@ async function connectToWhatsApp() {
                     const coliseuData = coliseuRes.data || {};
                     const playersData = playersRes.data || {};
                     const coliseuInfo = infoColiseuRes.data || { periodo: '01/09 ~ 31/09' };
-
                     const inscritosUids = Object.keys(coliseuData);
 
-                    if (inscritosUids.length === 0) {
-                        return await sock.sendMessage(from, { text: `🏟 *O Coliseu não possui inscritos na Temporada ${tempDesejada}!*` }, { quoted: m });
-                    }
+                    if (inscritosUids.length === 0) return await sock.sendMessage(from, { text: `🏟 *Coliseu sem inscritos na Temporada ${tempDesejada}!*` }, { quoted: m });
 
                     inscritosUids.sort((a, b) => {
-                        const pA = coliseuData[a];
-                        const pB = coliseuData[b];
+                        const pA = coliseuData[a]; const pB = coliseuData[b];
                         if ((pB.pontos || 0) !== (pA.pontos || 0)) return (pB.pontos || 0) - (pA.pontos || 0);
                         if ((pB.vitorias || 0) !== (pA.vitorias || 0)) return (pB.vitorias || 0) - (pA.vitorias || 0);
                         return (pA.derrotas || 0) - (pB.derrotas || 0);
                     });
 
-                    let coliseuText = `🏟 *— COLISEU CORRIDA —* 🏟\n` +
-                                      `🏆 *— TEMPORADA ${tempDesejada} — 🏆*\n\n` +
-                                      `*Período: ${coliseuInfo.periodo}*\n\n`;
-
+                    let coliseuText = `🏟 *— COLISEU CORRIDA —* 🏟\n🏆 *— TEMPORADA ${tempDesejada} — 🏆*\n\n*Período: ${coliseuInfo.periodo}*\n\n`;
                     inscritosUids.forEach((uid, index) => {
-                        const dadosCol = coliseuData[uid];
+                        const dados = coliseuData[uid];
                         const player = playersData[uid];
-
-                        const nome = player?.character?.charName || player?.nome || 'Lutador';
-                        const nivel = player?.info?.level ?? 1;
-                        const faccao = player?.character?.faction || '';
-                        const emojiFaccao = obterEmojiFaccao(faccao);
-
-                        const vitorias = dadosCol.vitorias ?? 0;
-                        const derrotas = dadosCol.derrotas ?? 0;
-                        const pontos = dadosCol.pontos ?? 0;
-
-                        const espacoEmoji = emojiFaccao ? ` ${emojiFaccao}` : '';
-
-                        coliseuText += `${index + 1}º ${nome} (${nivel})${espacoEmoji}\n`;
-                        coliseuText += `> *✔️ ${vitorias} | ✖️ ${derrotas} | 🏅${pontos}*\n\n`;
+                        const emoji = obterEmojiFaccao(player?.character?.faction);
+                        coliseuText += `${index + 1}º ${player?.character?.charName || 'Lutador'} (${player?.info?.level ?? 1})${emoji ? ' ' + emoji : ''}\n> *✔️ ${dados.vitorias || 0} | ✖️ ${dados.derrotas || 0} | 🏅${dados.pontos || 0}*\n\n`;
                     });
 
                     await sock.sendMessage(from, { text: coliseuText.trim() }, { quoted: m });
-                } catch (colErr) {
-                    await sock.sendMessage(from, { text: '❌ Erro ao carregar as informações do Coliseu.' }, { quoted: m });
+                } catch (e) {
+                    await sock.sendMessage(from, { text: '❌ Erro ao carregar Coliseu.' }, { quoted: m });
                 }
             }
 
-            // COMANDO !DESAFIARCOLISEU
+            // COMANDO !DESAFIARCOLISEU (Pode ser enviado em qualquer grupo)
             if (text.startsWith('!desafiarcoliseu')) {
-                const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
-
-                if (batalhas[from]) {
-                    return await sock.sendMessage(from, { text: '⚠️ Já existe um combate rodando neste grupo!' }, { quoted: m });
-                }
-
                 const rawSender = m.key.participant || m.key.remoteJid || from;
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-                if (!mentionedJid) {
-                    return await sock.sendMessage(from, { text: '❌ Marque o jogador que deseja desafiar no Coliseu!\nExemplo: *!desafiarcoliseu @jogador*' }, { quoted: m });
-                }
+                if (!mentionedJid) return await sock.sendMessage(from, { text: '❌ Marque o jogador! Ex: *!desafiarcoliseu @jogador*' }, { quoted: m });
 
                 const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
-
-                if (senderLid === targetLid) {
-                    return await sock.sendMessage(from, { text: '❌ Você não pode desafiar a si mesmo!' }, { quoted: m });
-                }
+                if (senderLid === targetLid) return await sock.sendMessage(from, { text: '❌ Você não pode se desafiar!' }, { quoted: m });
 
                 const tempAtual = await obterTemporadaAtual();
-
                 const [playersRes, coliseuRes] = await Promise.all([
                     axios.get(`${FIREBASE_URL}/players.json`),
                     axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
@@ -640,12 +547,8 @@ async function connectToWhatsApp() {
                 const desafianteUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === senderLid);
                 const desafiadoUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === targetLid);
 
-                if (!coliseuData[desafianteUid]) {
-                    return await sock.sendMessage(from, { text: '❌ Você precisa estar inscrito na temporada atual do Coliseu!' }, { quoted: m });
-                }
-                if (!coliseuData[desafiadoUid]) {
-                    return await sock.sendMessage(from, { text: '❌ O jogador desafiado NÃO está inscrito nesta temporada do Coliseu!' }, { quoted: m });
-                }
+                if (!coliseuData[desafianteUid]) return await sock.sendMessage(from, { text: '❌ Você precisa estar inscrito na temporada atual do Coliseu!' }, { quoted: m });
+                if (!coliseuData[desafiadoUid]) return await sock.sendMessage(from, { text: '❌ O jogador desafiado NÃO está inscrito no Coliseu!' }, { quoted: m });
 
                 const nomeDesafiante = playersData[desafianteUid]?.character?.charName || playersData[desafianteUid]?.nome || 'Desafiante';
                 const nomeDesafiado = playersData[desafiadoUid]?.character?.charName || playersData[desafiadoUid]?.nome || 'Desafiado';
@@ -659,61 +562,36 @@ async function connectToWhatsApp() {
                     criadoEm: Date.now()
                 };
 
-                await axios.put(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`, desafioPayload);
+                // Salva o desafio chaveado por Desafiante + Desafiado para permitir múltiplos desafios pendentes
+                const desafioKey = `${senderLid}_VS_${targetLid}`;
+                await axios.put(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`, desafioPayload);
 
-                const msgDesafio = `🏟️ *DESAFIO DO COLISEU LANÇADO!* 🏟️\n\n` +
-                                   `👤 *Desafiante:* ${nomeDesafiante}\n` +
-                                   `🎯 *Desafiado:* ${nomeDesafiado}\n\n` +
-                                   `📢 @${targetLid}, responda no grupo com *!aceitarcoliseu* quando estiver pronto para o confronto!`;
+                const msgDesafioColiseu = `🏟️ *DESAFIO DO COLISEU LANÇADO!* 🏟️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n📢 @${targetLid}, responda no grupo do Coliseu marcando o desafiante: *!aceitarcoliseu @${senderLid}*`;
 
-                await sock.sendMessage(from, { text: msgDesafio, mentions: [mentionedJid] }, { quoted: m });
+                // Envia o aviso no grupo oficial do Coliseu
+                await sock.sendMessage(GRUPO_COLISEU, { text: msgDesafioColiseu, mentions: [mentionedJid] });
+
+                if (from !== GRUPO_COLISEU) {
+                    await sock.sendMessage(from, { text: `✅ Desafio enviado para o grupo do Coliseu!` }, { quoted: m });
+                }
 
                 const pvTargetJid = formatarJidPv(targetLid);
                 if (pvTargetJid) {
                     try {
-                        await sock.sendMessage(pvTargetJid, { text: `🏟️ *VOCÊ FOI DESAFIADO NO COLISEU!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Responda com *!aceitarcoliseu* no grupo quando desejar lutar!` });
+                        await sock.sendMessage(pvTargetJid, { text: `🏟️ *VOCÊ FOI DESAFIADO NO COLISEU!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Vá ao grupo do Coliseu e responda com *!aceitarcoliseu @${senderLid}*` });
                     } catch (e) {}
                 }
                 return;
             }
 
-            // COMANDO !ACEITARCOLISEU
-            if (text === '!aceitarcoliseu') {
-                const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
-
-                const desafioRes = await axios.get(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`);
-                const desafio = desafioRes.data;
-
-                if (!desafio || desafio.status !== 'pendente') {
-                    return await sock.sendMessage(from, { text: '❌ Não há desafio do Coliseu pendente neste grupo.' }, { quoted: m });
+            // COMANDO !ACEITARCOLISEU (Apenas no Grupo do Coliseu)
+            if (text.startsWith('!aceitarcoliseu')) {
+                if (from !== GRUPO_COLISEU) {
+                    return await sock.sendMessage(from, { text: '❌ O comando *!aceitarcoliseu* só pode ser usado no grupo oficial do Coliseu!' }, { quoted: m });
                 }
-
-                if (desafio.desafiadoLid !== senderLid) {
-                    return await sock.sendMessage(from, { text: '❌ Apenas o desafiado pode aceitar este confronto!' }, { quoted: m });
-                }
-
-                await axios.patch(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`, { status: 'aceito' });
-
-                const p1 = { lid: desafio.desafianteLid, nome: desafio.desafianteNome };
-                const p2 = { lid: desafio.desafiadoLid, nome: desafio.desafiadoNome };
-
-                iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
-
-                const msgInicio = `🏟️ *DESAFIO DO COLISEU ACEITO!* 🏟️\n\n` +
-                                   `🥊 *${p1.nome}* VS *${p2.nome}*\n\n` +
-                                   `📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
-
-                return await sock.sendMessage(from, { text: msgInicio });
-            }
-
-            // COMANDO !DESAFIAR (Arena Comum)
-            if (text.startsWith('!desafiar') && !text.startsWith('!desafiarcoliseu')) {
-                const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
 
                 if (batalhas[from]) {
-                    return await sock.sendMessage(from, { text: '⚠️ Já existe um combate rodando neste grupo!' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ocorrendo no Coliseu! Aguarde o término.' }, { quoted: m });
                 }
 
                 const rawSender = m.key.participant || m.key.remoteJid || from;
@@ -721,14 +599,40 @@ async function connectToWhatsApp() {
 
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
                 if (!mentionedJid) {
-                    return await sock.sendMessage(from, { text: '❌ Marque quem deseja desafiar!\nExemplo: *!desafiar @jogador*' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: '❌ Você precisa marcar o desafiante para aceitar!\nExemplo: *!aceitarcoliseu @desafiante*' }, { quoted: m });
                 }
+
+                const desafianteLid = mentionedJid.split('@')[0].split(':')[0].trim();
+                const desafioKey = `${desafianteLid}_VS_${senderLid}`;
+
+                const desafioRes = await axios.get(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`);
+                const desafio = desafioRes.data;
+
+                if (!desafio || desafio.status !== 'pendente') {
+                    return await sock.sendMessage(from, { text: '❌ Nenhum desafio pendente encontrado entre vocês dois.' }, { quoted: m });
+                }
+
+                await axios.patch(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`, { status: 'aceito' });
+
+                const p1 = { lid: desafio.desafianteLid, nome: desafio.desafianteNome };
+                const p2 = { lid: desafio.desafiadoLid, nome: desafio.desafiadoNome };
+
+                iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
+
+                const msgInicio = `🏟️ *DESAFIO DO COLISEU ACEITO!* 🏟️\n\n🥊 *${p1.nome}* VS *${p2.nome}*\n\n📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
+                return await sock.sendMessage(from, { text: msgInicio });
+            }
+
+            // COMANDO !DESAFIAR (Arena Comum - Qualquer grupo)
+            if (text.startsWith('!desafiar') && !text.startsWith('!desafiarcoliseu')) {
+                const rawSender = m.key.participant || m.key.remoteJid || from;
+                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+
+                const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+                if (!mentionedJid) return await sock.sendMessage(from, { text: '❌ Marque quem deseja desafiar!\nEx: *!desafiar @jogador*' }, { quoted: m });
 
                 const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
-
-                if (senderLid === targetLid) {
-                    return await sock.sendMessage(from, { text: '❌ Você não pode desafiar a si mesmo!' }, { quoted: m });
-                }
+                if (senderLid === targetLid) return await sock.sendMessage(from, { text: '❌ Você não pode desafiar a si mesmo!' }, { quoted: m });
 
                 const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
                 const playersData = playersRes.data || {};
@@ -736,15 +640,14 @@ async function connectToWhatsApp() {
                 const desafianteUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === senderLid);
                 const desafiadoUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === targetLid);
 
-                if (!desafianteUid || !desafiadoUid) {
-                    return await sock.sendMessage(from, { text: '❌ Um dos jogadores não está cadastrado no sistema!' }, { quoted: m });
-                }
+                if (!desafianteUid || !desafiadoUid) return await sock.sendMessage(from, { text: '❌ Um dos jogadores não está cadastrado!' }, { quoted: m });
 
                 const nomeDesafiante = playersData[desafianteUid]?.character?.charName || playersData[desafianteUid]?.nome || 'Desafiante';
                 const nomeDesafiado = playersData[desafiadoUid]?.character?.charName || playersData[desafiadoUid]?.nome || 'Desafiado';
 
                 const agora = Date.now();
                 const tempoExpiracao = 24 * 60 * 60 * 1000;
+                const desafioKey = `${senderLid}_VS_${targetLid}`;
 
                 const desafioPayload = {
                     desafianteLid: senderLid,
@@ -756,63 +659,76 @@ async function connectToWhatsApp() {
                     expiraEm: agora + tempoExpiracao
                 };
 
-                await axios.put(`${FIREBASE_URL}/desafios/${groupIdClean}.json`, desafioPayload);
+                await axios.put(`${FIREBASE_URL}/desafios/${desafioKey}.json`, desafioPayload);
 
-                if (timersDesafio[groupIdClean]) clearTimeout(timersDesafio[groupIdClean]);
+                if (timersDesafio[desafioKey]) clearTimeout(timersDesafio[desafioKey]);
 
-                timersDesafio[groupIdClean] = setTimeout(async () => {
+                timersDesafio[desafioKey] = setTimeout(async () => {
                     try {
-                        const checkDesafio = await axios.get(`${FIREBASE_URL}/desafios/${groupIdClean}.json`);
+                        const checkDesafio = await axios.get(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
                         if (checkDesafio.data && checkDesafio.data.status === 'pendente') {
-                            await axios.delete(`${FIREBASE_URL}/desafios/${groupIdClean}.json`);
-                            await sock.sendMessage(from, { text: `💀 *DERROTA POR W.O.!* O jogador *${nomeDesafiado}* não aceitou o desafio de Arena a tempo.` });
+                            await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
+                            await sock.sendMessage(from, { text: `💀 *DERROTA POR W.O.!* O jogador *${nomeDesafiado}* não aceitou o desafio a tempo.` });
                         }
                     } catch (e) {}
                 }, tempoExpiracao);
 
-                const msgDesafio = `⚔️ *DESAFIO DE ARENA LANÇADO!* ⚔️\n\n` +
-                                   `👤 *Desafiante:* ${nomeDesafiante}\n` +
-                                   `🎯 *Desafiado:* ${nomeDesafiado}\n\n` +
-                                   `⏳ @${targetLid}, você tem *24 horas* para responder digitando *!aceitar*.`;
-
+                const msgDesafio = `⚔️ *DESAFIO DE ARENA LANÇADO!* ⚔️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n⏳ @${targetLid}, você tem *24 horas* para aceitar marcando o desafiante em um dos grupos da Arena: *!aceitar @${senderLid}*`;
                 await sock.sendMessage(from, { text: msgDesafio, mentions: [mentionedJid] }, { quoted: m });
                 return;
             }
 
-            // COMANDO !ACEITAR
-            if (text === '!aceitar') {
-                const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
+            // COMANDO !ACEITAR e !BATTLE (Apenas nos 6 Grupos da Arena)
+            if (text.startsWith('!aceitar') || text.startsWith('!battle')) {
+                if (!GRUPOS_ARENA.includes(from)) {
+                    return await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos oficiais de Arena!' }, { quoted: m });
+                }
+
+                if (batalhas[from]) {
+                    return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ativa neste grupo! Aguarde o término.' }, { quoted: m });
+                }
+
                 const rawSender = m.key.participant || m.key.remoteJid || from;
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
 
-                const desafioRes = await axios.get(`${FIREBASE_URL}/desafios/${groupIdClean}.json`);
+                const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+                if (!mentionedJid) {
+                    return await sock.sendMessage(from, { text: '❌ Marque o desafiante para aceitar!\nExemplo: *!aceitar @desafiante*' }, { quoted: m });
+                }
+
+                const desafianteLid = mentionedJid.split('@')[0].split(':')[0].trim();
+                const desafioKey = `${desafianteLid}_VS_${senderLid}`;
+
+                const desafioRes = await axios.get(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
                 const desafio = desafioRes.data;
 
                 if (!desafio || desafio.status !== 'pendente') {
-                    return await sock.sendMessage(from, { text: '❌ Não há nenhum desafio de Arena pendente neste grupo.' }, { quoted: m });
+                    return await sock.sendMessage(from, { text: '❌ Nenhum desafio pendente encontrado entre vocês.' }, { quoted: m });
                 }
 
-                if (desafio.desafiadoLid !== senderLid) {
-                    return await sock.sendMessage(from, { text: '❌ Apenas o desafiado pode aceitar este duelo!' }, { quoted: m });
+                if (timersDesafio[desafioKey]) {
+                    clearTimeout(timersDesafio[desafioKey]);
+                    delete timersDesafio[desafioKey];
                 }
 
-                if (timersDesafio[groupIdClean]) {
-                    clearTimeout(timersDesafio[groupIdClean]);
-                    delete timersDesafio[groupIdClean];
-                }
-
-                await axios.patch(`${FIREBASE_URL}/desafios/${groupIdClean}.json`, { status: 'aceito' });
+                await axios.patch(`${FIREBASE_URL}/desafios/${desafioKey}.json`, { status: 'aceito' });
 
                 const p1 = { lid: desafio.desafianteLid, nome: desafio.desafianteNome };
                 const p2 = { lid: desafio.desafiadoLid, nome: desafio.desafiadoNome };
 
                 iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
 
-                const msgInicio = `⚔️ *COMBATE DE ARENA INICIADO!* ⚔️\n\n` +
-                                   `🥊 *${p1.nome}* VS *${p2.nome}*\n\n` +
-                                   `📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
-
+                const msgInicio = `⚔️ *COMBATE DE ARENA INICIADO!* ⚔️\n\n🥊 *${p1.nome}* VS *${p2.nome}*\n\n📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
                 return await sock.sendMessage(from, { text: msgInicio });
+            }
+
+            // COMANDO !INICIAR (Acelera apresentação)
+            if (text === '!iniciar') {
+                const bat = batalhas[from];
+                if (bat && bat.fase === 'apresentacao') {
+                    await comecarCombateDeFato(from, sock);
+                }
+                return;
             }
 
             // COMANDO !PROX
@@ -830,10 +746,7 @@ async function connectToWhatsApp() {
                 const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
                 const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
 
-                const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeDoVez.toUpperCase()}*\n\n` +
-                                     `⏳ *Tempo limite desta jogada:* 30 minutos.\n` +
-                                     `👉 Digite *!prox* ao concluir sua jogada.`;
-
+                const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeDoVez.toUpperCase()}*\n\n⏳ *Tempo limite desta jogada:* 30 minutos.\n👉 Digite *!prox* ao concluir sua jogada.`;
                 await sock.sendMessage(from, { text: msgNovoTurno });
 
                 const jidPvProx = formatarJidPv(proximoJogadorObj?.lid);
@@ -847,12 +760,10 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !WIN (Vitoria sobe 1 posição no Rank na Arena)
+            // COMANDO !WIN
             if (text.startsWith('!win')) {
                 const bat = batalhas[from];
-                if (!bat) {
-                    return await sock.sendMessage(from, { text: '❌ Não há nenhuma batalha ativa neste grupo!' }, { quoted: m });
-                }
+                if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
 
                 const rawSender = m.key.participant || m.key.remoteJid || from;
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
@@ -880,7 +791,6 @@ async function connectToWhatsApp() {
                 if (bat.tipo === 'COLISEU') {
                     try {
                         const tempAtual = await obterTemporadaAtual();
-
                         const [playersRes, coliseuRes] = await Promise.all([
                             axios.get(`${FIREBASE_URL}/players.json`),
                             axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
@@ -905,14 +815,11 @@ async function connectToWhatsApp() {
                                 pontos: (coliseuData[uidPerdedor].pontos || 0) + 1
                             });
                         }
-                    } catch (colErr) {
-                        console.error('Erro ao somar pontos coliseu:', colErr.message);
-                    }
+                    } catch (e) {}
 
-                    const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
-                    await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`).catch(() => {});
+                    const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
+                    await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});
                 } else {
-                    // LÓGICA DE SUBIR 1 POSIÇÃO NO RANKING ARENA
                     try {
                         const [rankRes, playersRes] = await Promise.all([
                             axios.get(`${FIREBASE_URL}/ranking.json`),
@@ -921,15 +828,12 @@ async function connectToWhatsApp() {
 
                         const rankingObj = rankRes.data || {};
                         const playersData = playersRes.data || {};
-
                         const uidVencedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === vencedorObj?.lid);
 
                         if (uidVencedor) {
                             const posAtualStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
-
                             if (posAtualStr) {
                                 const posAtual = parseInt(posAtualStr);
-
                                 if (posAtual > 1) {
                                     const posAcima = posAtual - 1;
                                     const uidAcima = rankingObj[posAcima];
@@ -937,23 +841,17 @@ async function connectToWhatsApp() {
                                     const updates = {};
                                     updates[posAcima] = uidVencedor;
                                     updates[posAtual] = uidAcima || null;
-
                                     await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
                                 }
                             }
                         }
-                    } catch (rankUpErr) {
-                        console.error('Erro ao subir no ranking:', rankUpErr.message);
-                    }
+                    } catch (e) {}
 
-                    const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
-                    await axios.delete(`${FIREBASE_URL}/desafios/${groupIdClean}.json`).catch(() => {});
+                    const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
+                    await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
                 }
 
-                const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
-                               `🎉 O combatente *${nomeVencedor}* venceu no *${bat.tipo === 'COLISEU' ? 'COLISEU' : 'ARENA'}* após *${bat.turnoAtual} rodadas*!\n\n` +
-                               `${bat.tipo === 'COLISEU' ? '🏟️ Pontuação do Coliseu atualizada!' : '⚔️ *Ranking atualizado:* O vencedor subiu 1 posição!'}`;
-
+                const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n🎉 O combatente *${nomeVencedor}* venceu no *${bat.tipo === 'COLISEU' ? 'COLISEU' : 'ARENA'}* após *${bat.turnoAtual} rodadas*!\n\n${bat.tipo === 'COLISEU' ? '🏟️ Pontuação do Coliseu atualizada!' : '⚔️ *Ranking atualizado:* O vencedor subiu 1 posição!'}`;
                 await sock.sendMessage(from, { text: msgWin });
 
                 limparTimersBatalha(bat);
@@ -965,11 +863,13 @@ async function connectToWhatsApp() {
             if (text === '!fimcombate') {
                 if (!batalhas[from]) return;
 
-                const groupIdClean = from.replace(/[^a-zA-Z0-9]/g, '_');
-                await axios.delete(`${FIREBASE_URL}/desafios/${groupIdClean}.json`).catch(() => {});
-                await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${groupIdClean}.json`).catch(() => {});
+                const bat = batalhas[from];
+                const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
 
-                limparTimersBatalha(batalhas[from]);
+                await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
+                await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});
+
+                limparTimersBatalha(bat);
                 delete batalhas[from];
                 return await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
             }

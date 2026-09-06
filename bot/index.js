@@ -163,6 +163,76 @@ function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', s
     }, 5 * 60 * 1000);
 }
 
+// LÓGICA COMPLETA DO QUIZ
+async function enviarProximaPergunta(chatJid, sock) {
+    const jogo = jogosQuiz[chatJid];
+    if (!jogo || !jogo.ativo) return;
+
+    if (jogo.perguntaAtual >= jogo.perguntas.length) {
+        return await finalizarQuiz(chatJid, sock);
+    }
+
+    const q = jogo.perguntas[jogo.perguntaAtual];
+    jogo.respondida = false;
+
+    await sock.sendMessage(chatJid, {
+        text: `❓ *PERGUNTA (${jogo.perguntaAtual + 1}/${jogo.perguntas.length}):*\n\n${q.pergunta}\n\n⏳ *Tempo:* 15 segundos para responder!`
+    });
+
+    if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
+
+    jogo.timerPergunta = setTimeout(async () => {
+        if (jogosQuiz[chatJid] && !jogosQuiz[chatJid].respondida) {
+            await sock.sendMessage(chatJid, {
+                text: `⏰ *TEMPO ESGOTADO!* Ninguém acertou. A resposta correta era: *${q.resposta}*`
+            });
+            jogo.perguntaAtual++;
+            setTimeout(() => enviarProximaPergunta(chatJid, sock), 3000);
+        }
+    }, 15000);
+}
+
+async function finalizarQuiz(chatJid, sock) {
+    const jogo = jogosQuiz[chatJid];
+    if (!jogo) return;
+
+    jogo.ativo = false;
+    if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
+
+    let textoFinal = `🏴‍☠️ *O QUIZ FOI ENCERRADO!* 🏴‍☠️\n\n🏆 *GANHADORES DA RODADA:*\n`;
+    const participantes = Object.keys(jogo.pontos);
+
+    if (participantes.length === 0) {
+        textoFinal += `Ninguém pontuou nesta rodada! 💀`;
+    } else {
+        try {
+            const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+            const playersData = playersRes.data || {};
+
+            for (const lid of participantes) {
+                const acertos = jogo.pontos[lid];
+                const premioGanhado = acertos * (jogo.premioTotal / jogo.perguntas.length);
+
+                const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === lid);
+                let nomePlayer = "Lutador";
+
+                if (playerUid) {
+                    nomePlayer = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
+                    const saldoAtual = playersData[playerUid]?.info?.saldo || 0;
+                    await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { saldo: saldoAtual + premioGanhado });
+                }
+
+                textoFinal += `👤 *${nomePlayer}:* ${acertos} acerto(s) ➔ +฿ ${premioGanhado}\n`;
+            }
+        } catch (e) {
+            console.error('Erro ao premiar quiz:', e.message);
+        }
+    }
+
+    await sock.sendMessage(chatJid, { text: textoFinal });
+    delete jogosQuiz[chatJid];
+}
+
 async function dispararQuizNoGrupo(chatJid, sock) {
     if (jogosQuiz[chatJid]) return;
 
@@ -189,21 +259,26 @@ async function dispararQuizNoGrupo(chatJid, sock) {
             perguntaAtual: 0,
             pontos: {},
             premioTotal: PREMIO_TOTAL,
-            ativo: true
+            ativo: true,
+            respondida: false,
+            timerPergunta: null
         };
 
-        const totalRodada = perguntasSorteadas.length;
+        // MARCAR TODOS NO GRUPO
+        let mentions = [];
+        try {
+            const groupMetadata = await sock.groupMetadata(chatJid);
+            mentions = groupMetadata.participants.map(p => p.id);
+        } catch (e) {}
 
         await sock.sendMessage(chatJid, { 
-            text: `⏰ *HORÁRIO DO QUIZ DIÁRIO (21:45)!* ⏰\n\n🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${totalRodada}` 
+            text: `⏰ *HORÁRIO DO QUIZ DIÁRIO (21:52)!* ⏰\n\n🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL}\n🎯 *Total de Perguntas:* ${perguntasSorteadas.length}\n\n📢 @todos fiquem atentos!`,
+            mentions: mentions
         });
 
-        setTimeout(async () => {
-            const primeiraPerguntaObj = perguntasSorteadas[0];
-            await sock.sendMessage(chatJid, {
-                text: `❓ *PRIMEIRA PERGUNTA (1/${totalRodada}):*\n\n${primeiraPerguntaObj.pergunta}`
-            });
-        }, 2000);
+        setTimeout(() => {
+            enviarProximaPergunta(chatJid, sock);
+        }, 3000);
 
     } catch (err) {
         console.error('Erro ao disparar quiz automático:', err.message);
@@ -239,9 +314,9 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            // ⏰ PROGRAMAÇÃO DO QUIZ DIÁRIO (21:45 Brasil = 00:45 UTC)
-            cron.schedule('45 0 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 21:45...');
+            // ⏰ PROGRAMAÇÃO DO QUIZ DIÁRIO (21:52 Brasil = 00:52 UTC)
+            cron.schedule('52 0 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 21:52...');
                 const GRUPO_QUIZ_JID = "120363409325935641@g.us";
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
             });
@@ -263,6 +338,37 @@ async function connectToWhatsApp() {
             const from = m.key.remoteJid;
 
             if (!text) return;
+
+            // VERIFICAÇÃO DE RESPOSTAS DO QUIZ
+            if (jogosQuiz[from] && jogosQuiz[from].ativo && !jogosQuiz[from].respondida) {
+                const jogo = jogosQuiz[from];
+                const qAtual = jogo.perguntas[jogo.perguntaAtual];
+
+                if (qAtual && text === String(qAtual.resposta).trim().toLowerCase()) {
+                    jogo.respondida = true;
+                    if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
+
+                    const rawSender = m.key.participant || m.key.remoteJid || from;
+                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+
+                    jogo.pontos[senderLid] = (jogo.pontos[senderLid] || 0) + 1;
+
+                    await sock.sendMessage(from, {
+                        text: `🎉 *RESPOSTA CORRETA!* @${senderLid} acertou e pontuou!\nResposta: *${qAtual.resposta}*`,
+                        mentions: [rawSender]
+                    }, { quoted: m });
+
+                    jogo.perguntaAtual++;
+                    setTimeout(() => enviarProximaPergunta(from, sock), 3000);
+                    return;
+                }
+            }
+
+            // COMANDO !INICIARQUIZ (Manual)
+            if (text === '!iniciarquiz') {
+                await dispararQuizNoGrupo(from, sock);
+                return;
+            }
 
             // COMANDO !JID
             if (text === '!jid') {

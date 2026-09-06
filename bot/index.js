@@ -300,7 +300,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
             mentions = groupMetadata.participants.map(p => p.id);
         } catch (e) {}
 
-        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:25)!* ⏰\n\n` +
+        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:30)!* ⏰\n\n` +
                           `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n` +
                           `🎯 *Total de Perguntas:* ${QTD_PERGUNTAS}\n\n` +
                           `📢 @todos fiquem atentos! A primeira pergunta será enviada em instantes!`;
@@ -345,9 +345,13 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            cron.schedule('25 22 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:25...');
+            // Cron configurado explicitamente para o fuso horário de Brasília
+            cron.schedule('30 22 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:30 (Horário de Brasília)...');
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
+            }, {
+                scheduled: true,
+                timezone: "America/Sao_Paulo"
             });
         }
     });

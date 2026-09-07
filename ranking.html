@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Ranking - Grand Line RPG</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="jogadores.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Estilos das Abas do Ranking (Integrados ao tema) */
+    .ranking-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .tab-btn {
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #c9a050;
+      color: #c9a050;
+      padding: 10px 25px;
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      background: #c9a050;
+      color: #000;
+      box-shadow: 0 0 15px rgba(201, 160, 80, 0.5);
+    }
+
+    /* Posição em Destaque nos Cards */
+    .rank-position-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid #c9a050;
+      color: #fff;
+      font-weight: 700;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 0.9rem;
+      z-index: 2;
+    }
+
+    .top-1 { border-color: #ffd700; color: #ffd700; font-size: 1.1rem; }
+    .top-2 { border-color: #c0c0c0; color: #c0c0c0; }
+    .top-3 { border-color: #cd7f32; color: #cd7f32; }
+
+    .sub-info {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <header class="navbar">
+
+    <div class="logo-area">
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+    </div>
+
+    <!-- BOTÃO MENU -->
+    <button class="menu-toggle" id="menu-toggle" aria-label="Abrir Menu">
+      ☰
+    </button>
+
+    <!-- MENU -->
+    <nav id="nav-menu">
+      <a href="index.html" id="home-link">INÍCIO</a>
+      <a href="faccoes.html">FACÇÕES</a>
+      <a href="jogadores.html">JOGADORES</a>
+      <a href="ranking.html" class="active">RANKING</a>
+      <a href="mapa.html">MAPA</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
+
+  </header>
+
+  <section class="players-title">
+    <h1>RANKINGS OFICIAIS</h1>
+    <p>Acompanhe os maiores combatentes da Grand Line na Arena e no Coliseu.</p>
+  </section>
+
+  <!-- SELETOR DE ABAS DA ARENA / COLISEU -->
+  <div class="ranking-tabs">
+    <button class="tab-btn active" id="btn-arena" onclick="alternarAba('arena')">⚔️ ARENA</button>
+    <button class="tab-btn" id="btn-coliseu" onclick="alternarAba('coliseu')">🏟️ COLISEU</button>
+  </div>
+
+  <main id="players-container"></main>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal">
+    <div class="modal-box">
+
+      <span class="close" onclick="closeModal()">×</span>
+
+      <img id="modal-img" class="modal-img">
+
+      <h2 id="modal-charname"></h2>
+
+      <p id="modal-nome"></p>
+
+      <div id="modal-nivel" class="modal-level-badge">1</div>
+
+      <!-- STATS -->
+      <div class="modal-stats">
+
+        <div class="jog-stat-box">
+          <span>EXP</span>
+          <strong id="modal-exp"></strong>
+        </div>
+
+        <div class="jog-stat-box">
+          <span>SALDO</span>
+          <strong id="modal-dinheiro"></strong>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FIREBASE SCRIPT -->
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+      projectId: "grand-line-rpg-dcda9",
+      storageBucket: "grand-line-rpg-dcda9.appspot.com",
+      messagingSenderId: "172042779786",
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    const container = document.getElementById("players-container");
+    let abaAtual = "arena";
+
+    // TROCA INÍCIO POR PERFIL SE ESTIVER LOGADO
+    onAuthStateChanged(auth, (user) => {
+      const homeLink = document.getElementById("home-link");
+      if (user) {
+        homeLink.innerText = "PERFIL";
+        homeLink.href = "perfil.html";
+      } else {
+        homeLink.innerText = "INÍCIO";
+        homeLink.href = "index.html";
+      }
+    });
+
+    function buildImage(charName) {
+      const personagem = (charName || "default")
+        .toLowerCase()
+        .replaceAll(" ", "-")
+        .replaceAll(".", "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${personagem}.png?v=${Date.now()}`;
+    }
+
+    // CARREGA RANKING DA ARENA
+    async function carregarRankingArena() {
+      container.innerHTML = "<p style='color:#fff; text-align:center;'>Carregando ranking da Arena...</p>";
+
+      const [rankSnap, playersSnap] = await Promise.all([
+        get(ref(db, "ranking")),
+        get(ref(db, "players"))
+      ]);
+
+      if (!rankSnap.exists() || !playersSnap.exists()) {
+        container.innerHTML = "<p style='color:#fff; text-align:center;'>Nenhum dado encontrado para a Arena.</p>";
+        return;
+      }
+
+      const rankingData = rankSnap.val();
+      const playersData = playersSnap.val();
+
+      container.innerHTML = "";
+
+      const posicoes = Object.keys(rankingData)
+        .map(Number)
+        .filter(p => p > 0 && !isNaN(p))
+        .sort((a, b) => a - b);
+
+      posicoes.forEach(pos => {
+        const uid = rankingData[pos];
+        const player = playersData[uid];
+
+        if (player) {
+          renderCard(player, pos, "Arena");
+        }
+      });
+    }
+
+    // CARREGA RANKING DO COLISEU
+    async function carregarRankingColiseu() {
+      container.innerHTML = "<p style='color:#fff; text-align:center;'>Carregando ranking do Coliseu...</p>";
+
+      const [infoSnap, playersSnap] = await Promise.all([
+        get(ref(db, "coliseu/info")),
+        get(ref(db, "players"))
+      ]);
+
+      const info = infoSnap.val() || { temporada: 1 };
+      const temporadaAtual = info.temporada || 1;
+
+      const coliseuSnap = await get(ref(db, `coliseu/temporadas/temporada_${temporadaAtual}/jogadores`));
+
+      if (!coliseuSnap.exists() || !playersSnap.exists()) {
+        container.innerHTML = `<p style='color:#fff; text-align:center;'>Nenhum inscrito na Temporada ${temporadaAtual} do Coliseu.</p>`;
+        return;
+      }
+
+      const coliseuData = coliseuSnap.val();
+      const playersData = playersSnap.val();
+
+      container.innerHTML = "";
+
+      const uidsInscritos = Object.keys(coliseuData);
+
+      // Ordena por Pontos > Vitórias > Menos Derrotas
+      uidsInscritos.sort((a, b) => {
+        const pA = coliseuData[a];
+        const pB = coliseuData[b];
+        if ((pB.pontos || 0) !== (pA.pontos || 0)) return (pB.pontos || 0) - (pA.pontos || 0);
+        if ((pB.vitorias || 0) !== (pA.vitorias || 0)) return (pB.vitorias || 0) - (pA.vitorias || 0);
+        return (pA.derrotas || 0) - (pB.derrotas || 0);
+      });
+
+      uidsInscritos.forEach((uid, idx) => {
+        const player = playersData[uid];
+        const dadosColiseu = coliseuData[uid];
+
+        if (player) {
+          renderCard(player, idx + 1, "Coliseu", dadosColiseu);
+        }
+      });
+    }
+
+    // CRIA OS CARDS NA TELA
+    function renderCard(player, posicao, tipo, dadosColiseu = null) {
+      const card = document.createElement("div");
+      card.classList.add("card");
+
+      const charName = player.character?.charName || "Desconhecido";
+      const playerName = player.nome || "Sem nome";
+      const foto = buildImage(charName);
+      const level = player.info?.level || 1;
+      const exp = player.info?.exp || 0;
+      const dinheiro = player.info?.saldo || 0;
+
+      let topClass = "";
+      if (posicao === 1) topClass = "top-1";
+      if (posicao === 2) topClass = "top-2";
+      if (posicao === 3) topClass = "top-3";
+
+      let textoSub = "";
+      if (tipo === "Coliseu" && dadosColiseu) {
+        textoSub = `<p class="sub-info">🏅 <strong>${dadosColiseu.pontos || 0} pts</strong> | ✔️ ${dadosColiseu.vitorias || 0} | ✖️ ${dadosColiseu.derrotas || 0}</p>`;
+      } else {
+        textoSub = `<p class="player-name">${playerName}</p>`;
+      }
+
+      card.innerHTML = `
+        <div class="rank-position-badge ${topClass}">${posicao}º</div>
+
+        <div class="img-wrap">
+          <img src="${foto}" class="character-img" alt="${charName}">
+
+          <div class="nivel-badge">
+            ${level}
+          </div>
+        </div>
+
+        <div class="info">
+          <h2>${charName}</h2>
+          ${textoSub}
+        </div>
+      `;
+
+      card.onclick = () => openModal(foto, charName, playerName, level, exp, dinheiro);
+
+      container.appendChild(card);
+    }
+
+    // ALTERNA ENTRE AS ABAS
+    window.alternarAba = function (aba) {
+      abaAtual = aba;
+
+      document.getElementById("btn-arena").classList.toggle("active", aba === "arena");
+      document.getElementById("btn-coliseu").classList.toggle("active", aba === "coliseu");
+
+      if (aba === "arena") {
+        carregarRankingArena();
+      } else {
+        carregarRankingColiseu();
+      }
+    };
+
+    // MODAL FUNCTIONS
+    function openModal(img, charName, playerName, level, exp, dinheiro) {
+      document.getElementById("modal").style.display = "flex";
+      document.getElementById("modal-img").src = img;
+      document.getElementById("modal-charname").innerText = charName;
+      document.getElementById("modal-nome").innerText = playerName;
+      document.getElementById("modal-nivel").innerText = level;
+      document.getElementById("modal-exp").innerText = exp.toLocaleString("pt-BR");
+      document.getElementById("modal-dinheiro").innerText = "฿ " + dinheiro.toLocaleString("pt-BR");
+      document.body.classList.add("modal-open");
+    }
+
+    function closeModal() {
+      document.getElementById("modal").style.display = "none";
+      document.body.classList.remove("modal-open");
+    }
+
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+
+    window.onclick = function (event) {
+      const modal = document.getElementById("modal");
+      if (event.target === modal) closeModal();
+    };
+
+    // Inicialização
+    carregarRankingArena();
+
+  </script>
+
+  <!-- MENU MOBILE SCRIPT -->
+  <script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const navMenu = document.getElementById("nav-menu");
+
+    menuToggle.addEventListener("click", () => {
+      navMenu.classList.toggle("active");
+    });
+  </script>
+
+</body>
+</html>

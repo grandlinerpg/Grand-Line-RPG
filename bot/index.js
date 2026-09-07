@@ -210,11 +210,11 @@ async function gerarTabelaPontuacao(pontosObj) {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
-        let tabela = `📊 *RANKING DE PONTUAÇÃO (RODADA):*\n`;
+        let tabela = `📊 *TABELA DE PONTUAÇÃO:*\n`;
         participantes.forEach((lid, idx) => {
             const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === lid);
             const nome = playerUid ? (playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador") : `@${lid}`;
-            tabela += `${idx + 1}º ${nome} — ${pontosObj[lid]} Ponto(s)\n`;
+            tabela += `${idx + 1}º ${nome} — ${pontosObj[lid]} Pt(s)\n`;
         });
         return tabela.trim();
     } catch (e) {
@@ -553,7 +553,7 @@ async function connectToWhatsApp() {
                 try {
                     const rawSender = m.key.participant || m.key.remoteJid || from;
                     const senderLid = rawSender.split('@')[0].split(':')[0].trim();
-
+            
                     const [playersRes, desafiosArenaRes, desafiosColiseuRes] = await Promise.all([
                         axios.get(`${FIREBASE_URL}/players.json`),
                         axios.get(`${FIREBASE_URL}/desafios.json`),
@@ -567,38 +567,57 @@ async function connectToWhatsApp() {
                     const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === senderLid);
                     if (!playerUid) return await sock.sendMessage(from, { text: '❌ Seu personagem não está cadastrado!' }, { quoted: m });
 
-                    const charName = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || 'Combatente';
+                    const playerLevel = playersData[playerUid]?.info?.level ?? 1;
 
-                    let listaDesafios = [];
+                    // Função auxiliar para formatar a data (Ex: 24/08 às 17:35)
+                    const formatarData = (timestamp) => {
+                        if (!timestamp) return 'Data N/A';
+                        const data = new Date(timestamp);
+                        const dataStr = data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' });
+                        const horaStr = data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+                        return `${dataStr} às ${horaStr}`;
+                    };
 
-                    // Checa desafios da Arena
+                    let ativos = [];
+                    let enviados = [];
+
+                    // Filtra desafios de Arena
                     Object.values(desafiosArena).forEach(desafio => {
                         if (desafio && desafio.status === 'pendente') {
+                            const dataFormatada = formatarData(desafio.criadoEm);
                             if (desafio.desafiadoLid === senderLid) {
-                                listaDesafios.push(`⚔️ *ARENA (Recebido):* De *${desafio.desafianteNome}*\n👉 Aceite com: *!aceitar @${desafio.desafianteLid}*`);
+                                ativos.push(`⚔️ ${desafio.desafianteNome} (${playerLevel})\nData: ${dataFormatada}`);
                             } else if (desafio.desafianteLid === senderLid) {
-                                listaDesafios.push(`⚔️ *ARENA (Enviado):* Para *${desafio.desafiadoNome}*\n⏳ Aguardando confirmação...`);
+                                enviados.push(`⚔️ ${desafio.desafiadoNome} (${playerLevel})\nData: ${dataFormatada}`);
                             }
                         }
                     });
 
-                    // Checa desafios do Coliseu
+                    // Filtra desafios do Coliseu
                     Object.values(desafiosColiseu).forEach(desafio => {
                         if (desafio && desafio.status === 'pendente') {
+                            const dataFormatada = formatarData(desafio.criadoEm);
                             if (desafio.desafiadoLid === senderLid) {
-                                listaDesafios.push(`🏟️ *COLISEU (Recebido):* De *${desafio.desafianteNome}*\n👉 Aceite no Coliseu com: *!aceitarcoliseu @${desafio.desafianteLid}*`);
+                                ativos.push(`🏟️ ${desafio.desafianteNome} (${playerLevel})\nData: ${dataFormatada}`);
                             } else if (desafio.desafianteLid === senderLid) {
-                                listaDesafios.push(`🏟️ *COLISEU (Enviado):* Para *${desafio.desafiadoNome}*\n⏳ Aguardando confirmação...`);
+                                enviados.push(`🏟️ ${desafio.desafiadoNome} (${playerLevel})\nData: ${dataFormatada}`);
                             }
                         }
                     });
 
-                    if (listaDesafios.length === 0) {
-                        return await sock.sendMessage(from, { text: `📜 *DESAFIOS DE ${charName.toUpperCase()}*\n\nNão há nenhum desafio pendente contra ou a favor de você no momento.` }, { quoted: m });
+                    // Se não houver nenhum desafio ativo nem enviado
+                    if (ativos.length === 0 && enviados.length === 0) {
+                        const msgVazio = `📜 *— DESAFIOS ATIVOS —* 📜\n\nNão há nenhum desafio pendente contra ou a favor de você no momento.`;
+                        return await sock.sendMessage(from, { text: msgVazio }, { quoted: m });
                     }
 
-                    let msgDesafios = `📜 *DESAFIOS PENDENTES — ${charName.toUpperCase()}*\n\n` + listaDesafios.join('\n\n');
-                    return await sock.sendMessage(from, { text: msgDesafios }, { quoted: m });
+                    let resposta = `📜 — DESAFIOS ATIVOS — 📜\n\n`;
+                    resposta += ativos.length > 0 ? ativos.join('\n\n') : 'Nenhum desafio recebido.';
+        
+                    resposta += `\n\n📜 — ENVIADOS — 📜\n\n`;
+                    resposta += enviados.length > 0 ? enviados.join('\n\n') : 'Nenhum desafio enviado.';
+            
+                    return await sock.sendMessage(from, { text: resposta }, { quoted: m });
 
                 } catch (e) {
                     return await sock.sendMessage(from, { text: '❌ Erro ao buscar seus desafios.' }, { quoted: m });

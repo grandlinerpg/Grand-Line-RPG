@@ -548,6 +548,63 @@ async function connectToWhatsApp() {
                 }
             }
 
+            // COMANDO !DESAFIOS (Verifica desafios de Arena e Coliseu vinculados ao personagem)
+            if (text === '!desafios' || text.startsWith('!desafios ')) {
+                try {
+                    const rawSender = m.key.participant || m.key.remoteJid || from;
+                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+
+                    const [playersRes, desafiosArenaRes, desafiosColiseuRes] = await Promise.all([
+                        axios.get(`${FIREBASE_URL}/players.json`),
+                        axios.get(`${FIREBASE_URL}/desafios.json`),
+                        axios.get(`${FIREBASE_URL}/desafios_coliseu.json`)
+                    ]);
+
+                    const playersData = playersRes.data || {};
+                    const desafiosArena = desafiosArenaRes.data || {};
+                    const desafiosColiseu = desafiosColiseuRes.data || {};
+
+                    const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === senderLid);
+                    if (!playerUid) return await sock.sendMessage(from, { text: '❌ Seu personagem não está cadastrado!' }, { quoted: m });
+
+                    const charName = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || 'Combatente';
+
+                    let listaDesafios = [];
+
+                    // Checa desafios da Arena
+                    Object.values(desafiosArena).forEach(desafio => {
+                        if (desafio && desafio.status === 'pendente') {
+                            if (desafio.desafiadoLid === senderLid) {
+                                listaDesafios.push(`⚔️ *ARENA (Recebido):* De *${desafio.desafianteNome}*\n👉 Aceite com: *!aceitar @${desafio.desafianteLid}*`);
+                            } else if (desafio.desafianteLid === senderLid) {
+                                listaDesafios.push(`⚔️ *ARENA (Enviado):* Para *${desafio.desafiadoNome}*\n⏳ Aguardando confirmação...`);
+                            }
+                        }
+                    });
+
+                    // Checa desafios do Coliseu
+                    Object.values(desafiosColiseu).forEach(desafio => {
+                        if (desafio && desafio.status === 'pendente') {
+                            if (desafio.desafiadoLid === senderLid) {
+                                listaDesafios.push(`🏟️ *COLISEU (Recebido):* De *${desafio.desafianteNome}*\n👉 Aceite no Coliseu com: *!aceitarcoliseu @${desafio.desafianteLid}*`);
+                            } else if (desafio.desafianteLid === senderLid) {
+                                listaDesafios.push(`🏟️ *COLISEU (Enviado):* Para *${desafio.desafiadoNome}*\n⏳ Aguardando confirmação...`);
+                            }
+                        }
+                    });
+
+                    if (listaDesafios.length === 0) {
+                        return await sock.sendMessage(from, { text: `📜 *DESAFIOS DE ${charName.toUpperCase()}*\n\nNão há nenhum desafio pendente contra ou a favor de você no momento.` }, { quoted: m });
+                    }
+
+                    let msgDesafios = `📜 *DESAFIOS PENDENTES — ${charName.toUpperCase()}*\n\n` + listaDesafios.join('\n\n');
+                    return await sock.sendMessage(from, { text: msgDesafios }, { quoted: m });
+
+                } catch (e) {
+                    return await sock.sendMessage(from, { text: '❌ Erro ao buscar seus desafios.' }, { quoted: m });
+                }
+            }
+
             // COMANDO !DESAFIARCOLISEU
             if (text.startsWith('!desafiarcoliseu')) {
                 const rawSender = m.key.participant || m.key.remoteJid || from;

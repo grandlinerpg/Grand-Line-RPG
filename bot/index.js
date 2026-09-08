@@ -90,7 +90,7 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         const nomeAtual = pAtual?.nome || `Jogador ${bat.jogadorVez}`;
 
         await sock.sendMessage(groupId, { 
-            text: `⏰ *TEMPO ESGOTADO!* O limite de 30 minutos para a jogada de *${nomeAtual}* (Turno ${bat.turnoAtual}) acabou!\nPassando a vez...` 
+            text: `⏰ TEMPO ENCERRADO!` 
         });
 
         if (bat.jogadorVez === 1) {
@@ -104,7 +104,7 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         const nomeProx = proxJogador?.nome || `Jogador ${bat.jogadorVez}`;
 
         await sock.sendMessage(groupId, { 
-            text: `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeProx.toUpperCase()}*\n\n⏳ *Tempo Máximo:* 30 minutos.\n👉 Digite *!prox* ao concluir sua jogada.` 
+            text: `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeProx.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.` 
         });
 
         const jidPvProx = formatarJidPv(proxJogador?.lid);
@@ -129,21 +129,19 @@ async function comecarCombateDeFato(groupId, sock) {
     bat.jogadorVez = 1;
 
     const p1Nome = bat.p1?.nome || 'Jogador 1';
-    const p2Nome = bat.p2?.nome || 'Jogador 2';
 
-    const msgComeco = `⏰ *TEMPO DE APRESENTAÇÃO ENCERRADO!*\n\n` +
-                      `⚔️ *TURNO 1 INICIADO (${bat.tipo === 'COLISEU' ? 'COLISEU' : 'ARENA'})*\n` +
-                      `👥 *Luta:* ${p1Nome} VS ${p2Nome}\n` +
-                      `👤 *Vez inicial:* ${p1Nome}\n` +
-                      `⏳ *Tempo limite para esta jogada:* 30 minutos.\n\n` +
-                      `👉 Digite *!prox* ao concluir sua jogada.`;
+    const msgComeco = `⏰ TEMPO ENCERRADO!\n\n` +
+                      `🔄 TURNO 1 INICIADO 🔄\n\n` +
+                      `VEZ DE ${p1Nome.toUpperCase()}\n\n` +
+                      `Tempo: 30 minutos\n\n` +
+                      `Digite !prox ao concluir sua jogada.`;
 
     await sock.sendMessage(groupId, { text: msgComeco });
 
     const p1Jid = formatarJidPv(bat.p1?.lid);
     if (p1Jid) {
         try {
-            await sock.sendMessage(p1Jid, { text: `⚔️ *O COMBATE COMEÇOU!* É a sua vez (Turno 1) contra *${p2Nome}*.\n\n👉 Envie sua jogada no grupo e digite *!prox*.` });
+            await sock.sendMessage(p1Jid, { text: `⚔️ *O COMBATE COMEÇOU!* É a sua vez (Turno 1).\n\n👉 Envie sua jogada no grupo e digite *!prox*.` });
         } catch (pvErr) {}
     }
 
@@ -345,7 +343,6 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            // Cron configurado explicitamente para o fuso horário de Brasília
             cron.schedule('30 22 * * *', () => {
                 console.log('⏰ [CRON] Iniciando Quiz Automático das 22:30 (Horário de Brasília)...');
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
@@ -535,7 +532,7 @@ async function connectToWhatsApp() {
                     });
 
                     let coliseuText = `🏟 *— COLISEU CORRIDA —* 🏟\n🏆 *— TEMPORADA ${tempDesejada} — 🏆*\n\n*Período: ${coliseuInfo.periodo}*\n\n`;
-                    inscritosUids.forEach((uid, index) => {
+                    inscritosUids.forEach((index, uid) => {
                         const dados = coliseuData[uid];
                         const player = playersData[uid];
                         const emoji = obterEmojiFaccao(player?.character?.faction);
@@ -548,7 +545,6 @@ async function connectToWhatsApp() {
                 }
             }
 
-            // COMANDO !DESAFIOS (Verifica desafios de Arena e Coliseu vinculados ao personagem)
             if (text === '!desafios' || text.startsWith('!desafios ')) {
                 try {
                     const rawSender = m.key.participant || m.key.remoteJid || from;
@@ -569,7 +565,6 @@ async function connectToWhatsApp() {
 
                     const playerLevel = playersData[playerUid]?.info?.level ?? 1;
 
-                    // Função auxiliar para formatar a data (Ex: 24/08 às 17:35)
                     const formatarData = (timestamp) => {
                         if (!timestamp) return 'Data N/A';
                         const data = new Date(timestamp);
@@ -581,7 +576,6 @@ async function connectToWhatsApp() {
                     let ativos = [];
                     let enviados = [];
 
-                    // Filtra desafios de Arena
                     Object.values(desafiosArena).forEach(desafio => {
                         if (desafio && desafio.status === 'pendente') {
                             const dataFormatada = formatarData(desafio.criadoEm);
@@ -593,7 +587,6 @@ async function connectToWhatsApp() {
                         }
                     });
 
-                    // Filtra desafios do Coliseu
                     Object.values(desafiosColiseu).forEach(desafio => {
                         if (desafio && desafio.status === 'pendente') {
                             const dataFormatada = formatarData(desafio.criadoEm);
@@ -605,7 +598,6 @@ async function connectToWhatsApp() {
                         }
                     });
 
-                    // Se não houver nenhum desafio ativo nem enviado
                     if (ativos.length === 0 && enviados.length === 0) {
                         const msgVazio = `📜 *— DESAFIOS ATIVOS —* 📜\n\nNão há nenhum desafio pendente contra ou a favor de você no momento.`;
                         return await sock.sendMessage(from, { text: msgVazio }, { quoted: m });
@@ -717,11 +709,11 @@ async function connectToWhatsApp() {
 
                 iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
 
-                const msgInicio = `🏟️ *DESAFIO DO COLISEU ACEITO!* 🏟️\n\n🥊 *${p1.nome}* VS *${p2.nome}*\n\n📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
+                const msgInicio = `⚔️ COMBATE  INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
-            // COMANDO !DESAFIAR (Envia a notificação no GRUPO DO QUIZ)
+            // COMANDO !DESAFIAR
             if (text.startsWith('!desafiar') && !text.startsWith('!desafiarcoliseu')) {
                 const rawSender = m.key.participant || m.key.remoteJid || from;
                 const senderLid = rawSender.split('@')[0].split(':')[0].trim();
@@ -821,7 +813,7 @@ async function connectToWhatsApp() {
 
                 iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
 
-                const msgInicio = `⚔️ *COMBATE DE ARENA INICIADO!* ⚔️\n\n🥊 *${p1.nome}* VS *${p2.nome}*\n\n📝 Apresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
+                const msgInicio = `⚔️ COMBATE  INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
@@ -849,7 +841,7 @@ async function connectToWhatsApp() {
                 const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
                 const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
 
-                const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual} — VEZ DE ${nomeDoVez.toUpperCase()}*\n\n⏳ *Tempo limite desta jogada:* 30 minutos.\n👉 Digite *!prox* ao concluir sua jogada.`;
+                const msgNovoTurno = `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.`;
                 await sock.sendMessage(from, { text: msgNovoTurno });
 
                 const jidPvProx = formatarJidPv(proximoJogadorObj?.lid);
@@ -863,7 +855,7 @@ async function connectToWhatsApp() {
                 return;
             }
 
-            // COMANDO !WIN (COM RECOMPENSA DE SALDO E EXP NA ARENA)
+            // COMANDO !WIN
             if (text.startsWith('!win')) {
                 const bat = batalhas[from];
                 if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
@@ -935,7 +927,6 @@ async function connectToWhatsApp() {
                         const uidVencedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === vencedorObj?.lid);
 
                         if (uidVencedor) {
-                            // Subir no ranking
                             const posAtualStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
                             if (posAtualStr) {
                                 const posAtual = parseInt(posAtualStr);
@@ -950,7 +941,6 @@ async function connectToWhatsApp() {
                                 }
                             }
 
-                            // Entrega das recompensas de Saldo e EXP
                             const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
                             const expAtual = playersData[uidVencedor]?.info?.exp || 0;
 
@@ -967,9 +957,11 @@ async function connectToWhatsApp() {
                     await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
                 }
 
-                const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
-                               `🎉 O combatente *${nomeVencedor}* venceu no *${bat.tipo === 'COLISEU' ? 'COLISEU' : 'ARENA'}* após *${bat.turnoAtual} rodadas*!\n\n` +
-                               `${bat.tipo === 'COLISEU' ? '🏟️ Pontuação do Coliseu atualizada!' : `⚔️ *Ranking atualizado:* O vencedor subiu 1 posição!\n🎁 *Recompensas do Combate:*\n💰 +฿ ${RECOMPENSA_ARENA_SALDO}\n✨ +${RECOMPENSA_ARENA_EXP} EXP`}`;
+                const msgWin = `🏆 VITÓRIA DECLARADA! 🏆\n\n` +
+                               `O jogador ${nomeVencedor} venceu o combate após ${bat.turnoAtual} rodada${bat.turnoAtual > 1 ? 's' : ''} e subiu 1 posição no ranking!\n\n` +
+                               `RECOMPENSAS DO COMBATE:\n\n` +
+                               `💰 +฿ ${RECOMPENSA_ARENA_SALDO.toLocaleString('pt-BR')}\n` +
+                               `✨ +${RECOMPENSA_ARENA_EXP} EXP`;
                 
                 await sock.sendMessage(from, { text: msgWin });
 

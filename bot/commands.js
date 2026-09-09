@@ -6,6 +6,9 @@ const {
     GRUPO_COLISEU, 
     GRUPO_QUIZ_JID, 
     GRUPOS_ARENA, 
+    jogosQuiz, 
+    batalhas, 
+    timersDesafio, 
     obterTemporadaAtual, 
     obterEmojiFaccao, 
     formatarJidPv, 
@@ -13,20 +16,27 @@ const {
 } = require('./index');
 
 const { 
-    jogosQuiz, 
-    batalhas, 
-    timersDesafio, 
     limparTimersBatalha, 
     iniciarTimerTurnoMaximo, 
     comecarCombateDeFato, 
     iniciarEstruturaBatalha, 
-    gerarTabelaPontuacao, 
     enviarProximaPergunta, 
+    gerarTabelaPontuacao, 
     dispararQuizNoGrupo 
 } = require('./gameEngine');
 
-async function handleCommand(sock, m, text, from) {
-    // RESPOSTAS DO QUIZ
+async function handleCommand(sock, m) {
+    const rawText = m.message.conversation || 
+                    m.message.extendedTextMessage?.text || 
+                    m.message.imageMessage?.caption || 
+                    m.message.videoMessage?.caption || '';
+
+    const text = rawText.trim().toLowerCase();
+    const from = m.key.remoteJid;
+
+    if (!text) return;
+
+    // Respostas Quiz
     if (jogosQuiz[from] && jogosQuiz[from].ativo && !jogosQuiz[from].respondida) {
         const jogo = jogosQuiz[from];
         const qAtual = jogo.perguntas[jogo.perguntaAtual];
@@ -227,6 +237,7 @@ async function handleCommand(sock, m, text, from) {
     if (text === '!desafios' || text.startsWith('!desafios ')) {
         try {
             const senderId = obterJidEfetivo(m, from);
+
             const [playersRes, desafiosArenaRes, desafiosColiseuRes] = await Promise.all([
                 axios.get(`${FIREBASE_URL}/players.json`),
                 axios.get(`${FIREBASE_URL}/desafios.json`),
@@ -291,15 +302,18 @@ async function handleCommand(sock, m, text, from) {
             });
 
             if (ativos.length === 0 && enviados.length === 0) {
-                return await sock.sendMessage(from, { text: `📜 *— DESAFIOS ATIVOS —* 📜\n\nNão há nenhum desafio pendente contra ou a favor de você no momento.` }, { quoted: m });
+                const msgVazio = `📜 *— DESAFIOS ATIVOS —* 📜\n\nNão há nenhum desafio pendente contra ou a favor de você no momento.`;
+                return await sock.sendMessage(from, { text: msgVazio }, { quoted: m });
             }
 
             let resposta = `📜 — DESAFIOS ATIVOS — 📜\n\n`;
             resposta += ativos.length > 0 ? ativos.join('\n\n') : 'Nenhum desafio recebido.';
+
             resposta += `\n\n📜 — ENVIADOS — 📜\n\n`;
             resposta += enviados.length > 0 ? enviados.join('\n\n') : 'Nenhum desafio enviado.';
-            
+
             return await sock.sendMessage(from, { text: resposta }, { quoted: m });
+
         } catch (e) {
             return await sock.sendMessage(from, { text: '❌ Erro ao buscar seus desafios.' }, { quoted: m });
         }
@@ -307,10 +321,12 @@ async function handleCommand(sock, m, text, from) {
 
     if (text.startsWith('!desafiarcoliseu')) {
         const senderId = obterJidEfetivo(m, from);
+
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
         if (!mentionedJid) return await sock.sendMessage(from, { text: '❌ Marque o jogador! Ex: *!desafiarcoliseu @jogador*' }, { quoted: m });
 
         const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+        
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
@@ -387,6 +403,7 @@ async function handleCommand(sock, m, text, from) {
         }
 
         const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
@@ -403,6 +420,7 @@ async function handleCommand(sock, m, text, from) {
         const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
 
         const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
+
         const desafioRes = await axios.get(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`);
         const desafio = desafioRes.data;
 
@@ -508,12 +526,14 @@ async function handleCommand(sock, m, text, from) {
         }
 
         const senderId = obterJidEfetivo(m, from);
+
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
         if (!mentionedJid) {
             return await sock.sendMessage(from, { text: '❌ Marque o desafiante para aceitar!\nExemplo: *!aceitar @desafiante*' }, { quoted: m });
         }
 
         const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
@@ -530,6 +550,7 @@ async function handleCommand(sock, m, text, from) {
         const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
 
         const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
+
         const desafioRes = await axios.get(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
         const desafio = desafioRes.data;
 
@@ -587,6 +608,7 @@ async function handleCommand(sock, m, text, from) {
         if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
 
         const senderId = obterJidEfetivo(m, from);
+
         let vencedorObj = null;
         let perdedorObj = null;
 
@@ -645,7 +667,6 @@ async function handleCommand(sock, m, text, from) {
             const desafioKey = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});
         } else {
-            // ARENA (PVP)
             try {
                 const [rankRes, playersRes] = await Promise.all([
                     axios.get(`${FIREBASE_URL}/ranking.json`),

@@ -127,11 +127,11 @@ async function comecarCombateDeFato(groupId, sock) {
 
     const p1Nome = bat.p1?.nome || 'Jogador 1';
 
-    const msgComeco = `⏰ TEMPO ENCERRADO!\n\n` +
-                      `🔄 TURNO 1 INICIADO 🔄\n\n` +
-                      `VEZ DE ${p1Nome.toUpperCase()}\n\n` +
-                      `Tempo: 30 minutos\n\n` +
-                      `Digite !prox ao concluir sua jogada.`;
+    const msgComeco = `⏰ *TEMPO ENCERRADO!*\n\n` +
+                      `🔄 *TURNO 1 INICIADO* 🔄\n\n` +
+                      `VEZ DE *${p1Nome.toUpperCase()}*\n\n` +
+                      `*Tempo:* 30 minutos\n\n` +
+                      `Digite *!prox* ao concluir sua jogada.`;
 
     await sock.sendMessage(groupId, { text: msgComeco });
 
@@ -902,7 +902,7 @@ async function connectToWhatsApp() {
 
                 iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
 
-                const msgInicio = `⚔️ COMBATE INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
+                const msgInicio = `⚔️ *COMBATE INICIADO!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
@@ -930,7 +930,7 @@ async function connectToWhatsApp() {
                 const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
                 const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
 
-                const msgNovoTurno = `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.`;
+                const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\n*Tempo:* 30 minutos\n\nDigite *!prox* ao concluir sua jogada.`;
                 await sock.sendMessage(from, { text: msgNovoTurno });
 
                 iniciarTimerTurnoMaximo(from, sock);
@@ -1047,8 +1047,8 @@ async function connectToWhatsApp() {
                     await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
                 }
 
-                const msgWin = `🏆 VITÓRIA DECLARADA! 🏆\n\n` +
-                               `O jogador ${nomeVencedor} venceu o combate após ${bat.turnoAtual} rodada${bat.turnoAtual > 1 ? 's' : ''} e subiu 1 posição no ranking!\n\n` +
+                const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
+                               `O jogador *${nomeVencedor}* venceu o combate após ${bat.turnoAtual} rodada${bat.turnoAtual > 1 ? 's' : ''} e subiu 1 posição no ranking!\n\n` +
                                `RECOMPENSAS DO COMBATE:\n\n` +
                                `💰 +฿ ${RECOMPENSA_ARENA_SALDO.toLocaleString('pt-BR')}\n` +
                                `✨ +${RECOMPENSA_ARENA_EXP} EXP`;

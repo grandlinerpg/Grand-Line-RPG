@@ -71,10 +71,15 @@ function limparTimersBatalha(batalha) {
     if (batalha.timerTurno) clearTimeout(batalha.timerTurno);
 }
 
-function formatarJidPv(lid) {
-    if (!lid) return null;
-    const cleanLid = String(lid).split('@')[0].split(':')[0].trim();
-    return `${cleanLid}@s.whatsapp.net`;
+function formatarJidPv(num) {
+    if (!num) return null;
+    const cleanNum = String(num).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
+    return cleanNum ? `${cleanNum}@s.whatsapp.net` : null;
+}
+
+function obterJidEfetivo(m, from) {
+    const rawSender = m.key.participant || m.key.remoteJid || from;
+    return rawSender.split('@')[0].split(':')[0].trim();
 }
 
 function iniciarTimerTurnoMaximo(groupId, sock) {
@@ -107,7 +112,7 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
             text: `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeProx.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.` 
         });
 
-        const jidPvProx = formatarJidPv(proxJogador?.lid);
+        const jidPvProx = formatarJidPv(proxJogador?.numero);
         if (jidPvProx) {
             try {
                 await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* Turno ${bat.turnoAtual} iniciado no seu combate em grupo!\n\n👉 Responda no grupo e digite *!prox* ao concluir.` });
@@ -138,7 +143,7 @@ async function comecarCombateDeFato(groupId, sock) {
 
     await sock.sendMessage(groupId, { text: msgComeco });
 
-    const p1Jid = formatarJidPv(bat.p1?.lid);
+    const p1Jid = formatarJidPv(bat.p1?.numero);
     if (p1Jid) {
         try {
             await sock.sendMessage(p1Jid, { text: `⚔️ *O COMBATE COMEÇOU!* É a sua vez (Turno 1).\n\n👉 Envie sua jogada no grupo e digite *!prox*.` });
@@ -209,10 +214,13 @@ async function gerarTabelaPontuacao(pontosObj) {
         const playersData = playersRes.data || {};
 
         let tabela = `📊 *TABELA DE PONTUAÇÃO:*\n`;
-        participantes.forEach((lid, idx) => {
-            const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === lid);
-            const nome = playerUid ? (playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador") : `@${lid}`;
-            tabela += `${idx + 1}º ${nome} — ${pontosObj[lid]} Pt(s)\n`;
+        participantes.forEach((senderId, idx) => {
+            const playerUid = Object.keys(playersData).find(u => 
+                String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                String(playersData[u]?.number?.n || '').trim() === senderId
+            );
+            const nome = playerUid ? (playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador") : `@${senderId}`;
+            tabela += `${idx + 1}º ${nome} — ${pontosObj[senderId]} Pt(s)\n`;
         });
         return tabela.trim();
     } catch (e) {
@@ -237,11 +245,14 @@ async function finalizarQuiz(chatJid, sock) {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
 
-            for (const lid of participantes) {
-                const acertos = jogo.pontos[lid];
+            for (const senderId of participantes) {
+                const acertos = jogo.pontos[senderId];
                 const premioGanhado = acertos * (jogo.premioTotal / jogo.perguntas.length);
 
-                const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === lid);
+                const playerUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                    String(playersData[u]?.number?.n || '').trim() === senderId
+                );
                 let nomePlayer = "Lutador";
 
                 if (playerUid) {
@@ -378,18 +389,17 @@ async function connectToWhatsApp() {
                     jogo.respondida = true;
                     if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
 
-                    const rawSender = m.key.participant || m.key.remoteJid || from;
-                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                    const senderId = obterJidEfetivo(m, from);
 
-                    jogo.pontos[senderLid] = (jogo.pontos[senderLid] || 0) + 1;
+                    jogo.pontos[senderId] = (jogo.pontos[senderId] || 0) + 1;
 
                     const tabelaPontos = await gerarTabelaPontuacao(jogo.pontos);
 
-                    const msgAcerto = `🎉 *RESPOSTA CORRETA!* @${senderLid} acertou e pontuou!\n\n${tabelaPontos}`;
+                    const msgAcerto = `🎉 *RESPOSTA CORRETA!* @${senderId} acertou e pontuou!\n\n${tabelaPontos}`;
 
                     await sock.sendMessage(from, {
                         text: msgAcerto,
-                        mentions: [rawSender]
+                        mentions: [m.key.participant || m.key.remoteJid || from]
                     }, { quoted: m });
 
                     jogo.perguntaAtual++;
@@ -413,14 +423,16 @@ async function connectToWhatsApp() {
 
             if (text === '!dado' || text.startsWith('!dado ')) {
                 const resultado = Math.floor(Math.random() * 100) + 1;
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                const senderId = obterJidEfetivo(m, from);
 
                 let nomeJogador = "Lutador";
                 try {
                     const response = await axios.get(`${FIREBASE_URL}/players.json`);
                     const playersData = response.data || {};
-                    const playerUid = Object.keys(playersData).find(uid => String(playersData[uid]?.number?.LID || '').trim() === senderLid);
+                    const playerUid = Object.keys(playersData).find(uid => 
+                        String(playersData[uid]?.number?.LID || '').trim() === senderId || 
+                        String(playersData[uid]?.number?.n || '').trim() === senderId
+                    );
                     if (playerUid) nomeJogador = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
                 } catch (e) {}
 
@@ -433,14 +445,29 @@ async function connectToWhatsApp() {
                     const playersData = response.data;
                     if (!playersData) return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
 
-                    const rawSender = m.key.participant || m.key.remoteJid || from;
-                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
-                    const playerUid = Object.keys(playersData).find(uid => String(playersData[uid]?.number?.LID || '').trim() === senderLid);
+                    // Verifica se houve alguma menção (@jogador) na mensagem
+                    const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        
+                    // Se marcou alguém, pega o ID marcado. Se não, pega o ID de quem enviou.
+                    const targetId = mentionedJid 
+                        ? mentionedJid.split('@')[0].split(':')[0].trim() 
+                        : obterJidEfetivo(m, from);
 
-                    if (!playerUid) return await sock.sendMessage(from, { text: `❌ *LID não cadastrado!* (${senderLid})` }, { quoted: m });
+                    const playerUid = Object.keys(playersData).find(uid => 
+                        String(playersData[uid]?.number?.LID || '').trim() === targetId || 
+                        String(playersData[uid]?.number?.n || '').trim() === targetId
+                    );
 
+                    if (!playerUid) {
+                        const mensagemErro = mentionedJid 
+                            ? '❌ *O jogador mencionado não está cadastrado!*' 
+                            : `❌ *Usuário não cadastrado!* (${targetId})`;
+                        return await sock.sendMessage(from, { text: mensagemErro }, { quoted: m });
+                    }
+        
                     const player = playersData[playerUid];
                     const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n👤 *Nome:* ${player?.character?.charName || player?.nome || 'Sem Nome'}\n⭐ *Nível:* ${player?.info?.level ?? 1}\n✨ *EXP:* ${player?.info?.exp ?? 0}\n💰 *Saldo:* ฿ ${player?.info?.saldo ?? 0}`;
+        
                     await sock.sendMessage(from, { text: infoText }, { quoted: m });
                 } catch (e) {
                     await sock.sendMessage(from, { text: '❌ Erro ao buscar informações.' }, { quoted: m });
@@ -464,7 +491,7 @@ async function connectToWhatsApp() {
                         const uid = rankingObj[pos];
                         const player = playersData[uid];
                         const emoji = obterEmojiFaccao(player?.character?.faction);
-                        rankText += `${pos}º ${player?.character?.charName || player?.nome || 'Sem Nome'} (${player?.info?.level ?? 1}) ${emoji}\n`;
+                        rankText += `${pos}º ${player?.character?.charName || player?.nome || 'Sem Nome'}${emoji ? ' ' + emoji : ''}\n`;
                     });
                     await sock.sendMessage(from, { text: rankText.trim() }, { quoted: m });
                 } catch (e) {
@@ -474,8 +501,7 @@ async function connectToWhatsApp() {
 
             if (text === '!inscrever' || text.startsWith('!inscrever ')) {
                 try {
-                    const rawSender = m.key.participant || m.key.remoteJid || from;
-                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                    const senderId = obterJidEfetivo(m, from);
                     const tempAtual = await obterTemporadaAtual();
 
                     const [playersRes, coliseuRes] = await Promise.all([
@@ -485,7 +511,10 @@ async function connectToWhatsApp() {
 
                     const playersData = playersRes.data || {};
                     const coliseuData = coliseuRes.data || {};
-                    const playerUid = Object.keys(playersData).find(uid => String(playersData[uid]?.number?.LID || '').trim() === senderLid);
+                    const playerUid = Object.keys(playersData).find(uid => 
+                        String(playersData[uid]?.number?.LID || '').trim() === senderId || 
+                        String(playersData[uid]?.number?.n || '').trim() === senderId
+                    );
 
                     if (!playerUid) return await sock.sendMessage(from, { text: '❌ Personagem não cadastrado!' }, { quoted: m });
                     if (coliseuData[playerUid]) return await sock.sendMessage(from, { text: `⚠️ Você já está inscrito na Temporada ${tempAtual}!` }, { quoted: m });
@@ -525,18 +554,18 @@ async function connectToWhatsApp() {
                     if (inscritosUids.length === 0) return await sock.sendMessage(from, { text: `🏟 *Coliseu sem inscritos na Temporada ${tempDesejada}!*` }, { quoted: m });
 
                     inscritosUids.sort((a, b) => {
-                        const pA = coliseuData[a]; const pB = coliseuData[b];
+                        const pA = coliseuData[a] || {}; const pB = coliseuData[b] || {};
                         if ((pB.pontos || 0) !== (pA.pontos || 0)) return (pB.pontos || 0) - (pA.pontos || 0);
                         if ((pB.vitorias || 0) !== (pA.vitorias || 0)) return (pB.vitorias || 0) - (pA.vitorias || 0);
                         return (pA.derrotas || 0) - (pB.derrotas || 0);
                     });
 
                     let coliseuText = `🏟 *— COLISEU CORRIDA —* 🏟\n🏆 *— TEMPORADA ${tempDesejada} — 🏆*\n\n*Período: ${coliseuInfo.periodo}*\n\n`;
-                    inscritosUids.forEach((index, uid) => {
-                        const dados = coliseuData[uid];
+                    inscritosUids.forEach((uid, index) => {
+                        const dados = coliseuData[uid] || {};
                         const player = playersData[uid];
                         const emoji = obterEmojiFaccao(player?.character?.faction);
-                        coliseuText += `${index + 1}º ${player?.character?.charName || 'Lutador'} (${player?.info?.level ?? 1})${emoji ? ' ' + emoji : ''}\n> *✔️ ${dados.vitorias || 0} | ✖️ ${dados.derrotas || 0} | 🏅${dados.pontos || 0}*\n\n`;
+                        coliseuText += `${index + 1}º ${player?.character?.charName || 'Lutador'}${emoji ? ' ' + emoji : ''}\n> *✔️ ${dados.vitorias || 0} | ✖️ ${dados.derrotas || 0} | 🏅${dados.pontos || 0}*\n\n`;
                     });
 
                     await sock.sendMessage(from, { text: coliseuText.trim() }, { quoted: m });
@@ -547,8 +576,7 @@ async function connectToWhatsApp() {
 
             if (text === '!desafios' || text.startsWith('!desafios ')) {
                 try {
-                    const rawSender = m.key.participant || m.key.remoteJid || from;
-                    const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                    const senderId = obterJidEfetivo(m, from);
             
                     const [playersRes, desafiosArenaRes, desafiosColiseuRes] = await Promise.all([
                         axios.get(`${FIREBASE_URL}/players.json`),
@@ -560,10 +588,13 @@ async function connectToWhatsApp() {
                     const desafiosArena = desafiosArenaRes.data || {};
                     const desafiosColiseu = desafiosColiseuRes.data || {};
 
-                    const playerUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === senderLid);
+                    const playerUid = Object.keys(playersData).find(u => 
+                        String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                        String(playersData[u]?.number?.n || '').trim() === senderId
+                    );
                     if (!playerUid) return await sock.sendMessage(from, { text: '❌ Seu personagem não está cadastrado!' }, { quoted: m });
 
-                    const playerLevel = playersData[playerUid]?.info?.level ?? 1;
+                    const myNum = String(playersData[playerUid]?.number?.n || '').trim();
 
                     const formatarData = (timestamp) => {
                         if (!timestamp) return 'Data N/A';
@@ -573,16 +604,26 @@ async function connectToWhatsApp() {
                         return `${dataStr} às ${horaStr}`;
                     };
 
+                    const obterNivelOponente = (numOponente) => {
+                        const uid = Object.keys(playersData).find(u => 
+                            String(playersData[u]?.number?.n || '').trim() === String(numOponente).trim() ||
+                            String(playersData[u]?.number?.LID || '').trim() === String(numOponente).trim()
+                        );
+                        return uid ? (playersData[uid]?.info?.level ?? 1) : 1;
+                    };
+
                     let ativos = [];
                     let enviados = [];
 
                     Object.values(desafiosArena).forEach(desafio => {
                         if (desafio && desafio.status === 'pendente') {
                             const dataFormatada = formatarData(desafio.criadoEm);
-                            if (desafio.desafiadoLid === senderLid) {
-                                ativos.push(`⚔️ ${desafio.desafianteNome} (${playerLevel})\nData: ${dataFormatada}`);
-                            } else if (desafio.desafianteLid === senderLid) {
-                                enviados.push(`⚔️ ${desafio.desafiadoNome} (${playerLevel})\nData: ${dataFormatada}`);
+                            if (desafio.desafiadoNum === myNum || desafio.desafiadoLid === senderId) {
+                                const lv = obterNivelOponente(desafio.desafianteNum || desafio.desafianteLid);
+                                ativos.push(`⚔️ ${desafio.desafianteNome} (${lv})\nData: ${dataFormatada}`);
+                            } else if (desafio.desafianteNum === myNum || desafio.desafianteLid === senderId) {
+                                const lv = obterNivelOponente(desafio.desafiadoNum || desafio.desafiadoLid);
+                                enviados.push(`⚔️ ${desafio.desafiadoNome} (${lv})\nData: ${dataFormatada}`);
                             }
                         }
                     });
@@ -590,10 +631,12 @@ async function connectToWhatsApp() {
                     Object.values(desafiosColiseu).forEach(desafio => {
                         if (desafio && desafio.status === 'pendente') {
                             const dataFormatada = formatarData(desafio.criadoEm);
-                            if (desafio.desafiadoLid === senderLid) {
-                                ativos.push(`🏟️ ${desafio.desafianteNome} (${playerLevel})\nData: ${dataFormatada}`);
-                            } else if (desafio.desafianteLid === senderLid) {
-                                enviados.push(`🏟️ ${desafio.desafiadoNome} (${playerLevel})\nData: ${dataFormatada}`);
+                            if (desafio.desafiadoNum === myNum || desafio.desafiadoLid === senderId) {
+                                const lv = obterNivelOponente(desafio.desafianteNum || desafio.desafianteLid);
+                                ativos.push(`🏟️ ${desafio.desafianteNome} (${lv})\nData: ${dataFormatada}`);
+                            } else if (desafio.desafianteNum === myNum || desafio.desafianteLid === senderId) {
+                                const lv = obterNivelOponente(desafio.desafiadoNum || desafio.desafiadoLid);
+                                enviados.push(`🏟️ ${desafio.desafiadoNome} (${lv})\nData: ${dataFormatada}`);
                             }
                         }
                     });
@@ -618,57 +661,68 @@ async function connectToWhatsApp() {
 
             // COMANDO !DESAFIARCOLISEU
             if (text.startsWith('!desafiarcoliseu')) {
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                const senderId = obterJidEfetivo(m, from);
 
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
                 if (!mentionedJid) return await sock.sendMessage(from, { text: '❌ Marque o jogador! Ex: *!desafiarcoliseu @jogador*' }, { quoted: m });
 
-                const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
-                if (senderLid === targetLid) return await sock.sendMessage(from, { text: '❌ Você não pode se desafiar!' }, { quoted: m });
+                const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+                
+                const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+                const playersData = playersRes.data || {};
+
+                const desafianteUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                    String(playersData[u]?.number?.n || '').trim() === senderId
+                );
+                const desafiadoUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                    String(playersData[u]?.number?.n || '').trim() === targetId
+                );
+
+                if (!desafianteUid || !desafiadoUid) return await sock.sendMessage(from, { text: '❌ Um dos jogadores não está cadastrado!' }, { quoted: m });
+                if (desafianteUid === desafiadoUid) return await sock.sendMessage(from, { text: '❌ Você não pode se desafiar!' }, { quoted: m });
 
                 const tempAtual = await obterTemporadaAtual();
-                const [playersRes, coliseuRes] = await Promise.all([
-                    axios.get(`${FIREBASE_URL}/players.json`),
-                    axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
-                ]);
-
-                const playersData = playersRes.data || {};
+                const coliseuRes = await axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`);
                 const coliseuData = coliseuRes.data || {};
-
-                const desafianteUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === senderLid);
-                const desafiadoUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === targetLid);
 
                 if (!coliseuData[desafianteUid]) return await sock.sendMessage(from, { text: '❌ Você precisa estar inscrito na temporada atual do Coliseu!' }, { quoted: m });
                 if (!coliseuData[desafiadoUid]) return await sock.sendMessage(from, { text: '❌ O jogador desafiado NÃO está inscrito no Coliseu!' }, { quoted: m });
+
+                const desafianteNum = String(playersData[desafianteUid]?.number?.n || senderId).trim();
+                const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || targetId).trim();
 
                 const nomeDesafiante = playersData[desafianteUid]?.character?.charName || playersData[desafianteUid]?.nome || 'Desafiante';
                 const nomeDesafiado = playersData[desafiadoUid]?.character?.charName || playersData[desafiadoUid]?.nome || 'Desafiado';
 
                 const desafioPayload = {
-                    desafianteLid: senderLid,
+                    desafianteLid: playersData[desafianteUid]?.number?.LID || senderId,
+                    desafianteNum: desafianteNum,
                     desafianteNome: nomeDesafiante,
-                    desafiadoLid: targetLid,
+                    desafiadoLid: playersData[desafiadoUid]?.number?.LID || targetId,
+                    desafiadoNum: desafiadoNum,
                     desafiadoNome: nomeDesafiado,
                     status: 'pendente',
                     criadoEm: Date.now()
                 };
 
-                const desafioKey = `${senderLid}_VS_${targetLid}`;
+                const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
                 await axios.put(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`, desafioPayload);
 
-                const msgDesafioColiseu = `🏟️ *DESAFIO DO COLISEU LANÇADO!* 🏟️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n📢 @${targetLid}, responda no grupo do Coliseu marcando o desafiante: *!aceitarcoliseu @${senderLid}*`;
+                const targetJidMsg = `${desafiadoNum}@s.whatsapp.net`;
+                const msgDesafioColiseu = `🏟️ *DESAFIO DO COLISEU LANÇADO!* 🏟️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n📢 @${desafiadoNum}, responda no grupo do Coliseu marcando o desafiante: *!aceitarcoliseu @${desafianteNum}*`;
 
-                await sock.sendMessage(GRUPO_COLISEU, { text: msgDesafioColiseu, mentions: [mentionedJid] });
+                await sock.sendMessage(GRUPO_COLISEU, { text: msgDesafioColiseu, mentions: [targetJidMsg] });
 
                 if (from !== GRUPO_COLISEU) {
                     await sock.sendMessage(from, { text: `✅ Desafio enviado para o grupo do Coliseu!` }, { quoted: m });
                 }
 
-                const pvTargetJid = formatarJidPv(targetLid);
+                const pvTargetJid = formatarJidPv(desafiadoNum);
                 if (pvTargetJid) {
                     try {
-                        await sock.sendMessage(pvTargetJid, { text: `🏟️ *VOCÊ FOI DESAFIADO NO COLISEU!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Vá ao grupo do Coliseu e responda com *!aceitarcoliseu @${senderLid}*` });
+                        await sock.sendMessage(pvTargetJid, { text: `🏟️ *VOCÊ FOI DESAFIADO NO COLISEU!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Vá ao grupo do Coliseu e responda com *!aceitarcoliseu @${desafianteNum}*` });
                     } catch (e) {}
                 }
                 return;
@@ -684,16 +738,30 @@ async function connectToWhatsApp() {
                     return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ocorrendo no Coliseu! Aguarde o término.' }, { quoted: m });
                 }
 
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
-
+                const senderId = obterJidEfetivo(m, from);
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
                 if (!mentionedJid) {
                     return await sock.sendMessage(from, { text: '❌ Você precisa marcar o desafiante para aceitar!\nExemplo: *!aceitarcoliseu @desafiante*' }, { quoted: m });
                 }
 
-                const desafianteLid = mentionedJid.split('@')[0].split(':')[0].trim();
-                const desafioKey = `${desafianteLid}_VS_${senderLid}`;
+                const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+
+                const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+                const playersData = playersRes.data || {};
+
+                const desafianteUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                    String(playersData[u]?.number?.n || '').trim() === targetId
+                );
+                const desafiadoUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                    String(playersData[u]?.number?.n || '').trim() === senderId
+                );
+
+                const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
+                const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
+
+                const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
 
                 const desafioRes = await axios.get(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`);
                 const desafio = desafioRes.data;
@@ -704,45 +772,55 @@ async function connectToWhatsApp() {
 
                 await axios.patch(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`, { status: 'aceito' });
 
-                const p1 = { lid: desafio.desafianteLid, nome: desafio.desafianteNome };
-                const p2 = { lid: desafio.desafiadoLid, nome: desafio.desafiadoNome };
+                const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
+                const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
                 iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
 
-                const msgInicio = `⚔️ COMBATE  INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
+                const msgInicio = `⚔️ COMBATE INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
             // COMANDO !DESAFIAR
             if (text.startsWith('!desafiar') && !text.startsWith('!desafiarcoliseu')) {
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                const senderId = obterJidEfetivo(m, from);
 
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
                 if (!mentionedJid) return await sock.sendMessage(from, { text: '❌ Marque quem deseja desafiar!\nEx: *!desafiar @jogador*' }, { quoted: m });
 
-                const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
-                if (senderLid === targetLid) return await sock.sendMessage(from, { text: '❌ Você não pode desafiar a si mesmo!' }, { quoted: m });
+                const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
 
                 const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
                 const playersData = playersRes.data || {};
 
-                const desafianteUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === senderLid);
-                const desafiadoUid = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === targetLid);
+                const desafianteUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                    String(playersData[u]?.number?.n || '').trim() === senderId
+                );
+                const desafiadoUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                    String(playersData[u]?.number?.n || '').trim() === targetId
+                );
 
                 if (!desafianteUid || !desafiadoUid) return await sock.sendMessage(from, { text: '❌ Um dos jogadores não está cadastrado!' }, { quoted: m });
+                if (desafianteUid === desafiadoUid) return await sock.sendMessage(from, { text: '❌ Você não pode desafiar a si mesmo!' }, { quoted: m });
+
+                const desafianteNum = String(playersData[desafianteUid]?.number?.n || senderId).trim();
+                const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || targetId).trim();
 
                 const nomeDesafiante = playersData[desafianteUid]?.character?.charName || playersData[desafianteUid]?.nome || 'Desafiante';
                 const nomeDesafiado = playersData[desafiadoUid]?.character?.charName || playersData[desafiadoUid]?.nome || 'Desafiado';
 
                 const agora = Date.now();
                 const tempoExpiracao = 24 * 60 * 60 * 1000;
-                const desafioKey = `${senderLid}_VS_${targetLid}`;
+                const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
 
                 const desafioPayload = {
-                    desafianteLid: senderLid,
+                    desafianteLid: playersData[desafianteUid]?.number?.LID || senderId,
+                    desafianteNum: desafianteNum,
                     desafianteNome: nomeDesafiante,
-                    desafiadoLid: targetLid,
+                    desafiadoLid: playersData[desafiadoUid]?.number?.LID || targetId,
+                    desafiadoNum: desafiadoNum,
                     desafiadoNome: nomeDesafiado,
                     status: 'pendente',
                     criadoEm: agora,
@@ -763,9 +841,10 @@ async function connectToWhatsApp() {
                     } catch (e) {}
                 }, tempoExpiracao);
 
-                const msgDesafio = `⚔️ *DESAFIO DE ARENA LANÇADO!* ⚔️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n⏳ @${targetLid}, você tem *24 horas* para aceitar marcando o desafiante em um dos grupos da Arena: *!aceitar @${senderLid}*`;
+                const targetJidMsg = `${desafiadoNum}@s.whatsapp.net`;
+                const msgDesafio = `⚔️ *DESAFIO DE ARENA LANÇADO!* ⚔️\n\n👤 *Desafiante:* ${nomeDesafiante}\n🎯 *Desafiado:* ${nomeDesafiado}\n\n⏳ @${desafiadoNum}, você tem *24 horas* para aceitar marcando o desafiante em um dos grupos da Arena: *!aceitar @${desafianteNum}*`;
                 
-                await sock.sendMessage(GRUPO_QUIZ_JID, { text: msgDesafio, mentions: [mentionedJid] });
+                await sock.sendMessage(GRUPO_QUIZ_JID, { text: msgDesafio, mentions: [targetJidMsg] });
 
                 if (from !== GRUPO_QUIZ_JID) {
                     await sock.sendMessage(from, { text: `✅ Desafio enviado para o grupo do Quiz!` }, { quoted: m });
@@ -783,16 +862,31 @@ async function connectToWhatsApp() {
                     return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ativa neste grupo! Aguarde o término.' }, { quoted: m });
                 }
 
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                const senderId = obterJidEfetivo(m, from);
 
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
                 if (!mentionedJid) {
                     return await sock.sendMessage(from, { text: '❌ Marque o desafiante para aceitar!\nExemplo: *!aceitar @desafiante*' }, { quoted: m });
                 }
 
-                const desafianteLid = mentionedJid.split('@')[0].split(':')[0].trim();
-                const desafioKey = `${desafianteLid}_VS_${senderLid}`;
+                const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+
+                const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+                const playersData = playersRes.data || {};
+
+                const desafianteUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                    String(playersData[u]?.number?.n || '').trim() === targetId
+                );
+                const desafiadoUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                    String(playersData[u]?.number?.n || '').trim() === senderId
+                );
+
+                const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
+                const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
+
+                const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
 
                 const desafioRes = await axios.get(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
                 const desafio = desafioRes.data;
@@ -808,12 +902,12 @@ async function connectToWhatsApp() {
 
                 await axios.patch(`${FIREBASE_URL}/desafios/${desafioKey}.json`, { status: 'aceito' });
 
-                const p1 = { lid: desafio.desafianteLid, nome: desafio.desafianteNome };
-                const p2 = { lid: desafio.desafiadoLid, nome: desafio.desafiadoNome };
+                const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
+                const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
                 iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
 
-                const msgInicio = `⚔️ COMBATE  INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
+                const msgInicio = `⚔️ COMBATE INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
                 return await sock.sendMessage(from, { text: msgInicio });
             }
 
@@ -844,7 +938,7 @@ async function connectToWhatsApp() {
                 const msgNovoTurno = `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.`;
                 await sock.sendMessage(from, { text: msgNovoTurno });
 
-                const jidPvProx = formatarJidPv(proximoJogadorObj?.lid);
+                const jidPvProx = formatarJidPv(proximoJogadorObj?.numero);
                 if (jidPvProx) {
                     try {
                         await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* Turno ${bat.turnoAtual} iniciado no grupo!\n\n👉 Responda no grupo e digite *!prox* ao terminar.` });
@@ -860,8 +954,7 @@ async function connectToWhatsApp() {
                 const bat = batalhas[from];
                 if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
 
-                const rawSender = m.key.participant || m.key.remoteJid || from;
-                const senderLid = rawSender.split('@')[0].split(':')[0].trim();
+                const senderId = obterJidEfetivo(m, from);
 
                 let vencedorObj = null;
                 let perdedorObj = null;
@@ -869,12 +962,12 @@ async function connectToWhatsApp() {
                 const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
                 if (mentionedJid) {
-                    const targetLid = mentionedJid.split('@')[0].split(':')[0].trim();
-                    if (bat.p1?.lid === targetLid) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
-                    if (bat.p2?.lid === targetLid) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
+                    const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+                    if (bat.p1?.numero === targetId || bat.p1?.lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+                    if (bat.p2?.numero === targetId || bat.p2?.lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
                 } else {
-                    if (bat.p1?.lid === senderLid) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
-                    else if (bat.p2?.lid === senderLid) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
+                    if (bat.p1?.numero === senderId || bat.p1?.lid === senderId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+                    else if (bat.p2?.numero === senderId || bat.p2?.lid === senderId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
                     else {
                         vencedorObj = bat[`p${bat.jogadorVez}`];
                         perdedorObj = bat.jogadorVez === 1 ? bat.p2 : bat.p1;
@@ -894,8 +987,14 @@ async function connectToWhatsApp() {
                         const playersData = playersRes.data || {};
                         const coliseuData = coliseuRes.data || {};
 
-                        const uidVencedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === vencedorObj?.lid);
-                        const uidPerdedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === perdedorObj?.lid);
+                        const uidVencedor = Object.keys(playersData).find(u => 
+                            String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
+                            String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
+                        );
+                        const uidPerdedor = Object.keys(playersData).find(u => 
+                            String(playersData[u]?.number?.n || '').trim() === String(perdedorObj?.numero).trim() ||
+                            String(playersData[u]?.number?.LID || '').trim() === String(perdedorObj?.lid).trim()
+                        );
 
                         if (uidVencedor && coliseuData[uidVencedor]) {
                             await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidVencedor}.json`, {
@@ -912,7 +1011,7 @@ async function connectToWhatsApp() {
                         }
                     } catch (e) {}
 
-                    const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
+                    const desafioKey = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
                     await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});
                 } else {
                     // ARENA (PVP)
@@ -924,7 +1023,10 @@ async function connectToWhatsApp() {
 
                         const rankingObj = rankRes.data || {};
                         const playersData = playersRes.data || {};
-                        const uidVencedor = Object.keys(playersData).find(u => String(playersData[u]?.number?.LID || '').trim() === vencedorObj?.lid);
+                        const uidVencedor = Object.keys(playersData).find(u => 
+                            String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
+                            String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
+                        );
 
                         if (uidVencedor) {
                             const posAtualStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
@@ -953,7 +1055,7 @@ async function connectToWhatsApp() {
                         console.error('Erro ao atualizar recompensa/ranking da Arena:', e.message);
                     }
 
-                    const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
+                    const desafioKey = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
                     await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
                 }
 
@@ -975,7 +1077,7 @@ async function connectToWhatsApp() {
                 if (!batalhas[from]) return;
 
                 const bat = batalhas[from];
-                const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
+                const desafioKey = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
 
                 await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
                 await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});

@@ -36,7 +36,7 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         const nomeProx = proxJogador?.nome || `Jogador ${bat.jogadorVez}`;
 
         await sock.sendMessage(groupId, { 
-            text: `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeProx.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.` 
+            text: `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeProx.toUpperCase()}*\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.` 
         });
 
         iniciarTimerTurnoMaximo(groupId, sock);

@@ -1,9 +1,10 @@
 const axios = require('axios');
-const { FIREBASE_URL } = require('./index');
-
-const jogosQuiz = {};
-const batalhas = {};
-const timersDesafio = {};
+const { 
+    FIREBASE_URL, 
+    jogosQuiz, 
+    batalhas, 
+    obterJidEfetivo 
+} = require('./index');
 
 function limparTimersBatalha(batalha) {
     if (!batalha) return;
@@ -20,7 +21,9 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
     bat.timerTurno = setTimeout(async () => {
         if (!batalhas[groupId]) return;
 
-        await sock.sendMessage(groupId, { text: `⏰ TEMPO ENCERRADO!` });
+        await sock.sendMessage(groupId, { 
+            text: `⏰ TEMPO ENCERRADO!` 
+        });
 
         if (bat.jogadorVez === 1) {
             bat.jogadorVez = 2;
@@ -59,6 +62,7 @@ async function comecarCombateDeFato(groupId, sock) {
                       `Digite *!prox* ao concluir sua jogada.`;
 
     await sock.sendMessage(groupId, { text: msgComeco });
+
     iniciarTimerTurnoMaximo(groupId, sock);
 }
 
@@ -83,7 +87,6 @@ function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', s
     }, 5 * 60 * 1000);
 }
 
-// SISTEMA DE QUIZ
 async function enviarProximaPergunta(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo || !jogo.ativo) return;
@@ -235,9 +238,6 @@ async function dispararQuizNoGrupo(chatJid, sock) {
 }
 
 module.exports = {
-    jogosQuiz,
-    batalhas,
-    timersDesafio,
     limparTimersBatalha,
     iniciarTimerTurnoMaximo,
     comecarCombateDeFato,

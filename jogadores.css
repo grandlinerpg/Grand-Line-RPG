@@ -357,47 +357,62 @@ body.modal-open{
    AJUSTES RESPONSIVOS PARA CELULAR (MOBILE)
    ========================================== */
 @media (max-width: 600px) {
-  /* Reduz o container do card e o padding interno */
+
+  .players-title h1 {
+    font-size: 30px;
+  }
+
+  /* Ajusta o container do card e compensa a badge do nível à direita */
   .card {
-    padding: 8px !important;
+    padding: 12px 65px 12px 12px !important;
+    gap: 12px !important;
   }
 
-  /* Reduz o tamanho da imagem do personagem no card */
-  .character-img {
-    max-width: 80px !important;
-    height: auto !important;
-  }
-
-  /* Ajusta o wrapper da imagem se tiver largura fixa */
+  /* Reduz o tamanho da imagem mantendo proporção quadrada */
   .img-wrap {
-    max-width: 80px !important;
+    width: 65px !important;
+    height: 65px !important;
+    min-width: 65px !important;
   }
 
-  /* Reduz o nome do personagem */
+  .character-img {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Reduz o nome do personagem e textos */
   .info h2 {
-    font-size: 0.9rem !important;
-    margin: 4px 0 !important;
+    font-size: 16px !important;
+    margin-bottom: 2px !important;
   }
 
-  /* Reduz a badge de Nível */
-  .nivel-badge {
-    font-size: 0.75rem !important;
-    padding: 2px 6px !important;
-    min-width: 20px !important;
-    height: auto !important;
-  }
-
-  /* Reduz o badge de posição do ranking */
-  .rank-position-badge {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 0.75rem !important;
-    top: 5px !important;
-    left: 5px !important;
-  }
-
-  /* Ajusta tamanho do sub-texto caso necessário */
   .sub-info, .player-name {
+    font-size: 12px !important;
+  }
+
+  /* CORREÇÃO DO NÍVEL:
+     Mantém a imagem de fundo intacta e reduz proporcionalmente usando scale() */
+  .nivel-badge {
+    right: 10px !important;
+    width: 64px !important;
+    height: 64px !important;
+    font-size: 15px !important;
+    padding: 0 !important;
+    transform: translateY(-50%) scale(0.75) !important; /* Encolhe sem cortar o fundo */
+    transform-origin: center right;
+  }
+
+  /* Badge de posição do ranking no topo esquerdo */
+  .rank-position-badge {
+    width: 26px !important;
+    height: 26px !important;
     font-size: 0.75rem !important;
+    top: -8px !important;
+    left: -8px !important;
+  }
+
+  .modal-box {
+    max-width: 90%;
+    padding: 20px;
   }
 }

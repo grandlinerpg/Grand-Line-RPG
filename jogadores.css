@@ -354,40 +354,50 @@ body.modal-open{
 }
 
 /* ==========================================
-   AJUSTES RESPONSIVOS PARA CELULAR (MOBILE)
+   AJUSTES EXCLUSIVOS PARA CELULAR (MOBILE)
    ========================================== */
 @media (max-width: 600px) {
+  /* Garante que a imagem seja o container de referência para a badge */
+  .img-wrap {
+    position: relative !important;
+    display: inline-block !important;
+    max-width: 85px !important;
+  }
+
   /* Reduz o container do card e o padding interno */
   .card {
     padding: 8px !important;
   }
 
-  /* Reduz o tamanho da imagem do personagem no card */
+  /* Imagem do personagem no celular */
   .character-img {
-    max-width: 80px !important;
+    max-width: 85px !important;
     height: auto !important;
   }
 
-  /* Ajusta o wrapper da imagem se tiver largura fixa */
-  .img-wrap {
-    max-width: 80px !important;
-  }
-
-  /* Reduz o nome do personagem */
+  /* Nome do personagem (maior no celular) */
   .info h2 {
-    font-size: 0.9rem !important;
+    font-size: 1.15rem !important;
     margin: 4px 0 !important;
+    line-height: 1.2 !important;
   }
 
-  /* Reduz a badge de Nível */
+  /* Badge de nível (APENAS NO CELULAR: menor e presa ao canto inferior direito da imagem) */
   .nivel-badge {
-    font-size: 0.75rem !important;
-    padding: 2px 6px !important;
-    min-width: 20px !important;
-    height: auto !important;
+    position: absolute !important;
+    top: auto !important;
+    left: auto !important;
+    bottom: 4px !important;
+    right: 4px !important;
+    font-size: 0.65rem !important;
+    padding: 1px 5px !important;
+    border-radius: 4px !important;
+    line-height: 1 !important;
+    z-index: 2 !important;
+    transform: none !important;
   }
 
-  /* Reduz o badge de posição do ranking */
+  /* Badge de posição no ranking */
   .rank-position-badge {
     width: 24px !important;
     height: 24px !important;
@@ -396,7 +406,7 @@ body.modal-open{
     left: 5px !important;
   }
 
-  /* Ajusta tamanho do sub-texto caso necessário */
+  /* Subtexto */
   .sub-info, .player-name {
     font-size: 0.75rem !important;
   }

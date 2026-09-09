@@ -449,8 +449,13 @@ async function connectToWhatsApp() {
                     }
         
                     const player = playersData[playerUid];
-                    const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n👤 *Nome:* ${player?.character?.charName || player?.nome || 'Sem Nome'}\n⭐ *Nível:* ${player?.info?.level ?? 1}\n✨ *EXP:* ${player?.info?.exp ?? 0}\n💰 *Saldo:* ฿ ${player?.info?.saldo ?? 0}`;
-        
+
+                    // Formatação do EXP e Saldo para o padrão brasileiro (1.000.000)
+                    const expFormatado = (player?.info?.exp ?? 0).toLocaleString('pt-BR');
+                    const saldoFormatado = (player?.info?.saldo ?? 0).toLocaleString('pt-BR');
+
+                    const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n👤 *Nome:* ${player?.character?.charName || player?.nome || 'Sem Nome'}\n⭐ *Nível:* ${player?.info?.level ?? 1}\n✨ *EXP:* ${expFormatado}\n💰 *Saldo:* ฿ ${saldoFormatado}`;
+
                     await sock.sendMessage(from, { text: infoText }, { quoted: m });
                 } catch (e) {
                     await sock.sendMessage(from, { text: '❌ Erro ao buscar informações.' }, { quoted: m });

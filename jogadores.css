@@ -357,53 +357,56 @@ body.modal-open{
    AJUSTES EXCLUSIVOS PARA CELULAR (MOBILE)
    ========================================== */
 @media (max-width: 600px) {
-  /* Garante que a imagem seja o container de referência para a badge */
+  /* Container da imagem do personagem */
   .img-wrap {
     position: relative !important;
     display: inline-block !important;
-    max-width: 85px !important;
+    max-width: 75px !important;
   }
 
-  /* Reduz o container do card e o padding interno */
+  /* Reduz o card inteiro */
   .card {
     padding: 8px !important;
   }
 
   /* Imagem do personagem no celular */
   .character-img {
-    max-width: 85px !important;
+    max-width: 75px !important;
     height: auto !important;
   }
 
-  /* Nome do personagem (maior no celular) */
+  /* Nome do personagem (tamanho proporcional) */
   .info h2 {
-    font-size: 1.15rem !important;
+    font-size: 1.1rem !important;
     margin: 4px 0 !important;
     line-height: 1.2 !important;
   }
 
-  /* Badge de nível (APENAS NO CELULAR: menor e presa ao canto inferior direito da imagem) */
+  /* BADGE DE NÍVEL (Reduzida proporcionalmente a caixinha inteira + texto) */
   .nivel-badge {
     position: absolute !important;
-    top: auto !important;
-    left: auto !important;
-    bottom: 4px !important;
-    right: 4px !important;
+    bottom: -2px !important;
+    right: -2px !important;
+    min-width: 18px !important;
+    height: 18px !important;
     font-size: 0.65rem !important;
-    padding: 1px 5px !important;
-    border-radius: 4px !important;
-    line-height: 1 !important;
-    z-index: 2 !important;
-    transform: none !important;
+    padding: 2px 4px !important;
+    border-radius: 50% !important; /* Caso seja circular, ou 4px se for retangular */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-size: contain !important;
+    transform: scale(0.85) !important; /* Encolhe a estrutura inteira sem quebrar proporções */
+    z-index: 3 !important;
   }
 
-  /* Badge de posição no ranking */
+  /* Badge de posição no ranking (1º, 2º, etc.) */
   .rank-position-badge {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 0.75rem !important;
-    top: 5px !important;
-    left: 5px !important;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 0.7rem !important;
+    top: 4px !important;
+    left: 4px !important;
   }
 
   /* Subtexto */

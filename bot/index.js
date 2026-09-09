@@ -8,7 +8,7 @@ const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
 // CONFIGURAÇÃO DE RECOMPENSAS DA ARENA
 const RECOMPENSA_ARENA_SALDO = 5000;
-const RECOMPENSA_ARENA_EXP = 500;
+const RECOMPENSA_ARENA_EXP = 500; 
 
 // GRUPOS
 const GRUPO_COLISEU = "120363411146386806@g.us";

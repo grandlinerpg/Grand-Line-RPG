@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { FIREBASE_URL } = require('./config');
+const { FIREBASE_URL } = require('./index');
 
 const jogosQuiz = {};
 const batalhas = {};

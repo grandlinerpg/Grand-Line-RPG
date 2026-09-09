@@ -10,7 +10,7 @@ const {
     obterEmojiFaccao, 
     formatarJidPv, 
     obterJidEfetivo 
-} = require('./config');
+} = require('./index');
 
 const { 
     jogosQuiz, 

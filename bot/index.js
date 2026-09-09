@@ -1,13 +1,10 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const express = require('express');
-const axios = require('axios'); 
-const cron = require('node-cron');
-
-const { handleCommand } = require('./commands');
-const { dispararQuizNoGrupo } = require('./gameEngine');
+const axios = require('axios');
+const cron = require('node-cron'); 
 
 // ==========================================
-// CONFIGURAÇÕES & CONSTANTES (Antigo config.js)
+// 1. CONFIGURAÇÕES E CONSTANTES GLOBAIS
 // ==========================================
 const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
@@ -26,7 +23,44 @@ const GRUPOS_ARENA = [
     "120363429534972500@g.us"
 ];
 
-// Exporta para que o commands.js e gameEngine.js continuem funcionando sem alterações
+// Estado em memória
+const jogosQuiz = {};
+const batalhas = {};
+const timersDesafio = {};
+
+// ==========================================
+// 2. FUNÇÕES UTILITÁRIAS EXPORTADAS
+// ==========================================
+async function obterTemporadaAtual() {
+    try {
+        const infoRes = await axios.get(`${FIREBASE_URL}/coliseu/info.json`);
+        return infoRes.data?.temporada || 1;
+    } catch (e) {
+        return 1;
+    }
+}
+
+function obterEmojiFaccao(faccao) {
+    if (!faccao) return '';
+    const faccaoLimpa = String(faccao).trim().toLowerCase();
+    if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) return '⚔️';
+    if (faccaoLimpa.includes('governo mundial')) return '⚓️';
+    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) return '🏴‍☠️';
+    return '';
+}
+
+function formatarJidPv(num) {
+    if (!num) return null;
+    const cleanNum = String(num).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
+    return cleanNum ? `${cleanNum}@s.whatsapp.net` : null;
+}
+
+function obterJidEfetivo(m, from) {
+    const rawSender = m.key.participant || m.key.remoteJid || from;
+    return rawSender.split('@')[0].split(':')[0].trim();
+}
+
+// OBRIGATÓRIO: Exportação imediata no topo para evitar dependência circular
 module.exports = {
     NUMERO_BOT,
     FIREBASE_URL,
@@ -35,34 +69,32 @@ module.exports = {
     GRUPO_COLISEU,
     GRUPO_QUIZ_JID,
     GRUPOS_ARENA,
-    obterTemporadaAtual: async () => {
-        try {
-            const infoRes = await axios.get(`${FIREBASE_URL}/coliseu/info.json`);
-            return infoRes.data?.temporada || 1;
-        } catch (e) { return 1; }
-    },
-    obterEmojiFaccao: (faccao) => {
-        if (!faccao) return '';
-        const f = String(faccao).trim().toLowerCase();
-        if (f.includes('exército revolucionário') || f.includes('exercito revolucionario')) return '⚔️';
-        if (f.includes('governo mundial')) return '⚓️';
-        if (f.includes('piratas') || f.includes('pirata')) return '🏴‍☠️';
-        return '';
-    },
-    formatarJidPv: (num) => {
-        if (!num) return null;
-        const clean = String(num).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
-        return clean ? `${clean}@s.whatsapp.net` : null;
-    },
-    obterJidEfetivo: (m, from) => {
-        const rawSender = m.key.participant || m.key.remoteJid || from;
-        return rawSender.split('@')[0].split(':')[0].trim();
-    }
+    jogosQuiz,
+    batalhas,
+    timersDesafio,
+    obterTemporadaAtual,
+    obterEmojiFaccao,
+    formatarJidPv,
+    obterJidEfetivo
 };
 
 // ==========================================
-// SERVIDOR WEB & CONEXÃO WHATSAPP
+// 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES
 // ==========================================
+const { 
+    limparTimersBatalha, 
+    iniciarTimerTurnoMaximo, 
+    comecarCombateDeFato, 
+    iniciarEstruturaBatalha, 
+    enviarProximaPergunta, 
+    gerarTabelaPontuacao, 
+    finalizarQuiz, 
+    dispararQuizNoGrupo 
+} = require('./gameEngine');
+
+const { handleCommand } = require('./commands');
+
+// Servidor Web + Auto-Ping (Render)
 const app = express();
 const PORT = process.env.PORT || 3000;
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
@@ -72,11 +104,16 @@ app.listen(PORT, () => {
     console.log(`[Web] Servidor ativo na porta ${PORT}`);
     if (RENDER_URL) {
         setInterval(async () => {
-            try { await axios.get(RENDER_URL); } catch (err) {}
+            try {
+                await axios.get(RENDER_URL);
+            } catch (err) {
+                console.error('[Auto-Ping] Erro:', err.message);
+            }
         }, 10 * 60 * 1000);
     }
 });
 
+// Conexão Baileys
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
@@ -107,9 +144,12 @@ async function connectToWhatsApp() {
             console.log('✅ [WhatsApp] Bot conectado!');
 
             cron.schedule('30 22 * * *', () => {
-                console.log('⏰ [CRON] Disparando Quiz Diário...');
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:30 (Horário de Brasília)...');
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
-            }, { scheduled: true, timezone: "America/Sao_Paulo" });
+            }, {
+                scheduled: true,
+                timezone: "America/Sao_Paulo"
+            });
         }
     });
 
@@ -119,18 +159,7 @@ async function connectToWhatsApp() {
             const m = chatUpdate.messages[0];
             if (m.key.fromMe || !m.message) return;
 
-            const rawText = m.message.conversation || 
-                            m.message.extendedTextMessage?.text || 
-                            m.message.imageMessage?.caption || 
-                            m.message.videoMessage?.caption || '';
-
-            const text = rawText.trim().toLowerCase();
-            const from = m.key.remoteJid;
-
-            if (!text) return;
-
-            await handleCommand(sock, m, text, from);
-
+            await handleCommand(sock, m);
         } catch (err) {
             console.error('❌ Erro no processamento:', err);
         }

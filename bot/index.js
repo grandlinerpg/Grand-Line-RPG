@@ -8,7 +8,7 @@ const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
 // CONFIGURAÇÃO DE RECOMPENSAS DA ARENA
 const RECOMPENSA_ARENA_SALDO = 5000;
-const RECOMPENSA_ARENA_EXP = 500;
+const RECOMPENSA_ARENA_EXP = 500; 
 
 // GRUPOS
 const GRUPO_COLISEU = "120363411146386806@g.us";
@@ -92,7 +92,6 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         if (!batalhas[groupId]) return;
 
         const pAtual = bat[`p${bat.jogadorVez}`];
-        const nomeAtual = pAtual?.nome || `Jogador ${bat.jogadorVez}`;
 
         await sock.sendMessage(groupId, { 
             text: `⏰ TEMPO ENCERRADO!` 
@@ -111,13 +110,6 @@ function iniciarTimerTurnoMaximo(groupId, sock) {
         await sock.sendMessage(groupId, { 
             text: `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeProx.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.` 
         });
-
-        const jidPvProx = formatarJidPv(proxJogador?.numero);
-        if (jidPvProx) {
-            try {
-                await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* Turno ${bat.turnoAtual} iniciado no seu combate em grupo!\n\n👉 Responda no grupo e digite *!prox* ao concluir.` });
-            } catch (pvErr) {}
-        }
 
         iniciarTimerTurnoMaximo(groupId, sock);
     }, 30 * 60 * 1000);
@@ -142,13 +134,6 @@ async function comecarCombateDeFato(groupId, sock) {
                       `Digite !prox ao concluir sua jogada.`;
 
     await sock.sendMessage(groupId, { text: msgComeco });
-
-    const p1Jid = formatarJidPv(bat.p1?.numero);
-    if (p1Jid) {
-        try {
-            await sock.sendMessage(p1Jid, { text: `⚔️ *O COMBATE COMEÇOU!* É a sua vez (Turno 1).\n\n👉 Envie sua jogada no grupo e digite *!prox*.` });
-        } catch (pvErr) {}
-    }
 
     iniciarTimerTurnoMaximo(groupId, sock);
 }
@@ -445,16 +430,27 @@ async function connectToWhatsApp() {
                     const playersData = response.data;
                     if (!playersData) return await sock.sendMessage(from, { text: '🏴‍☠️ Banco de dados vazio.' }, { quoted: m });
 
-                    const senderId = obterJidEfetivo(m, from);
+                    const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        
+                    const targetId = mentionedJid 
+                        ? mentionedJid.split('@')[0].split(':')[0].trim() 
+                        : obterJidEfetivo(m, from);
+
                     const playerUid = Object.keys(playersData).find(uid => 
-                        String(playersData[uid]?.number?.LID || '').trim() === senderId || 
-                        String(playersData[uid]?.number?.n || '').trim() === senderId
+                        String(playersData[uid]?.number?.LID || '').trim() === targetId || 
+                        String(playersData[uid]?.number?.n || '').trim() === targetId
                     );
 
-                    if (!playerUid) return await sock.sendMessage(from, { text: `❌ *Usuário não cadastrado!* (${senderId})` }, { quoted: m });
-
+                    if (!playerUid) {
+                        const mensagemErro = mentionedJid 
+                            ? '❌ *O jogador mencionado não está cadastrado!*' 
+                            : `❌ *Usuário não cadastrado!* (${targetId})`;
+                        return await sock.sendMessage(from, { text: mensagemErro }, { quoted: m });
+                    }
+        
                     const player = playersData[playerUid];
                     const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n👤 *Nome:* ${player?.character?.charName || player?.nome || 'Sem Nome'}\n⭐ *Nível:* ${player?.info?.level ?? 1}\n✨ *EXP:* ${player?.info?.exp ?? 0}\n💰 *Saldo:* ฿ ${player?.info?.saldo ?? 0}`;
+        
                     await sock.sendMessage(from, { text: infoText }, { quoted: m });
                 } catch (e) {
                     await sock.sendMessage(from, { text: '❌ Erro ao buscar informações.' }, { quoted: m });
@@ -836,6 +832,13 @@ async function connectToWhatsApp() {
                 if (from !== GRUPO_QUIZ_JID) {
                     await sock.sendMessage(from, { text: `✅ Desafio enviado para o grupo do Quiz!` }, { quoted: m });
                 }
+
+                const pvTargetJid = formatarJidPv(desafiadoNum);
+                if (pvTargetJid) {
+                    try {
+                        await sock.sendMessage(pvTargetJid, { text: `⚔️ *VOCÊ FOI DESAFIADO NA ARENA!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Acesse o grupo de Arena e aceite usando: *!aceitar @${desafianteNum}*` });
+                    } catch (e) {}
+                }
                 return;
             }
 
@@ -924,13 +927,6 @@ async function connectToWhatsApp() {
 
                 const msgNovoTurno = `🔄 TURNO ${bat.turnoAtual} 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.`;
                 await sock.sendMessage(from, { text: msgNovoTurno });
-
-                const jidPvProx = formatarJidPv(proximoJogadorObj?.numero);
-                if (jidPvProx) {
-                    try {
-                        await sock.sendMessage(jidPvProx, { text: `⚔️ *SUA VEZ!* Turno ${bat.turnoAtual} iniciado no grupo!\n\n👉 Responda no grupo e digite *!prox* ao terminar.` });
-                    } catch (pvErr) {}
-                }
 
                 iniciarTimerTurnoMaximo(from, sock);
                 return;

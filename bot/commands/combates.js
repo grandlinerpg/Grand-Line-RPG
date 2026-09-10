@@ -38,19 +38,20 @@ async function handleCombatesCommands(sock, m, text, from) {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
+        // Busca no banco mapeando diretamente pelo LID
         const desafianteUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === targetId || 
+            String(playersData[u]?.number?.LID || '').trim() === targetId ||
             String(playersData[u]?.number?.n || '').trim() === targetId
         );
         const desafiadoUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
             String(playersData[u]?.number?.n || '').trim() === senderId
         );
 
-        const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
-        const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
+        const desafianteLid = playersData[desafianteUid]?.number?.LID || targetId;
+        const desafiadoLid = playersData[desafiadoUid]?.number?.LID || senderId;
 
-        const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
+        const desafioKey = `${desafianteLid}_VS_${desafiadoLid}`;
 
         const desafioRes = await axios.get(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`);
         const desafio = desafioRes.data;
@@ -91,30 +92,27 @@ async function handleCombatesCommands(sock, m, text, from) {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
+        // Busca o UID mapeando pelo LID do cadastro
         const desafianteUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === targetId || 
+            String(playersData[u]?.number?.LID || '').trim() === targetId ||
             String(playersData[u]?.number?.n || '').trim() === targetId
         );
         const desafiadoUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
             String(playersData[u]?.number?.n || '').trim() === senderId
         );
 
-        const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
-        const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
+        // Garante que o ID utilizado na busca da chave seja o LID
+        const desafianteLid = playersData[desafianteUid]?.number?.LID || targetId;
+        const desafiadoLid = playersData[desafiadoUid]?.number?.LID || senderId;
 
-        const desafioKey = `${desafianteNum}_VS_${desafiadoNum}`;
+        const desafioKey = `${desafianteLid}_VS_${desafiadoLid}`;
 
         const desafioRes = await axios.get(`${FIREBASE_URL}/desafios/${desafioKey}.json`);
         const desafio = desafioRes.data;
 
         if (!desafio || desafio.status !== 'pendente') {
             return await sock.sendMessage(from, { text: '❌ Nenhum desafio pendente encontrado entre vocês.' }, { quoted: m });
-        }
-
-        if (timersDesafio[desafioKey]) {
-            clearTimeout(timersDesafio[desafioKey]);
-            delete timersDesafio[desafioKey];
         }
 
         await axios.patch(`${FIREBASE_URL}/desafios/${desafioKey}.json`, { status: 'aceito' });
@@ -170,11 +168,11 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         if (mentionedJid) {
             const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
-            if (bat.p1?.numero === targetId || bat.p1?.lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
-            if (bat.p2?.numero === targetId || bat.p2?.lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
+            if (bat.p1?.lid === targetId || bat.p1?.numero === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+            if (bat.p2?.lid === targetId || bat.p2?.numero === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
         } else {
-            if (bat.p1?.numero === senderId || bat.p1?.lid === senderId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
-            else if (bat.p2?.numero === senderId || bat.p2?.lid === senderId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
+            if (bat.p1?.lid === senderId || bat.p1?.numero === senderId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+            else if (bat.p2?.lid === senderId || bat.p2?.numero === senderId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
             else {
                 vencedorObj = bat[`p${bat.jogadorVez}`];
                 perdedorObj = bat.jogadorVez === 1 ? bat.p2 : bat.p1;
@@ -195,11 +193,9 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const coliseuData = coliseuRes.data || {};
 
                 const uidVencedor = Object.keys(playersData).find(u => 
-                    String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
                     String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
                 );
                 const uidPerdedor = Object.keys(playersData).find(u => 
-                    String(playersData[u]?.number?.n || '').trim() === String(perdedorObj?.numero).trim() ||
                     String(playersData[u]?.number?.LID || '').trim() === String(perdedorObj?.lid).trim()
                 );
 
@@ -218,7 +214,7 @@ async function handleCombatesCommands(sock, m, text, from) {
                 }
             } catch (e) {}
 
-            const desafioKey = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
+            const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});
         } else {
             try {
@@ -230,7 +226,6 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const rankingObj = rankRes.data || {};
                 const playersData = playersRes.data || {};
                 const uidVencedor = Object.keys(playersData).find(u => 
-                    String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
                     String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
                 );
 
@@ -261,7 +256,7 @@ async function handleCombatesCommands(sock, m, text, from) {
                 console.error('Erro ao atualizar recompensa/ranking da Arena:', e.message);
             }
 
-            const desafioKey = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
+            const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
             await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
         }
 
@@ -282,7 +277,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         if (!batalhas[from]) return true;
 
         const bat = batalhas[from];
-        const desafioKey = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
+        const desafioKey = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
 
         await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey}.json`).catch(() => {});
         await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`).catch(() => {});

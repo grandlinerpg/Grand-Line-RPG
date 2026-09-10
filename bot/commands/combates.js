@@ -19,8 +19,9 @@ const {
 
 // FUNÇÕES AUXILIARES PARA GERENCIAR ARENAS NO FIREBASE
 async function obterArenaAtiva(grupoJid) {
+    const chaveGrupo = grupoJid.replace('@g.us', '');
     try {
-        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`);
+        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`);
         if (res.data) {
             // Sincroniza o estado em memória com os dados remotos do Firebase
             batalhas[grupoJid] = { ...(batalhas[grupoJid] || {}), ...res.data };
@@ -33,6 +34,7 @@ async function obterArenaAtiva(grupoJid) {
 }
 
 async function salvarArenaAtiva(grupoJid, dadosBatalha) {
+    const chaveGrupo = grupoJid.replace('@g.us', '');
     batalhas[grupoJid] = dadosBatalha;
     
     // Removemos propriedades de instâncias locais/sockets que não devem ir ao JSON do Firebase
@@ -42,16 +44,17 @@ async function salvarArenaAtiva(grupoJid, dadosBatalha) {
     delete dadosParaSalvar.timerTurno;
 
     try {
-        await axios.put(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`, dadosParaSalvar);
+        await axios.put(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`, dadosParaSalvar);
     } catch (e) {
         console.error('Erro ao salvar arena no Firebase:', e.message);
     }
 }
 
 async function deletarArenaAtiva(grupoJid) {
+    const chaveGrupo = grupoJid.replace('@g.us', '');
     delete batalhas[grupoJid];
     try {
-        await axios.delete(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`);
+        await axios.delete(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`);
     } catch (e) {
         console.error('Erro ao deletar arena do Firebase:', e.message);
     }
@@ -67,7 +70,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         }
 
         const arenaAtiva = await obterArenaAtiva(from);
-        if (arenaAtiva) {
+        if (arenaAtiva && arenaAtiva.fase !== 'aguardando') {
             return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ocorrendo no Coliseu! Aguarde o término.' }, { quoted: m });
         }
 
@@ -131,11 +134,14 @@ async function handleCombatesCommands(sock, m, text, from) {
         const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
         const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
-        const dadosBatalha = iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
-        dadosBatalha.fase = 'apresentacao'; // Garante o estado inicial
+        const dadosBatalha = {
+            ...(arenaAtiva || {}),
+            ...iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock),
+            fase: 'apresentacao'
+        };
         await salvarArenaAtiva(from, dadosBatalha);
 
-        const msgInicio = `⚔️ COMBATE INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
+        const msgInicio = `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
         return await sock.sendMessage(from, { text: msgInicio });
     }
 
@@ -148,7 +154,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         }
 
         const arenaAtiva = await obterArenaAtiva(from);
-        if (arenaAtiva) {
+        if (arenaAtiva && arenaAtiva.fase !== 'aguardando') {
             return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ativa neste grupo! Aguarde o término.' }, { quoted: m });
         }
 
@@ -213,11 +219,19 @@ async function handleCombatesCommands(sock, m, text, from) {
         const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
         const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
-        const dadosBatalha = iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
-        dadosBatalha.fase = 'apresentacao'; // Garante que a fase é apresentação
+        const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
+        const nomeArena = arenaAtiva?.nomeArena || (indexArena > 0 ? `ARENA ${indexArena}` : 'ARENA');
+
+        const dadosBatalha = {
+            ...(arenaAtiva || {}),
+            ...iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock),
+            fase: 'apresentacao',
+            numeroArena: arenaAtiva?.numeroArena || indexArena,
+            nomeArena: nomeArena
+        };
         await salvarArenaAtiva(from, dadosBatalha);
 
-        const msgInicio = `⚔️ *COMBATE INICIADO!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
+        const msgInicio = `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
         return await sock.sendMessage(from, { text: msgInicio });
     }
 
@@ -231,7 +245,7 @@ async function handleCombatesCommands(sock, m, text, from) {
             return await sock.sendMessage(from, { text: '❌ Nenhuma arena ativa neste grupo para iniciar.' }, { quoted: m });
         }
 
-        if (bat.fase === 'apresentacao' || !bat.fase) {
+        if (bat.fase === 'apresentacao' || bat.fase === 'aguardando' || !bat.fase) {
             await comecarCombateDeFato(from, sock);
             bat.fase = 'em_combate';
             bat.jogadorVez = bat.jogadorVez || 1;
@@ -275,7 +289,7 @@ async function handleCombatesCommands(sock, m, text, from) {
     // ==========================================
     if (text.startsWith('!win')) {
         const bat = await obterArenaAtiva(from);
-        if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
+        if (!bat || bat.fase === 'aguardando') return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
 
         const senderId = obterJidEfetivo(m, from);
 
@@ -311,7 +325,7 @@ async function handleCombatesCommands(sock, m, text, from) {
             await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
 
             limparTimersBatalha(bat);
-            await deletarArenaAtiva(from);
+            await resetarArenaAguardando(from, bat);
             return true;
         }
 
@@ -439,7 +453,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         await sock.sendMessage(from, { text: msgWin });
 
         limparTimersBatalha(bat);
-        await deletarArenaAtiva(from);
+        await resetarArenaAguardando(from, bat);
         return true;
     }
 
@@ -459,12 +473,27 @@ async function handleCombatesCommands(sock, m, text, from) {
         await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
 
         limparTimersBatalha(bat);
-        await deletarArenaAtiva(from);
+        await resetarArenaAguardando(from, bat);
         await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
         return true;
     }
 
     return false;
+}
+
+// Função auxiliar para voltar a arena ao estado "aguardando" mantendo a estrutura original
+async function resetarArenaAguardando(grupoJid, batAtual) {
+    const indexArena = GRUPOS_ARENA.indexOf(grupoJid) + 1;
+    const arenaReset = {
+        numeroArena: batAtual?.numeroArena || (indexArena > 0 ? indexArena : 1),
+        nomeArena: batAtual?.nomeArena || `Arena ${indexArena > 0 ? indexArena : 1}`,
+        fase: "aguardando",
+        grupoJid: grupoJid,
+        jogadorVez: 1,
+        tipo: "PVP",
+        turnoAtual: 0
+    };
+    await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
 module.exports = { handleCombatesCommands };

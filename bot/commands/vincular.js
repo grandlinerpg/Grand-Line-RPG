@@ -1,77 +1,81 @@
 const axios = require('axios');
-const { FIREBASE_URL, obterJidEfetivo } = require('../index');
+const { FIREBASE_URL } = require('../index');
 
 async function handleVincularCommands(sock, m, text, from) {
     if (text.startsWith('!vincular')) {
         const args = text.split(' ').slice(1);
-        const input = args.join(' ').trim();
 
-        if (!input) {
+        if (args.length === 0) {
             const msgAjuda = `❌ *Uso incorreto do comando!*\n\n` +
-                             `📌 *Formas de uso:*\n` +
-                             `• \`!vincular <ID_DO_PERSONAGEM>\`\n` +
-                             `• \`!vincular <NOME_DO_PERSONAGEM>\`\n\n` +
-                             `💡 *Exemplo:* \`!vincular PER12345\` ou \`!vincular Luffy\``;
+                             `📌 *Como usar:*\n` +
+                             `• \`!vincular <NOME_DO_PERSONAGEM> <NUMERO>\`\n\n` +
+                             `💡 *Exemplo:* \`!vincular Luffy 5511999998888\``;
             await sock.sendMessage(from, { text: msgAjuda }, { quoted: m });
             return true;
         }
 
-        // Verifica se a flag de forçar sobrescrita foi enviada
-        const forcar = input.endsWith('-f');
-        const buscaTermo = forcar ? input.replace('-f', '').trim().toLowerCase() : input.toLowerCase();
+        // Verifica a flag de forçar sobrescrita
+        const forcar = args[args.length - 1] === '-f';
+        if (forcar) args.pop();
+
+        // O último argumento restante deve ser o número informado pelo jogador
+        const numeroBruto = args.pop() || '';
+        const buscaNome = args.join(' ').trim().toLowerCase();
+
+        // Higieniza o número removendo +, -, (), espaços e letras
+        const numeroLimpo = numeroBruto.replace(/\D/g, '');
+
+        if (!buscaNome || !numeroLimpo) {
+            const msgErroFormato = `❌ *Informaçoes incompletas!*\n\n` +
+                                   `Você precisa informar o *Nome do Personagem* e o seu *Número com DDD*.\n\n` +
+                                   `💡 *Exemplo:* \`!vincular Luffy 5511999998888\``;
+            await sock.sendMessage(from, { text: msgErroFormato }, { quoted: m });
+            return true;
+        }
 
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
 
-            // 1. Tenta encontrar a chave/UID exata ou por correspondência de nome
-            let targetUid = Object.keys(playersData).find(uid => uid.toLowerCase() === buscaTermo);
+            // Busca o personagem no Firebase pelo nome
+            const targetUid = Object.keys(playersData).find(uid => {
+                const charName = playersData[uid]?.character?.charName || playersData[uid]?.nome || '';
+                return charName.toLowerCase() === buscaNome;
+            });
 
+            // Caso não encontre pelo nome, avisa que o UID é necessário na ficha para cadastro
             if (!targetUid) {
-                targetUid = Object.keys(playersData).find(uid => {
-                    const charName = playersData[uid]?.character?.charName || playersData[uid]?.nome || '';
-                    return charName.toLowerCase() === buscaTermo;
-                });
-            }
-
-            if (!targetUid) {
-                await sock.sendMessage(from, { text: `❌ *Personagem não encontrado!* Nenhum registro coincide com "*${buscaTermo}*".` }, { quoted: m });
+                const msgNaoEncontrado = `❌ *Personagem não encontrado!*\n\n` +
+                                         `Nenhum registro coincide com "*${buscaNome}*".\n` +
+                                         `⚠️ _Certifique-se de que a ficha já possui um UID válido cadastrado no banco de dados para permitir o vínculo._`;
+                await sock.sendMessage(from, { text: msgNaoEncontrado }, { quoted: m });
                 return true;
             }
 
             const playerData = playersData[targetUid];
             const nomeChar = playerData?.character?.charName || playerData?.nome || 'Combatente';
 
-            // 2. Extrai os dados do remetente da mensagem
-            const rawSender = m.key.participant || m.key.remoteJid || '';
-            const numeroLimpo = obterJidEfetivo(m, from);
-            const lidFormatado = rawSender.includes('@lid') 
-                ? rawSender.split('@')[0].trim() 
-                : numeroLimpo;
-
-            // 3. Trava de segurança: verifica se o personagem já tem número vinculado
+            // Trava de segurança para impedir sobrescrita de números cadastrados
             const numExistente = playerData?.number?.n;
             if (numExistente && String(numExistente).trim() !== '' && String(numExistente) !== numeroLimpo && !forcar) {
                 const msgTrava = `⚠️ *ESTA FICHA JÁ POSSUI UM NÚMERO VINCULADO!*\n\n` +
                                  `👤 *Personagem:* ${nomeChar}\n` +
                                  `📱 *Registrado:* \`${numExistente}\`\n\n` +
-                                 `Caso esta ficha seja sua e deseje sobrescrever, use:\n` +
-                                 `\`!vincular ${targetUid} -f\``;
+                                 `Caso esta ficha seja sua e deseje sobrescrever, repita com \`-f\` no final:\n` +
+                                 `\`!vincular ${nomeChar} ${numeroLimpo} -f\``;
                 await sock.sendMessage(from, { text: msgTrava }, { quoted: m });
                 return true;
             }
 
-            // 4. Salva as informações de número no Firebase
+            // Salva apenas o número higienizado nos dois campos da estrutura do Firebase
             await axios.patch(`${FIREBASE_URL}/players/${targetUid}/number.json`, {
                 n: numeroLimpo,
-                LID: lidFormatado
+                LID: numeroLimpo
             });
 
             const msgSucesso = `✅ *VINCULAÇÃO CONCLUÍDA COM SUCESSO!*\n\n` +
                                `👤 *Personagem:* ${nomeChar}\n` +
-                               `🆔 *ID (UID):* \`${targetUid}\`\n` +
-                               `📱 *Número (n):* \`${numeroLimpo}\`\n` +
-                               `🔑 *LID:* \`${lidFormatado}\``;
+                               `📱 *Número Vinculado:* \`${numeroLimpo}\``;
 
             await sock.sendMessage(from, { text: msgSucesso }, { quoted: m });
 

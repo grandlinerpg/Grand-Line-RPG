@@ -1,7 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
-const express = require('express');  
-const axios = require('axios'); 
-const cron = require('node-cron'); 
+const express = require('express');
+const axios = require('axios');
+const cron = require('node-cron');
 
 // ==========================================
 // 1. CONFIGURAÇÕES E CONSTANTES GLOBAIS
@@ -10,7 +10,7 @@ const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
 const RECOMPENSA_ARENA_SALDO = 5000;
-const RECOMPENSA_ARENA_EXP = 500; 
+const RECOMPENSA_ARENA_EXP = 500;
 
 const GRUPO_COLISEU = "120363411146386806@g.us";
 const GRUPO_QUIZ_JID = "120363409325935641@g.us";

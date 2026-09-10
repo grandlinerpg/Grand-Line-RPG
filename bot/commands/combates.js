@@ -21,7 +21,12 @@ const {
 async function obterArenaAtiva(grupoJid) {
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`);
-        return res.data || batalhas[grupoJid] || null;
+        if (res.data) {
+            // Sincroniza o estado em memória com os dados remotos do Firebase
+            batalhas[grupoJid] = { ...(batalhas[grupoJid] || {}), ...res.data };
+            return batalhas[grupoJid];
+        }
+        return batalhas[grupoJid] || null;
     } catch (e) {
         return batalhas[grupoJid] || null;
     }
@@ -29,8 +34,15 @@ async function obterArenaAtiva(grupoJid) {
 
 async function salvarArenaAtiva(grupoJid, dadosBatalha) {
     batalhas[grupoJid] = dadosBatalha;
+    
+    // Removemos propriedades de instâncias locais/sockets que não devem ir ao JSON do Firebase
+    const dadosParaSalvar = { ...dadosBatalha };
+    delete dadosParaSalvar.sock;
+    delete dadosParaSalvar.timerApresentacao;
+    delete dadosParaSalvar.timerTurno;
+
     try {
-        await axios.put(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`, dadosBatalha);
+        await axios.put(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`, dadosParaSalvar);
     } catch (e) {
         console.error('Erro ao salvar arena no Firebase:', e.message);
     }
@@ -120,6 +132,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
         const dadosBatalha = iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
+        dadosBatalha.fase = 'apresentacao'; // Garante o estado inicial
         await salvarArenaAtiva(from, dadosBatalha);
 
         const msgInicio = `⚔️ COMBATE INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
@@ -201,6 +214,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
         const dadosBatalha = iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
+        dadosBatalha.fase = 'apresentacao'; // Garante que a fase é apresentação
         await salvarArenaAtiva(from, dadosBatalha);
 
         const msgInicio = `⚔️ *COMBATE INICIADO!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
@@ -212,10 +226,20 @@ async function handleCombatesCommands(sock, m, text, from) {
     // ==========================================
     if (text === '!iniciar') {
         const bat = await obterArenaAtiva(from);
-        if (bat && bat.fase === 'apresentacao') {
+        
+        if (!bat) {
+            return await sock.sendMessage(from, { text: '❌ Nenhuma arena ativa neste grupo para iniciar.' }, { quoted: m });
+        }
+
+        if (bat.fase === 'apresentacao' || !bat.fase) {
             await comecarCombateDeFato(from, sock);
             bat.fase = 'em_combate';
+            bat.jogadorVez = bat.jogadorVez || 1;
+            bat.turnoAtual = bat.turnoAtual || 1;
             await salvarArenaAtiva(from, bat);
+            return true;
+        } else if (bat.fase === 'em_combate') {
+            return await sock.sendMessage(from, { text: '⚠️ O combate já está em andamento!' }, { quoted: m });
         }
         return true;
     }
@@ -260,20 +284,17 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
-        // 1. Tenta identificar o vencedor por marcação
         if (mentionedJid) {
             const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
             if (bat.p1?.numero === targetId || bat.p1?.lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
             if (bat.p2?.numero === targetId || bat.p2?.lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
         }
 
-        // 2. Tenta identificar por quem enviou o comando
         if (!vencedorObj) {
             if (bat.p1?.numero === senderId || bat.p1?.lid === senderId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
             else if (bat.p2?.numero === senderId || bat.p2?.lid === senderId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
         }
 
-        // 3. Fallback: Define o jogador da vez
         if (!vencedorObj) {
             vencedorObj = bat[`p${bat.jogadorVez}`] || bat.p1;
             perdedorObj = (vencedorObj === bat.p1) ? bat.p2 : bat.p1;
@@ -281,7 +302,6 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
 
-        // TRATAMENTO DE COMBATE DE ATIVIDADE
         if (bat.tipo === 'ATIVIDADE' && bat.grupoOrigemAtividade) {
             const { registrarResultadoLutaAtividade } = require('./atividades');
             
@@ -295,7 +315,6 @@ async function handleCombatesCommands(sock, m, text, from) {
             return true;
         }
 
-        // COLISEU
         if (bat.tipo === 'COLISEU') {
             try {
                 const tempAtual = await obterTemporadaAtual();
@@ -340,7 +359,6 @@ async function handleCombatesCommands(sock, m, text, from) {
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey1}.json`).catch(() => {});
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
         } 
-        // ARENA PVP CONVENCIONAL
         else {
             let alterouRanking = false;
             try {
@@ -352,7 +370,6 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const rankingObj = rankRes.data || {};
                 const playersData = playersRes.data || {};
 
-                // Identifica UIDs do Vencedor e Perdedor no BD
                 const uidVencedor = Object.keys(playersData).find(u => 
                     u === vencedorObj?.numero || u === vencedorObj?.lid ||
                     String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
@@ -366,7 +383,6 @@ async function handleCombatesCommands(sock, m, text, from) {
                 );
 
                 if (uidVencedor) {
-                    // 1. ENTREGA DE RECOMPENSAS (Saldo e EXP)
                     const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
                     const expAtual = playersData[uidVencedor]?.info?.exp || 0;
 
@@ -375,7 +391,6 @@ async function handleCombatesCommands(sock, m, text, from) {
                         exp: expAtual + RECOMPENSA_ARENA_EXP
                     });
 
-                    // 2. ATUALIZAÇÃO E TROCA NO RANKING
                     const posVencedorStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
                     const posPerdedorStr = uidPerdedor ? Object.keys(rankingObj).find(pos => rankingObj[pos] === uidPerdedor) : null;
 
@@ -383,7 +398,6 @@ async function handleCombatesCommands(sock, m, text, from) {
                         const posVencedor = parseInt(posVencedorStr, 10);
                         const posPerdedor = parseInt(posPerdedorStr, 10);
 
-                        // Se o vencedor tiver posição inferior (número maior) que o perdedor, eles trocam
                         if (posVencedor > posPerdedor) {
                             const updates = {};
                             updates[posPerdedorStr] = uidVencedor;
@@ -404,14 +418,11 @@ async function handleCombatesCommands(sock, m, text, from) {
                             alterouRanking = true;
                         }
                     }
-                } else {
-                    console.error('❌ Não foi possível encontrar o UID do vencedor no banco de dados.');
                 }
             } catch (e) {
                 console.error('❌ Erro ao atualizar recompensas e ranking:', e);
             }
 
-            // Limpa desafios ativos
             const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
             const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
             await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey1}.json`).catch(() => {});

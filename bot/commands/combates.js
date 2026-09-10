@@ -58,7 +58,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
         const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
 
-        // Busca dinamica para aceitar tanto por LID quanto por Numero
         const desafioKey = Object.keys(todosDesafiosColiseu).find(key => {
             const d = todosDesafiosColiseu[key];
             if (!d || d.status !== 'pendente') return false;
@@ -127,7 +126,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
         const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
 
-        // Busca dinamica para aceitar tanto por LID quanto por Numero
         const desafioKey = Object.keys(todosDesafiosArena).find(key => {
             const d = todosDesafiosArena[key];
             if (!d || d.status !== 'pendente') return false;
@@ -156,7 +154,7 @@ async function handleCombatesCommands(sock, m, text, from) {
     }
 
     // ==========================================
-    // INICIAR COMBATE (POS CARD)
+    // INICIAR COMBATE
     // ==========================================
     if (text === '!iniciar') {
         const bat = batalhas[from];
@@ -197,24 +195,30 @@ async function handleCombatesCommands(sock, m, text, from) {
         const bat = batalhas[from];
         if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
 
-        const senderId = obtainingJidEfetivo(m, from);
+        const senderId = obterJidEfetivo(m, from);
 
         let vencedorObj = null;
         let perdedorObj = null;
 
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
+        // 1. Tenta identificar o vencedor por marcacao
         if (mentionedJid) {
             const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
             if (bat.p1?.numero === targetId || bat.p1?.lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
             if (bat.p2?.numero === targetId || bat.p2?.lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
-        } else {
+        }
+
+        // 2. Tenta identificar por quem mandou o comando
+        if (!vencedorObj) {
             if (bat.p1?.numero === senderId || bat.p1?.lid === senderId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
             else if (bat.p2?.numero === senderId || bat.p2?.lid === senderId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
-            else {
-                vencedorObj = bat[`p${bat.jogadorVez}`];
-                perdedorObj = bat.jogadorVez === 1 ? bat.p2 : bat.p1;
-            }
+        }
+
+        // 3. Fallback: Se nao identificou, define o jogador do turno atual
+        if (!vencedorObj) {
+            vencedorObj = bat[`p${bat.jogadorVez}`] || bat.p1;
+            perdedorObj = (vencedorObj === bat.p1) ? bat.p2 : bat.p1;
         }
 
         const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
@@ -267,6 +271,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
                 const rankingObj = rankRes.data || {};
                 const playersData = playersRes.data || {};
+
                 const uidVencedor = Object.keys(playersData).find(u => 
                     String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
                     String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
@@ -306,7 +311,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         }
 
         const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
-                       `O jogador *${nomeVencedor}* venceu o combate após ${bat.turnoAtual} rodada${bat.turnoAtual > 1 ? 's' : ''} e subiu 1 posição no ranking!\n\n` +
+                       `O jogador *${nomeVencedor}* venceu o combate após ${bat.turnoAtual || 1} rodada${(bat.turnoAtual || 1) > 1 ? 's' : ''} e subiu 1 posição no ranking!\n\n` +
                        `RECOMPENSAS DO COMBATE:\n\n` +
                        `💰 +฿ ${RECOMPENSA_ARENA_SALDO.toLocaleString('pt-BR')}\n` +
                        `✨ +${RECOMPENSA_ARENA_EXP} EXP`;

@@ -55,15 +55,26 @@ async function handleCombatesCommands(sock, m, text, from) {
             String(playersData[u]?.number?.n || '').trim() === senderId
         );
 
-        const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
-        const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
+        const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
+        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderId).trim();
+        const desafianteLid = String(playersData[desafianteUid]?.number?.LID || targetId).trim();
+        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderId).trim();
 
         const desafioKey = Object.keys(todosDesafiosColiseu).find(key => {
             const d = todosDesafiosColiseu[key];
             if (!d || d.status !== 'pendente') return false;
 
-            const desafianteBate = d.desafianteNum === desafianteNum || d.desafianteLid === targetId || d.desafianteNum === targetId;
-            const desafiadoBate = d.desafiadoNum === desafiadoNum || d.desafiadoLid === senderId || d.desafiadoNum === senderId;
+            const desafianteBate = 
+                String(d.desafianteNum).trim() === desafianteNum || 
+                String(d.desafianteLid).trim() === desafianteLid || 
+                String(d.desafianteNum).trim() === targetId ||
+                String(d.desafianteLid).trim() === targetId;
+
+            const desafiadoBate = 
+                String(d.desafiadoNum).trim() === desafiadoNum || 
+                String(d.desafiadoLid).trim() === desafiadoLid || 
+                String(d.desafiadoNum).trim() === senderId ||
+                String(d.desafiadoLid).trim() === senderId;
 
             return desafianteBate && desafiadoBate;
         });
@@ -123,15 +134,26 @@ async function handleCombatesCommands(sock, m, text, from) {
             String(playersData[u]?.number?.n || '').trim() === senderId
         );
 
-        const desafianteNum = playersData[desafianteUid]?.number?.n || targetId;
-        const desafiadoNum = playersData[desafiadoUid]?.number?.n || senderId;
+        const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
+        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderId).trim();
+        const desafianteLid = String(playersData[desafianteUid]?.number?.LID || targetId).trim();
+        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderId).trim();
 
         const desafioKey = Object.keys(todosDesafiosArena).find(key => {
             const d = todosDesafiosArena[key];
             if (!d || d.status !== 'pendente') return false;
 
-            const desafianteBate = d.desafianteNum === desafianteNum || d.desafianteLid === targetId || d.desafianteNum === targetId;
-            const desafiadoBate = d.desafiadoNum === desafiadoNum || d.desafiadoLid === senderId || d.desafiadoNum === senderId;
+            const desafianteBate = 
+                String(d.desafianteNum).trim() === desafianteNum || 
+                String(d.desafianteLid).trim() === desafianteLid || 
+                String(d.desafianteNum).trim() === targetId ||
+                String(d.desafianteLid).trim() === targetId;
+
+            const desafiadoBate = 
+                String(d.desafiadoNum).trim() === desafiadoNum || 
+                String(d.desafiadoLid).trim() === desafiadoLid || 
+                String(d.desafiadoNum).trim() === senderId ||
+                String(d.desafiadoLid).trim() === senderId;
 
             return desafianteBate && desafiadoBate;
         });
@@ -223,6 +245,22 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
 
+        // LÓGICA DE TRATAMENTO SE FOR COMBATE DE ATIVIDADE
+        if (bat.tipo === 'ATIVIDADE' && bat.grupoOrigemAtividade) {
+            const { registrarResultadoLutaAtividade } = require('./atividades');
+            
+            const msgWin = `🏆 *VITÓRIA DECLARADA NO COMBATE DE ATIVIDADE!* 🏆\n\n` +
+                           `O jogador *${nomeVencedor}* venceu a luta na arena!`;
+            await sock.sendMessage(from, { text: msgWin });
+
+            await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
+
+            limparTimersBatalha(bat);
+            delete batalhas[from];
+            return true;
+        }
+
+        // LÓGICA COLISEU
         if (bat.tipo === 'COLISEU') {
             try {
                 const tempAtual = await obterTemporadaAtual();
@@ -262,7 +300,9 @@ async function handleCombatesCommands(sock, m, text, from) {
             const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey1}.json`).catch(() => {});
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
-        } else {
+        } 
+        // LÓGICA ARENA PVP CONVENCIONAL
+        else {
             try {
                 const [rankRes, playersRes] = await Promise.all([
                     axios.get(`${FIREBASE_URL}/ranking.json`),

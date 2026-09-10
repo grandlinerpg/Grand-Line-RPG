@@ -17,6 +17,34 @@ const {
     iniciarEstruturaBatalha 
 } = require('../gameEngine');
 
+// FUNÇÕES AUXILIARES PARA GERENCIAR ARENAS NO FIREBASE
+async function obterArenaAtiva(grupoJid) {
+    try {
+        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`);
+        return res.data || batalhas[grupoJid] || null;
+    } catch (e) {
+        return batalhas[grupoJid] || null;
+    }
+}
+
+async function salvarArenaAtiva(grupoJid, dadosBatalha) {
+    batalhas[grupoJid] = dadosBatalha;
+    try {
+        await axios.put(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`, dadosBatalha);
+    } catch (e) {
+        console.error('Erro ao salvar arena no Firebase:', e.message);
+    }
+}
+
+async function deletarArenaAtiva(grupoJid) {
+    delete batalhas[grupoJid];
+    try {
+        await axios.delete(`${FIREBASE_URL}/arenas_ativas/${grupoJid}.json`);
+    } catch (e) {
+        console.error('Erro ao deletar arena do Firebase:', e.message);
+    }
+}
+
 async function handleCombatesCommands(sock, m, text, from) {
     // ==========================================
     // ACEITAR COLISEU
@@ -26,7 +54,8 @@ async function handleCombatesCommands(sock, m, text, from) {
             return await sock.sendMessage(from, { text: '❌ O comando *!aceitarcoliseu* só pode ser usado no grupo oficial do Coliseu!' }, { quoted: m });
         }
 
-        if (batalhas[from]) {
+        const arenaAtiva = await obterArenaAtiva(from);
+        if (arenaAtiva) {
             return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ocorrendo no Coliseu! Aguarde o término.' }, { quoted: m });
         }
 
@@ -48,11 +77,11 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const desafianteUid = Object.keys(playersData).find(u => 
             String(playersData[u]?.number?.LID || '').trim() === targetId || 
-            String(playersData[u]?.number?.n || '').trim() === targetId
+            String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
         );
         const desafiadoUid = Object.keys(playersData).find(u => 
             String(playersData[u]?.number?.LID || '').trim() === senderId || 
-            String(playersData[u]?.number?.n || '').trim() === senderId
+            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
         const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
@@ -90,7 +119,8 @@ async function handleCombatesCommands(sock, m, text, from) {
         const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
         const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
-        iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
+        const dadosBatalha = iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock);
+        await salvarArenaAtiva(from, dadosBatalha);
 
         const msgInicio = `⚔️ COMBATE INICIADO! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
         return await sock.sendMessage(from, { text: msgInicio });
@@ -104,7 +134,8 @@ async function handleCombatesCommands(sock, m, text, from) {
             return await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos oficiais de Arena!' }, { quoted: m });
         }
 
-        if (batalhas[from]) {
+        const arenaAtiva = await obterArenaAtiva(from);
+        if (arenaAtiva) {
             return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ativa neste grupo! Aguarde o término.' }, { quoted: m });
         }
 
@@ -127,11 +158,11 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const desafianteUid = Object.keys(playersData).find(u => 
             String(playersData[u]?.number?.LID || '').trim() === targetId || 
-            String(playersData[u]?.number?.n || '').trim() === targetId
+            String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
         );
         const desafiadoUid = Object.keys(playersData).find(u => 
             String(playersData[u]?.number?.LID || '').trim() === senderId || 
-            String(playersData[u]?.number?.n || '').trim() === senderId
+            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
         const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
@@ -169,7 +200,8 @@ async function handleCombatesCommands(sock, m, text, from) {
         const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
         const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
-        iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
+        const dadosBatalha = iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock);
+        await salvarArenaAtiva(from, dadosBatalha);
 
         const msgInicio = `⚔️ *COMBATE INICIADO!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
         return await sock.sendMessage(from, { text: msgInicio });
@@ -179,9 +211,11 @@ async function handleCombatesCommands(sock, m, text, from) {
     // INICIAR COMBATE
     // ==========================================
     if (text === '!iniciar') {
-        const bat = batalhas[from];
+        const bat = await obterArenaAtiva(from);
         if (bat && bat.fase === 'apresentacao') {
             await comecarCombateDeFato(from, sock);
+            bat.fase = 'em_combate';
+            await salvarArenaAtiva(from, bat);
         }
         return true;
     }
@@ -190,15 +224,17 @@ async function handleCombatesCommands(sock, m, text, from) {
     // PASSAR TURNO
     // ==========================================
     if (text === '!prox') {
-        const bat = batalhas[from];
+        const bat = await obterArenaAtiva(from);
         if (!bat || bat.fase !== 'em_combate') return true;
 
         if (bat.jogadorVez === 1) {
             bat.jogadorVez = 2;
         } else {
             bat.jogadorVez = 1;
-            bat.turnoAtual++;
+            bat.turnoAtual = (bat.turnoAtual || 1) + 1;
         }
+
+        await salvarArenaAtiva(from, bat);
 
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
@@ -214,7 +250,7 @@ async function handleCombatesCommands(sock, m, text, from) {
     // DECLARAR VITORIA (!WIN)
     // ==========================================
     if (text.startsWith('!win')) {
-        const bat = batalhas[from];
+        const bat = await obterArenaAtiva(from);
         if (!bat) return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
 
         const senderId = obterJidEfetivo(m, from);
@@ -224,20 +260,20 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
 
-        // 1. Tenta identificar o vencedor por marcacao
+        // 1. Tenta identificar o vencedor por marcação
         if (mentionedJid) {
             const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
             if (bat.p1?.numero === targetId || bat.p1?.lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
             if (bat.p2?.numero === targetId || bat.p2?.lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
         }
 
-        // 2. Tenta identificar por quem mandou o comando
+        // 2. Tenta identificar por quem enviou o comando
         if (!vencedorObj) {
             if (bat.p1?.numero === senderId || bat.p1?.lid === senderId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
             else if (bat.p2?.numero === senderId || bat.p2?.lid === senderId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
         }
 
-        // 3. Fallback: Se nao identificou, define o jogador do turno atual
+        // 3. Fallback: Define o jogador da vez
         if (!vencedorObj) {
             vencedorObj = bat[`p${bat.jogadorVez}`] || bat.p1;
             perdedorObj = (vencedorObj === bat.p1) ? bat.p2 : bat.p1;
@@ -245,22 +281,21 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
 
-        // LÓGICA DE TRATAMENTO SE FOR COMBATE DE ATIVIDADE
+        // TRATAMENTO DE COMBATE DE ATIVIDADE
         if (bat.tipo === 'ATIVIDADE' && bat.grupoOrigemAtividade) {
             const { registrarResultadoLutaAtividade } = require('./atividades');
             
-            const msgWin = `🏆 *VITÓRIA DECLARADA NO COMBATE DE ATIVIDADE!* 🏆\n\n` +
-                           `O jogador *${nomeVencedor}* venceu a luta na arena!`;
+            const msgWin = `🏆 *VITÓRIA DECLARADA NO COMBATE DE ATIVIDADE!* 🏆\n\nO jogador *${nomeVencedor}* venceu a luta na arena!`;
             await sock.sendMessage(from, { text: msgWin });
 
             await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
 
             limparTimersBatalha(bat);
-            delete batalhas[from];
+            await deletarArenaAtiva(from);
             return true;
         }
 
-        // LÓGICA COLISEU
+        // COLISEU
         if (bat.tipo === 'COLISEU') {
             try {
                 const tempAtual = await obterTemporadaAtual();
@@ -273,10 +308,12 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const coliseuData = coliseuRes.data || {};
 
                 const uidVencedor = Object.keys(playersData).find(u => 
+                    u === vencedorObj?.numero || u === vencedorObj?.lid ||
                     String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
                     String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
                 );
                 const uidPerdedor = Object.keys(playersData).find(u => 
+                    u === perdedorObj?.numero || u === perdedorObj?.lid ||
                     String(playersData[u]?.number?.n || '').trim() === String(perdedorObj?.numero).trim() ||
                     String(playersData[u]?.number?.LID || '').trim() === String(perdedorObj?.lid).trim()
                 );
@@ -294,15 +331,18 @@ async function handleCombatesCommands(sock, m, text, from) {
                         pontos: (coliseuData[uidPerdedor].pontos || 0) + 1
                     });
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('Erro no processamento do Coliseu:', e.message);
+            }
 
             const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
             const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey1}.json`).catch(() => {});
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
         } 
-        // LÓGICA ARENA PVP CONVENCIONAL
+        // ARENA PVP CONVENCIONAL
         else {
+            let alterouRanking = false;
             try {
                 const [rankRes, playersRes] = await Promise.all([
                     axios.get(`${FIREBASE_URL}/ranking.json`),
@@ -312,26 +352,21 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const rankingObj = rankRes.data || {};
                 const playersData = playersRes.data || {};
 
+                // Identifica UIDs do Vencedor e Perdedor no BD
                 const uidVencedor = Object.keys(playersData).find(u => 
+                    u === vencedorObj?.numero || u === vencedorObj?.lid ||
                     String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
                     String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
                 );
 
+                const uidPerdedor = Object.keys(playersData).find(u => 
+                    u === perdedorObj?.numero || u === perdedorObj?.lid ||
+                    String(playersData[u]?.number?.n || '').trim() === String(perdedorObj?.numero).trim() ||
+                    String(playersData[u]?.number?.LID || '').trim() === String(perdedorObj?.lid).trim()
+                );
+
                 if (uidVencedor) {
-                    const posAtualStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
-                    if (posAtualStr) {
-                        const posAtual = parseInt(posAtualStr);
-                        if (posAtual > 1) {
-                            const posAcima = posAtual - 1;
-                            const uidAcima = rankingObj[posAcima];
-
-                            const updates = {};
-                            updates[posAcima] = uidVencedor;
-                            updates[posAtual] = uidAcima || null;
-                            await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
-                        }
-                    }
-
+                    // 1. ENTREGA DE RECOMPENSAS (Saldo e EXP)
                     const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
                     const expAtual = playersData[uidVencedor]?.info?.exp || 0;
 
@@ -339,27 +374,61 @@ async function handleCombatesCommands(sock, m, text, from) {
                         saldo: saldoAtual + RECOMPENSA_ARENA_SALDO,
                         exp: expAtual + RECOMPENSA_ARENA_EXP
                     });
+
+                    // 2. ATUALIZAÇÃO E TROCA NO RANKING
+                    const posVencedorStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
+                    const posPerdedorStr = uidPerdedor ? Object.keys(rankingObj).find(pos => rankingObj[pos] === uidPerdedor) : null;
+
+                    if (posVencedorStr && posPerdedorStr) {
+                        const posVencedor = parseInt(posVencedorStr, 10);
+                        const posPerdedor = parseInt(posPerdedorStr, 10);
+
+                        // Se o vencedor tiver posição inferior (número maior) que o perdedor, eles trocam
+                        if (posVencedor > posPerdedor) {
+                            const updates = {};
+                            updates[posPerdedorStr] = uidVencedor;
+                            updates[posVencedorStr] = uidPerdedor;
+                            await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
+                            alterouRanking = true;
+                        }
+                    } else if (posVencedorStr) {
+                        const posVencedor = parseInt(posVencedorStr, 10);
+                        if (posVencedor > 1) {
+                            const posAcima = posVencedor - 1;
+                            const uidAcima = rankingObj[posAcima];
+
+                            const updates = {};
+                            updates[posAcima] = uidVencedor;
+                            updates[posVencedorStr] = uidAcima || null;
+                            await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
+                            alterouRanking = true;
+                        }
+                    }
+                } else {
+                    console.error('❌ Não foi possível encontrar o UID do vencedor no banco de dados.');
                 }
             } catch (e) {
-                console.error('Erro ao atualizar recompensa/ranking da Arena:', e.message);
+                console.error('❌ Erro ao atualizar recompensas e ranking:', e);
             }
 
+            // Limpa desafios ativos
             const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
             const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
             await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey1}.json`).catch(() => {});
             await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey2}.json`).catch(() => {});
         }
 
+        const msgSubiuRank = alterouRanking ? ' e assumiu uma posição superior no ranking!' : '!';
         const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
-                       `O jogador *${nomeVencedor}* venceu o combate após ${bat.turnoAtual || 1} rodada${(bat.turnoAtual || 1) > 1 ? 's' : ''} e subiu 1 posição no ranking!\n\n` +
-                       `RECOMPENSAS DO COMBATE:\n\n` +
+                       `O jogador *${nomeVencedor}* venceu o combate após ${bat.turnoAtual || 1} rodada${(bat.turnoAtual || 1) > 1 ? 's' : ''}${msgSubiuRank}\n\n` +
+                       `RECOMPENSAS DO COMBATE:\n` +
                        `💰 +฿ ${RECOMPENSA_ARENA_SALDO.toLocaleString('pt-BR')}\n` +
                        `✨ +${RECOMPENSA_ARENA_EXP} EXP`;
 
         await sock.sendMessage(from, { text: msgWin });
 
         limparTimersBatalha(bat);
-        delete batalhas[from];
+        await deletarArenaAtiva(from);
         return true;
     }
 
@@ -367,9 +436,9 @@ async function handleCombatesCommands(sock, m, text, from) {
     // CANCELAR / ENCERRAR COMBATE
     // ==========================================
     if (text === '!fimcombate') {
-        if (!batalhas[from]) return true;
+        const bat = await obterArenaAtiva(from);
+        if (!bat) return true;
 
-        const bat = batalhas[from];
         const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
         const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
 
@@ -379,7 +448,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
 
         limparTimersBatalha(bat);
-        delete batalhas[from];
+        await deletarArenaAtiva(from);
         await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
         return true;
     }

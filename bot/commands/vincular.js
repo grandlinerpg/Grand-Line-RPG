@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { FIREBASE_URL } = require('../index');
+const { FIREBASE_URL, obterJidEfetivo } = require('../index');
 
 async function handleVincularCommands(sock, m, text, from) {
     if (text.startsWith('!vincular')) {
@@ -14,19 +14,19 @@ async function handleVincularCommands(sock, m, text, from) {
             return true;
         }
 
-        // Verifica a flag de forçar sobrescrita
+        // Verifica a flag de forçar sobrescrita (-f)
         const forcar = args[args.length - 1] === '-f';
         if (forcar) args.pop();
 
-        // O último argumento restante deve ser o número informado pelo jogador
+        // Extrai o número informado pelo jogador e o nome do personagem
         const numeroBruto = args.pop() || '';
         const buscaNome = args.join(' ').trim().toLowerCase();
 
-        // Higieniza o número removendo +, -, (), espaços e letras
+        // Higieniza o número enviado (remove +, -, (), espaços, etc)
         const numeroLimpo = numeroBruto.replace(/\D/g, '');
 
         if (!buscaNome || !numeroLimpo) {
-            const msgErroFormato = `❌ *Informaçoes incompletas!*\n\n` +
+            const msgErroFormato = `❌ *Informações incompletas!*\n\n` +
                                    `Você precisa informar o *Nome do Personagem* e o seu *Número com DDD*.\n\n` +
                                    `💡 *Exemplo:* \`!vincular Luffy 5511999998888\``;
             await sock.sendMessage(from, { text: msgErroFormato }, { quoted: m });
@@ -43,7 +43,6 @@ async function handleVincularCommands(sock, m, text, from) {
                 return charName.toLowerCase() === buscaNome;
             });
 
-            // Caso não encontre pelo nome, avisa que o UID é necessário na ficha para cadastro
             if (!targetUid) {
                 const msgNaoEncontrado = `❌ *Personagem não encontrado!*\n\n` +
                                          `Nenhum registro coincide com "*${buscaNome}*".\n` +
@@ -55,7 +54,7 @@ async function handleVincularCommands(sock, m, text, from) {
             const playerData = playersData[targetUid];
             const nomeChar = playerData?.character?.charName || playerData?.nome || 'Combatente';
 
-            // Trava de segurança para impedir sobrescrita de números cadastrados
+            // Trava de segurança para impedir sobrescrita indevida
             const numExistente = playerData?.number?.n;
             if (numExistente && String(numExistente).trim() !== '' && String(numExistente) !== numeroLimpo && !forcar) {
                 const msgTrava = `⚠️ *ESTA FICHA JÁ POSSUI UM NÚMERO VINCULADO!*\n\n` +
@@ -67,15 +66,19 @@ async function handleVincularCommands(sock, m, text, from) {
                 return true;
             }
 
-            // Salva apenas o número higienizado nos dois campos da estrutura do Firebase
+            // Resgata o LID diretamente da mensagem capturada pelo bot
+            const lidResgatado = obterJidEfetivo(m, from);
+
+            // Salva no Firebase: LID resgatado pelo bot e n enviado pelo jogador
             await axios.patch(`${FIREBASE_URL}/players/${targetUid}/number.json`, {
                 n: numeroLimpo,
-                LID: numeroLimpo
+                LID: lidResgatado
             });
 
             const msgSucesso = `✅ *VINCULAÇÃO CONCLUÍDA COM SUCESSO!*\n\n` +
                                `👤 *Personagem:* ${nomeChar}\n` +
-                               `📱 *Número Vinculado:* \`${numeroLimpo}\``;
+                               `📱 *Número (n):* \`${numeroLimpo}\`\n` +
+                               `🔑 *LID:* \`${lidResgatado}\``;
 
             await sock.sendMessage(from, { text: msgSucesso }, { quoted: m });
 

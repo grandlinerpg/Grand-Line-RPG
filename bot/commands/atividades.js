@@ -6,16 +6,6 @@ const { iniciarEstruturaBatalha } = require('../gameEngine');
 const sessoesCriacao = {};
 
 // Armazena as atividades ativas no grupo
-// {
-//   nomeAtividade, faccaoCriador, anunciantes: [], defensores: [],
-//   fase: 'lista' | 'selecao' | 'combates',
-//   bancoAtacantes: [], bancoDefensores: [],
-//   vezSelecao: 'atacante' | 'defensor' | 'banco_atacante' | 'banco_defensor',
-//   proximoDesafiante: null,
-//   lutadoresAtivos: [],
-//   vitoriasAtacantes: 0, vitoriasDefensores: 0,
-//   historicoLutas: [], derrotados: [], timer, criadoEm
-// }
 const atividadesAtivas = {};
 
 async function handleAtividadesCommands(sock, m, text, from) {
@@ -29,7 +19,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
             const playerUid = Object.keys(playersData).find(u => 
                 String(playersData[u]?.number?.LID || '').trim() === senderId || 
-                String(playersData[u]?.number?.n || '').trim() === senderId
+                String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
             );
 
             if (!playerUid) {
@@ -64,7 +54,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
         const playersData = playersRes.data || {};
         const responderUid = Object.keys(playersData).find(u => 
             String(playersData[u]?.number?.LID || '').trim() === senderId || 
-            String(playersData[u]?.number?.n || '').trim() === senderId
+            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
         if (responderUid !== sessao.criadorUid) return false;
@@ -106,20 +96,20 @@ async function handleAtividadesCommands(sock, m, text, from) {
         const playersData = playersRes.data || {};
         const responderUid = Object.keys(playersData).find(u => 
             String(playersData[u]?.number?.LID || '').trim() === senderId || 
-            String(playersData[u]?.number?.n || '').trim() === senderId
+            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
         if (responderUid !== sessao.criadorUid) return false;
 
         const uidsParticipantes = new Set();
-        if (text.includes('eu')) uidsParticipantes.add(sessao.criadorUid);
+        if (text.toLowerCase().includes('eu')) uidsParticipantes.add(sessao.criadorUid);
 
         const mentionedJids = m.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
         for (const jid of mentionedJids) {
             const targetId = jid.split('@')[0].split(':')[0].trim();
             const targetUid = Object.keys(playersData).find(u => 
                 String(playersData[u]?.number?.LID || '').trim() === targetId || 
-                String(playersData[u]?.number?.n || '').trim() === targetId
+                String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
             );
             if (targetUid) uidsParticipantes.add(targetUid);
         }
@@ -190,7 +180,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
             const playerUid = Object.keys(playersData).find(u => 
                 String(playersData[u]?.number?.LID || '').trim() === senderId || 
-                String(playersData[u]?.number?.n || '').trim() === senderId
+                String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
             );
 
             if (!playerUid) {
@@ -220,7 +210,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 level: player?.info?.level ?? 1,
                 lid: player?.number?.LID || senderId,
                 numero: player?.number?.n || senderId,
-                faccao: faccaoJogador
+                faccao: faccaoJogador || 'Defesa'
             });
 
             await enviarPainelAtividade(sock, from, atividade);
@@ -277,25 +267,99 @@ async function encerrarListaEIniciarPartida(sock, from) {
         return;
     }
 
-    // Inicialização dos Bancos de Reservas
     atividade.bancoAtacantes = [...atividade.anunciantes];
     atividade.bancoDefensores = [...atividade.defensores];
     atividade.fase = 'selecao';
 
-    // 1 vs 1 Direto
+    await sock.sendMessage(from, { 
+        text: `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\nAtacantes: ${atividade.bancoAtacantes.length} | Defensores: ${atividade.bancoDefensores.length}` 
+    });
+
+    await verificarEParearAutomatico(sock, from);
+}
+
+async function verificarEParearAutomatico(sock, from) {
+    const atividade = atividadesAtivas[from];
+    if (!atividade) return;
+
+    // Se temos um próximo desafiante (vencedor do combate anterior)
+    if (atividade.proximoDesafiante) {
+        if (atividade.vezSelecao === 'banco_defensor') {
+            if (atividade.bancoDefensores.length === 1) {
+                const p1 = atividade.proximoDesafiante;
+                const p2 = atividade.bancoDefensores.shift();
+                atividade.proximoDesafiante = null;
+
+                await sock.sendMessage(from, { text: `⚡ *Defesa só tem 1 opção!* ${p2.nome} foi alocado automaticamente contra ${p1.nome}!` });
+                await alocarLutaNaArena(sock, from, p1, p2);
+                atividade.fase = 'combates';
+                await enviarRelatorioGrupo(sock, from);
+                return;
+            } else if (atividade.bancoDefensores.length > 1) {
+                let faccaoDef = atividade.defensores[0]?.faccao || 'Defensora';
+                await sock.sendMessage(from, { 
+                    text: `🏆 Vez do banco da facção *${faccaoDef}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
+                });
+                return;
+            }
+        } else if (atividade.vezSelecao === 'banco_atacante') {
+            if (atividade.bancoAtacantes.length === 1) {
+                const p2 = atividade.proximoDesafiante;
+                const p1 = atividade.bancoAtacantes.shift();
+                atividade.proximoDesafiante = null;
+
+                await sock.sendMessage(from, { text: `⚡ *Atacantes só têm 1 opção!* ${p1.nome} foi alocado automaticamente contra ${p2.nome}!` });
+                await alocarLutaNaArena(sock, from, p1, p2);
+                atividade.fase = 'combates';
+                await enviarRelatorioGrupo(sock, from);
+                return;
+            } else if (atividade.bancoAtacantes.length > 1) {
+                await sock.sendMessage(from, { 
+                    text: `🏆 Vez do banco de *${atividade.faccaoCriador}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
+                });
+                return;
+            }
+        }
+    }
+
+    // Regra geral de seleção inicial / revezamento
     if (atividade.bancoAtacantes.length === 1 && atividade.bancoDefensores.length === 1) {
         const p1 = atividade.bancoAtacantes.shift();
         const p2 = atividade.bancoDefensores.shift();
+        
+        await sock.sendMessage(from, { text: `⚡ *Resta apenas 1 combatente de cada lado!* Pareamento automático: ${p1.nome} VS ${p2.nome}` });
         await alocarLutaNaArena(sock, from, p1, p2);
         atividade.fase = 'combates';
         await enviarRelatorioGrupo(sock, from);
+    } else if (atividade.bancoAtacantes.length > 0 && atividade.bancoDefensores.length > 0) {
+        if (atividade.vezSelecao === 'atacante' && atividade.bancoDefensores.length === 1) {
+            // Se só há 1 defensor disponível para o atacante escolher
+            const randAtqIdx = Math.floor(Math.random() * atividade.bancoAtacantes.length);
+            const p1 = atividade.bancoAtacantes.splice(randAtqIdx, 1)[0];
+            const p2 = atividade.bancoDefensores.shift();
+
+            await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 defensor!* ${p2.nome} foi pareado automaticamente contra ${p1.nome}.` });
+            await alocarLutaNaArena(sock, from, p1, p2);
+            await verificarEParearAutomatico(sock, from);
+        } else if (atividade.vezSelecao === 'defensor' && atividade.bancoAtacantes.length === 1) {
+            // Se só há 1 atacante disponível para a defesa escolher
+            const randDefIdx = Math.floor(Math.random() * atividade.bancoDefensores.length);
+            const p2 = atividade.bancoDefensores.splice(randDefIdx, 1)[0];
+            const p1 = atividade.bancoAtacantes.shift();
+
+            await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 atacante!* ${p1.nome} foi pareado automaticamente contra ${p2.nome}.` });
+            await alocarLutaNaArena(sock, from, p1, p2);
+            await verificarEParearAutomatico(sock, from);
+        } else {
+            let faccaoVez = atividade.vezSelecao === 'atacante' ? atividade.faccaoCriador : (atividade.defensores[0]?.faccao || 'Defesa');
+            let faccaoAlvo = atividade.vezSelecao === 'atacante' ? (atividade.defensores[0]?.faccao || 'Defesa') : atividade.faccaoCriador;
+
+            await sock.sendMessage(from, { 
+                text: `⚔️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
+            });
+        }
     } else {
-        // Escolha inicial do lado atacante
-        atividade.vezSelecao = 'atacante';
-        let faccaoDefensora = atividade.bancoDefensores[0]?.faccao || 'Inimigos';
-        await sock.sendMessage(from, { 
-            text: `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\nVez da facção *${atividade.faccaoCriador}* escolher o primeiro combate!\nUse *!escolher @jogador* para selecionar um oponente da facção *${faccaoDefensora}*.` 
-        });
+        atividade.fase = 'combates';
     }
 }
 
@@ -306,37 +370,22 @@ async function processarEscolhaLutador(sock, from, targetId) {
     let p1, p2;
 
     if (atividade.vezSelecao === 'atacante') {
-        const idxDef = atividade.bancoDefensores.findIndex(d => d.lid === targetId || d.numero === targetId);
+        const idxDef = atividade.bancoDefensores.findIndex(d => d.lid === targetId || d.numero === targetId || d.uid === targetId);
         if (idxDef === -1) {
             await sock.sendMessage(from, { text: '❌ O jogador informado não está no banco da defesa!' });
             return;
         }
 
-        // Seleção aleatória do atacante que escolheu o desafio
         const randAtqIdx = Math.floor(Math.random() * atividade.bancoAtacantes.length);
         p1 = atividade.bancoAtacantes.splice(randAtqIdx, 1)[0];
         p2 = atividade.bancoDefensores.splice(idxDef, 1)[0];
 
         await alocarLutaNaArena(sock, from, p1, p2);
-
-        // Se sobrou apenas 1 em cada lado, pareia diretamente
-        if (atividade.bancoAtacantes.length === 1 && atividade.bancoDefensores.length === 1) {
-            const lastAtq = atividade.bancoAtacantes.shift();
-            const lastDef = atividade.bancoDefensores.shift();
-            await alocarLutaNaArena(sock, from, lastAtq, lastDef);
-            atividade.fase = 'combates';
-        } else if (atividade.bancoDefensores.length > 0 && atividade.bancoAtacantes.length > 0) {
-            // Alterna a vez para a facção defensora escolher
-            atividade.vezSelecao = 'defensor';
-            await sock.sendMessage(from, { 
-                text: `⚔️ Vez da facção defensora escolher o próximo combate!\nUse *!escolher @jogador* marcando um membro de *${atividade.faccaoCriador}*.` 
-            });
-        } else {
-            atividade.fase = 'combates';
-        }
+        atividade.vezSelecao = 'defensor';
+        await verificarEParearAutomatico(sock, from);
 
     } else if (atividade.vezSelecao === 'defensor') {
-        const idxAtq = atividade.bancoAtacantes.findIndex(a => a.lid === targetId || a.numero === targetId);
+        const idxAtq = atividade.bancoAtacantes.findIndex(a => a.lid === targetId || a.numero === targetId || a.uid === targetId);
         if (idxAtq === -1) {
             await sock.sendMessage(from, { text: '❌ O jogador informado não está no banco dos atacantes!' });
             return;
@@ -347,25 +396,11 @@ async function processarEscolhaLutador(sock, from, targetId) {
         p1 = atividade.bancoAtacantes.splice(idxAtq, 1)[0];
 
         await alocarLutaNaArena(sock, from, p1, p2);
-
-        if (atividade.bancoAtacantes.length === 1 && atividade.bancoDefensores.length === 1) {
-            const lastAtq = atividade.bancoAtacantes.shift();
-            const lastDef = atividade.bancoDefensores.shift();
-            await alocarLutaNaArena(sock, from, lastAtq, lastDef);
-            atividade.fase = 'combates';
-        } else if (atividade.bancoAtacantes.length > 0 && atividade.bancoDefensores.length > 0) {
-            atividade.vezSelecao = 'atacante';
-            let faccaoDefensora = atividade.defensores[0]?.faccao || 'Inimigos';
-            await sock.sendMessage(from, { 
-                text: `⚔️ Vez de *${atividade.faccaoCriador}* escolher o combate!\nUse *!escolher @jogador* marcando um membro da defesa (*${faccaoDefensora}*).` 
-            });
-        } else {
-            atividade.fase = 'combates';
-        }
+        atividade.vezSelecao = 'atacante';
+        await verificarEParearAutomatico(sock, from);
 
     } else if (atividade.vezSelecao === 'banco_defensor') {
-        // Banco da Defesa escolhe quem entra contra o vencedor Atacante
-        const idxDef = atividade.bancoDefensores.findIndex(d => d.lid === targetId || d.numero === targetId);
+        const idxDef = atividade.bancoDefensores.findIndex(d => d.lid === targetId || d.numero === targetId || d.uid === targetId);
         if (idxDef === -1) {
             await sock.sendMessage(from, { text: '❌ O jogador informado não está disponível no banco da defesa!' });
             return;
@@ -377,10 +412,10 @@ async function processarEscolhaLutador(sock, from, targetId) {
 
         await alocarLutaNaArena(sock, from, p1, p2);
         atividade.fase = 'combates';
+        await enviarRelatorioGrupo(sock, from);
 
     } else if (atividade.vezSelecao === 'banco_atacante') {
-        // Banco Atacante escolhe quem entra contra o vencedor Defensor
-        const idxAtq = atividade.bancoAtacantes.findIndex(a => a.lid === targetId || a.numero === targetId);
+        const idxAtq = atividade.bancoAtacantes.findIndex(a => a.lid === targetId || a.numero === targetId || a.uid === targetId);
         if (idxAtq === -1) {
             await sock.sendMessage(from, { text: '❌ O jogador informado não está disponível no banco atacante!' });
             return;
@@ -392,26 +427,38 @@ async function processarEscolhaLutador(sock, from, targetId) {
 
         await alocarLutaNaArena(sock, from, p1, p2);
         atividade.fase = 'combates';
+        await enviarRelatorioGrupo(sock, from);
     }
-
-    await enviarRelatorioGrupo(sock, from);
 }
 
 async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const atividade = atividadesAtivas[grupoOrigem];
 
-    // Encontra arena livre
-    const arenaDisponivel = GRUPOS_ARENA.find(arenaJid => !batalhas[arenaJid]);
+    // Busca status das arenas ativas no Firebase
+    let arenasAtivas = {};
+    try {
+        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
+        arenasAtivas = res.data || {};
+    } catch (e) {}
+
+    // Encontra uma arena disponível dos GRUPOS_ARENA
+    const arenaDisponivel = GRUPOS_ARENA.find(arenaJid => !batalhas[arenaJid] && !arenasAtivas[arenaJid]);
 
     if (!arenaDisponivel) {
-        await sock.sendMessage(grupoOrigem, { text: '⚠️ Todas as arenas estão ocupadas no momento! Aguardando liberação...' });
+        await sock.sendMessage(grupoOrigem, { text: '⚠️ Todas as arenas estão ocupadas no momento! Aguardando vaga...' });
         return false;
     }
 
-    iniciarEstruturaBatalha(arenaDisponivel, p1, p2, 'ATIVIDADE', sock);
-    
-    // Vincula a batalha à atividade no grupo principal
-    batalhas[arenaDisponivel].grupoOrigemAtividade = grupoOrigem;
+    const dadosBatalha = iniciarEstruturaBatalha(arenaDisponivel, p1, p2, 'ATIVIDADE', sock);
+    dadosBatalha.grupoOrigemAtividade = grupoOrigem;
+
+    batalhas[arenaDisponivel] = dadosBatalha;
+
+    try {
+        await axios.put(`${FIREBASE_URL}/arenas_ativas/${arenaDisponivel}.json`, dadosBatalha);
+    } catch (e) {
+        console.error('Erro ao salvar arena da atividade no Firebase:', e.message);
+    }
 
     atividade.lutadoresAtivos.push({ p1, p2, arena: arenaDisponivel });
 
@@ -421,54 +468,44 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     return true;
 }
 
-// Chamado por comebates.js quando !win é acionado numa luta de atividade
+// Chamado por combates.js quando !win é acionado numa luta de atividade
 async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, perdedorObj) {
     const atividade = atividadesAtivas[grupoOrigem];
     if (!atividade) return;
 
-    // Atualiza histórico
     atividade.historicoLutas.push({ vencedor: vencedorObj.nome, perdedor: perdedorObj.nome });
     atividade.derrotados.push(perdedorObj.nome);
 
-    // Remove das lutas ativas
     atividade.lutadoresAtivos = atividade.lutadoresAtivos.filter(
         l => l.p1.lid !== vencedorObj.lid && l.p2.lid !== vencedorObj.lid
     );
 
-    const ehAtacante = atividade.anunciantes.some(a => a.lid === vencedorObj.lid || a.numero === vencedorObj.numero);
+    const ehAtacante = atividade.anunciantes.some(a => a.lid === vencedorObj.lid || a.numero === vencedorObj.numero || a.uid === vencedorObj.uid);
 
     if (ehAtacante) {
         atividade.vitoriasAtacantes++;
-        // Se ainda restam defensores no banco, o banco da defesa escolhe o próximo oponente
         if (atividade.bancoDefensores.length > 0) {
             atividade.proximoDesafiante = vencedorObj;
             atividade.vezSelecao = 'banco_defensor';
             atividade.fase = 'selecao';
 
-            let faccaoDef = atividade.defensores[0]?.faccao || 'Defensora';
-            await sock.sendMessage(grupoOrigem, { 
-                text: `🏆 *${vencedorObj.nome}* venceu o combate!\n\nAgora é a vez do banco da facção *${faccaoDef}* escolher quem irá enfrentar *${vencedorObj.nome}* usando *!escolher @jogador*.` 
-            });
+            await verificarEParearAutomatico(sock, grupoOrigem);
             await enviarRelatorioGrupo(sock, grupoOrigem);
             return;
         }
     } else {
         atividade.vitoriasDefensores++;
-        // Se ainda restam atacantes no banco, o banco atacante escolhe
         if (atividade.bancoAtacantes.length > 0) {
             atividade.proximoDesafiante = vencedorObj;
             atividade.vezSelecao = 'banco_atacante';
             atividade.fase = 'selecao';
 
-            await sock.sendMessage(grupoOrigem, { 
-                text: `🏆 *${vencedorObj.nome}* venceu o combate!\n\nAgora é a vez do banco de *${atividade.faccaoCriador}* escolher quem irá enfrentar *${vencedorObj.nome}* usando *!escolher @jogador*.` 
-            });
+            await verificarEParearAutomatico(sock, grupoOrigem);
             await enviarRelatorioGrupo(sock, grupoOrigem);
             return;
         }
     }
 
-    // Verifica se a atividade encerrou por completo
     const semLutasEmAndamento = atividade.lutadoresAtivos.length === 0;
     const semReservas = atividade.bancoAtacantes.length === 0 && atividade.bancoDefensores.length === 0;
 

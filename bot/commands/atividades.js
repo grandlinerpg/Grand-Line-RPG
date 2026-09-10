@@ -393,7 +393,7 @@ async function processarEscolhaLutador(sock, from, targetId) {
 
         const randDefIdx = Math.floor(Math.random() * atividade.bancoDefensores.length);
         p2 = atividade.bancoDefensores.splice(randDefIdx, 1)[0];
-        p1 = atividade.bancoAtacantes.splice(idxAtq, 1)[0];
+        p1 = atividade.bancoAtacantes.shift();
 
         await alocarLutaNaArena(sock, from, p1, p2);
         atividade.vezSelecao = 'atacante';
@@ -441,29 +441,54 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         arenasAtivas = res.data || {};
     } catch (e) {}
 
-    // Encontra uma arena disponível dos GRUPOS_ARENA
-    const arenaDisponivel = GRUPOS_ARENA.find(arenaJid => !batalhas[arenaJid] && !arenasAtivas[arenaJid]);
+    // Encontra uma arena disponível dos GRUPOS_ARENA (verificando sem o @g.us)
+    const arenaDisponivelJid = GRUPOS_ARENA.find(arenaJid => {
+        const chaveSemGus = arenaJid.replace('@g.us', '');
+        const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
+        
+        const ocupadaEmMemoria = batalhas[arenaJid] && batalhas[arenaJid].fase !== 'aguardando';
+        const ocupadaNoFirebase = arenaRemote && arenaRemote.fase !== 'aguardando';
 
-    if (!arenaDisponivel) {
+        return !ocupadaEmMemoria && !ocupadaNoFirebase;
+    });
+
+    if (!arenaDisponivelJid) {
         await sock.sendMessage(grupoOrigem, { text: '⚠️ Todas as arenas estão ocupadas no momento! Aguardando vaga...' });
         return false;
     }
 
-    const dadosBatalha = iniciarEstruturaBatalha(arenaDisponivel, p1, p2, 'ATIVIDADE', sock);
-    dadosBatalha.grupoOrigemAtividade = grupoOrigem;
+    const chaveGrupo = arenaDisponivelJid.replace('@g.us', '');
+    const indexArena = GRUPOS_ARENA.indexOf(arenaDisponivelJid) + 1;
+    const arenaRemote = arenasAtivas[chaveGrupo] || {};
 
-    batalhas[arenaDisponivel] = dadosBatalha;
+    const dadosBatalhaBase = iniciarEstruturaBatalha(arenaDisponivelJid, p1, p2, 'ATIVIDADE', sock);
+    
+    const dadosBatalha = {
+        ...arenaRemote,
+        ...dadosBatalhaBase,
+        numeroArena: arenaRemote.numeroArena || (indexArena > 0 ? indexArena : 1),
+        nomeArena: arenaRemote.nomeArena || `Arena ${indexArena > 0 ? indexArena : 1}`,
+        fase: 'apresentacao',
+        grupoOrigemAtividade: grupoOrigem
+    };
+
+    batalhas[arenaDisponivelJid] = dadosBatalha;
+
+    const dadosParaSalvar = { ...dadosBatalha };
+    delete dadosParaSalvar.sock;
+    delete dadosParaSalvar.timerApresentacao;
+    delete dadosParaSalvar.timerTurno;
 
     try {
-        await axios.put(`${FIREBASE_URL}/arenas_ativas/${arenaDisponivel}.json`, dadosBatalha);
+        await axios.put(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`, dadosParaSalvar);
     } catch (e) {
         console.error('Erro ao salvar arena da atividade no Firebase:', e.message);
     }
 
-    atividade.lutadoresAtivos.push({ p1, p2, arena: arenaDisponivel });
+    atividade.lutadoresAtivos.push({ p1, p2, arena: arenaDisponivelJid });
 
-    const msgArena = `⚔️ *COMBATE DE ATIVIDADE!* ⚔️\n\n${p1.nome} (${p1.faccao})\n———VS———\n${p2.nome} (${p2.faccao})\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
-    await sock.sendMessage(arenaDisponivel, { text: msgArena });
+    const msgArena = `⚔️ *COMBATE DE ATIVIDADE NA ${dadosBatalha.nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome} (${p1.faccao})\n———VS———\n${p2.nome} (${p2.faccao})\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
+    await sock.sendMessage(arenaDisponivelJid, { text: msgArena });
 
     return true;
 }

@@ -48,8 +48,9 @@ function gerarUrl(nome) {
 }
 
 function atualizarImagem() {
-  if (selectPersonagem.value && selectPersonagem.value !== "—") {
-    img.src = gerarUrl(selectPersonagem.value);
+  const valor = selectPersonagem.value;
+  if (valor && valor !== "Sem Personagem") {
+    img.src = gerarUrl(valor);
   } else {
     img.src = "";
   }
@@ -57,7 +58,7 @@ function atualizarImagem() {
 
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
-  if (!v || v === "—") {
+  if (!v || v === "Sem Personagem") {
     grupoEstilo.style.display = "flex";
     grupoEstilo.style.flexDirection = "column";
     grupoEstilo.style.opacity = "1";
@@ -78,7 +79,7 @@ async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDo
 
   todasOpcoes.forEach(opt => {
     const dono = ocupados[opt.value];
-    if (!dono || dono === uidUsuarioAtual) {
+    if (!dono || dono === uidUsuarioAtual || opt.value === "Sem Personagem") {
       const optionEl = document.createElement("option");
       optionEl.value = opt.value;
       optionEl.textContent = opt.text;
@@ -110,7 +111,7 @@ window.criarPersonagem = async function () {
   const novoPersonagem = selectPersonagem.value;
   const estilo = selectEstilo.value;
 
-  if (!novoPersonagem || novoPersonagem === "—") {
+  if (!novoPersonagem || novoPersonagem === "Sem Personagem") {
     alert("Selecione um personagem válido.");
     return;
   }
@@ -128,11 +129,11 @@ window.criarPersonagem = async function () {
     }
 
     // --- VERIFICAÇÃO DO ITEM DE TROCA ---
-    // Se o jogador já tinha um personagem e está trocando, precisa do item "trocadepersonagem"
+    // Se o jogador já tinha um personagem válido e está trocando, precisa do item "trocadepersonagem"
     const itemRef = ref(db, `players/${user.uid}/inventory/trocadepersonagem`);
     let qtdItem = 0;
 
-    if (antigoPersonagem) {
+    if (antigoPersonagem && antigoPersonagem !== "Sem Personagem") {
       const itemSnap = await get(itemRef);
       qtdItem = itemSnap.exists() ? Number(itemSnap.val()) || 0 : 0;
 
@@ -159,7 +160,7 @@ window.criarPersonagem = async function () {
     }
 
     // Se trocou de personagem, libera o antigo na lista global
-    if (antigoPersonagem && antigoPersonagem !== novoPersonagem) {
+    if (antigoPersonagem && antigoPersonagem !== novoPersonagem && antigoPersonagem !== "Sem Personagem") {
       await update(ref(db, "personagens"), {
         [antigoPersonagem]: null
       });
@@ -170,20 +171,19 @@ window.criarPersonagem = async function () {
           trocadepersonagem: qtdItem - 1
         });
       } else {
-        // Se só tinha 1, remove a chave do inventário
         await update(ref(db, `players/${user.uid}/inventory`), {
           trocadepersonagem: null
         });
       }
     }
 
-    // --- INSERÇÃO NO RANKING (APENAS NA PRIMEIRA SELEÇÃO) ---
-    if (!antigoPersonagem) {
+    // --- INSERÇÃO NO RANKING (APENAS NA PRIMEIRA SELEÇÃO DE PERSONAGEM) ---
+    if (!antigoPersonagem || antigoPersonagem === "Sem Personagem") {
       const rankingRef = ref(db, "ranking");
       await runTransaction(rankingRef, (currentRanking) => {
         let rankingData = currentRanking || {};
 
-        // Se o Firebase retornou uma Array
+        // Se for um Array nativo do Firebase
         if (Array.isArray(rankingData)) {
           if (!rankingData.includes(user.uid)) {
             rankingData.push(user.uid);
@@ -191,7 +191,7 @@ window.criarPersonagem = async function () {
           return rankingData;
         }
 
-        // Se for um Objeto indexado numericamente ("1", "2", "3", etc.)
+        // Se for um Objeto indexado por números ("1", "2", "3"...)
         const keys = Object.keys(rankingData).map(Number).filter(n => !isNaN(n));
         const jaExiste = Object.values(rankingData).includes(user.uid);
 
@@ -210,7 +210,7 @@ window.criarPersonagem = async function () {
       image: gerarUrl(novoPersonagem)
     };
 
-    if (!data.style || data.style === "—") {
+    if (!data.style || data.style === "Sem Personagem") {
       updates.style = estilo;
     }
 
@@ -236,12 +236,12 @@ onAuthStateChanged(auth, async (user) => {
 
   const snap = await get(ref(db, `players/${user.uid}/character`));
   let personagemAtual = null;
-  let estiloAtual = "—";
+  let estiloAtual = "Sem Personagem";
 
   if (snap.exists()) {
     const data = snap.val();
     personagemAtual = data.charName || null;
-    estiloAtual = data.style || "—";
+    estiloAtual = data.style || "Sem Personagem";
   }
 
   controlarEstilo(estiloAtual);

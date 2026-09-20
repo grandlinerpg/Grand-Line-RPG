@@ -57,9 +57,7 @@ function atualizarImagem() {
 
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
-  const semEstilo = !v || v === "-" || v === "—" || v === "–";
-
-  if (semEstilo) {
+  if (!v || v === "—") {
     grupoEstilo.style.display = "flex";
     grupoEstilo.style.flexDirection = "column";
     grupoEstilo.style.opacity = "1";
@@ -130,6 +128,7 @@ window.criarPersonagem = async function () {
     }
 
     // --- VERIFICAÇÃO DO ITEM DE TROCA ---
+    // Se o jogador já tinha um personagem e está trocando, precisa do item "trocadepersonagem"
     const itemRef = ref(db, `players/${user.uid}/inventory/trocadepersonagem`);
     let qtdItem = 0;
 
@@ -171,64 +170,20 @@ window.criarPersonagem = async function () {
           trocadepersonagem: qtdItem - 1
         });
       } else {
+        // Se só tinha 1, remove a chave do inventário
         await update(ref(db, `players/${user.uid}/inventory`), {
           trocadepersonagem: null
         });
       }
     }
 
-    // --- INSERÇÃO NO RANKING (Apenas na PRIMEIRA seleção) ---
-    if (!antigoPersonagem) {
-      const rankingRef = ref(db, "ranking");
-      await runTransaction(rankingRef, (currentRanking) => {
-        // Se o nó de ranking ainda não existe no Firebase
-        if (currentRanking === null || currentRanking === undefined) {
-          return { 1: user.uid };
-        }
-
-        let rankingMap = {};
-
-        // Se o Firebase retornou como Array (comum quando as chaves são números sequenciais)
-        if (Array.isArray(currentRanking)) {
-          currentRanking.forEach((uid, index) => {
-            if (uid) {
-              rankingMap[index] = uid;
-            }
-          });
-        } else if (typeof currentRanking === "object") {
-          rankingMap = { ...currentRanking };
-        }
-
-        // Se o jogador já estiver no ranking, não adiciona novamente
-        const jaEstaNoRanking = Object.values(rankingMap).includes(user.uid);
-        if (jaEstaNoRanking) {
-          return currentRanking;
-        }
-
-        // Identifica todas as posições numéricas válidas
-        const keys = Object.keys(rankingMap)
-          .map(Number)
-          .filter((n) => !isNaN(n) && n > 0);
-
-        // Calcula a próxima posição
-        const proximaPosicao = keys.length > 0 ? Math.max(...keys) + 1 : 1;
-
-        rankingMap[proximaPosicao] = user.uid;
-
-        return rankingMap;
-      });
-    }
-
-    // --- ATUALIZA O PERSONAGEM DO JOGADOR ---
+    // Atualiza o personagem do jogador
     const updates = {
       charName: novoPersonagem,
       image: gerarUrl(novoPersonagem)
     };
 
-    const estiloExistente = (data.style || "").trim();
-    const precisaEscolherEstilo = !estiloExistente || estiloExistente === "-" || estiloExistente === "—" || estiloExistente === "–";
-
-    if (precisaEscolherEstilo) {
+    if (!data.style || data.style === "—") {
       updates.style = estilo;
     }
 
@@ -254,12 +209,12 @@ onAuthStateChanged(auth, async (user) => {
 
   const snap = await get(ref(db, `players/${user.uid}/character`));
   let personagemAtual = null;
-  let estiloAtual = "";
+  let estiloAtual = "—";
 
   if (snap.exists()) {
     const data = snap.val();
     personagemAtual = data.charName || null;
-    estiloAtual = data.style || "";
+    estiloAtual = data.style || "—";
   }
 
   controlarEstilo(estiloAtual);

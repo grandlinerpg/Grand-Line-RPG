@@ -57,7 +57,10 @@ function atualizarImagem() {
 
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
-  if (!v || v === "—") {
+  // Aceita valor vazio, hífen simples (-), travessão (—) ou meia-risca (–)
+  const semEstilo = !v || v === "-" || v === "—" || v === "–";
+
+  if (semEstilo) {
     grupoEstilo.style.display = "flex";
     grupoEstilo.style.flexDirection = "column";
     grupoEstilo.style.opacity = "1";
@@ -177,13 +180,37 @@ window.criarPersonagem = async function () {
       }
     }
 
-    // Atualiza o personagem do jogador
+    // --- INSERÇÃO NO RANKING (Apenas na PRIMEIRA seleção) ---
+    if (!antigoPersonagem) {
+      const rankingRef = ref(db, "ranking");
+      await runTransaction(rankingRef, (currentRanking) => {
+        let rankingList = currentRanking || {};
+
+        // Se já constar no ranking, não adiciona novamente
+        const jaEstaNoRanking = Object.values(rankingList).includes(user.uid);
+        if (jaEstaNoRanking) {
+          return rankingList;
+        }
+
+        // Calcula a próxima posição numérica
+        const keys = Object.keys(rankingList).map(Number).filter(n => !isNaN(n));
+        const proximaPosicao = keys.length > 0 ? Math.max(...keys) + 1 : 1;
+
+        rankingList[proximaPosicao] = user.uid;
+        return rankingList;
+      });
+    }
+
+    // --- ATUALIZA O PERSONAGEM DO JOGADOR ---
     const updates = {
       charName: novoPersonagem,
       image: gerarUrl(novoPersonagem)
     };
 
-    if (!data.style || data.style === "—") {
+    const estiloExistente = (data.style || "").trim();
+    const precisaEscolherEstilo = !estiloExistente || estiloExistente === "-" || estiloExistente === "—" || estiloExistente === "–";
+
+    if (precisaEscolherEstilo) {
       updates.style = estilo;
     }
 
@@ -209,12 +236,12 @@ onAuthStateChanged(auth, async (user) => {
 
   const snap = await get(ref(db, `players/${user.uid}/character`));
   let personagemAtual = null;
-  let estiloAtual = "—";
+  let estiloAtual = "";
 
   if (snap.exists()) {
     const data = snap.val();
     personagemAtual = data.charName || null;
-    estiloAtual = data.style || "—";
+    estiloAtual = data.style || "";
   }
 
   controlarEstilo(estiloAtual);

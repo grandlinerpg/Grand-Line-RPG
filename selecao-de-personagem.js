@@ -57,7 +57,6 @@ function atualizarImagem() {
 
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
-  // Aceita valor vazio, hífen simples (-), travessão (—) ou meia-risca (–)
   const semEstilo = !v || v === "-" || v === "—" || v === "–";
 
   if (semEstilo) {
@@ -131,7 +130,6 @@ window.criarPersonagem = async function () {
     }
 
     // --- VERIFICAÇÃO DO ITEM DE TROCA ---
-    // Se o jogador já tinha um personagem e está trocando, precisa do item "trocadepersonagem"
     const itemRef = ref(db, `players/${user.uid}/inventory/trocadepersonagem`);
     let qtdItem = 0;
 
@@ -173,7 +171,6 @@ window.criarPersonagem = async function () {
           trocadepersonagem: qtdItem - 1
         });
       } else {
-        // Se só tinha 1, remove a chave do inventário
         await update(ref(db, `players/${user.uid}/inventory`), {
           trocadepersonagem: null
         });
@@ -184,20 +181,41 @@ window.criarPersonagem = async function () {
     if (!antigoPersonagem) {
       const rankingRef = ref(db, "ranking");
       await runTransaction(rankingRef, (currentRanking) => {
-        let rankingList = currentRanking || {};
-
-        // Se já constar no ranking, não adiciona novamente
-        const jaEstaNoRanking = Object.values(rankingList).includes(user.uid);
-        if (jaEstaNoRanking) {
-          return rankingList;
+        // Se o nó de ranking ainda não existe no Firebase
+        if (currentRanking === null || currentRanking === undefined) {
+          return { 1: user.uid };
         }
 
-        // Calcula a próxima posição numérica
-        const keys = Object.keys(rankingList).map(Number).filter(n => !isNaN(n));
+        let rankingMap = {};
+
+        // Se o Firebase retornou como Array (comum quando as chaves são números sequenciais)
+        if (Array.isArray(currentRanking)) {
+          currentRanking.forEach((uid, index) => {
+            if (uid) {
+              rankingMap[index] = uid;
+            }
+          });
+        } else if (typeof currentRanking === "object") {
+          rankingMap = { ...currentRanking };
+        }
+
+        // Se o jogador já estiver no ranking, não adiciona novamente
+        const jaEstaNoRanking = Object.values(rankingMap).includes(user.uid);
+        if (jaEstaNoRanking) {
+          return currentRanking;
+        }
+
+        // Identifica todas as posições numéricas válidas
+        const keys = Object.keys(rankingMap)
+          .map(Number)
+          .filter((n) => !isNaN(n) && n > 0);
+
+        // Calcula a próxima posição
         const proximaPosicao = keys.length > 0 ? Math.max(...keys) + 1 : 1;
 
-        rankingList[proximaPosicao] = user.uid;
-        return rankingList;
+        rankingMap[proximaPosicao] = user.uid;
+
+        return rankingMap;
       });
     }
 

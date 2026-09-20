@@ -37,6 +37,7 @@ const todasOpcoes = Array.from(selectPersonagem.options).map(opt => ({
 // AUXILIARES
 // ======================
 function gerarUrl(nome) {
+  if (!nome || nome === "Sem Personagem") return "";
   return `https://res.cloudinary.com/djh45admn/image/upload/v1778334616/${
     nome
       .toLowerCase()
@@ -48,9 +49,8 @@ function gerarUrl(nome) {
 }
 
 function atualizarImagem() {
-  const valor = selectPersonagem.value;
-  if (valor && valor !== "Sem Personagem") {
-    img.src = gerarUrl(valor);
+  if (selectPersonagem.value && selectPersonagem.value !== "Sem Personagem") {
+    img.src = gerarUrl(selectPersonagem.value);
   } else {
     img.src = "";
   }
@@ -58,7 +58,7 @@ function atualizarImagem() {
 
 function controlarEstilo(valor) {
   const v = (valor || "").trim();
-  if (!v || v === "Sem Personagem") {
+  if (!v || v === "—") {
     grupoEstilo.style.display = "flex";
     grupoEstilo.style.flexDirection = "column";
     grupoEstilo.style.opacity = "1";
@@ -79,7 +79,8 @@ async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDo
 
   todasOpcoes.forEach(opt => {
     const dono = ocupados[opt.value];
-    if (!dono || dono === uidUsuarioAtual || opt.value === "Sem Personagem") {
+    // "Sem Personagem" ou livre ou pertencente ao usuário atual
+    if (opt.value === "Sem Personagem" || !dono || dono === uidUsuarioAtual) {
       const optionEl = document.createElement("option");
       optionEl.value = opt.value;
       optionEl.textContent = opt.text;
@@ -87,7 +88,7 @@ async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDo
     }
   });
 
-  if (personagemAtualDoUsuario && ocupados[personagemAtualDoUsuario] === uidUsuarioAtual) {
+  if (personagemAtualDoUsuario && (personagemAtualDoUsuario === "Sem Personagem" || ocupados[personagemAtualDoUsuario] === uidUsuarioAtual)) {
     selectPersonagem.value = personagemAtualDoUsuario;
   }
 
@@ -111,7 +112,7 @@ window.criarPersonagem = async function () {
   const novoPersonagem = selectPersonagem.value;
   const estilo = selectEstilo.value;
 
-  if (!novoPersonagem || novoPersonagem === "Sem Personagem") {
+  if (!novoPersonagem) {
     alert("Selecione um personagem válido.");
     return;
   }
@@ -128,12 +129,14 @@ window.criarPersonagem = async function () {
       return;
     }
 
+    const ehSemPersonagem = (novoPersonagem === "Sem Personagem");
+
     // --- VERIFICAÇÃO DO ITEM DE TROCA ---
-    // Se o jogador já tinha um personagem válido e está trocando, precisa do item "trocadepersonagem"
+    // Isenta a troca se o destino for "Sem Personagem"
     const itemRef = ref(db, `players/${user.uid}/inventory/trocadepersonagem`);
     let qtdItem = 0;
 
-    if (antigoPersonagem && antigoPersonagem !== "Sem Personagem") {
+    if (antigoPersonagem && !ehSemPersonagem) {
       const itemSnap = await get(itemRef);
       qtdItem = itemSnap.exists() ? Number(itemSnap.val()) || 0 : 0;
 
@@ -143,64 +146,60 @@ window.criarPersonagem = async function () {
       }
     }
 
-    // Tenta travar o novo personagem de forma atômica no banco
-    const novoCharRef = ref(db, `personagens/${novoPersonagem}`);
-    const txResult = await runTransaction(novoCharRef, (currentOwner) => {
-      if (currentOwner === null || currentOwner === user.uid) {
-        return user.uid;
-      } else {
-        return; // Alguém pegou primeiro
-      }
-    });
+    // --- TRAVA DO PERSONAGEM ---
+    // "Sem Personagem" não é travado no nó global
+    if (!ehSemPersonagem) {
+      const novoCharRef = ref(db, `personagens/${novoPersonagem}`);
+      const txResult = await runTransaction(novoCharRef, (currentOwner) => {
+        if (currentOwner === null || currentOwner === user.uid) {
+          return user.uid;
+        } else {
+          return; // Alguém pegou primeiro
+        }
+      });
 
-    if (!txResult.committed) {
-      alert("Ops! Alguém acabou de escolher este personagem. Por favor, selecione outro.");
-      await carregarPersonagensDisponiveis(user.uid, antigoPersonagem);
-      return;
+      if (!txResult.committed) {
+        alert("Ops! Alguém acabou de escolher este personagem. Por favor, selecione outro.");
+        await carregarPersonagensDisponiveis(user.uid, antigoPersonagem);
+        return;
+      }
     }
 
-    // Se trocou de personagem, libera o antigo na lista global
+    // Se trocou de personagem e tinha um anterior válido, libera o antigo na lista global
     if (antigoPersonagem && antigoPersonagem !== novoPersonagem && antigoPersonagem !== "Sem Personagem") {
       await update(ref(db, "personagens"), {
         [antigoPersonagem]: null
       });
 
       // --- DESCONTO DO ITEM DE TROCA ---
-      if (qtdItem > 1) {
-        await update(ref(db, `players/${user.uid}/inventory`), {
-          trocadepersonagem: qtdItem - 1
-        });
-      } else {
-        await update(ref(db, `players/${user.uid}/inventory`), {
-          trocadepersonagem: null
-        });
+      if (!ehSemPersonagem) {
+        if (qtdItem > 1) {
+          await update(ref(db, `players/${user.uid}/inventory`), {
+            trocadepersonagem: qtdItem - 1
+          });
+        } else {
+          // Se só tinha 1, remove a chave do inventário
+          await update(ref(db, `players/${user.uid}/inventory`), {
+            trocadepersonagem: null
+          });
+        }
       }
     }
 
-    // --- INSERÇÃO NO RANKING (APENAS NA PRIMEIRA SELEÇÃO DE PERSONAGEM) ---
-    if (!antigoPersonagem || antigoPersonagem === "Sem Personagem") {
-      const rankingRef = ref(db, "ranking");
-      await runTransaction(rankingRef, (currentRanking) => {
-        let rankingData = currentRanking || {};
+    // --- INCLUSÃO NO RANKING ---
+    const rankingRef = ref(db, "ranking");
+    const rankingSnap = await get(rankingRef);
+    const rankingData = rankingSnap.exists() ? rankingSnap.val() : {};
 
-        // Se for um Array nativo do Firebase
-        if (Array.isArray(rankingData)) {
-          if (!rankingData.includes(user.uid)) {
-            rankingData.push(user.uid);
-          }
-          return rankingData;
-        }
+    // Converte o objeto/matriz em lista para verificar se o UID já existe
+    const uidsNoRanking = Object.values(rankingData);
+    if (!uidsNoRanking.includes(user.uid)) {
+      // Descobre a próxima posição numérica livre no ranking (1-based)
+      const chaves = Object.keys(rankingData).map(Number).filter(n => !isNaN(n));
+      const proximaPosicao = chaves.length > 0 ? Math.max(...chaves) + 1 : 1;
 
-        // Se for um Objeto indexado por números ("1", "2", "3"...)
-        const keys = Object.keys(rankingData).map(Number).filter(n => !isNaN(n));
-        const jaExiste = Object.values(rankingData).includes(user.uid);
-
-        if (!jaExiste) {
-          const proximoIndice = keys.length > 0 ? Math.max(...keys) + 1 : 1;
-          rankingData[proximoIndice] = user.uid;
-        }
-
-        return rankingData;
+      await update(ref(db, "ranking"), {
+        [proximaPosicao]: user.uid
       });
     }
 
@@ -210,7 +209,7 @@ window.criarPersonagem = async function () {
       image: gerarUrl(novoPersonagem)
     };
 
-    if (!data.style || data.style === "Sem Personagem") {
+    if (!data.style || data.style === "—") {
       updates.style = estilo;
     }
 
@@ -236,12 +235,12 @@ onAuthStateChanged(auth, async (user) => {
 
   const snap = await get(ref(db, `players/${user.uid}/character`));
   let personagemAtual = null;
-  let estiloAtual = "Sem Personagem";
+  let estiloAtual = "—";
 
   if (snap.exists()) {
     const data = snap.val();
     personagemAtual = data.charName || null;
-    estiloAtual = data.style || "Sem Personagem";
+    estiloAtual = data.style || "—";
   }
 
   controlarEstilo(estiloAtual);

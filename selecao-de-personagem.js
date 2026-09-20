@@ -48,7 +48,7 @@ function gerarUrl(nome) {
 }
 
 function atualizarImagem() {
-  if (selectPersonagem.value) {
+  if (selectPersonagem.value && selectPersonagem.value !== "—") {
     img.src = gerarUrl(selectPersonagem.value);
   } else {
     img.src = "";
@@ -110,7 +110,7 @@ window.criarPersonagem = async function () {
   const novoPersonagem = selectPersonagem.value;
   const estilo = selectEstilo.value;
 
-  if (!novoPersonagem) {
+  if (!novoPersonagem || novoPersonagem === "—") {
     alert("Selecione um personagem válido.");
     return;
   }
@@ -175,6 +175,33 @@ window.criarPersonagem = async function () {
           trocadepersonagem: null
         });
       }
+    }
+
+    // --- INSERÇÃO NO RANKING (APENAS NA PRIMEIRA SELEÇÃO) ---
+    if (!antigoPersonagem) {
+      const rankingRef = ref(db, "ranking");
+      await runTransaction(rankingRef, (currentRanking) => {
+        let rankingData = currentRanking || {};
+
+        // Se o Firebase retornou uma Array
+        if (Array.isArray(rankingData)) {
+          if (!rankingData.includes(user.uid)) {
+            rankingData.push(user.uid);
+          }
+          return rankingData;
+        }
+
+        // Se for um Objeto indexado numericamente ("1", "2", "3", etc.)
+        const keys = Object.keys(rankingData).map(Number).filter(n => !isNaN(n));
+        const jaExiste = Object.values(rankingData).includes(user.uid);
+
+        if (!jaExiste) {
+          const proximoIndice = keys.length > 0 ? Math.max(...keys) + 1 : 1;
+          rankingData[proximoIndice] = user.uid;
+        }
+
+        return rankingData;
+      });
     }
 
     // Atualiza o personagem do jogador

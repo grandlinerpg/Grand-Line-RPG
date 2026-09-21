@@ -1,8 +1,9 @@
 const axios = require('axios');
 const { 
     FIREBASE_URL, 
-    jogosQuiz 
-} = require('./index');
+    jogosQuiz,
+    obterJidEfetivo 
+} = require('../index'); // CORRIGIDO: Recua uma pasta para achar o index.js
 
 /**
  * Envia a pergunta atual do Quiz para o grupo e gerencia o tempo limite de resposta.
@@ -54,7 +55,7 @@ async function gerarTabelaPontuacao(pontosObj) {
         participantes.forEach((senderId, idx) => {
             const playerUid = Object.keys(playersData).find(u => 
                 String(playersData[u]?.number?.LID || '').trim() === senderId || 
-                String(playersData[u]?.number?.n || '').trim() === senderId
+                String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
             );
             const nome = playerUid ? (playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador") : `@${senderId}`;
             tabela += `${idx + 1}º ${nome} — ${pontosObj[senderId]} Pt(s)\n`;
@@ -91,7 +92,7 @@ async function finalizarQuiz(chatJid, sock) {
 
                 const playerUid = Object.keys(playersData).find(u => 
                     String(playersData[u]?.number?.LID || '').trim() === senderId || 
-                    String(playersData[u]?.number?.n || '').trim() === senderId
+                    String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
                 );
                 let nomePlayer = "Lutador";
 

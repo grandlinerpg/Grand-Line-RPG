@@ -352,8 +352,6 @@ async function encerrarListaEIniciarPartida(sock, from) {
     });
 
     await verificarEParearAutomatico(sock, from);
-    // Envia o relatório inicial completo com as arenas alocadas no grupo principal
-    await enviarRelatorioGrupo(sock, from);
 }
 
 async function verificarEParearAutomatico(sock, from) {
@@ -404,6 +402,7 @@ async function verificarEParearAutomatico(sock, from) {
         
         await sock.sendMessage(from, { text: `⚡ *Resta apenas 1 combatente de cada lado!* Pareamento automático: ${p1.nome} VS ${p2.nome}` });
         await alocarLutaNaArena(sock, from, p1, p2);
+        await enviarRelatorioGrupo(sock, from);
     } else if (atividade.bancoAtacantes.length > 0 && atividade.bancoDefensores.length > 0) {
         if (atividade.vezSelecao === 'atacante' && atividade.bancoDefensores.length === 1) {
             const randAtqIdx = Math.floor(Math.random() * atividade.bancoAtacantes.length);
@@ -412,6 +411,7 @@ async function verificarEParearAutomatico(sock, from) {
 
             await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 defensor da facção ${nomeDefesa}!* ${p2.nome} foi pareado automaticamente contra ${p1.nome}.` });
             await alocarLutaNaArena(sock, from, p1, p2);
+            await enviarRelatorioGrupo(sock, from);
             await verificarEParearAutomatico(sock, from);
         } else if (atividade.vezSelecao === 'defensor' && atividade.bancoAtacantes.length === 1) {
             const randDefIdx = Math.floor(Math.random() * atividade.bancoDefensores.length);
@@ -420,6 +420,7 @@ async function verificarEParearAutomatico(sock, from) {
 
             await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 atacante da facção ${atividade.faccaoCriador}!* ${p1.nome} foi pareado automaticamente contra ${p2.nome}.` });
             await alocarLutaNaArena(sock, from, p1, p2);
+            await enviarRelatorioGrupo(sock, from);
             await verificarEParearAutomatico(sock, from);
         } else {
             let faccaoVez = atividade.vezSelecao === 'atacante' ? atividade.faccaoCriador : nomeDefesa;
@@ -450,9 +451,9 @@ async function processarEscolhaLutador(sock, from, targetId) {
         p2 = atividade.bancoDefensores.splice(idxDef, 1)[0];
 
         await alocarLutaNaArena(sock, from, p1, p2);
+        await enviarRelatorioGrupo(sock, from);
         atividade.vezSelecao = 'defensor';
         await verificarEParearAutomatico(sock, from);
-        await enviarRelatorioGrupo(sock, from);
 
     } else if (atividade.vezSelecao === 'defensor') {
         const idxAtq = atividade.bancoAtacantes.findIndex(a => a.lid === targetId || a.numero === targetId || a.uid === targetId);
@@ -466,9 +467,9 @@ async function processarEscolhaLutador(sock, from, targetId) {
         p1 = atividade.bancoAtacantes.shift();
 
         await alocarLutaNaArena(sock, from, p1, p2);
+        await enviarRelatorioGrupo(sock, from);
         atividade.vezSelecao = 'atacante';
         await verificarEParearAutomatico(sock, from);
-        await enviarRelatorioGrupo(sock, from);
 
     } else if (atividade.vezSelecao === 'banco_defensor') {
         const idxDef = atividade.bancoDefensores.findIndex(d => d.lid === targetId || d.numero === targetId || d.uid === targetId);
@@ -576,7 +577,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             atividade.vezSelecao = 'banco_defensor';
 
             await verificarEParearAutomatico(sock, grupoOrigem);
-            await enviarRelatorioGrupo(sock, grupoOrigem);
             return;
         }
     } else {
@@ -586,7 +586,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             atividade.vezSelecao = 'banco_atacante';
 
             await verificarEParearAutomatico(sock, grupoOrigem);
-            await enviarRelatorioGrupo(sock, grupoOrigem);
             return;
         }
     }

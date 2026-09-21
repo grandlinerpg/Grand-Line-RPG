@@ -2,6 +2,19 @@ const axios = require('axios');
 const { FIREBASE_URL, GRUPOS_ARENA, obterJidEfetivo } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates');
 
+// Mapeamento auxiliar de emojis de facção
+const EMOJIS_FACCAO = {
+    'Marinha': '⚓',
+    'Piratas': '🏴‍☠️',
+    'Exército Revolucionário': '⚔️',
+    'Governo Mundial': '⚓',
+    'Caçadores de Recompensa': '🎯'
+};
+
+function obterEmojiFaccao(nomeFaccao) {
+    return EMOJIS_FACCAO[nomeFaccao] || '⚔️';
+}
+
 // Armazena as sessões de criação
 const sessoesCriacao = {};
 
@@ -140,6 +153,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
         atividadesAtivas[from] = {
             nomeAtividade: sessao.nomeAtividade,
             faccaoCriador: sessao.faccaoCriador,
+            faccaoDefensora: null,
             anunciantes: anunciantes,
             defensores: [],
             fase: 'lista',
@@ -166,8 +180,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
         return true;
     }
 
-    // 4. Entrar na defesa: !participar
-    if (text === '!participar') {
+    // 4. Entrar na defesa: !participar ou !participar @jogador
+    if (text.startsWith('!participar')) {
         const atividade = atividadesAtivas[from];
         if (!atividade || atividade.fase !== 'lista') {
             await sock.sendMessage(from, { text: '❌ Não há nenhuma atividade aberta para inscrições no momento.' }, { quoted: m });
@@ -178,42 +192,76 @@ async function handleAtividadesCommands(sock, m, text, from) {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
 
-            const playerUid = Object.keys(playersData).find(u => 
-                String(playersData[u]?.number?.LID || '').trim() === senderId || 
-                String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
-            );
+            const mentionedJids = m.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
+            const targetsToRegister = [];
 
-            if (!playerUid) {
+            if (mentionedJids.length > 0) {
+                for (const jid of mentionedJids) {
+                    const targetId = jid.split('@')[0].split(':')[0].trim();
+                    const targetUid = Object.keys(playersData).find(u => 
+                        String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                        String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
+                    );
+                    if (targetUid) targetsToRegister.push(targetUid);
+                }
+            } else {
+                const playerUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                    String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
+                );
+                if (playerUid) targetsToRegister.push(playerUid);
+            }
+
+            if (targetsToRegister.length === 0) {
                 await sock.sendMessage(from, { text: '❌ Você precisa estar cadastrado para participar!' }, { quoted: m });
                 return true;
             }
 
-            const player = playersData[playerUid];
-            const faccaoJogador = player?.character?.faction;
+            let adicionouAlguem = false;
 
-            if (faccaoJogador === atividade.faccaoCriador) {
-                await sock.sendMessage(from, { text: '❌ Aliados da mesma facção não podem entrar como defensores!' }, { quoted: m });
-                return true;
+            for (const playerUid of targetsToRegister) {
+                const player = playersData[playerUid];
+                const faccaoJogador = player?.character?.faction;
+
+                if (!faccaoJogador) continue;
+
+                if (faccaoJogador === atividade.faccaoCriador) {
+                    await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* pertence à mesma facção atacante (*${atividade.faccaoCriador}*) e não pode entrar na defesa!` }, { quoted: m });
+                    continue;
+                }
+
+                if (atividade.faccaoDefensora && faccaoJogador !== atividade.faccaoDefensora) {
+                    await sock.sendMessage(from, { text: `❌ Todos os defensores devem pertencer à mesma facção! A defesa atual pertence à facção *${atividade.faccaoDefensora}*.` }, { quoted: m });
+                    continue;
+                }
+
+                const jaEhAnunciante = atividade.anunciantes.some(a => a.uid === playerUid);
+                const jaEhDefensor = atividade.defensores.some(d => d.uid === playerUid);
+
+                if (jaEhAnunciante || jaEhDefensor) {
+                    await sock.sendMessage(from, { text: `⚠️ *${player?.character?.charName || 'Jogador'}* já está registrado nesta atividade!` }, { quoted: m });
+                    continue;
+                }
+
+                if (!atividade.faccaoDefensora) {
+                    atividade.faccaoDefensora = faccaoJogador;
+                }
+
+                atividade.defensores.push({
+                    uid: playerUid,
+                    nome: player?.character?.charName || player?.nome || 'Defensor',
+                    level: player?.info?.level ?? 1,
+                    lid: player?.number?.LID || senderId,
+                    numero: player?.number?.n || senderId,
+                    faccao: faccaoJogador
+                });
+
+                adicionouAlguem = true;
             }
 
-            const jaEhAnunciante = atividade.anunciantes.some(a => a.uid === playerUid);
-            const jaEhDefensor = atividade.defensores.some(d => d.uid === playerUid);
-
-            if (jaEhAnunciante || jaEhDefensor) {
-                await sock.sendMessage(from, { text: '⚠️ Você já está registrado nesta atividade!' }, { quoted: m });
-                return true;
+            if (adicionouAlguem) {
+                await enviarPainelAtividade(sock, from, atividade);
             }
-
-            atividade.defensores.push({
-                uid: playerUid,
-                nome: player?.character?.charName || player?.nome || 'Defensor',
-                level: player?.info?.level ?? 1,
-                lid: player?.number?.LID || senderId,
-                numero: player?.number?.n || senderId,
-                faccao: faccaoJogador || 'Defesa'
-            });
-
-            await enviarPainelAtividade(sock, from, atividade);
             return true;
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao registrar participação.' }, { quoted: m });
@@ -257,6 +305,29 @@ async function handleAtividadesCommands(sock, m, text, from) {
 // FUNÇÕES AUXILIARES E LÓGICA DE MATCHMAKING
 // ==========================================
 
+async function obterStatusFormatadoArenas() {
+    let arenasAtivas = {};
+    try {
+        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
+        arenasAtivas = res.data || {};
+    } catch (e) {}
+
+    const linhas = [];
+    GRUPOS_ARENA.forEach((arenaJid, idx) => {
+        const numArena = idx + 1;
+        const chaveSemGus = arenaJid.replace('@g.us', '');
+        const arenaData = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
+
+        if (arenaData && arenaData.fase && arenaData.fase !== 'aguardando' && arenaData.p1 && arenaData.p2) {
+            linhas.push(`Arena ${numArena}: ${arenaData.p1.nome} VS ${arenaData.p2.nome}`);
+        } else {
+            linhas.push(`Arena ${numArena}: Livre`);
+        }
+    });
+
+    return `📌 *STATUS DAS ARENAS:*\n` + linhas.join('\n');
+}
+
 async function encerrarListaEIniciarPartida(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
@@ -271,8 +342,10 @@ async function encerrarListaEIniciarPartida(sock, from) {
     atividade.bancoDefensores = [...atividade.defensores];
     atividade.fase = 'selecao';
 
+    const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
+
     await sock.sendMessage(from, { 
-        text: `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\nAtacantes: ${atividade.bancoAtacantes.length} | Defensores: ${atividade.bancoDefensores.length}` 
+        text: `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\n${atividade.faccaoCriador}: ${atividade.bancoAtacantes.length} | ${nomeDefesa}: ${atividade.bancoDefensores.length}` 
     });
 
     await verificarEParearAutomatico(sock, from);
@@ -282,6 +355,8 @@ async function verificarEParearAutomatico(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
+
     if (atividade.proximoDesafiante) {
         if (atividade.vezSelecao === 'banco_defensor') {
             if (atividade.bancoDefensores.length === 1) {
@@ -289,15 +364,14 @@ async function verificarEParearAutomatico(sock, from) {
                 const p2 = atividade.bancoDefensores.shift();
                 atividade.proximoDesafiante = null;
 
-                await sock.sendMessage(from, { text: `⚡ *Defesa só tem 1 opção!* ${p2.nome} foi alocado automaticamente contra ${p1.nome}!` });
+                await sock.sendMessage(from, { text: `⚡ *${nomeDefesa} só tem 1 opção!* ${p2.nome} foi alocado automaticamente contra ${p1.nome}!` });
                 await alocarLutaNaArena(sock, from, p1, p2);
                 atividade.fase = 'combates';
                 await enviarRelatorioGrupo(sock, from);
                 return;
             } else if (atividade.bancoDefensores.length > 1) {
-                let faccaoDef = atividade.defensores[0]?.faccao || 'Defensora';
                 await sock.sendMessage(from, { 
-                    text: `🏆 Vez do banco da facção *${faccaoDef}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
+                    text: `🏆 Vez do banco da facção *${nomeDefesa}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
                 });
                 return;
             }
@@ -307,7 +381,7 @@ async function verificarEParearAutomatico(sock, from) {
                 const p1 = atividade.bancoAtacantes.shift();
                 atividade.proximoDesafiante = null;
 
-                await sock.sendMessage(from, { text: `⚡ *Atacantes só têm 1 opção!* ${p1.nome} foi alocado automaticamente contra ${p2.nome}!` });
+                await sock.sendMessage(from, { text: `⚡ *${atividade.faccaoCriador} só tem 1 opção!* ${p1.nome} foi alocado automaticamente contra ${p2.nome}!` });
                 await alocarLutaNaArena(sock, from, p1, p2);
                 atividade.fase = 'combates';
                 await enviarRelatorioGrupo(sock, from);
@@ -335,7 +409,7 @@ async function verificarEParearAutomatico(sock, from) {
             const p1 = atividade.bancoAtacantes.splice(randAtqIdx, 1)[0];
             const p2 = atividade.bancoDefensores.shift();
 
-            await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 defensor!* ${p2.nome} foi pareado automaticamente contra ${p1.nome}.` });
+            await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 defensor da facção ${nomeDefesa}!* ${p2.nome} foi pareado automaticamente contra ${p1.nome}.` });
             await alocarLutaNaArena(sock, from, p1, p2);
             await verificarEParearAutomatico(sock, from);
         } else if (atividade.vezSelecao === 'defensor' && atividade.bancoAtacantes.length === 1) {
@@ -343,12 +417,12 @@ async function verificarEParearAutomatico(sock, from) {
             const p2 = atividade.bancoDefensores.splice(randDefIdx, 1)[0];
             const p1 = atividade.bancoAtacantes.shift();
 
-            await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 atacante!* ${p1.nome} foi pareado automaticamente contra ${p2.nome}.` });
+            await sock.sendMessage(from, { text: `⚡ *Restou apenas 1 atacante da facção ${atividade.faccaoCriador}!* ${p1.nome} foi pareado automaticamente contra ${p2.nome}.` });
             await alocarLutaNaArena(sock, from, p1, p2);
             await verificarEParearAutomatico(sock, from);
         } else {
-            let faccaoVez = atividade.vezSelecao === 'atacante' ? atividade.faccaoCriador : (atividade.defensores[0]?.faccao || 'Defesa');
-            let faccaoAlvo = atividade.vezSelecao === 'atacante' ? (atividade.defensores[0]?.faccao || 'Defesa') : atividade.faccaoCriador;
+            let faccaoVez = atividade.vezSelecao === 'atacante' ? atividade.faccaoCriador : nomeDefesa;
+            let faccaoAlvo = atividade.vezSelecao === 'atacante' ? nomeDefesa : atividade.faccaoCriador;
 
             await sock.sendMessage(from, { 
                 text: `⚔️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
@@ -480,6 +554,10 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const msgArena = `⚔️ *COMBATE DE ATIVIDADE NA ${dadosBatalha.nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome} (${p1.faccao})\n———VS———\n${p2.nome} (${p2.faccao})\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
     await sock.sendMessage(arenaDisponivelJid, { text: msgArena });
 
+    // Envia o status das arenas no grupo principal sempre que houver uma designação
+    const statusArenas = await obterStatusFormatadoArenas();
+    await sock.sendMessage(grupoOrigem, { text: `⚔️ *COMBATE ALOCADO!*\n${dadosBatalha.nomeArena}: ${p1.nome} vs ${p2.nome}\n\n${statusArenas}` });
+
     return true;
 }
 
@@ -534,6 +612,8 @@ async function enviarRelatorioGrupo(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    const nomeDefesa = atividade.faccaoDefensora || 'Defensa';
+
     let historicoTexto = atividade.historicoLutas.length > 0
         ? atividade.historicoLutas.map(h => `✅ ${h.vencedor} venceu ${h.perdedor}`).join('\n')
         : 'Nenhum combate concluído.';
@@ -551,11 +631,11 @@ async function enviarRelatorioGrupo(sock, from) {
         : 'Vazio';
 
     const msgStatus = `📊 *STATUS DA ATIVIDADE: ${atividade.nomeAtividade.toUpperCase()}*\n\n` +
-        `🏆 *Placar:* ${atividade.faccaoCriador} [${atividade.vitoriasAtacantes}] x [${atividade.vitoriasDefensores}] Defesa\n\n` +
+        `🏆 *Placar:* ${atividade.faccaoCriador} [${atividade.vitoriasAtacantes}] x [${atividade.vitoriasDefensores}] ${nomeDefesa}\n\n` +
         `⚔️ *Histórico de Vitórias:*\n${historicoTexto}\n\n` +
         `💀 *Jogadores Derrotados:*\n${derrotadosTexto}\n\n` +
-        `🏦 *Banco Atacantes:* ${bancoAtqTexto}\n` +
-        `🏦 *Banco Defensores:* ${bancoDefTexto}`;
+        `🏦 *Banco ${atividade.faccaoCriador}:* ${bancoAtqTexto}\n` +
+        `🏦 *Banco ${nomeDefesa}:* ${bancoDefTexto}`;
 
     await sock.sendMessage(from, { text: msgStatus });
 }
@@ -564,16 +644,18 @@ async function finalizarAtividade(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
+
     let vencedorAtividade = 'Empate!';
     if (atividade.vitoriasAtacantes > atividade.vitoriasDefensores) {
         vencedorAtividade = `Facção ${atividade.faccaoCriador}`;
     } else if (atividade.vitoriasDefensores > atividade.vitoriasAtacantes) {
-        vencedorAtividade = 'Facção Defensora';
+        vencedorAtividade = `Facção ${nomeDefesa}`;
     }
 
     const msgFinal = `🎉 *ATIVIDADE CONCLUÍDA!* 🎉\n\n` +
         `Atividade: *${atividade.nomeAtividade}*\n` +
-        `Placar Final: *${atividade.faccaoCriador}* ${atividade.vitoriasAtacantes} x ${atividade.vitoriasDefensores} *Defesa*\n\n` +
+        `Placar Final: *${atividade.faccaoCriador}* ${atividade.vitoriasAtacantes} x ${atividade.vitoriasDefensores} *${nomeDefesa}*\n\n` +
         `🏆 *VENCEDOR DA ATIVIDADE:* ${vencedorAtividade.toUpperCase()}!`;
 
     await sock.sendMessage(from, { text: msgFinal });
@@ -584,16 +666,21 @@ async function enviarPainelAtividade(sock, from, atividade) {
     const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + curr.level, 0);
     const forcaDefensores = atividade.defensores.reduce((acc, curr) => acc + curr.level, 0);
 
-    let anunciantesTexto = atividade.anunciantes.map(a => `${a.nome} (${a.level})`).join('\n');
+    const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador);
+    const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
+
+    let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
     let defensoresTexto = atividade.defensores.length > 0
-        ? atividade.defensores.map(d => `${d.nome} (${d.level})`).join('\n')
+        ? atividade.defensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n')
         : 'Nenhum nome registrado.';
 
-    const mensagemPainel = `*${atividade.nomeAtividade}*\n\n` +
+    const tituloDefesa = atividade.faccaoDefensora || 'Defensores';
+
+    const mensagemPainel = `*${nomeAtividadeMaiusculo}*\n\n` +
         `Anunciantes:\n\n${anunciantesTexto}\n\n` +
-        `Força: ${forcaAtacantes}\n\n` +
-        `Defensores:\n\n${defensoresTexto}\n\n` +
-        `Força: ${forcaDefensores} --\n\n` +
+        `> Força: ${forcaAtacantes}\n\n` +
+        `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
+        `> Força: ${forcaDefensores} --\n\n` +
         `⏳ _30 minutos de lista ou digite !encerrar._`;
 
     await sock.sendMessage(from, { text: mensagemPainel });

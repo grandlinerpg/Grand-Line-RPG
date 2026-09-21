@@ -307,7 +307,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
 async function obterStatusFormatadoArenas(atividade) {
     if (!atividade || !atividade.lutadoresAtivos || atividade.lutadoresAtivos.length === 0) {
-        return '🏟️ *Arenas em Combate:* Nenhum combate em andamento.';
+        return '🏟️ *Arenas em Combate:* Nenhum combate em andamento no momento.';
     }
 
     let arenasAtivas = {};
@@ -352,6 +352,8 @@ async function encerrarListaEIniciarPartida(sock, from) {
     });
 
     await verificarEParearAutomatico(sock, from);
+    // Envia o relatório inicial completo com as arenas alocadas no grupo principal
+    await enviarRelatorioGrupo(sock, from);
 }
 
 async function verificarEParearAutomatico(sock, from) {
@@ -402,7 +404,6 @@ async function verificarEParearAutomatico(sock, from) {
         
         await sock.sendMessage(from, { text: `⚡ *Resta apenas 1 combatente de cada lado!* Pareamento automático: ${p1.nome} VS ${p2.nome}` });
         await alocarLutaNaArena(sock, from, p1, p2);
-        await enviarRelatorioGrupo(sock, from);
     } else if (atividade.bancoAtacantes.length > 0 && atividade.bancoDefensores.length > 0) {
         if (atividade.vezSelecao === 'atacante' && atividade.bancoDefensores.length === 1) {
             const randAtqIdx = Math.floor(Math.random() * atividade.bancoAtacantes.length);
@@ -451,6 +452,7 @@ async function processarEscolhaLutador(sock, from, targetId) {
         await alocarLutaNaArena(sock, from, p1, p2);
         atividade.vezSelecao = 'defensor';
         await verificarEParearAutomatico(sock, from);
+        await enviarRelatorioGrupo(sock, from);
 
     } else if (atividade.vezSelecao === 'defensor') {
         const idxAtq = atividade.bancoAtacantes.findIndex(a => a.lid === targetId || a.numero === targetId || a.uid === targetId);
@@ -466,6 +468,7 @@ async function processarEscolhaLutador(sock, from, targetId) {
         await alocarLutaNaArena(sock, from, p1, p2);
         atividade.vezSelecao = 'atacante';
         await verificarEParearAutomatico(sock, from);
+        await enviarRelatorioGrupo(sock, from);
 
     } else if (atividade.vezSelecao === 'banco_defensor') {
         const idxDef = atividade.bancoDefensores.findIndex(d => d.lid === targetId || d.numero === targetId || d.uid === targetId);

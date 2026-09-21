@@ -1,6 +1,5 @@
 const axios = require('axios');
-const { FIREBASE_URL, GRUPOS_ARENA, batalhas, obterJidEfetivo } = require('../index');
-const { iniciarEstruturaBatalha } = require('../gameEngine');
+const { FIREBASE_URL, GRUPOS_ARENA, obterJidEfetivo } = require('./index');
 
 // Armazena as sessões de criação
 const sessoesCriacao = {};
@@ -282,7 +281,6 @@ async function verificarEParearAutomatico(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
-    // Se temos um próximo desafiante (vencedor do combate anterior)
     if (atividade.proximoDesafiante) {
         if (atividade.vezSelecao === 'banco_defensor') {
             if (atividade.bancoDefensores.length === 1) {
@@ -322,7 +320,6 @@ async function verificarEParearAutomatico(sock, from) {
         }
     }
 
-    // Regra geral de seleção inicial / revezamento
     if (atividade.bancoAtacantes.length === 1 && atividade.bancoDefensores.length === 1) {
         const p1 = atividade.bancoAtacantes.shift();
         const p2 = atividade.bancoDefensores.shift();
@@ -333,7 +330,6 @@ async function verificarEParearAutomatico(sock, from) {
         await enviarRelatorioGrupo(sock, from);
     } else if (atividade.bancoAtacantes.length > 0 && atividade.bancoDefensores.length > 0) {
         if (atividade.vezSelecao === 'atacante' && atividade.bancoDefensores.length === 1) {
-            // Se só há 1 defensor disponível para o atacante escolher
             const randAtqIdx = Math.floor(Math.random() * atividade.bancoAtacantes.length);
             const p1 = atividade.bancoAtacantes.splice(randAtqIdx, 1)[0];
             const p2 = atividade.bancoDefensores.shift();
@@ -342,7 +338,6 @@ async function verificarEParearAutomatico(sock, from) {
             await alocarLutaNaArena(sock, from, p1, p2);
             await verificarEParearAutomatico(sock, from);
         } else if (atividade.vezSelecao === 'defensor' && atividade.bancoAtacantes.length === 1) {
-            // Se só há 1 atacante disponível para a defesa escolher
             const randDefIdx = Math.floor(Math.random() * atividade.bancoDefensores.length);
             const p2 = atividade.bancoDefensores.splice(randDefIdx, 1)[0];
             const p1 = atividade.bancoAtacantes.shift();
@@ -434,22 +429,21 @@ async function processarEscolhaLutador(sock, from, targetId) {
 async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const atividade = atividadesAtivas[grupoOrigem];
 
-    // Busca status das arenas ativas no Firebase
+    // Importação dinâmica do combates para usar a função que veio do antigo gameEngine
+    const combates = require('./combates');
+
     let arenasAtivas = {};
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
     } catch (e) {}
 
-    // Encontra uma arena disponível dos GRUPOS_ARENA (verificando sem o @g.us)
     const arenaDisponivelJid = GRUPOS_ARENA.find(arenaJid => {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
-        
-        const ocupadaEmMemoria = batalhas[arenaJid] && batalhas[arenaJid].fase !== 'aguardando';
         const ocupadaNoFirebase = arenaRemote && arenaRemote.fase !== 'aguardando';
 
-        return !ocupadaEmMemoria && !ocupadaNoFirebase;
+        return !ocupadaNoFirebase;
     });
 
     if (!arenaDisponivelJid) {
@@ -461,7 +455,10 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const indexArena = GRUPOS_ARENA.indexOf(arenaDisponivelJid) + 1;
     const arenaRemote = arenasAtivas[chaveGrupo] || {};
 
-    const dadosBatalhaBase = iniciarEstruturaBatalha(arenaDisponivelJid, p1, p2, 'ATIVIDADE', sock);
+    // Chama iniciarEstruturaBatalha a partir de combates.js
+    const dadosBatalhaBase = combates.iniciarEstruturaBatalha 
+        ? combates.iniciarEstruturaBatalha(arenaDisponivelJid, p1, p2, 'ATIVIDADE', sock)
+        : {};
     
     const dadosBatalha = {
         ...arenaRemote,
@@ -471,8 +468,6 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         fase: 'apresentacao',
         grupoOrigemAtividade: grupoOrigem
     };
-
-    batalhas[arenaDisponivelJid] = dadosBatalha;
 
     const dadosParaSalvar = { ...dadosBatalha };
     delete dadosParaSalvar.sock;
@@ -493,7 +488,6 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     return true;
 }
 
-// Chamado por combates.js quando !win é acionado numa luta de atividade
 async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, perdedorObj) {
     const atividade = atividadesAtivas[grupoOrigem];
     if (!atividade) return;

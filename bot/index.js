@@ -27,7 +27,7 @@ const GRUPOS_ARENA = [
 const jogosQuiz = {};
 
 // ==========================================
-// 2. FUNÇÕES UTILITÁRIAS EXPORTADAS
+// 2. FUNÇÕES UTILITÁRIAS
 // ==========================================
 async function obterTemporadaAtual() {
     try {
@@ -58,7 +58,7 @@ function obterJidEfetivo(m, from) {
     return rawSender.split('@')[0].split(':')[0].trim();
 }
 
-// OBRIGATÓRIO: Exportação imediata no topo para evitar dependência circular
+// OBRIGATÓRIO: Exportar antes de importar submódulos para evitar dependência circular
 module.exports = {
     NUMERO_BOT,
     FIREBASE_URL,
@@ -75,7 +75,7 @@ module.exports = {
 };
 
 // ==========================================
-// 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES (CAMINHOS CORRIGIDOS)
+// 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES
 // ==========================================
 const { 
     enviarProximaPergunta, 
@@ -85,7 +85,6 @@ const {
 } = require('./commands/quiz');
 
 const { handleCommand } = require('./commands.js');
-const { handleAtividadesCommands } = require('./commands/atividades');
 
 // Servidor Web + Auto-Ping (Render)
 const app = express();

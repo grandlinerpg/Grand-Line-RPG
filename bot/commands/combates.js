@@ -11,6 +11,31 @@ const {
 
 const batalhas = {};
 
+// Função auxiliar para extrair apenas os números/LID limpos
+function limparId(id) {
+    if (!id) return '';
+    return String(id).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
+}
+
+// Busca a chave do jogador (UID no Firebase) varrendo o objeto /players.json
+function buscarUidPlayer(playersData, idBuscado) {
+    if (!playersData || !idBuscado) return null;
+    
+    const idLimpo = limparId(idBuscado);
+
+    return Object.keys(playersData).find(uid => {
+        if (uid === idBuscado || uid === idLimpo) return true;
+
+        const player = playersData[uid];
+        if (!player) return false;
+
+        const numLid = limparId(player.number?.LID);
+        const numN = limparId(player.number?.n);
+
+        return numLid === idLimpo || numN === idLimpo;
+    });
+}
+
 function limparTimersBatalha(bat) {
     if (!bat) return;
     if (bat.timerApresentacao) clearTimeout(bat.timerApresentacao);
@@ -156,7 +181,8 @@ async function handleCombatesCommands(sock, m, text, from) {
             return await sock.sendMessage(from, { text: '❌ Você precisa de marcar o desafiante para aceitar!\nExemplo: *!aceitarcoliseu @desafiante*' }, { quoted: m });
         }
 
-        const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+        const targetId = limparId(mentionedJid);
+        const senderIdLimpo = limparId(senderId);
 
         const [playersRes, desafiosColiseuRes] = await Promise.all([
             axios.get(`${FIREBASE_URL}/players.json`),
@@ -166,35 +192,25 @@ async function handleCombatesCommands(sock, m, text, from) {
         const playersData = playersRes.data || {};
         const todosDesafiosColiseu = desafiosColiseuRes.data || {};
 
-        const desafianteUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === targetId || 
-            String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
-        );
-        const desafiadoUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
-            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
-        );
+        const desafianteUid = buscarUidPlayer(playersData, targetId);
+        const desafiadoUid = buscarUidPlayer(playersData, senderIdLimpo);
 
         const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
-        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderId).trim();
+        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderIdLimpo).trim();
         const desafianteLid = String(playersData[desafianteUid]?.number?.LID || targetId).trim();
-        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderId).trim();
+        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderIdLimpo).trim();
 
         const desafioKey = Object.keys(todosDesafiosColiseu).find(key => {
             const d = todosDesafiosColiseu[key];
             if (!d || d.status !== 'pendente') return false;
 
-            const desafianteBate = 
-                String(d.desafianteNum).trim() === desafianteNum || 
-                String(d.desafianteLid).trim() === desafianteLid || 
-                String(d.desafianteNum).trim() === targetId ||
-                String(d.desafianteLid).trim() === targetId;
+            const dNum = limparId(d.desafianteNum);
+            const dLid = limparId(d.desafianteLid);
+            const fNum = limparId(d.desafiadoNum);
+            const fLid = limparId(d.desafiadoLid);
 
-            const desafiadoBate = 
-                String(d.desafiadoNum).trim() === desafiadoNum || 
-                String(d.desafiadoLid).trim() === desafiadoLid || 
-                String(d.desafiadoNum).trim() === senderId ||
-                String(d.desafiadoLid).trim() === senderId;
+            const desafianteBate = dNum === targetId || dLid === targetId;
+            const desafiadoBate = fNum === senderIdLimpo || fLid === senderIdLimpo;
 
             return desafianteBate && desafiadoBate;
         });
@@ -237,7 +253,8 @@ async function handleCombatesCommands(sock, m, text, from) {
             return await sock.sendMessage(from, { text: '❌ Marque o desafiante para aceitar!\nExemplo: *!aceitar @desafiante*' }, { quoted: m });
         }
 
-        const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+        const targetId = limparId(mentionedJid);
+        const senderIdLimpo = limparId(senderId);
 
         const [playersRes, desafiosArenaRes] = await Promise.all([
             axios.get(`${FIREBASE_URL}/players.json`),
@@ -247,35 +264,25 @@ async function handleCombatesCommands(sock, m, text, from) {
         const playersData = playersRes.data || {};
         const todosDesafiosArena = desafiosArenaRes.data || {};
 
-        const desafianteUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === targetId || 
-            String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
-        );
-        const desafiadoUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
-            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
-        );
+        const desafianteUid = buscarUidPlayer(playersData, targetId);
+        const desafiadoUid = buscarUidPlayer(playersData, senderIdLimpo);
 
         const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
-        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderId).trim();
+        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderIdLimpo).trim();
         const desafianteLid = String(playersData[desafianteUid]?.number?.LID || targetId).trim();
-        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderId).trim();
+        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderIdLimpo).trim();
 
         const desafioKey = Object.keys(todosDesafiosArena).find(key => {
             const d = todosDesafiosArena[key];
             if (!d || d.status !== 'pendente') return false;
 
-            const desafianteBate = 
-                String(d.desafianteNum).trim() === desafianteNum || 
-                String(d.desafianteLid).trim() === desafianteLid || 
-                String(d.desafianteNum).trim() === targetId ||
-                String(d.desafianteLid).trim() === targetId;
+            const dNum = limparId(d.desafianteNum);
+            const dLid = limparId(d.desafianteLid);
+            const fNum = limparId(d.desafiadoNum);
+            const fLid = limparId(d.desafiadoLid);
 
-            const desafiadoBate = 
-                String(d.desafiadoNum).trim() === desafiadoNum || 
-                String(d.desafiadoLid).trim() === desafiadoLid || 
-                String(d.desafiadoNum).trim() === senderId ||
-                String(d.desafiadoLid).trim() === senderId;
+            const desafianteBate = dNum === targetId || dLid === targetId;
+            const desafiadoBate = fNum === senderIdLimpo || fLid === senderIdLimpo;
 
             return desafianteBate && desafiadoBate;
         });
@@ -351,23 +358,32 @@ async function handleCombatesCommands(sock, m, text, from) {
 
     if (text.startsWith('!win')) {
         const bat = await obterArenaAtiva(from);
-        if (!bat || bat.fase === 'aguardando') return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
+        if (!bat || bat.fase === 'aguardando') {
+            return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
+        }
 
         const senderId = obterJidEfetivo(m, from);
+        const senderIdLimpo = limparId(senderId);
+        const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        const targetId = mentionedJid ? limparId(mentionedJid) : null;
+
         let vencedorObj = null;
         let perdedorObj = null;
 
-        const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        const p1Num = limparId(bat.p1?.numero);
+        const p1Lid = limparId(bat.p1?.lid);
+        const p2Num = limparId(bat.p2?.numero);
+        const p2Lid = limparId(bat.p2?.lid);
 
-        if (mentionedJid) {
-            const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
-            if (bat.p1?.numero === targetId || bat.p1?.lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
-            if (bat.p2?.numero === targetId || bat.p2?.lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
+        // Identifica quem ganhou
+        if (targetId) {
+            if (p1Num === targetId || p1Lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+            else if (p2Num === targetId || p2Lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
         }
 
         if (!vencedorObj) {
-            if (bat.p1?.numero === senderId || bat.p1?.lid === senderId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
-            else if (bat.p2?.numero === senderId || bat.p2?.lid === senderId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
+            if (p1Num === senderIdLimpo || p1Lid === senderIdLimpo) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
+            else if (p2Num === senderIdLimpo || p2Lid === senderIdLimpo) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
         }
 
         if (!vencedorObj) {
@@ -378,17 +394,22 @@ async function handleCombatesCommands(sock, m, text, from) {
         const nomeVencedor = vencedorObj?.nome || 'Combatente Vencedor';
 
         if (bat.tipo === 'ATIVIDADE' && bat.grupoOrigemAtividade) {
-            const { registrarResultadoLutaAtividade } = require('./atividades');
-            
+            try {
+                const { registrarResultadoLutaAtividade } = require('./atividades');
+                await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
+            } catch (e) {
+                console.error('Erro ao registrar atividade:', e.message);
+            }
+
             const msgWin = `🏆 *VITÓRIA DECLARADA NO COMBATE DE ATIVIDADE!* 🏆\n\nO jogador *${nomeVencedor}* venceu a luta na arena!`;
             await sock.sendMessage(from, { text: msgWin });
-
-            await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
 
             limparTimersBatalha(bat);
             await resetarArenaAguardando(from, bat);
             return true;
         }
+
+        let alterouRanking = false;
 
         if (bat.tipo === 'COLISEU') {
             try {
@@ -401,16 +422,8 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const playersData = playersRes.data || {};
                 const coliseuData = coliseuRes.data || {};
 
-                const uidVencedor = Object.keys(playersData).find(u => 
-                    u === vencedorObj?.numero || u === vencedorObj?.lid ||
-                    String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
-                    String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
-                );
-                const uidPerdedor = Object.keys(playersData).find(u => 
-                    u === perdedorObj?.numero || u === perdedorObj?.lid ||
-                    String(playersData[u]?.number?.n || '').trim() === String(perdedorObj?.numero).trim() ||
-                    String(playersData[u]?.number?.LID || '').trim() === String(perdedorObj?.lid).trim()
-                );
+                const uidVencedor = buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid);
+                const uidPerdedor = buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid);
 
                 if (uidVencedor && coliseuData[uidVencedor]) {
                     await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidVencedor}.json`, {
@@ -435,7 +448,6 @@ async function handleCombatesCommands(sock, m, text, from) {
             await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
         } 
         else {
-            let alterouRanking = false;
             try {
                 const [rankRes, playersRes] = await Promise.all([
                     axios.get(`${FIREBASE_URL}/ranking.json`),
@@ -445,22 +457,14 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const rankingObj = rankRes.data || {};
                 const playersData = playersRes.data || {};
 
-                const uidVencedor = Object.keys(playersData).find(u => 
-                    u === vencedorObj?.numero || u === vencedorObj?.lid ||
-                    String(playersData[u]?.number?.n || '').trim() === String(vencedorObj?.numero).trim() ||
-                    String(playersData[u]?.number?.LID || '').trim() === String(vencedorObj?.lid).trim()
-                );
-
-                const uidPerdedor = Object.keys(playersData).find(u => 
-                    u === perdedorObj?.numero || u === perdedorObj?.lid ||
-                    String(playersData[u]?.number?.n || '').trim() === String(perdedorObj?.numero).trim() ||
-                    String(playersData[u]?.number?.LID || '').trim() === String(perdedorObj?.lid).trim()
-                );
+                const uidVencedor = buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid);
+                const uidPerdedor = buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid);
 
                 if (uidVencedor) {
                     const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
                     const expAtual = playersData[uidVencedor]?.info?.exp || 0;
 
+                    // Atualização no nó /players/UID/info.json
                     await axios.patch(`${FIREBASE_URL}/players/${uidVencedor}/info.json`, {
                         saldo: saldoAtual + RECOMPENSA_ARENA_SALDO,
                         exp: expAtual + RECOMPENSA_ARENA_EXP
@@ -495,7 +499,7 @@ async function handleCombatesCommands(sock, m, text, from) {
                     }
                 }
             } catch (e) {
-                console.error('❌ Erro ao atualizar recompensas e ranking:', e);
+                console.error('❌ Erro ao atualizar recompensas e ranking:', e.message);
             }
 
             const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;

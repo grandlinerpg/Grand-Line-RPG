@@ -1,5 +1,6 @@
 const axios = require('axios');
-const { FIREBASE_URL, GRUPOS_ARENA, obterJidEfetivo } = require('./index');
+const { FIREBASE_URL, GRUPOS_ARENA, obterJidEfetivo } = require('../index');
+const { iniciarEstruturaBatalha } = require('./combates');
 
 // Armazena as sessões de criação
 const sessoesCriacao = {};
@@ -428,10 +429,6 @@ async function processarEscolhaLutador(sock, from, targetId) {
 
 async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const atividade = atividadesAtivas[grupoOrigem];
-
-    // Importação dinâmica do combates para usar a função que veio do antigo gameEngine
-    const combates = require('./combates');
-
     let arenasAtivas = {};
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
@@ -441,6 +438,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const arenaDisponivelJid = GRUPOS_ARENA.find(arenaJid => {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
+        
         const ocupadaNoFirebase = arenaRemote && arenaRemote.fase !== 'aguardando';
 
         return !ocupadaNoFirebase;
@@ -455,10 +453,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const indexArena = GRUPOS_ARENA.indexOf(arenaDisponivelJid) + 1;
     const arenaRemote = arenasAtivas[chaveGrupo] || {};
 
-    // Chama iniciarEstruturaBatalha a partir de combates.js
-    const dadosBatalhaBase = combates.iniciarEstruturaBatalha 
-        ? combates.iniciarEstruturaBatalha(arenaDisponivelJid, p1, p2, 'ATIVIDADE', sock)
-        : {};
+    const dadosBatalhaBase = iniciarEstruturaBatalha(arenaDisponivelJid, p1, p2, 'ATIVIDADE', sock);
     
     const dadosBatalha = {
         ...arenaRemote,

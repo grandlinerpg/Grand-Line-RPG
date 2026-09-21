@@ -2,6 +2,7 @@ const { handleGeralCommands } = require('./commands/geral');
 const { handleCompeticaoCommands } = require('./commands/competicao');
 const { handleDesafiosCommands } = require('./commands/desafios');
 const { handleAtividadesCommands } = require('./commands/atividades');
+const { handleCombatesCommands } = require('./commands/combates');
 const { handleVincularCommands } = require('./commands/vincular');
 
 async function handleCommand(sock, m) {
@@ -19,6 +20,7 @@ async function handleCommand(sock, m) {
     if (await handleCompeticaoCommands(sock, m, text, from)) return;
     if (await handleDesafiosCommands(sock, m, text, from)) return;
     if (await handleAtividadesCommands(sock, m, text, from)) return;
+    if (await handleCombatesCommands(sock, m, text, from)) return;
     if (await handleVincularCommands(sock, m, text, from)) return;
 }
 

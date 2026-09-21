@@ -3,6 +3,25 @@ const { FIREBASE_URL, obterJidEfetivo } = require('../index');
 
 const jogosQuiz = {};
 
+// Função auxiliar para normalizar texto (remove acentos, espaços extras e coloca em minúsculo)
+function normalizarTexto(str) {
+    if (!str) return '';
+    return String(str)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+}
+
+// Extrai a resposta correta do objeto de pergunta (suporta vários formatos de banco)
+function obterRespostaCorreta(q) {
+    if (!q) return '';
+    if (q.resposta !== undefined && q.resposta !== null) return String(q.resposta);
+    if (q.correta !== undefined && q.correta !== null) return String(q.correta);
+    if (q.opcaoCorreta !== undefined && q.opcaoCorreta !== null) return String(q.opcaoCorreta);
+    return '';
+}
+
 async function enviarProximaPergunta(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo || !jogo.ativo) return;
@@ -14,18 +33,30 @@ async function enviarProximaPergunta(chatJid, sock) {
     const q = jogo.perguntas[jogo.perguntaAtual];
     jogo.respondida = false;
 
+    // Formata opções se existirem
+    let textoOpcoes = '';
+    if (Array.isArray(q.opcoes) && q.opcoes.length > 0) {
+        textoOpcoes = '\n\n' + q.opcoes.map((opt, i) => `*${i + 1}.* ${opt}`).join('\n');
+    } else if (typeof q.opcoes === 'object' && q.opcoes !== null) {
+        textoOpcoes = '\n\n' + Object.entries(q.opcoes).map(([k, v]) => `*${k}:* ${v}`).join('\n');
+    }
+
     await sock.sendMessage(chatJid, {
-        text: `❓ *PERGUNTA (${jogo.perguntaAtual + 1}/${jogo.perguntas.length}):*\n\n${q.pergunta}\n\n⏳ *Tempo:* 15 segundos para responder!`
+        text: `❓ *PERGUNTA (${jogo.perguntaAtual + 1}/${jogo.perguntas.length}):*\n\n${q.pergunta || q.titulo}${textoOpcoes}\n\n⏳ *Tempo:* 15 segundos para responder!`
     });
 
     if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
 
     jogo.timerPergunta = setTimeout(async () => {
-        if (jogosQuiz[chatJid] && !jogosQuiz[chatJid].respondida) {
+        if (jogosQuiz[chatJid] && jogosQuiz[chatJid].ativo && !jogosQuiz[chatJid].respondida) {
+            jogosQuiz[chatJid].respondida = true;
+
+            const respExibicao = obterRespostaCorreta(q);
             await sock.sendMessage(chatJid, {
-                text: `⏰ *TEMPO ESGOTADO!* Ninguém acertou esta pergunta.`
+                text: `⏰ *TEMPO ESGOTADO!* Ninguém acertou a tempo.\n💡 *Resposta correta:* ${respExibicao}`
             });
-            jogo.perguntaAtual++;
+
+            jogosQuiz[chatJid].perguntaAtual++;
             setTimeout(() => enviarProximaPergunta(chatJid, sock), 3000);
         }
     }, 15000);
@@ -75,7 +106,7 @@ async function finalizarQuiz(chatJid, sock) {
 
             for (const senderId of participantes) {
                 const acertos = jogo.pontos[senderId];
-                const premioGanhado = acertos * (jogo.premioTotal / jogo.perguntas.length);
+                const premioGanhado = acertos * Math.floor(jogo.premioTotal / jogo.perguntas.length);
 
                 const playerUid = Object.keys(playersData).find(u => 
                     String(playersData[u]?.number?.LID || '').trim() === senderId || 
@@ -89,7 +120,7 @@ async function finalizarQuiz(chatJid, sock) {
                     await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { saldo: saldoAtual + premioGanhado });
                 }
 
-                textoFinal += `👤 *${nomePlayer}:* ${acertos} acerto(s) ➔ +฿ ${premioGanhado}\n`;
+                textoFinal += `👤 *${nomePlayer}:* ${acertos} acerto(s) ➔ +฿ ${premioGanhado.toLocaleString('pt-BR')}\n`;
             }
         } catch (e) {
             console.error('Erro ao premiar quiz:', e.message);
@@ -101,23 +132,32 @@ async function finalizarQuiz(chatJid, sock) {
 }
 
 async function dispararQuizNoGrupo(chatJid, sock) {
-    if (jogosQuiz[chatJid]) return;
+    if (jogosQuiz[chatJid] && jogosQuiz[chatJid].ativo) return;
 
     try {
         const quizRes = await axios.get(`${FIREBASE_URL}/quiz.json`);
         const quizObj = quizRes.data;
 
-        if (!quizObj) return;
+        if (!quizObj) {
+            await sock.sendMessage(chatJid, { text: '❌ Nenhuma pergunta cadastrada no banco de dados!' });
+            return;
+        }
 
-        let listaPerguntas = Object.values(quizObj);
-        if (listaPerguntas.length === 0) return;
+        let listaPerguntas = Array.isArray(quizObj) ? quizObj : Object.values(quizObj);
+        listaPerguntas = listaPerguntas.filter(q => q && (q.pergunta || q.titulo));
 
+        if (listaPerguntas.length === 0) {
+            await sock.sendMessage(chatJid, { text: '❌ Nenhuma pergunta válida encontrada!' });
+            return;
+        }
+
+        // Embaralha as perguntas
         for (let i = listaPerguntas.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [listaPerguntas[i], listaPerguntas[j]] = [listaPerguntas[j], listaPerguntas[i]];
         }
 
-        const QTD_PERGUNTAS = 5;
+        const QTD_PERGUNTAS = Math.min(5, listaPerguntas.length);
         const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
         const PREMIO_TOTAL = 3000;
 
@@ -137,10 +177,11 @@ async function dispararQuizNoGrupo(chatJid, sock) {
             mentions = groupMetadata.participants.map(p => p.id);
         } catch (e) {}
 
-        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO (22:30)!* ⏰\n\n` +
+        const msgInicio = `⏰ *HORÁRIO DO QUIZ DIÁRIO!* ⏰\n\n` +
                           `🏴‍☠️ *O QUIZ DA GRAND LINE COMEÇOU!*\n\n` +
-                          `🎯 *Total de Perguntas:* ${QTD_PERGUNTAS}\n\n` +
-                          `📢 @todos fiquem atentos! A primeira pergunta será enviada em instantes!`;
+                          `🎯 *Total de Perguntas:* ${QTD_PERGUNTAS}\n` +
+                          `💰 *Prêmio Total:* ฿ ${PREMIO_TOTAL.toLocaleString('pt-BR')}\n\n` +
+                          `📢 @todos A primeira pergunta será enviada em instantes!`;
 
         await sock.sendMessage(chatJid, { text: msgInicio, mentions: mentions });
 
@@ -154,12 +195,23 @@ async function dispararQuizNoGrupo(chatJid, sock) {
 }
 
 async function handleQuizCommands(sock, m, text, from) {
-    // Verificação de Respostas de Quiz
+    if (text === '!iniciarquiz') {
+        await dispararQuizNoGrupo(from, sock);
+        return true;
+    }
+
+    // Verificação de Respostas do Quiz
     if (jogosQuiz[from] && jogosQuiz[from].ativo && !jogosQuiz[from].respondida) {
         const jogo = jogosQuiz[from];
         const qAtual = jogo.perguntas[jogo.perguntaAtual];
 
-        if (qAtual && text === String(qAtual.resposta).trim().toLowerCase()) {
+        if (!qAtual) return false;
+
+        const respostaCerta = obterRespostaCorreta(qAtual);
+        const respUsuarioNorm = normalizarTexto(text);
+        const respCertaNorm = normalizarTexto(respostaCerta);
+
+        if (respCertaNorm && respUsuarioNorm === respCertaNorm) {
             jogo.respondida = true;
             if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
 
@@ -167,7 +219,7 @@ async function handleQuizCommands(sock, m, text, from) {
             jogo.pontos[senderId] = (jogo.pontos[senderId] || 0) + 1;
 
             const tabelaPontos = await gerarTabelaPontuacao(jogo.pontos);
-            const msgAcerto = `🎉 *RESPOSTA CORRETA!* @${senderId} acertou e pontuou!\n\n${tabelaPontos}`;
+            const msgAcerto = `🎉 *RESPOSTA CORRETA!* @${senderId} acertou!\n\n${tabelaPontos}`;
 
             await sock.sendMessage(from, {
                 text: msgAcerto,
@@ -178,11 +230,6 @@ async function handleQuizCommands(sock, m, text, from) {
             setTimeout(() => enviarProximaPergunta(from, sock), 3000);
             return true;
         }
-    }
-
-    if (text === '!iniciarquiz') {
-        await dispararQuizNoGrupo(from, sock);
-        return true;
     }
 
     return false;

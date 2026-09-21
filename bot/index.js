@@ -25,8 +25,6 @@ const GRUPOS_ARENA = [
 
 // Estado em memória
 const jogosQuiz = {};
-const batalhas = {};
-const timersDesafio = {};
 
 // ==========================================
 // 2. FUNÇÕES UTILITÁRIAS EXPORTADAS
@@ -70,8 +68,6 @@ module.exports = {
     GRUPO_QUIZ_JID,
     GRUPOS_ARENA,
     jogosQuiz,
-    batalhas,
-    timersDesafio,
     obterTemporadaAtual,
     obterEmojiFaccao,
     formatarJidPv,
@@ -81,16 +77,12 @@ module.exports = {
 // ==========================================
 // 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES
 // ==========================================
-// Módulo de Quiz
 const { 
     enviarProximaPergunta, 
     gerarTabelaPontuacao, 
     finalizarQuiz, 
     dispararQuizNoGrupo 
 } = require('./quiz');
-
-// IMPORTANTE: Se o seu sistema de batalhas/combate ainda existir em outro arquivo 
-// (ex: ./battleEngine.js), importe as funções de batalha aqui.
 
 const { handleCommand } = require('./commands');
 

@@ -305,7 +305,11 @@ async function handleAtividadesCommands(sock, m, text, from) {
 // FUNÇÕES AUXILIARES E LÓGICA DE MATCHMAKING
 // ==========================================
 
-async function obterStatusFormatadoArenas() {
+async function obterStatusFormatadoArenas(atividade) {
+    if (!atividade || !atividade.lutadoresAtivos || atividade.lutadoresAtivos.length === 0) {
+        return '🏟️ *Arenas em Combate:* Nenhum combate ativo no momento.';
+    }
+
     let arenasAtivas = {};
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
@@ -313,19 +317,18 @@ async function obterStatusFormatadoArenas() {
     } catch (e) {}
 
     const linhas = [];
-    GRUPOS_ARENA.forEach((arenaJid, idx) => {
-        const numArena = idx + 1;
+
+    atividade.lutadoresAtivos.forEach(luta => {
+        const arenaJid = luta.arena;
+        const indexArena = GRUPOS_ARENA.indexOf(arenaJid) + 1;
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaData = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
 
-        if (arenaData && arenaData.fase && arenaData.fase !== 'aguardando' && arenaData.p1 && arenaData.p2) {
-            linhas.push(`Arena ${numArena}: ${arenaData.p1.nome} VS ${arenaData.p2.nome}`);
-        } else {
-            linhas.push(`Arena ${numArena}: Livre`);
-        }
+        const nomeArena = arenaData?.nomeArena || (indexArena > 0 ? `Arena ${indexArena}` : 'Arena');
+        linhas.push(`⚔️ *${nomeArena}:* ${luta.p1.nome} VS ${luta.p2.nome}`);
     });
 
-    return `📌 *STATUS DAS ARENAS:*\n` + linhas.join('\n');
+    return `🏟️ *ARENAS COM LUTA EM ANDAMENTO:*\n` + linhas.join('\n');
 }
 
 async function encerrarListaEIniciarPartida(sock, from) {
@@ -554,10 +557,6 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const msgArena = `⚔️ *COMBATE DE ATIVIDADE NA ${dadosBatalha.nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome} (${p1.faccao})\n———VS———\n${p2.nome} (${p2.faccao})\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
     await sock.sendMessage(arenaDisponivelJid, { text: msgArena });
 
-    // Envia o status das arenas no grupo principal sempre que houver uma designação
-    const statusArenas = await obterStatusFormatadoArenas();
-    await sock.sendMessage(grupoOrigem, { text: `⚔️ *COMBATE ALOCADO!*\n${dadosBatalha.nomeArena}: ${p1.nome} vs ${p2.nome}\n\n${statusArenas}` });
-
     return true;
 }
 
@@ -630,8 +629,11 @@ async function enviarRelatorioGrupo(sock, from) {
         ? atividade.bancoDefensores.map(d => d.nome).join(', ')
         : 'Vazio';
 
+    const statusArenas = await obterStatusFormatadoArenas(atividade);
+
     const msgStatus = `📊 *STATUS DA ATIVIDADE: ${atividade.nomeAtividade.toUpperCase()}*\n\n` +
         `🏆 *Placar:* ${atividade.faccaoCriador} [${atividade.vitoriasAtacantes}] x [${atividade.vitoriasDefensores}] ${nomeDefesa}\n\n` +
+        `${statusArenas}\n\n` +
         `⚔️ *Histórico de Vitórias:*\n${historicoTexto}\n\n` +
         `💀 *Jogadores Derrotados:*\n${derrotadosTexto}\n\n` +
         `🏦 *Banco ${atividade.faccaoCriador}:* ${bancoAtqTexto}\n` +
@@ -680,7 +682,7 @@ async function enviarPainelAtividade(sock, from, atividade) {
         `Anunciantes:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
-        `> Força: ${forcaDefensores} --\n\n` +
+        `> Força: ${forcaDefensores}\n\n` +
         `⏳ _30 minutos de lista ou digite !encerrar._`;
 
     await sock.sendMessage(from, { text: mensagemPainel });

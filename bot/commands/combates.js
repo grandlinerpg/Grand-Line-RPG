@@ -11,13 +11,11 @@ const {
 
 const batalhas = {};
 
-// Função auxiliar para extrair apenas os números/LID limpos
 function limparId(id) {
     if (!id) return '';
     return String(id).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
 }
 
-// Busca a chave do jogador (UID no Firebase) varrendo o objeto /players.json
 function buscarUidPlayer(playersData, idBuscado) {
     if (!playersData || !idBuscado) return null;
     
@@ -164,156 +162,35 @@ async function resetarArenaAguardando(grupoJid, batAtual) {
     await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
+async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
+    const arenaAtiva = await obterArenaAtiva(from);
+
+    const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
+    const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
+
+    const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
+    const nomeArena = tipo === 'COLISEU' 
+        ? 'COLISEU' 
+        : (arenaAtiva?.nomeArena || (indexArena > 0 ? `ARENA ${indexArena}` : 'ARENA'));
+
+    const dadosBatalha = {
+        ...(arenaAtiva || {}),
+        ...iniciarEstruturaBatalha(from, p1, p2, tipo, sock),
+        fase: 'apresentacao',
+        numeroArena: arenaAtiva?.numeroArena || indexArena,
+        nomeArena: nomeArena
+    };
+
+    await salvarArenaAtiva(from, dadosBatalha);
+
+    const msgInicio = tipo === 'COLISEU'
+        ? `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em 5 minutos ou digitem !iniciar.`
+        : `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em *5 minutos* ou digitem *!iniciar*.`;
+
+    return await sock.sendMessage(from, { text: msgInicio });
+}
+
 async function handleCombatesCommands(sock, m, text, from) {
-    if (text.startsWith('!aceitarcoliseu')) {
-        if (from !== GRUPO_COLISEU) {
-            return await sock.sendMessage(from, { text: '❌ O comando *!aceitarcoliseu* só pode ser usado no grupo oficial do Coliseu!' }, { quoted: m });
-        }
-
-        const arenaAtiva = await obterArenaAtiva(from);
-        if (arenaAtiva && arenaAtiva.fase !== 'aguardando') {
-            return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta a decorrer no Coliseu! Aguarde o término.' }, { quoted: m });
-        }
-
-        const senderId = obterJidEfetivo(m, from);
-        const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-        if (!mentionedJid) {
-            return await sock.sendMessage(from, { text: '❌ Você precisa de marcar o desafiante para aceitar!\nExemplo: *!aceitarcoliseu @desafiante*' }, { quoted: m });
-        }
-
-        const targetId = limparId(mentionedJid);
-        const senderIdLimpo = limparId(senderId);
-
-        const [playersRes, desafiosColiseuRes] = await Promise.all([
-            axios.get(`${FIREBASE_URL}/players.json`),
-            axios.get(`${FIREBASE_URL}/desafios_coliseu.json`)
-        ]);
-
-        const playersData = playersRes.data || {};
-        const todosDesafiosColiseu = desafiosColiseuRes.data || {};
-
-        const desafianteUid = buscarUidPlayer(playersData, targetId);
-        const desafiadoUid = buscarUidPlayer(playersData, senderIdLimpo);
-
-        const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
-        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderIdLimpo).trim();
-        const desafianteLid = String(playersData[desafianteUid]?.number?.LID || targetId).trim();
-        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderIdLimpo).trim();
-
-        const desafioKey = Object.keys(todosDesafiosColiseu).find(key => {
-            const d = todosDesafiosColiseu[key];
-            if (!d || d.status !== 'pendente') return false;
-
-            const dNum = limparId(d.desafianteNum);
-            const dLid = limparId(d.desafianteLid);
-            const fNum = limparId(d.desafiadoNum);
-            const fLid = limparId(d.desafiadoLid);
-
-            const desafianteBate = dNum === targetId || dLid === targetId;
-            const desafiadoBate = fNum === senderIdLimpo || fLid === senderIdLimpo;
-
-            return desafianteBate && desafiadoBate;
-        });
-
-        const desafio = todosDesafiosColiseu[desafioKey];
-
-        if (!desafio) {
-            return await sock.sendMessage(from, { text: '❌ Nenhum desafio pendente encontrado entre vocês dois.' }, { quoted: m });
-        }
-
-        await axios.patch(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`, { status: 'aceito' });
-
-        const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
-        const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
-
-        const dadosBatalha = {
-            ...(arenaAtiva || {}),
-            ...iniciarEstruturaBatalha(from, p1, p2, 'COLISEU', sock),
-            fase: 'apresentacao'
-        };
-        await salvarArenaAtiva(from, dadosBatalha);
-
-        const msgInicio = `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em 5 minutos ou digitem !iniciar.`;
-        return await sock.sendMessage(from, { text: msgInicio });
-    }
-
-    if (text.startsWith('!aceitar') || text.startsWith('!battle')) {
-        if (!GRUPOS_ARENA.includes(from)) {
-            return await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos oficiais de Arena!' }, { quoted: m });
-        }
-
-        const arenaAtiva = await obterArenaAtiva(from);
-        if (arenaAtiva && arenaAtiva.fase !== 'aguardando') {
-            return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ativa neste grupo! Aguarde o término.' }, { quoted: m });
-        }
-
-        const senderId = obterJidEfetivo(m, from);
-        const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
-        if (!mentionedJid) {
-            return await sock.sendMessage(from, { text: '❌ Marque o desafiante para aceitar!\nExemplo: *!aceitar @desafiante*' }, { quoted: m });
-        }
-
-        const targetId = limparId(mentionedJid);
-        const senderIdLimpo = limparId(senderId);
-
-        const [playersRes, desafiosArenaRes] = await Promise.all([
-            axios.get(`${FIREBASE_URL}/players.json`),
-            axios.get(`${FIREBASE_URL}/desafios.json`)
-        ]);
-
-        const playersData = playersRes.data || {};
-        const todosDesafiosArena = desafiosArenaRes.data || {};
-
-        const desafianteUid = buscarUidPlayer(playersData, targetId);
-        const desafiadoUid = buscarUidPlayer(playersData, senderIdLimpo);
-
-        const desafianteNum = String(playersData[desafianteUid]?.number?.n || targetId).trim();
-        const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || senderIdLimpo).trim();
-        const desafianteLid = String(playersData[desafianteUid]?.number?.LID || targetId).trim();
-        const desafiadoLid = String(playersData[desafiadoUid]?.number?.LID || senderIdLimpo).trim();
-
-        const desafioKey = Object.keys(todosDesafiosArena).find(key => {
-            const d = todosDesafiosArena[key];
-            if (!d || d.status !== 'pendente') return false;
-
-            const dNum = limparId(d.desafianteNum);
-            const dLid = limparId(d.desafianteLid);
-            const fNum = limparId(d.desafiadoNum);
-            const fLid = limparId(d.desafiadoLid);
-
-            const desafianteBate = dNum === targetId || dLid === targetId;
-            const desafiadoBate = fNum === senderIdLimpo || fLid === senderIdLimpo;
-
-            return desafianteBate && desafiadoBate;
-        });
-
-        const desafio = todosDesafiosArena[desafioKey];
-
-        if (!desafio) {
-            return await sock.sendMessage(from, { text: '❌ Nenhum desafio pendente encontrado entre vocês.' }, { quoted: m });
-        }
-
-        await axios.patch(`${FIREBASE_URL}/desafios/${desafioKey}.json`, { status: 'aceito' });
-
-        const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
-        const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
-
-        const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
-        const nomeArena = arenaAtiva?.nomeArena || (indexArena > 0 ? `ARENA ${indexArena}` : 'ARENA');
-
-        const dadosBatalha = {
-            ...(arenaAtiva || {}),
-            ...iniciarEstruturaBatalha(from, p1, p2, 'PVP', sock),
-            fase: 'apresentacao',
-            numeroArena: arenaAtiva?.numeroArena || indexArena,
-            nomeArena: nomeArena
-        };
-        await salvarArenaAtiva(from, dadosBatalha);
-
-        const msgInicio = `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em *5 minutos* ou digitem *!iniciar*.`;
-        return await sock.sendMessage(from, { text: msgInicio });
-    }
-
     if (text === '!iniciar') {
         const bat = await obterArenaAtiva(from);
         if (!bat) {
@@ -375,7 +252,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         const p2Num = limparId(bat.p2?.numero);
         const p2Lid = limparId(bat.p2?.lid);
 
-        // Identifica quem ganhou
         if (targetId) {
             if (p1Num === targetId || p1Lid === targetId) { vencedorObj = bat.p1; perdedorObj = bat.p2; }
             else if (p2Num === targetId || p2Lid === targetId) { vencedorObj = bat.p2; perdedorObj = bat.p1; }
@@ -464,7 +340,6 @@ async function handleCombatesCommands(sock, m, text, from) {
                     const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
                     const expAtual = playersData[uidVencedor]?.info?.exp || 0;
 
-                    // Atualização no nó /players/UID/info.json
                     await axios.patch(`${FIREBASE_URL}/players/${uidVencedor}/info.json`, {
                         saldo: saldoAtual + RECOMPENSA_ARENA_SALDO,
                         exp: expAtual + RECOMPENSA_ARENA_EXP
@@ -545,5 +420,9 @@ async function handleCombatesCommands(sock, m, text, from) {
 
 module.exports = { 
     handleCombatesCommands,
-    iniciarEstruturaBatalha 
+    iniciarEstruturaBatalha,
+    iniciarCombateAposAceitar,
+    obterArenaAtiva,
+    limparId,
+    buscarUidPlayer
 };

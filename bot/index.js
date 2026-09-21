@@ -4,7 +4,7 @@ const axios = require('axios');
 const cron = require('node-cron'); 
 
 // Importação dos Módulos de Comandos
-const geral = require('./commands/geral');
+const geral = require('./commands/geral'); 
 const quiz = require('./commands/quiz');
 const atividades = require('./commands/atividades');
 const batalhasCmd = require('./commands/batalhas');

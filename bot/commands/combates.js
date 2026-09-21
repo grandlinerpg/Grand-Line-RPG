@@ -348,28 +348,24 @@ async function handleCombatesCommands(sock, m, text, from) {
                     const posVencedorStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
                     const posPerdedorStr = uidPerdedor ? Object.keys(rankingObj).find(pos => rankingObj[pos] === uidPerdedor) : null;
 
-                    if (posVencedorStr && posPerdedorStr) {
+                    if (posVencedorStr) {
                         const posVencedor = parseInt(posVencedorStr, 10);
-                        const posPerdedor = parseInt(posPerdedorStr, 10);
+                        const posPerdedor = posPerdedorStr ? parseInt(posPerdedorStr, 10) : null;
 
-                        if (posVencedor > posPerdedor) {
-                            const updates = {};
-                            updates[posPerdedorStr] = uidVencedor;
-                            updates[posVencedorStr] = uidPerdedor;
-                            await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
-                            alterouRanking = true;
-                        }
-                    } else if (posVencedorStr) {
-                        const posVencedor = parseInt(posVencedorStr, 10);
-                        if (posVencedor > 1) {
-                            const posAcima = posVencedor - 1;
-                            const uidAcima = rankingObj[posAcima];
+                        // Só sobe se o vencedor for quem desafiou (estava abaixo do perdedor)
+                        if (posPerdedor && posVencedor > posPerdedor) {
+                            const posNova = posVencedor - 1; // Sobe exatamente 1 posição
+                            if (posNova >= 1) {
+                                const uidQuemEstavaAcima = rankingObj[String(posNova)];
 
-                            const updates = {};
-                            updates[posAcima] = uidVencedor;
-                            updates[posVencedorStr] = uidAcima || null;
-                            await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
-                            alterouRanking = true;
+                                const updates = {};
+                                updates[String(posNova)] = uidVencedor;
+                                if (uidQuemEstavaAcima) {
+                                    updates[String(posVencedor)] = uidQuemEstavaAcima;
+                                }
+                                await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
+                                alterouRanking = true;
+                            }
                         }
                     }
                 }
@@ -383,7 +379,7 @@ async function handleCombatesCommands(sock, m, text, from) {
             await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey2}.json`).catch(() => {});
         }
 
-        const msgSubiuRank = alterouRanking ? ' e assumiu uma posição superior no ranking!' : '!';
+        const msgSubiuRank = alterouRanking ? ' e subiu 1 posição no ranking!' : '!';
         const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
                        `O jogador *${nomeVencedor}* venceu o combate após ${bat.turnoAtual || 1} rodada${(bat.turnoAtual || 1) > 1 ? 's' : ''}${msgSubiuRank}\n\n` +
                        `RECOMPENSAS DO COMBATE:\n` +

@@ -70,6 +70,7 @@ const { handleDesafiosCommands } = require('./commands/desafios');
 const { handleQuizCommands, dispararQuizNoGrupo } = require('./commands/quiz');
 const { handleCombatesCommands } = require('./commands/combates');
 const { handleAtividadesCommands } = require('./commands/atividades');
+const { handleVincularCommands } = require('./commands/vincular');
 
 // SERVIDOR WEB + AUTO-PING
 const app = express();
@@ -152,6 +153,7 @@ async function connectToWhatsApp() {
             if (await handleDesafiosCommands(sock, m, text, from)) return;
             if (await handleAtividadesCommands(sock, m, text, from)) return;
             if (await handleCombatesCommands(sock, m, text, from)) return;
+            if (await handleVincularCommands(sock, m, text, from)) return;
 
         } catch (err) {
             console.error('❌ Erro no processamento:', err);

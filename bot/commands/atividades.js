@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { FIREBASE_URL, GRUPOS_ARENA, obterJidEfetivo } = require('../index');
-const { iniciarEstruturaBatalha } = require('./combates');
+const { iniciarEstruturaBatalha } = require('./combates'); 
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {

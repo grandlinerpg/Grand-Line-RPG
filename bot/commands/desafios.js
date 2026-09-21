@@ -1,19 +1,20 @@
 const axios = require('axios');
 const { 
     FIREBASE_URL, 
-    GRUPO_COLISEU, 
     GRUPO_QUIZ_JID, 
-    timersDesafio, 
+    GRUPO_COLISEU, 
     obterTemporadaAtual, 
     formatarJidPv, 
     obterJidEfetivo 
 } = require('../index');
 
+const timersDesafio = {};
+
 async function handleDesafiosCommands(sock, m, text, from) {
     if (text === '!desafios' || text.startsWith('!desafios ')) {
         try {
             const senderId = obterJidEfetivo(m, from);
-
+    
             const [playersRes, desafiosArenaRes, desafiosColiseuRes] = await Promise.all([
                 axios.get(`${FIREBASE_URL}/players.json`),
                 axios.get(`${FIREBASE_URL}/desafios.json`),
@@ -87,7 +88,7 @@ async function handleDesafiosCommands(sock, m, text, from) {
 
             resposta += `\n\n📜 — ENVIADOS — 📜\n\n`;
             resposta += enviados.length > 0 ? enviados.join('\n\n') : 'Nenhum desafio enviado.';
-
+    
             return await sock.sendMessage(from, { text: resposta }, { quoted: m });
 
         } catch (e) {
@@ -97,7 +98,6 @@ async function handleDesafiosCommands(sock, m, text, from) {
 
     if (text.startsWith('!desafiarcoliseu')) {
         const senderId = obterJidEfetivo(m, from);
-
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
         if (!mentionedJid) return await sock.sendMessage(from, { text: '❌ Marque o jogador! Ex: *!desafiarcoliseu @jogador*' }, { quoted: m });
 
@@ -165,7 +165,6 @@ async function handleDesafiosCommands(sock, m, text, from) {
 
     if (text.startsWith('!desafiar') && !text.startsWith('!desafiarcoliseu')) {
         const senderId = obterJidEfetivo(m, from);
-
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
         if (!mentionedJid) return await sock.sendMessage(from, { text: '❌ Marque quem deseja desafiar!\nEx: *!desafiar @jogador*' }, { quoted: m });
 
@@ -243,4 +242,4 @@ async function handleDesafiosCommands(sock, m, text, from) {
     return false;
 }
 
-module.exports = { handleDesafiosCommands };
+module.exports = { handleDesafiosCommands, timersDesafio };

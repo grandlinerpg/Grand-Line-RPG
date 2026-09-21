@@ -5,25 +5,112 @@ const {
     RECOMPENSA_ARENA_EXP, 
     GRUPO_COLISEU, 
     GRUPOS_ARENA, 
-    batalhas, 
     obterTemporadaAtual, 
     obterJidEfetivo 
 } = require('../index');
 
-const { 
-    limparTimersBatalha, 
-    iniciarTimerTurnoMaximo, 
-    comecarCombateDeFato, 
-    iniciarEstruturaBatalha 
-} = require('../gameEngine');
+// Estado em memória local para armazenar as batalhas ativas
+const batalhas = {};
 
-// FUNÇÕES AUXILIARES PARA GERENCIAR ARENAS NO FIREBASE
+// ==========================================
+// FUNÇÕES DO MOTOR DE JOGO (ANTIGO GAMEENGINE)
+// ==========================================
+
+function limparTimersBatalha(bat) {
+    if (!bat) return;
+    if (bat.timerApresentacao) clearTimeout(bat.timerApresentacao);
+    if (bat.timerTurno) clearTimeout(bat.timerTurno);
+    bat.timerApresentacao = null;
+    bat.timerTurno = null;
+}
+
+function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
+    limparTimersBatalha(batalhas[grupoJid]);
+
+    const novaBatalha = {
+        grupoJid,
+        tipo,
+        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome },
+        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome },
+        fase: 'apresentacao',
+        jogadorVez: 1,
+        turnoAtual: 1,
+        sock
+    };
+
+    // Timer de 5 minutos para a fase de apresentação dos cards
+    novaBatalha.timerApresentacao = setTimeout(async () => {
+        if (batalhas[grupoJid] && batalhas[grupoJid].fase === 'apresentacao') {
+            await comecarCombateDeFato(grupoJid, sock);
+        }
+    }, 5 * 60 * 1000);
+
+    batalhas[grupoJid] = novaBatalha;
+    return novaBatalha;
+}
+
+async function comecarCombateDeFato(grupoJid, sock) {
+    const bat = batalhas[grupoJid];
+    if (!bat) return;
+
+    if (bat.timerApresentacao) clearTimeout(bat.timerApresentacao);
+    bat.timerApresentacao = null;
+
+    bat.fase = 'em_combate';
+    bat.jogadorVez = 1;
+    bat.turnoAtual = 1;
+
+    const p1Nome = bat.p1?.nome || 'Jogador 1';
+    const msg = `⚔️ *O COMBATE COMEOU!* ⚔️\n\n` +
+                `🔄 *TURNO 1*\n` +
+                `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
+                `⏳ *Tempo do turno:* 30 minutos\n` +
+                `Utilize *!prox* para encerrar a sua jogada.`;
+
+    const socketParaEnviar = sock || bat.sock;
+    if (socketParaEnviar) {
+        await socketParaEnviar.sendMessage(grupoJid, { text: msg });
+    }
+
+    iniciarTimerTurnoMaximo(grupoJid, socketParaEnviar);
+    await salvarArenaAtiva(grupoJid, bat);
+}
+
+function iniciarTimerTurnoMaximo(grupoJid, sock) {
+    const bat = batalhas[grupoJid];
+    if (!bat) return;
+
+    if (bat.timerTurno) clearTimeout(bat.timerTurno);
+
+    // Timer de 30 minutos por turno
+    bat.timerTurno = setTimeout(async () => {
+        const b = batalhas[grupoJid];
+        if (b && b.fase === 'em_combate') {
+            const socketParaEnviar = sock || b.sock;
+            const perdedor = b.jogadorVez === 1 ? b.p1 : b.p2;
+            const vencedor = b.jogadorVez === 1 ? b.p2 : b.p1;
+
+            if (socketParaEnviar) {
+                await socketParaEnviar.sendMessage(grupoJid, {
+                    text: `⏰ *TEMPO ESGOTADO!* O jogador *${perdedor?.nome}* excedeu o limite de 30 minutos do turno.\n\n🏆 Vitória concedida a *${vencedor?.nome}*!`
+                });
+            }
+
+            limparTimersBatalha(b);
+            await resetarArenaAguardando(grupoJid, b);
+        }
+    }, 30 * 60 * 1000);
+}
+
+// ==========================================
+// FUNÇÕES AUXILIARES PARA FIREBASE
+// ==========================================
+
 async function obterArenaAtiva(grupoJid) {
     const chaveGrupo = grupoJid.replace('@g.us', '');
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`);
         if (res.data) {
-            // Sincroniza o estado em memória com os dados remotos do Firebase
             batalhas[grupoJid] = { ...(batalhas[grupoJid] || {}), ...res.data };
             return batalhas[grupoJid];
         }
@@ -37,7 +124,6 @@ async function salvarArenaAtiva(grupoJid, dadosBatalha) {
     const chaveGrupo = grupoJid.replace('@g.us', '');
     batalhas[grupoJid] = dadosBatalha;
     
-    // Removemos propriedades de instâncias locais/sockets que não devem ir ao JSON do Firebase
     const dadosParaSalvar = { ...dadosBatalha };
     delete dadosParaSalvar.sock;
     delete dadosParaSalvar.timerApresentacao;
@@ -50,20 +136,28 @@ async function salvarArenaAtiva(grupoJid, dadosBatalha) {
     }
 }
 
-async function deletarArenaAtiva(grupoJid) {
-    const chaveGrupo = grupoJid.replace('@g.us', '');
-    delete batalhas[grupoJid];
-    try {
-        await axios.delete(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`);
-    } catch (e) {
-        console.error('Erro ao deletar arena do Firebase:', e.message);
-    }
+async function resetarArenaAguardando(grupoJid, batAtual) {
+    const indexArena = GRUPOS_ARENA.indexOf(grupoJid) + 1;
+    const arenaReset = {
+        numeroArena: batAtual?.numeroArena || (indexArena > 0 ? indexArena : 1),
+        nomeArena: batAtual?.nomeArena || `Arena ${indexArena > 0 ? indexArena : 1}`,
+        fase: "aguardando",
+        grupoJid: grupoJid,
+        jogadorVez: 1,
+        tipo: "PVP",
+        turnoAtual: 0
+    };
+    await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
+// ==========================================
+// MANIPULADOR DE COMANDOS DE COMBATE
+// ==========================================
+
 async function handleCombatesCommands(sock, m, text, from) {
-    // ==========================================
+    // ------------------------------------------
     // ACEITAR COLISEU
-    // ==========================================
+    // ------------------------------------------
     if (text.startsWith('!aceitarcoliseu')) {
         if (from !== GRUPO_COLISEU) {
             return await sock.sendMessage(from, { text: '❌ O comando *!aceitarcoliseu* só pode ser usado no grupo oficial do Coliseu!' }, { quoted: m });
@@ -71,13 +165,13 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const arenaAtiva = await obterArenaAtiva(from);
         if (arenaAtiva && arenaAtiva.fase !== 'aguardando') {
-            return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ocorrendo no Coliseu! Aguarde o término.' }, { quoted: m });
+            return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta a decorrer no Coliseu! Aguarde o término.' }, { quoted: m });
         }
 
         const senderId = obterJidEfetivo(m, from);
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
         if (!mentionedJid) {
-            return await sock.sendMessage(from, { text: '❌ Você precisa marcar o desafiante para aceitar!\nExemplo: *!aceitarcoliseu @desafiante*' }, { quoted: m });
+            return await sock.sendMessage(from, { text: '❌ Você precisa de marcar o desafiante para aceitar!\nExemplo: *!aceitarcoliseu @desafiante*' }, { quoted: m });
         }
 
         const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
@@ -141,13 +235,13 @@ async function handleCombatesCommands(sock, m, text, from) {
         };
         await salvarArenaAtiva(from, dadosBatalha);
 
-        const msgInicio = `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em 5 minutos ou digitem !iniciar.`;
+        const msgInicio = `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em 5 minutos ou digitem !iniciar.`;
         return await sock.sendMessage(from, { text: msgInicio });
     }
 
-    // ==========================================
+    // ------------------------------------------
     // ACEITAR ARENA
-    // ==========================================
+    // ------------------------------------------
     if (text.startsWith('!aceitar') || text.startsWith('!battle')) {
         if (!GRUPOS_ARENA.includes(from)) {
             return await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos oficiais de Arena!' }, { quoted: m });
@@ -159,7 +253,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         }
 
         const senderId = obterJidEfetivo(m, from);
-
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
         if (!mentionedJid) {
             return await sock.sendMessage(from, { text: '❌ Marque o desafiante para aceitar!\nExemplo: *!aceitar @desafiante*' }, { quoted: m });
@@ -231,16 +324,15 @@ async function handleCombatesCommands(sock, m, text, from) {
         };
         await salvarArenaAtiva(from, dadosBatalha);
 
-        const msgInicio = `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`;
+        const msgInicio = `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em *5 minutos* ou digitem *!iniciar*.`;
         return await sock.sendMessage(from, { text: msgInicio });
     }
 
-    // ==========================================
+    // ------------------------------------------
     // INICIAR COMBATE
-    // ==========================================
+    // ------------------------------------------
     if (text === '!iniciar') {
         const bat = await obterArenaAtiva(from);
-        
         if (!bat) {
             return await sock.sendMessage(from, { text: '❌ Nenhuma arena ativa neste grupo para iniciar.' }, { quoted: m });
         }
@@ -258,9 +350,9 @@ async function handleCombatesCommands(sock, m, text, from) {
         return true;
     }
 
-    // ==========================================
+    // ------------------------------------------
     // PASSAR TURNO
-    // ==========================================
+    // ------------------------------------------
     if (text === '!prox') {
         const bat = await obterArenaAtiva(from);
         if (!bat || bat.fase !== 'em_combate') return true;
@@ -277,22 +369,21 @@ async function handleCombatesCommands(sock, m, text, from) {
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
 
-        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\n*Tempo:* 30 minutos\n\nDigite *!prox* ao concluir sua jogada.`;
+        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\n*Tempo:* 30 minutos\n\nDigite *!prox* ao concluir a sua jogada.`;
         await sock.sendMessage(from, { text: msgNovoTurno });
 
         iniciarTimerTurnoMaximo(from, sock);
         return true;
     }
 
-    // ==========================================
-    // DECLARAR VITORIA (!WIN)
-    // ==========================================
+    // ------------------------------------------
+    // DECLARAR VITÓRIA (!WIN)
+    // ------------------------------------------
     if (text.startsWith('!win')) {
         const bat = await obterArenaAtiva(from);
         if (!bat || bat.fase === 'aguardando') return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
 
         const senderId = obterJidEfetivo(m, from);
-
         let vencedorObj = null;
         let perdedorObj = null;
 
@@ -457,9 +548,9 @@ async function handleCombatesCommands(sock, m, text, from) {
         return true;
     }
 
-    // ==========================================
+    // ------------------------------------------
     // CANCELAR / ENCERRAR COMBATE
-    // ==========================================
+    // ------------------------------------------
     if (text === '!fimcombate') {
         const bat = await obterArenaAtiva(from);
         if (!bat) return true;
@@ -479,21 +570,6 @@ async function handleCombatesCommands(sock, m, text, from) {
     }
 
     return false;
-}
-
-// Função auxiliar para voltar a arena ao estado "aguardando" mantendo a estrutura original
-async function resetarArenaAguardando(grupoJid, batAtual) {
-    const indexArena = GRUPOS_ARENA.indexOf(grupoJid) + 1;
-    const arenaReset = {
-        numeroArena: batAtual?.numeroArena || (indexArena > 0 ? indexArena : 1),
-        nomeArena: batAtual?.nomeArena || `Arena ${indexArena > 0 ? indexArena : 1}`,
-        fase: "aguardando",
-        grupoJid: grupoJid,
-        jogadorVez: 1,
-        tipo: "PVP",
-        turnoAtual: 0
-    };
-    await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
 module.exports = { handleCombatesCommands };

@@ -1,18 +1,24 @@
 const axios = require('axios');
+const { performance } = require('perf_hooks');
+
+// Importações do index (ou config)
 const { 
     FIREBASE_URL, 
     jogosQuiz, 
     obterJidEfetivo 
 } = require('../index');
 
+// Importações do Quiz vindas diretamente do módulo de Quiz (sem gameEngine)
 const { 
     enviarProximaPergunta, 
     gerarTabelaPontuacao, 
     dispararQuizNoGrupo 
-} = require('../gameEngine');
+} = require('./quiz');
 
 async function handleGeralCommands(sock, m, text, from) {
-    // Respostas Quiz
+    // ==========================================
+    // 1. RESPOSTAS E LÓGICA DO QUIZ
+    // ==========================================
     if (jogosQuiz[from] && jogosQuiz[from].ativo && !jogosQuiz[from].respondida) {
         const jogo = jogosQuiz[from];
         const qAtual = jogo.perguntas[jogo.perguntaAtual];
@@ -38,21 +44,45 @@ async function handleGeralCommands(sock, m, text, from) {
         }
     }
 
+    // ==========================================
+    // 2. COMANDO !INICIARQUIZ
+    // ==========================================
     if (text === '!iniciarquiz') {
         await dispararQuizNoGrupo(from, sock);
         return true;
     }
 
+    // ==========================================
+    // 3. COMANDO !JID
+    // ==========================================
     if (text === '!jid') {
         await sock.sendMessage(from, { text: `🆔 *ID deste chat:* \`${from}\`` }, { quoted: m });
         return true;
     }
 
+    // ==========================================
+    // 4. COMANDO !PING (COM MS)
+    // ==========================================
     if (text === '!ping' || text.startsWith('!ping ')) {
-        await sock.sendMessage(from, { text: '🏓 *Pong!* Grand Line RPG no ar.' }, { quoted: m });
+        const inicio = performance.now();
+        
+        // Envia mensagem de teste para calcular a latência de envio/resposta
+        const msgPing = await sock.sendMessage(from, { text: '🏓 *Pinging...*' }, { quoted: m });
+        
+        const fim = performance.now();
+        const latencia = (fim - inicio).toFixed(2);
+
+        // Atualiza/Responde com o tempo de resposta preciso em MS
+        await sock.sendMessage(from, { 
+            text: `⚡ *PONG!*\n\n⏱️ *Tempo de resposta:* \`${latencia}ms\`\n🏴‍☠️ *Grand Line RPG no ar!*` 
+        }, { quoted: msgPing || m });
+
         return true;
     }
 
+    // ==========================================
+    // 5. COMANDO !DADO
+    // ==========================================
     if (text === '!dado' || text.startsWith('!dado ')) {
         const resultado = Math.floor(Math.random() * 100) + 1;
         const senderId = obterJidEfetivo(m, from);
@@ -72,6 +102,9 @@ async function handleGeralCommands(sock, m, text, from) {
         return true;
     }
 
+    // ==========================================
+    // 6. COMANDO !INFO
+    // ==========================================
     if (text === '!info' || text.startsWith('!info ')) {
         try {
             const response = await axios.get(`${FIREBASE_URL}/players.json`);

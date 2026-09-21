@@ -1,96 +1,17 @@
 const axios = require('axios');
 const { 
     FIREBASE_URL, 
-    jogosQuiz, 
-    batalhas, 
-    obterJidEfetivo 
+    jogosQuiz 
 } = require('./index');
 
-function limparTimersBatalha(batalha) {
-    if (!batalha) return;
-    if (batalha.timerApresentacao) clearTimeout(batalha.timerApresentacao);
-    if (batalha.timerTurno) clearTimeout(batalha.timerTurno);
-}
-
-function iniciarTimerTurnoMaximo(groupId, sock) {
-    const bat = batalhas[groupId];
-    if (!bat) return;
-
-    if (bat.timerTurno) clearTimeout(bat.timerTurno);
-
-    bat.timerTurno = setTimeout(async () => {
-        if (!batalhas[groupId]) return;
-
-        await sock.sendMessage(groupId, { 
-            text: `⏰ TEMPO ENCERRADO!` 
-        });
-
-        if (bat.jogadorVez === 1) {
-            bat.jogadorVez = 2;
-        } else {
-            bat.jogadorVez = 1;
-            bat.turnoAtual++;
-        }
-
-        const proxJogador = bat[`p${bat.jogadorVez}`];
-        const nomeProx = proxJogador?.nome || `Jogador ${bat.jogadorVez}`;
-
-        await sock.sendMessage(groupId, { 
-            text: `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeProx.toUpperCase()}*\n\nTempo: 30 minutos\n\nDigite !prox ao concluir sua jogada.` 
-        });
-
-        iniciarTimerTurnoMaximo(groupId, sock);
-    }, 30 * 60 * 1000);
-}
-
-async function comecarCombateDeFato(groupId, sock) {
-    const bat = batalhas[groupId];
-    if (!bat || bat.fase !== 'apresentacao') return;
-
-    if (bat.timerApresentacao) clearTimeout(bat.timerApresentacao);
-
-    bat.fase = 'em_combate';
-    bat.turnoAtual = 1;
-    bat.jogadorVez = 1;
-
-    const p1Nome = bat.p1?.nome || 'Jogador 1';
-
-    const msgComeco = `⏰ *TEMPO ENCERRADO!*\n\n` +
-                      `🔄 *TURNO 1 INICIADO* 🔄\n\n` +
-                      `VEZ DE *${p1Nome.toUpperCase()}*\n\n` +
-                      `*Tempo:* 30 minutos\n\n` +
-                      `Digite *!prox* ao concluir sua jogada.`;
-
-    await sock.sendMessage(groupId, { text: msgComeco });
-
-    iniciarTimerTurnoMaximo(groupId, sock);
-}
-
-function iniciarEstruturaBatalha(groupId, p1Data, p2Data, tipoCombate = 'PVP', sock) {
-    if (batalhas[groupId]) {
-        limparTimersBatalha(batalhas[groupId]);
-    }
-
-    batalhas[groupId] = {
-        tipo: tipoCombate,
-        fase: 'apresentacao',
-        turnoAtual: 1,
-        jogadorVez: 1,
-        p1: p1Data,
-        p2: p2Data,
-        timerApresentacao: null,
-        timerTurno: null
-    };
-
-    batalhas[groupId].timerApresentacao = setTimeout(() => {
-        comecarCombateDeFato(groupId, sock);
-    }, 5 * 60 * 1000);
-}
-
+/**
+ * Envia a pergunta atual do Quiz para o grupo e gerencia o tempo limite de resposta.
+ */
 async function enviarProximaPergunta(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo || !jogo.ativo) return;
 
+    // Se já respondeu todas as perguntas, encerra o Quiz
     if (jogo.perguntaAtual >= jogo.perguntas.length) {
         return await finalizarQuiz(chatJid, sock);
     }
@@ -104,6 +25,7 @@ async function enviarProximaPergunta(chatJid, sock) {
 
     if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
 
+    // Timer de 15 segundos para responder a pergunta
     jogo.timerPergunta = setTimeout(async () => {
         if (jogosQuiz[chatJid] && !jogosQuiz[chatJid].respondida) {
             await sock.sendMessage(chatJid, {
@@ -115,6 +37,9 @@ async function enviarProximaPergunta(chatJid, sock) {
     }, 15000);
 }
 
+/**
+ * Monta e retorna uma mensagem formatada com o ranking atual do Quiz.
+ */
 async function gerarTabelaPontuacao(pontosObj) {
     const participantes = Object.keys(pontosObj);
     if (participantes.length === 0) return "Ninguém pontuou ainda.";
@@ -140,6 +65,9 @@ async function gerarTabelaPontuacao(pontosObj) {
     }
 }
 
+/**
+ * Finaliza a partida de Quiz, calcula a divisão de prêmios e atualiza o saldo no Firebase.
+ */
 async function finalizarQuiz(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo) return;
@@ -170,7 +98,11 @@ async function finalizarQuiz(chatJid, sock) {
                 if (playerUid) {
                     nomePlayer = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
                     const saldoAtual = playersData[playerUid]?.info?.saldo || 0;
-                    await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { saldo: saldoAtual + premioGanhado });
+                    
+                    // Atualiza o saldo do jogador no Firebase
+                    await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { 
+                        saldo: saldoAtual + premioGanhado 
+                    });
                 }
 
                 textoFinal += `👤 *${nomePlayer}:* ${acertos} acerto(s) ➔ +฿ ${premioGanhado}\n`;
@@ -184,6 +116,9 @@ async function finalizarQuiz(chatJid, sock) {
     delete jogosQuiz[chatJid];
 }
 
+/**
+ * Inicia o evento do Quiz no grupo: sorteia 5 perguntas e marca todos do grupo.
+ */
 async function dispararQuizNoGrupo(chatJid, sock) {
     if (jogosQuiz[chatJid]) return;
 
@@ -196,6 +131,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         let listaPerguntas = Object.values(quizObj);
         if (listaPerguntas.length === 0) return;
 
+        // Algoritmo de embaralhamento (Fisher-Yates)
         for (let i = listaPerguntas.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [listaPerguntas[i], listaPerguntas[j]] = [listaPerguntas[j], listaPerguntas[i]];
@@ -205,6 +141,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
         const PREMIO_TOTAL = 3000;
 
+        // Estrutura do jogo no estado global
         jogosQuiz[chatJid] = {
             perguntas: perguntasSorteadas,
             perguntaAtual: 0,
@@ -228,6 +165,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
 
         await sock.sendMessage(chatJid, { text: msgInicio, mentions: mentions });
 
+        // Aguarda 5 segundos antes de disparar a primeira pergunta
         setTimeout(() => {
             enviarProximaPergunta(chatJid, sock);
         }, 5000);
@@ -238,10 +176,6 @@ async function dispararQuizNoGrupo(chatJid, sock) {
 }
 
 module.exports = {
-    limparTimersBatalha,
-    iniciarTimerTurnoMaximo,
-    comecarCombateDeFato,
-    iniciarEstruturaBatalha,
     enviarProximaPergunta,
     gerarTabelaPontuacao,
     finalizarQuiz,

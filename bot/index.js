@@ -85,6 +85,7 @@ const {
 } = require('./quiz');
 
 const { handleCommand } = require('./commands');
+const { handleAtividadesCommands } = require('./atividades'); // Importado para garantir o registo do módulo
 
 // Servidor Web + Auto-Ping (Render)
 const app = express();

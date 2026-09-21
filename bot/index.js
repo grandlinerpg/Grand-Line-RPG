@@ -23,7 +23,7 @@ const GRUPOS_ARENA = [
     "120363429534972500@g.us"
 ];
 
-// Estado em memória (mantidos para uso futuro)
+// Estado em memória
 const jogosQuiz = {};
 const batalhas = {};
 const timersDesafio = {};
@@ -81,13 +81,16 @@ module.exports = {
 // ==========================================
 // 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES
 // ==========================================
-// Alterado de './gameEngine' para './quiz' puxando apenas as funções existentes no quiz.js
+// Módulo de Quiz
 const { 
     enviarProximaPergunta, 
     gerarTabelaPontuacao, 
     finalizarQuiz, 
     dispararQuizNoGrupo 
 } = require('./quiz');
+
+// IMPORTANTE: Se o seu sistema de batalhas/combate ainda existir em outro arquivo 
+// (ex: ./battleEngine.js), importe as funções de batalha aqui.
 
 const { handleCommand } = require('./commands');
 

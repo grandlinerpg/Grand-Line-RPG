@@ -1,7 +1,7 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const express = require('express');
 const axios = require('axios'); 
-const cron = require('node-cron'); 
+const cron = require('node-cron');  
 
 // CONSTANTES E CONFIGURAÇÕES
 const NUMERO_BOT = "5511918448331";

@@ -75,17 +75,17 @@ module.exports = {
 };
 
 // ==========================================
-// 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES
+// 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES (CAMINHOS CORRIGIDOS)
 // ==========================================
 const { 
     enviarProximaPergunta, 
     gerarTabelaPontuacao, 
     finalizarQuiz, 
     dispararQuizNoGrupo 
-} = require('./quiz');
+} = require('./commands/quiz');
 
-const { handleCommand } = require('./commands');
-const { handleAtividadesCommands } = require('./atividades'); // Importado para garantir o registo do módulo
+const { handleCommand } = require('./commands.js');
+const { handleAtividadesCommands } = require('./commands/atividades');
 
 // Servidor Web + Auto-Ping (Render)
 const app = express();

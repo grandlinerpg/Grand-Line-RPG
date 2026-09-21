@@ -88,8 +88,9 @@ async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDo
     }
   });
 
-  if (personagemAtualDoUsuario && (personagemAtualDoUsuario === "Sem Personagem" || ocupados[personagemAtualDoUsuario] === uidUsuarioAtual)) {
-    selectPersonagem.value = personagemAtualDoUsuario;
+  // Força a seleção para a primeira opção carregada na lista
+  if (selectPersonagem.options.length > 0) {
+    selectPersonagem.value = selectPersonagem.options[0].value;
   }
 
   atualizarImagem();

@@ -1,18 +1,12 @@
 const axios = require('axios');
-const { 
-    FIREBASE_URL, 
-    jogosQuiz,
-    obterJidEfetivo 
-} = require('../index'); // CORRIGIDO: Recua uma pasta para achar o index.js
+const { FIREBASE_URL, obterJidEfetivo } = require('../index');
 
-/**
- * Envia a pergunta atual do Quiz para o grupo e gerencia o tempo limite de resposta.
- */
+const jogosQuiz = {};
+
 async function enviarProximaPergunta(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo || !jogo.ativo) return;
 
-    // Se já respondeu todas as perguntas, encerra o Quiz
     if (jogo.perguntaAtual >= jogo.perguntas.length) {
         return await finalizarQuiz(chatJid, sock);
     }
@@ -26,7 +20,6 @@ async function enviarProximaPergunta(chatJid, sock) {
 
     if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
 
-    // Timer de 15 segundos para responder a pergunta
     jogo.timerPergunta = setTimeout(async () => {
         if (jogosQuiz[chatJid] && !jogosQuiz[chatJid].respondida) {
             await sock.sendMessage(chatJid, {
@@ -38,9 +31,6 @@ async function enviarProximaPergunta(chatJid, sock) {
     }, 15000);
 }
 
-/**
- * Monta e retorna uma mensagem formatada com o ranking atual do Quiz.
- */
 async function gerarTabelaPontuacao(pontosObj) {
     const participantes = Object.keys(pontosObj);
     if (participantes.length === 0) return "Ninguém pontuou ainda.";
@@ -55,7 +45,7 @@ async function gerarTabelaPontuacao(pontosObj) {
         participantes.forEach((senderId, idx) => {
             const playerUid = Object.keys(playersData).find(u => 
                 String(playersData[u]?.number?.LID || '').trim() === senderId || 
-                String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
+                String(playersData[u]?.number?.n || '').trim() === senderId
             );
             const nome = playerUid ? (playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador") : `@${senderId}`;
             tabela += `${idx + 1}º ${nome} — ${pontosObj[senderId]} Pt(s)\n`;
@@ -66,9 +56,6 @@ async function gerarTabelaPontuacao(pontosObj) {
     }
 }
 
-/**
- * Finaliza a partida de Quiz, calcula a divisão de prêmios e atualiza o saldo no Firebase.
- */
 async function finalizarQuiz(chatJid, sock) {
     const jogo = jogosQuiz[chatJid];
     if (!jogo) return;
@@ -92,18 +79,14 @@ async function finalizarQuiz(chatJid, sock) {
 
                 const playerUid = Object.keys(playersData).find(u => 
                     String(playersData[u]?.number?.LID || '').trim() === senderId || 
-                    String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
+                    String(playersData[u]?.number?.n || '').trim() === senderId
                 );
                 let nomePlayer = "Lutador";
 
                 if (playerUid) {
                     nomePlayer = playersData[playerUid]?.character?.charName || playersData[playerUid]?.nome || "Lutador";
                     const saldoAtual = playersData[playerUid]?.info?.saldo || 0;
-                    
-                    // Atualiza o saldo do jogador no Firebase
-                    await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { 
-                        saldo: saldoAtual + premioGanhado 
-                    });
+                    await axios.patch(`${FIREBASE_URL}/players/${playerUid}/info.json`, { saldo: saldoAtual + premioGanhado });
                 }
 
                 textoFinal += `👤 *${nomePlayer}:* ${acertos} acerto(s) ➔ +฿ ${premioGanhado}\n`;
@@ -117,9 +100,6 @@ async function finalizarQuiz(chatJid, sock) {
     delete jogosQuiz[chatJid];
 }
 
-/**
- * Inicia o evento do Quiz no grupo: sorteia 5 perguntas e marca todos do grupo.
- */
 async function dispararQuizNoGrupo(chatJid, sock) {
     if (jogosQuiz[chatJid]) return;
 
@@ -132,7 +112,6 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         let listaPerguntas = Object.values(quizObj);
         if (listaPerguntas.length === 0) return;
 
-        // Algoritmo de embaralhamento (Fisher-Yates)
         for (let i = listaPerguntas.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [listaPerguntas[i], listaPerguntas[j]] = [listaPerguntas[j], listaPerguntas[i]];
@@ -142,7 +121,6 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
         const PREMIO_TOTAL = 3000;
 
-        // Estrutura do jogo no estado global
         jogosQuiz[chatJid] = {
             perguntas: perguntasSorteadas,
             perguntaAtual: 0,
@@ -166,7 +144,6 @@ async function dispararQuizNoGrupo(chatJid, sock) {
 
         await sock.sendMessage(chatJid, { text: msgInicio, mentions: mentions });
 
-        // Aguarda 5 segundos antes de disparar a primeira pergunta
         setTimeout(() => {
             enviarProximaPergunta(chatJid, sock);
         }, 5000);
@@ -176,9 +153,39 @@ async function dispararQuizNoGrupo(chatJid, sock) {
     }
 }
 
-module.exports = {
-    enviarProximaPergunta,
-    gerarTabelaPontuacao,
-    finalizarQuiz,
-    dispararQuizNoGrupo
-};
+async function handleQuizCommands(sock, m, text, from) {
+    // Verificação de Respostas de Quiz
+    if (jogosQuiz[from] && jogosQuiz[from].ativo && !jogosQuiz[from].respondida) {
+        const jogo = jogosQuiz[from];
+        const qAtual = jogo.perguntas[jogo.perguntaAtual];
+
+        if (qAtual && text === String(qAtual.resposta).trim().toLowerCase()) {
+            jogo.respondida = true;
+            if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
+
+            const senderId = obterJidEfetivo(m, from);
+            jogo.pontos[senderId] = (jogo.pontos[senderId] || 0) + 1;
+
+            const tabelaPontos = await gerarTabelaPontuacao(jogo.pontos);
+            const msgAcerto = `🎉 *RESPOSTA CORRETA!* @${senderId} acertou e pontuou!\n\n${tabelaPontos}`;
+
+            await sock.sendMessage(from, {
+                text: msgAcerto,
+                mentions: [m.key.participant || m.key.remoteJid || from]
+            }, { quoted: m });
+
+            jogo.perguntaAtual++;
+            setTimeout(() => enviarProximaPergunta(from, sock), 3000);
+            return true;
+        }
+    }
+
+    if (text === '!iniciarquiz') {
+        await dispararQuizNoGrupo(from, sock);
+        return true;
+    }
+
+    return false;
+}
+
+module.exports = { handleQuizCommands, dispararQuizNoGrupo, jogosQuiz };

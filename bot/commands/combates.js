@@ -9,12 +9,7 @@ const {
     obterJidEfetivo 
 } = require('../index');
 
-// Estado em memória local para armazenar as batalhas ativas
 const batalhas = {};
-
-// ==========================================
-// FUNÇÕES DO MOTOR DE JOGO (ANTIGO GAMEENGINE)
-// ==========================================
 
 function limparTimersBatalha(bat) {
     if (!bat) return;
@@ -38,7 +33,6 @@ function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
         sock
     };
 
-    // Timer de 5 minutos para a fase de apresentação dos cards
     novaBatalha.timerApresentacao = setTimeout(async () => {
         if (batalhas[grupoJid] && batalhas[grupoJid].fase === 'apresentacao') {
             await comecarCombateDeFato(grupoJid, sock);
@@ -61,7 +55,7 @@ async function comecarCombateDeFato(grupoJid, sock) {
     bat.turnoAtual = 1;
 
     const p1Nome = bat.p1?.nome || 'Jogador 1';
-    const msg = `⚔️ *O COMBATE COMEOU!* ⚔️\n\n` +
+    const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
                 `🔄 *TURNO 1*\n` +
                 `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
                 `⏳ *Tempo do turno:* 30 minutos\n` +
@@ -82,7 +76,6 @@ function iniciarTimerTurnoMaximo(grupoJid, sock) {
 
     if (bat.timerTurno) clearTimeout(bat.timerTurno);
 
-    // Timer de 30 minutos por turno
     bat.timerTurno = setTimeout(async () => {
         const b = batalhas[grupoJid];
         if (b && b.fase === 'em_combate') {
@@ -101,10 +94,6 @@ function iniciarTimerTurnoMaximo(grupoJid, sock) {
         }
     }, 30 * 60 * 1000);
 }
-
-// ==========================================
-// FUNÇÕES AUXILIARES PARA FIREBASE
-// ==========================================
 
 async function obterArenaAtiva(grupoJid) {
     const chaveGrupo = grupoJid.replace('@g.us', '');
@@ -150,14 +139,7 @@ async function resetarArenaAguardando(grupoJid, batAtual) {
     await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
-// ==========================================
-// MANIPULADOR DE COMANDOS DE COMBATE
-// ==========================================
-
 async function handleCombatesCommands(sock, m, text, from) {
-    // ------------------------------------------
-    // ACEITAR COLISEU
-    // ------------------------------------------
     if (text.startsWith('!aceitarcoliseu')) {
         if (from !== GRUPO_COLISEU) {
             return await sock.sendMessage(from, { text: '❌ O comando *!aceitarcoliseu* só pode ser usado no grupo oficial do Coliseu!' }, { quoted: m });
@@ -239,9 +221,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         return await sock.sendMessage(from, { text: msgInicio });
     }
 
-    // ------------------------------------------
-    // ACEITAR ARENA
-    // ------------------------------------------
     if (text.startsWith('!aceitar') || text.startsWith('!battle')) {
         if (!GRUPOS_ARENA.includes(from)) {
             return await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos oficiais de Arena!' }, { quoted: m });
@@ -328,9 +307,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         return await sock.sendMessage(from, { text: msgInicio });
     }
 
-    // ------------------------------------------
-    // INICIAR COMBATE
-    // ------------------------------------------
     if (text === '!iniciar') {
         const bat = await obterArenaAtiva(from);
         if (!bat) {
@@ -350,9 +326,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         return true;
     }
 
-    // ------------------------------------------
-    // PASSAR TURNO
-    // ------------------------------------------
     if (text === '!prox') {
         const bat = await obterArenaAtiva(from);
         if (!bat || bat.fase !== 'em_combate') return true;
@@ -376,9 +349,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         return true;
     }
 
-    // ------------------------------------------
-    // DECLARAR VITÓRIA (!WIN)
-    // ------------------------------------------
     if (text.startsWith('!win')) {
         const bat = await obterArenaAtiva(from);
         if (!bat || bat.fase === 'aguardando') return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
@@ -548,9 +518,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         return true;
     }
 
-    // ------------------------------------------
-    // CANCELAR / ENCERRAR COMBATE
-    // ------------------------------------------
     if (text === '!fimcombate') {
         const bat = await obterArenaAtiva(from);
         if (!bat) return true;
@@ -572,4 +539,7 @@ async function handleCombatesCommands(sock, m, text, from) {
     return false;
 }
 
-module.exports = { handleCombatesCommands };
+module.exports = { 
+    handleCombatesCommands,
+    iniciarEstruturaBatalha 
+};

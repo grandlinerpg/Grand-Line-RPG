@@ -173,8 +173,12 @@ async function handleDesafiosCommands(sock, m, text, from) {
 
         const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
 
-        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const [playersRes, rankRes] = await Promise.all([
+            axios.get(`${FIREBASE_URL}/players.json`),
+            axios.get(`${FIREBASE_URL}/ranking.json`)
+        ]);
         const playersData = playersRes.data || {};
+        const rankingObj = rankRes.data || {};
 
         const desafianteUid = Object.keys(playersData).find(u => 
             String(playersData[u]?.number?.LID || '').trim() === senderId || 
@@ -187,6 +191,19 @@ async function handleDesafiosCommands(sock, m, text, from) {
 
         if (!desafianteUid || !desafiadoUid) return await sock.sendMessage(from, { text: '❌ Um dos jogadores não está cadastrado!' }, { quoted: m });
         if (desafianteUid === desafiadoUid) return await sock.sendMessage(from, { text: '❌ Você não pode desafiar a si mesmo!' }, { quoted: m });
+
+        // Validação de Posição no Ranking: Não permite desafiar quem está abaixo na Arena
+        const posDesafianteStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === desafianteUid);
+        const posDesafiadoStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === desafiadoUid);
+
+        const posDesafiante = posDesafianteStr ? parseInt(posDesafianteStr, 10) : 999999;
+        const posDesafiado = posDesafiadoStr ? parseInt(posDesafiadoStr, 10) : 999999;
+
+        if (posDesafiante < posDesafiado) {
+            return await sock.sendMessage(from, { 
+                text: '❌ Na Arena só é permitido desafiar jogadores que estão acima de você no ranking!\nPara desafiar jogadores abaixo de sua posição, utilize o Coliseu (*!desafiarcoliseu @jogador*).' 
+            }, { quoted: m });
+        }
 
         const desafianteNum = String(playersData[desafianteUid]?.number?.n || senderId).trim();
         const desafiadoNum = String(playersData[desafiadoUid]?.number?.n || targetId).trim();

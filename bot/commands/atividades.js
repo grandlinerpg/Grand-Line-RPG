@@ -307,7 +307,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
 async function obterStatusFormatadoArenas(atividade) {
     if (!atividade || !atividade.lutadoresAtivos || atividade.lutadoresAtivos.length === 0) {
-        return '🏟️ *Arenas em Combate:* Nenhum combate ativo no momento.';
+        return '🏟️ *Arenas em Combate:* Nenhum combate em andamento.';
     }
 
     let arenasAtivas = {};
@@ -369,7 +369,6 @@ async function verificarEParearAutomatico(sock, from) {
 
                 await sock.sendMessage(from, { text: `⚡ *${nomeDefesa} só tem 1 opção!* ${p2.nome} foi alocado automaticamente contra ${p1.nome}!` });
                 await alocarLutaNaArena(sock, from, p1, p2);
-                atividade.fase = 'combates';
                 await enviarRelatorioGrupo(sock, from);
                 return;
             } else if (atividade.bancoDefensores.length > 1) {
@@ -386,7 +385,6 @@ async function verificarEParearAutomatico(sock, from) {
 
                 await sock.sendMessage(from, { text: `⚡ *${atividade.faccaoCriador} só tem 1 opção!* ${p1.nome} foi alocado automaticamente contra ${p2.nome}!` });
                 await alocarLutaNaArena(sock, from, p1, p2);
-                atividade.fase = 'combates';
                 await enviarRelatorioGrupo(sock, from);
                 return;
             } else if (atividade.bancoAtacantes.length > 1) {
@@ -404,7 +402,6 @@ async function verificarEParearAutomatico(sock, from) {
         
         await sock.sendMessage(from, { text: `⚡ *Resta apenas 1 combatente de cada lado!* Pareamento automático: ${p1.nome} VS ${p2.nome}` });
         await alocarLutaNaArena(sock, from, p1, p2);
-        atividade.fase = 'combates';
         await enviarRelatorioGrupo(sock, from);
     } else if (atividade.bancoAtacantes.length > 0 && atividade.bancoDefensores.length > 0) {
         if (atividade.vezSelecao === 'atacante' && atividade.bancoDefensores.length === 1) {
@@ -431,8 +428,6 @@ async function verificarEParearAutomatico(sock, from) {
                 text: `⚔️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
             });
         }
-    } else {
-        atividade.fase = 'combates';
     }
 }
 
@@ -484,7 +479,6 @@ async function processarEscolhaLutador(sock, from, targetId) {
         atividade.proximoDesafiante = null;
 
         await alocarLutaNaArena(sock, from, p1, p2);
-        atividade.fase = 'combates';
         await enviarRelatorioGrupo(sock, from);
 
     } else if (atividade.vezSelecao === 'banco_atacante') {
@@ -499,7 +493,6 @@ async function processarEscolhaLutador(sock, from, targetId) {
         atividade.proximoDesafiante = null;
 
         await alocarLutaNaArena(sock, from, p1, p2);
-        atividade.fase = 'combates';
         await enviarRelatorioGrupo(sock, from);
     }
 }
@@ -578,7 +571,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
         if (atividade.bancoDefensores.length > 0) {
             atividade.proximoDesafiante = vencedorObj;
             atividade.vezSelecao = 'banco_defensor';
-            atividade.fase = 'selecao';
 
             await verificarEParearAutomatico(sock, grupoOrigem);
             await enviarRelatorioGrupo(sock, grupoOrigem);
@@ -589,7 +581,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
         if (atividade.bancoAtacantes.length > 0) {
             atividade.proximoDesafiante = vencedorObj;
             atividade.vezSelecao = 'banco_atacante';
-            atividade.fase = 'selecao';
 
             await verificarEParearAutomatico(sock, grupoOrigem);
             await enviarRelatorioGrupo(sock, grupoOrigem);
@@ -611,7 +602,7 @@ async function enviarRelatorioGrupo(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
-    const nomeDefesa = atividade.faccaoDefensora || 'Defensa';
+    const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
     let historicoTexto = atividade.historicoLutas.length > 0
         ? atividade.historicoLutas.map(h => `✅ ${h.vencedor} venceu ${h.perdedor}`).join('\n')
@@ -682,7 +673,7 @@ async function enviarPainelAtividade(sock, from, atividade) {
         `Anunciantes:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
-        `> Força: ${forcaDefensores}\n\n` +
+        `> Força: ${forcaDefensores} --\n\n` +
         `⏳ _30 minutos de lista ou digite !encerrar._`;
 
     await sock.sendMessage(from, { text: mensagemPainel });

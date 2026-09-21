@@ -3,10 +3,13 @@ const {
     FIREBASE_URL, 
     GRUPO_QUIZ_JID, 
     GRUPO_COLISEU, 
+    GRUPOS_ARENA,
     obterTemporadaAtual, 
     formatarJidPv, 
     obterJidEfetivo 
 } = require('../index');
+
+const { iniciarCombateAposAceitar, obterArenaAtiva, limparId, buscarUidPlayer } = require('./combates');
 
 const timersDesafio = {};
 
@@ -236,6 +239,112 @@ async function handleDesafiosCommands(sock, m, text, from) {
                 await sock.sendMessage(pvTargetJid, { text: `⚔️ *VOCÊ FOI DESAFIADO NA ARENA!*\n\n👤 *Desafiante:* ${nomeDesafiante}\n👉 Acesse o grupo de Arena e aceite usando: *!aceitar @${desafianteNum}*` });
             } catch (e) {}
         }
+        return true;
+    }
+
+    if (text.startsWith('!aceitarcoliseu')) {
+        if (from !== GRUPO_COLISEU) {
+            return await sock.sendMessage(from, { text: '❌ O comando *!aceitarcoliseu* só pode ser usado no grupo oficial do Coliseu!' }, { quoted: m });
+        }
+
+        const arenaAtiva = await obterArenaAtiva(from);
+        if (arenaAtiva && arenaAtiva.fase !== 'aguardando') {
+            return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta a decorrer no Coliseu! Aguarde o término.' }, { quoted: m });
+        }
+
+        const senderId = obterJidEfetivo(m, from);
+        const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        if (!mentionedJid) {
+            return await sock.sendMessage(from, { text: '❌ Você precisa de marcar o desafiante para aceitar!\nExemplo: *!aceitarcoliseu @desafiante*' }, { quoted: m });
+        }
+
+        const targetId = limparId(mentionedJid);
+        const senderIdLimpo = limparId(senderId);
+
+        const [playersRes, desafiosColiseuRes] = await Promise.all([
+            axios.get(`${FIREBASE_URL}/players.json`),
+            axios.get(`${FIREBASE_URL}/desafios_coliseu.json`)
+        ]);
+
+        const playersData = playersRes.data || {};
+        const todosDesafiosColiseu = desafiosColiseuRes.data || {};
+
+        const desafioKey = Object.keys(todosDesafiosColiseu).find(key => {
+            const d = todosDesafiosColiseu[key];
+            if (!d || d.status !== 'pendente') return false;
+
+            const dNum = limparId(d.desafianteNum);
+            const dLid = limparId(d.desafianteLid);
+            const fNum = limparId(d.desafiadoNum);
+            const fLid = limparId(d.desafiadoLid);
+
+            const desafianteBate = dNum === targetId || dLid === targetId;
+            const desafiadoBate = fNum === senderIdLimpo || fLid === senderIdLimpo;
+
+            return desafianteBate && desafiadoBate;
+        });
+
+        const desafio = todosDesafiosColiseu[desafioKey];
+
+        if (!desafio) {
+            return await sock.sendMessage(from, { text: '❌ Nenhum desafio pendente encontrado entre vocês dois.' }, { quoted: m });
+        }
+
+        await axios.patch(`${FIREBASE_URL}/desafios_coliseu/${desafioKey}.json`, { status: 'aceito' });
+        await iniciarCombateAposAceitar(sock, from, desafio, 'COLISEU');
+        return true;
+    }
+
+    if (text.startsWith('!aceitar') || text.startsWith('!battle')) {
+        if (!GRUPOS_ARENA.includes(from)) {
+            return await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos oficiais de Arena!' }, { quoted: m });
+        }
+
+        const arenaAtiva = await obterArenaAtiva(from);
+        if (arenaAtiva && arenaAtiva.fase !== 'aguardando') {
+            return await sock.sendMessage(from, { text: '⚠️ Já existe uma luta ativa neste grupo! Aguarde o término.' }, { quoted: m });
+        }
+
+        const senderId = obterJidEfetivo(m, from);
+        const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+        if (!mentionedJid) {
+            return await sock.sendMessage(from, { text: '❌ Marque o desafiante para aceitar!\nExemplo: *!aceitar @desafiante*' }, { quoted: m });
+        }
+
+        const targetId = limparId(mentionedJid);
+        const senderIdLimpo = limparId(senderId);
+
+        const [playersRes, desafiosArenaRes] = await Promise.all([
+            axios.get(`${FIREBASE_URL}/players.json`),
+            axios.get(`${FIREBASE_URL}/desafios.json`)
+        ]);
+
+        const playersData = playersRes.data || {};
+        const todosDesafiosArena = desafiosArenaRes.data || {};
+
+        const desafioKey = Object.keys(todosDesafiosArena).find(key => {
+            const d = todosDesafiosArena[key];
+            if (!d || d.status !== 'pendente') return false;
+
+            const dNum = limparId(d.desafianteNum);
+            const dLid = limparId(d.desafianteLid);
+            const fNum = limparId(d.desafiadoNum);
+            const fLid = limparId(d.desafiadoLid);
+
+            const desafianteBate = dNum === targetId || dLid === targetId;
+            const desafiadoBate = fNum === senderIdLimpo || fLid === senderIdLimpo;
+
+            return desafianteBate && desafiadoBate;
+        });
+
+        const desafio = todosDesafiosArena[desafioKey];
+
+        if (!desafio) {
+            return await sock.sendMessage(from, { text: '❌ Nenhum desafio pendente encontrado entre vocês.' }, { quoted: m });
+        }
+
+        await axios.patch(`${FIREBASE_URL}/desafios/${desafioKey}.json`, { status: 'aceito' });
+        await iniciarCombateAposAceitar(sock, from, desafio, 'PVP');
         return true;
     }
 

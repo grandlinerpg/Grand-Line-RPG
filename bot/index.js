@@ -58,7 +58,7 @@ function obterJidEfetivo(m, from) {
     return rawSender.split('@')[0].split(':')[0].trim();
 }
 
-// OBRIGATÓRIO: Exportar antes de importar submódulos para evitar dependência circular
+// OBRIGATÓRIO: Exportar no topo antes de qualquer importação externa
 module.exports = {
     NUMERO_BOT,
     FIREBASE_URL,
@@ -75,18 +75,8 @@ module.exports = {
 };
 
 // ==========================================
-// 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES
+// 3. SERVIDOR WEB (RENDER AUTO-PING)
 // ==========================================
-const { 
-    enviarProximaPergunta, 
-    gerarTabelaPontuacao, 
-    finalizarQuiz, 
-    dispararQuizNoGrupo 
-} = require('./commands/quiz');
-
-const { handleCommand } = require('./commands.js');
-
-// Servidor Web + Auto-Ping (Render)
 const app = express();
 const PORT = process.env.PORT || 3000;
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
@@ -105,7 +95,9 @@ app.listen(PORT, () => {
     }
 });
 
-// Conexão Baileys
+// ==========================================
+// 4. INICIALIZAÇÃO DO BOT
+// ==========================================
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
@@ -135,13 +127,19 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            cron.schedule('30 22 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:30 (Horário de Brasília)...');
-                dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
-            }, {
-                scheduled: true,
-                timezone: "America/Sao_Paulo"
-            });
+            // Carrega dinamicamente o quiz para o cron
+            try {
+                const { dispararQuizNoGrupo } = require('./commands/quiz');
+                cron.schedule('30 22 * * *', () => {
+                    console.log('⏰ [CRON] Iniciando Quiz Automático das 22:30 (Horário de Brasília)...');
+                    dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
+                }, {
+                    scheduled: true,
+                    timezone: "America/Sao_Paulo"
+                });
+            } catch (err) {
+                console.error('[Cron] Erro ao carregar módulo quiz:', err.message);
+            }
         }
     });
 
@@ -151,6 +149,8 @@ async function connectToWhatsApp() {
             const m = chatUpdate.messages[0];
             if (m.key.fromMe || !m.message) return;
 
+            // Importação pontual para evitar quebras no boot
+            const { handleCommand } = require('./commands.js');
             await handleCommand(sock, m);
         } catch (err) {
             console.error('❌ Erro no processamento:', err);

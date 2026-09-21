@@ -23,7 +23,7 @@ const GRUPOS_ARENA = [
     "120363429534972500@g.us"
 ];
 
-// Estado em memória
+// Estado em memória (mantidos para uso futuro)
 const jogosQuiz = {};
 const batalhas = {};
 const timersDesafio = {};
@@ -81,16 +81,13 @@ module.exports = {
 // ==========================================
 // 3. IMPORTAÇÃO DOS MÓDULOS DEPENDENTES
 // ==========================================
+// Alterado de './gameEngine' para './quiz' puxando apenas as funções existentes no quiz.js
 const { 
-    limparTimersBatalha, 
-    iniciarTimerTurnoMaximo, 
-    comecarCombateDeFato, 
-    iniciarEstruturaBatalha, 
     enviarProximaPergunta, 
     gerarTabelaPontuacao, 
     finalizarQuiz, 
     dispararQuizNoGrupo 
-} = require('./gameEngine');
+} = require('./quiz');
 
 const { handleCommand } = require('./commands');
 

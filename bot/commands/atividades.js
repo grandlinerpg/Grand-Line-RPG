@@ -347,9 +347,14 @@ async function encerrarListaEIniciarPartida(sock, from) {
 
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
-    await sock.sendMessage(from, { 
-        text: `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\n${atividade.faccaoCriador}: ${atividade.bancoAtacantes.length} | ${nomeDefesa}: ${atividade.bancoDefensores.length}` 
-    });
+    let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome}`).join('\n');
+    let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome}`).join('\n');
+
+    const msgInicioConfrontos = `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\n` +
+        `${atividade.faccaoCriador}:\n\n${atacantesTexto}\n\n` +
+        `${nomeDefesa}:\n\n${defensoresTexto}`;
+
+    await sock.sendMessage(from, { text: msgInicioConfrontos });
 
     await verificarEParearAutomatico(sock, from);
 }
@@ -625,7 +630,6 @@ async function enviarRelatorioGrupo(sock, from) {
     const statusArenas = await obterStatusFormatadoArenas(atividade);
 
     const msgStatus = `📊 *STATUS DA ATIVIDADE: ${atividade.nomeAtividade.toUpperCase()}*\n\n` +
-        `🏆 *Placar:* ${atividade.faccaoCriador} [${atividade.vitoriasAtacantes}] x [${atividade.vitoriasDefensores}] ${nomeDefesa}\n\n` +
         `${statusArenas}\n\n` +
         `⚔️ *Histórico de Vitórias:*\n${historicoTexto}\n\n` +
         `💀 *Jogadores Derrotados:*\n${derrotadosTexto}\n\n` +
@@ -664,19 +668,25 @@ async function enviarPainelAtividade(sock, from, atividade) {
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
 
-    let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
+    let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome}`).join('\n');
     let defensoresTexto = atividade.defensores.length > 0
-        ? atividade.defensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n')
+        ? atividade.defensores.map(d => `➔ ${d.nome}`).join('\n')
         : 'Nenhum nome registrado.';
 
     const tituloDefesa = atividade.faccaoDefensora || 'Defensores';
 
+    // Cálculo do horário de término (+30 minutos formatado em UTC)
+    const dataTermino = new Date(Date.now() + 30 * 60 * 1000);
+    const horas = String(dataTermino.getUTCHours()).padStart(2, '0');
+    const minutos = String(dataTermino.getUTCMinutes()).padStart(2, '0');
+    const horarioFormatado = `${horas}:${minutos}`;
+
     const mensagemPainel = `*${nomeAtividadeMaiusculo}*\n\n` +
-        `Anunciantes:\n\n${anunciantesTexto}\n\n` +
+        `${atividade.faccaoCriador}:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}\n\n` +
-        `⏳ _30 minutos de lista ou digite !encerrar._`;
+        `> Término: ${horarioFormatado} (UTC)`;
 
     await sock.sendMessage(from, { text: mensagemPainel });
 }

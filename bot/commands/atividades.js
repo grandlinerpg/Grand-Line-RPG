@@ -577,28 +577,48 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
 
     if (ehAtacante) {
         atividade.vitoriasAtacantes++;
+        
+        // Verifica se ainda restam inimigos vivos (no banco de defensores ou lutando ativamente)
+        const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
+        const totalDefensoresVivos = atividade.bancoDefensores.length + defensoresEmLuta.length;
+
         if (atividade.bancoDefensores.length > 0) {
             atividade.proximoDesafiante = vencedorObj;
             atividade.vezSelecao = 'banco_defensor';
-
             await verificarEParearAutomatico(sock, grupoOrigem);
             return;
+        } else if (totalDefensoresVivos > 0) {
+            // Se houver defensores ainda lutando em outras arenas, o vencedor fica no banco atacante aguardando
+            if (!atividade.bancoAtacantes.some(a => a.lid === vencedorObj.lid)) {
+                atividade.bancoAtacantes.push(vencedorObj);
+            }
         }
     } else {
         atividade.vitoriasDefensores++;
+
+        // Verifica se ainda restam inimigos vivos (no banco de atacantes ou lutando ativamente)
+        const atacantesEmLuta = atividade.lutadoresAtivos.map(l => l.p1);
+        const totalAtacantesVivos = atividade.bancoAtacantes.length + atacantesEmLuta.length;
+
         if (atividade.bancoAtacantes.length > 0) {
             atividade.proximoDesafiante = vencedorObj;
             atividade.vezSelecao = 'banco_atacante';
-
             await verificarEParearAutomatico(sock, grupoOrigem);
             return;
+        } else if (totalAtacantesVivos > 0) {
+            // Se houver atacantes ainda lutando em outras arenas, o vencedor fica no banco defensor aguardando
+            if (!atividade.bancoDefensores.some(d => d.lid === vencedorObj.lid)) {
+                atividade.bancoDefensores.push(vencedorObj);
+            }
         }
     }
 
     const semLutasEmAndamento = atividade.lutadoresAtivos.length === 0;
-    const semReservas = atividade.bancoAtacantes.length === 0 && atividade.bancoDefensores.length === 0;
+    const atacantesTotalmenteEliminados = atividade.bancoAtacantes.length === 0 && !atividade.lutadoresAtivos.some(l => l.p1);
+    const defensoresTotalmenteEliminados = atividade.bancoDefensores.length === 0 && !atividade.lutadoresAtivos.some(l => l.p2);
 
-    if (semLutasEmAndamento && semReservas && !atividade.proximoDesafiante) {
+    // A atividade só é finalizada se uma das facções for 100% eliminada e não houver lutas em andamento
+    if (semLutasEmAndamento && (atacantesTotalmenteEliminados || defensoresTotalmenteEliminados) && !atividade.proximoDesafiante) {
         await finalizarAtividade(sock, grupoOrigem);
     } else {
         await enviarRelatorioGrupo(sock, grupoOrigem);
@@ -675,18 +695,21 @@ async function enviarPainelAtividade(sock, from, atividade) {
 
     const tituloDefesa = atividade.faccaoDefensora || 'Defensores';
 
-    // Cálculo do horário de término (+30 minutos formatado em UTC)
+    // Cálculo do horário de término (+30 minutos em UTC-3)
     const dataTermino = new Date(Date.now() + 30 * 60 * 1000);
-    const horas = String(dataTermino.getUTCHours()).padStart(2, '0');
-    const minutos = String(dataTermino.getUTCMinutes()).padStart(2, '0');
-    const horarioFormatado = `${horas}:${minutos}`;
+    let horas = dataTermino.getUTCHours() - 3;
+    if (horas < 0) horas += 24;
+
+    const horasStr = String(horas).padStart(2, '0');
+    const minutosStr = String(dataTermino.getUTCMinutes()).padStart(2, '0');
+    const horarioFormatado = `${horasStr}:${minutosStr}`;
 
     const mensagemPainel = `*${nomeAtividadeMaiusculo}*\n\n` +
+        `> Término: ${horarioFormatado} (UTC-3)\n\n` +
         `${atividade.faccaoCriador}:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
-        `> Força: ${forcaDefensores}\n\n` +
-        `> Término: ${horarioFormatado} (UTC)`;
+        `> Força: ${forcaDefensores}`;
 
     await sock.sendMessage(from, { text: mensagemPainel });
 }

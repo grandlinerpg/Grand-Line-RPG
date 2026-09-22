@@ -42,11 +42,12 @@ async function enviarProximaPergunta(chatJid, sock) {
     }
 
     await sock.sendMessage(chatJid, {
-        text: `❓ *PERGUNTA (${jogo.perguntaAtual + 1}/${jogo.perguntas.length}):*\n\n${q.pergunta || q.titulo}${textoOpcoes}\n\n⏳ *Tempo:* 15 segundos para responder!`
+        text: `❓ *PERGUNTA (${jogo.perguntaAtual + 1}/${jogo.perguntas.length}):*\n\n${q.pergunta || q.titulo}${textoOpcoes}\n\n⏳ *Tempo:* 30 segundos para responder!`
     });
 
     if (jogo.timerPergunta) clearTimeout(jogo.timerPergunta);
 
+    // Ajustado tempo para 30 segundos (30000 ms)
     jogo.timerPergunta = setTimeout(async () => {
         if (jogosQuiz[chatJid] && jogosQuiz[chatJid].ativo && !jogosQuiz[chatJid].respondida) {
             jogosQuiz[chatJid].respondida = true;
@@ -59,7 +60,7 @@ async function enviarProximaPergunta(chatJid, sock) {
             jogosQuiz[chatJid].perguntaAtual++;
             setTimeout(() => enviarProximaPergunta(chatJid, sock), 3000);
         }
-    }, 15000);
+    }, 30000);
 }
 
 async function gerarTabelaPontuacao(pontosObj) {
@@ -157,7 +158,8 @@ async function dispararQuizNoGrupo(chatJid, sock) {
             [listaPerguntas[i], listaPerguntas[j]] = [listaPerguntas[j], listaPerguntas[i]];
         }
 
-        const QTD_PERGUNTAS = Math.min(5, listaPerguntas.length);
+        // Ajustado número máximo de perguntas para 30
+        const QTD_PERGUNTAS = Math.min(30, listaPerguntas.length);
         const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
         const PREMIO_TOTAL = 3000;
 

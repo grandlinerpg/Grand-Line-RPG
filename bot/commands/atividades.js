@@ -675,7 +675,7 @@ async function enviarPainelAtividade(sock, from, atividade) {
         `Anunciantes:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
-        `> Força: ${forcaDefensores} --\n\n` +
+        `> Força: ${forcaDefensores}\n\n` +
         `⏳ _30 minutos de lista ou digite !encerrar._`;
 
     await sock.sendMessage(from, { text: mensagemPainel });

@@ -663,6 +663,9 @@ async function finalizarAtividade(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    // Envia o último relatório com o resultado do combate final antes de decretar a vitória
+    await enviarRelatorioGrupo(sock, from);
+
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
     let vencedorAtividade = 'Empate!';
@@ -688,9 +691,9 @@ async function enviarPainelAtividade(sock, from, atividade) {
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
 
-    let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome}`).join('\n');
+    let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
     let defensoresTexto = atividade.defensores.length > 0
-        ? atividade.defensores.map(d => `➔ ${d.nome}`).join('\n')
+        ? atividade.defensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n')
         : 'Nenhum nome registrado.';
 
     const tituloDefesa = atividade.faccaoDefensora || 'Defensores';

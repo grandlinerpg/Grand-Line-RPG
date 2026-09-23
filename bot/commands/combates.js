@@ -81,7 +81,7 @@ async function comecarCombateDeFato(grupoJid, sock) {
     const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
                 `🔄 *TURNO 1*\n` +
                 `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
-                `⏳ *Tempo do turno:* 30 minutos\n` +
+                `⏳ > Término: 00:00 (UTC-3)\n` +
                 `Utilize *!prox* para encerrar a sua jogada.`;
 
     const socketParaEnviar = sock || bat.sock;
@@ -226,7 +226,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
 
-        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\n*Tempo:* 30 minutos\n\nDigite *!prox* ao concluir a sua jogada.`;
+        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\n> Término: 00:00 (UTC-3)\n\nDigite *!prox* ao concluir a sua jogada.`;
         await sock.sendMessage(from, { text: msgNovoTurno });
 
         iniciarTimerTurnoMaximo(from, sock);

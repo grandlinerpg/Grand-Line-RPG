@@ -674,16 +674,45 @@ async function finalizarAtividade(sock, from) {
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
     let vencedorAtividade = 'Empate!';
+    let faccaoVencedora = null;
+
     if (atividade.vitoriasAtacantes > atividade.vitoriasDefensores) {
+        faccaoVencedora = atividade.faccaoCriador;
         vencedorAtividade = `Facção ${atividade.faccaoCriador}`;
     } else if (atividade.vitoriasDefensores > atividade.vitoriasAtacantes) {
+        faccaoVencedora = nomeDefesa;
         vencedorAtividade = `Facção ${nomeDefesa}`;
+    }
+
+    // Busca as recompensas no Firebase para a facção vencedora
+    let textoRecompensas = '';
+    if (faccaoVencedora) {
+        try {
+            const ativRes = await axios.get(`${FIREBASE_URL}/faccoes/${faccaoVencedora}/atividades.json`);
+            const atividadesFaccao = ativRes.data || {};
+
+            const chaveAtividade = Object.keys(atividadesFaccao).find(k => 
+                k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
+                (atividadesFaccao[k]?.nome && atividadesFaccao[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
+            );
+
+            if (chaveAtividade && atividadesFaccao[chaveAtividade]) {
+                const dadosAtiv = atividadesFaccao[chaveAtividade];
+                const recompensa = dadosAtiv.recompensa || {};
+                
+                const berries = recompensa.dinheiro || 0;
+                const exp = recompensa.exp || 0;
+
+                textoRecompensas = `\n\n🎁 *Recompensas:*\n💰 Berries: ${berries.toLocaleString('pt-BR')}\n⭐ EXP: ${exp.toLocaleString('pt-BR')}`;
+            }
+        } catch (e) {
+            console.error('Erro ao resgatar recompensas da atividade no Firebase:', e.message);
+        }
     }
 
     const msgFinal = `🎉 *ATIVIDADE CONCLUÍDA!* 🎉\n\n` +
         `Atividade: *${atividade.nomeAtividade}*\n` +
-        `Placar Final: *${atividade.faccaoCriador}* ${atividade.vitoriasAtacantes} x ${atividade.vitoriasDefensores} *${nomeDefesa}*\n\n` +
-        `🏆 *VENCEDOR DA ATIVIDADE:* ${vencedorAtividade.toUpperCase()}!`;
+        `🏆 *VENCEDOR DA ATIVIDADE:* ${vencedorAtividade.toUpperCase()}!${textoRecompensas}`;
 
     await sock.sendMessage(from, { text: msgFinal });
     delete atividadesAtivas[from];

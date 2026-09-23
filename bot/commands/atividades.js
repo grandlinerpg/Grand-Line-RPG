@@ -347,12 +347,17 @@ async function encerrarListaEIniciarPartida(sock, from) {
 
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
-    let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome}`).join('\n');
-    let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome}`).join('\n');
+    const forcaAtacantes = atividade.bancoAtacantes.reduce((acc, curr) => acc + curr.level, 0);
+    const forcaDefensores = atividade.bancoDefensores.reduce((acc, curr) => acc + curr.level, 0);
+
+    let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
+    let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n');
 
     const msgInicioConfrontos = `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\n` +
         `${atividade.faccaoCriador}:\n\n${atacantesTexto}\n\n` +
-        `${nomeDefesa}:\n\n${defensoresTexto}`;
+        `> Força: ${forcaAtacantes}\n\n` +
+        `${nomeDefesa}:\n\n${defensoresTexto}\n\n` +
+        `> Força: ${forcaDefensores}`;
 
     await sock.sendMessage(from, { text: msgInicioConfrontos });
 

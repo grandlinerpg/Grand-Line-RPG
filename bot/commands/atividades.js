@@ -673,21 +673,41 @@ async function finalizarAtividade(sock, from) {
 
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
-    let vencedorAtividade = 'Empate!';
-    let faccaoVencedora = null;
+    // Identifica quais jogadores/sobreviventes ainda restaram em cada lado
+    const atacantesEmLuta = atividade.lutadoresAtivos.map(l => l.p1);
+    const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
 
-    if (atividade.vitoriasAtacantes > atividade.vitoriasDefensores) {
-        faccaoVencedora = atividade.faccaoCriador;
-        vencedorAtividade = `Facção ${atividade.faccaoCriador}`;
-    } else if (atividade.vitoriasDefensores > atividade.vitoriasAtacantes) {
-        faccaoVencedora = nomeDefesa;
-        vencedorAtividade = `Facção ${nomeDefesa}`;
+    const atacantesVivos = [...atividade.bancoAtacantes, ...atacantesEmLuta];
+    if (atividade.proximoDesafiante && atividade.anunciantes.some(a => a.uid === atividade.proximoDesafiante.uid)) {
+        if (!atacantesVivos.some(a => a.uid === atividade.proximoDesafiante.uid)) {
+            atacantesVivos.push(atividade.proximoDesafiante);
+        }
     }
 
-    // Busca as recompensas no Firebase para a facção vencedora
+    const defensoresVivos = [...atividade.bancoDefensores, ...defensoresEmLuta];
+    if (atividade.proximoDesafiante && atividade.defensores.some(d => d.uid === atividade.proximoDesafiante.uid)) {
+        if (!defensoresVivos.some(d => d.uid === atividade.proximoDesafiante.uid)) {
+            defensoresVivos.push(atividade.proximoDesafiante);
+        }
+    }
+
+    let faccaoVencedora = null;
+    let vencedoresLista = [];
+
+    // O vencedor é determinado puramente por qual facção manteve integrantes vivos
+    if (atacantesVivos.length > 0 && defensoresVivos.length === 0) {
+        faccaoVencedora = atividade.faccaoCriador;
+        vencedoresLista = atacantesVivos;
+    } else if (defensoresVivos.length > 0 && atacantesVivos.length === 0) {
+        faccaoVencedora = nomeDefesa;
+        vencedoresLista = defensoresVivos;
+    }
+
     let textoRecompensas = '';
-    if (faccaoVencedora) {
+
+    if (faccaoVencedora && vencedoresLista.length > 0) {
         try {
+            // Busca as recompensas da atividade configuradas na facção vencedora
             const ativRes = await axios.get(`${FIREBASE_URL}/faccoes/${faccaoVencedora}/atividades.json`);
             const atividadesFaccao = ativRes.data || {};
 
@@ -699,20 +719,38 @@ async function finalizarAtividade(sock, from) {
             if (chaveAtividade && atividadesFaccao[chaveAtividade]) {
                 const dadosAtiv = atividadesFaccao[chaveAtividade];
                 const recompensa = dadosAtiv.recompensa || {};
-                
-                const berries = recompensa.dinheiro || 0;
-                const exp = recompensa.exp || 0;
 
-                textoRecompensas = `\n\n🎁 *Recompensas:*\n💰 Berries: ${berries.toLocaleString('pt-BR')}\n⭐ EXP: ${exp.toLocaleString('pt-BR')}`;
+                const berriesGanho = Number(recompensa.dinheiro || 0);
+                const expGanho = Number(recompensa.exp || 0);
+
+                // Aplica as recompensas no Firebase para cada jogador sobrevivente em /players/{uid}/info
+                for (const jogador of vencedoresLista) {
+                    if (!jogador.uid) continue;
+
+                    const playerRes = await axios.get(`${FIREBASE_URL}/players/${jogador.uid}/info.json`);
+                    const playerInfo = playerRes.data || {};
+
+                    const expAtual = Number(playerInfo.exp || 0);
+                    const saldoAtual = Number(playerInfo.saldo || 0);
+
+                    await axios.patch(`${FIREBASE_URL}/players/${jogador.uid}/info.json`, {
+                        exp: expAtual + expGanho,
+                        saldo: saldoAtual + berriesGanho
+                    });
+                }
+
+                textoRecompensas = `\n\n🎁 *Recompensas Aplicadas aos Sobreviventes:*\n💰 Berries: +${berriesGanho.toLocaleString('pt-BR')}\n⭐ EXP: +${expGanho.toLocaleString('pt-BR')}`;
             }
         } catch (e) {
-            console.error('Erro ao resgatar recompensas da atividade no Firebase:', e.message);
+            console.error('Erro ao processar e creditar recompensas no Firebase:', e.message);
         }
     }
 
+    const resultadoTexto = faccaoVencedora ? `Facção *${faccaoVencedora}*` : 'Empate!';
+
     const msgFinal = `🎉 *ATIVIDADE CONCLUÍDA!* 🎉\n\n` +
         `Atividade: *${atividade.nomeAtividade}*\n` +
-        `🏆 *VENCEDOR DA ATIVIDADE:* ${vencedorAtividade.toUpperCase()}!${textoRecompensas}`;
+        `🏆 *VENCEDOR DA ATIVIDADE:* ${resultadoTexto.toUpperCase()}!${textoRecompensas}`;
 
     await sock.sendMessage(from, { text: msgFinal });
     delete atividadesAtivas[from];

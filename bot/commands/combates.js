@@ -42,6 +42,15 @@ function limparTimersBatalha(bat) {
     bat.timerTurno = null;
 }
 
+function obterHorarioTermino(minutosAdicionais = 30) {
+    const agora = new Date();
+    // Ajusta o horário considerando o fuso horário UTC-3 (Horário de Brasília)
+    const horarioTermino = new Date(agora.getTime() + (minutosAdicionais * 60 * 1000) - (3 * 60 * 60 * 1000));
+    const horas = String(horarioTermino.getUTCHours()).padStart(2, '0');
+    const minutos = String(horarioTermino.getUTCMinutes()).padStart(2, '0');
+    return `${horas}:${minutos}`;
+}
+
 function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
     limparTimersBatalha(batalhas[grupoJid]);
 
@@ -77,11 +86,12 @@ async function comecarCombateDeFato(grupoJid, sock) {
     bat.jogadorVez = 1;
     bat.turnoAtual = 1;
 
+    const horarioFim = obterHorarioTermino(30);
     const p1Nome = bat.p1?.nome || 'Jogador 1';
     const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
-                `🔄 *TURNO 1 🔄*\n` +
-                `➔ VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
-                `⏳ > Término: 00:00 (UTC-3)\n` +
+                `🔄 *TURNO 1*\n` +
+                `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
+                `> Término: ${horarioFim} (UTC-3)\n` +
                 `Utilize *!prox* para encerrar a sua jogada.`;
 
     const socketParaEnviar = sock || bat.sock;
@@ -225,8 +235,9 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
+        const horarioFim = obterHorarioTermino(30);
 
-        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\n➔ VEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Término: 00:00 (UTC-3)\n\nDigite *!prox* ao concluir a sua jogada.`;
+        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE ${nomeDoVez.toUpperCase()}\n\n> Término: ${horarioFim} (UTC-3)\n\nDigite *!prox* ao concluir a sua jogada.`;
         await sock.sendMessage(from, { text: msgNovoTurno });
 
         iniciarTimerTurnoMaximo(from, sock);

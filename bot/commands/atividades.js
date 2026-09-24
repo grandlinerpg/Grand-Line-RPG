@@ -15,6 +15,15 @@ function obterEmojiFaccao(nomeFaccao) {
     return EMOJIS_FACCAO[nomeFaccao] || '⚔️';
 }
 
+function obterHoraAtualUTC3() {
+    const agora = new Date();
+    let horas = agora.getUTCHours() - 3;
+    if (horas < 0) horas += 24;
+    const horasStr = String(horas).padStart(2, '0');
+    const minutosStr = String(agora.getUTCMinutes()).padStart(2, '0');
+    return `${horasStr}:${minutosStr}`;
+}
+
 // Armazena as sessões de criação
 const sessoesCriacao = {};
 
@@ -165,7 +174,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
             vitoriasAtacantes: 0,
             vitoriasDefensores: 0,
             historicoLutas: [],
-            derrotados: []
+            derrotados: [],
+            horaInicio: null
         };
 
         atividadesAtivas[from].timer = setTimeout(async () => {
@@ -305,9 +315,9 @@ async function handleAtividadesCommands(sock, m, text, from) {
 // FUNÇÕES AUXILIARES E LÓGICA DE MATCHMAKING
 // ==========================================
 
-async function obterStatusFormatadoArenas(atividade) {
+async function obterBlocoArenasFormatado(atividade) {
     if (!atividade || !atividade.lutadoresAtivos || atividade.lutadoresAtivos.length === 0) {
-        return '🏟️ *Arenas em Combate:* Nenhum combate em andamento no momento.';
+        return 'Nenhum combate em andamento no momento.';
     }
 
     let arenasAtivas = {};
@@ -316,7 +326,7 @@ async function obterStatusFormatadoArenas(atividade) {
         arenasAtivas = res.data || {};
     } catch (e) {}
 
-    const linhas = [];
+    const blocos = [];
 
     atividade.lutadoresAtivos.forEach(luta => {
         const arenaJid = luta.arena;
@@ -324,11 +334,11 @@ async function obterStatusFormatadoArenas(atividade) {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaData = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
 
-        const nomeArena = arenaData?.nomeArena || (indexArena > 0 ? `Arena ${indexArena}` : 'Arena');
-        linhas.push(`⚔️ *${nomeArena}:* ${luta.p1.nome} VS ${luta.p2.nome}`);
+        const nomeArena = arenaData?.nomeArena || (indexArena > 0 ? `Campo de Batalha ${indexArena}` : 'Campo de Batalha');
+        blocos.push(`${nomeArena}:\n${luta.p1.nome} VS ${luta.p2.nome}`);
     });
 
-    return `🏟️ *ARENAS COM LUTA EM ANDAMENTO:*\n` + linhas.join('\n');
+    return blocos.join('\n\n');
 }
 
 async function encerrarListaEIniciarPartida(sock, from) {
@@ -344,6 +354,7 @@ async function encerrarListaEIniciarPartida(sock, from) {
     atividade.bancoAtacantes = [...atividade.anunciantes];
     atividade.bancoDefensores = [...atividade.defensores];
     atividade.fase = 'selecao';
+    atividade.horaInicio = obterHoraAtualUTC3();
 
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
@@ -543,7 +554,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         ...arenaRemote,
         ...dadosBatalhaBase,
         numeroArena: arenaRemote.numeroArena || (indexArena > 0 ? indexArena : 1),
-        nomeArena: arenaRemote.nomeArena || `Arena ${indexArena > 0 ? indexArena : 1}`,
+        nomeArena: arenaRemote.nomeArena || `Campo de Batalha ${indexArena > 0 ? indexArena : 1}`,
         fase: 'apresentacao',
         grupoOrigemAtividade: grupoOrigem
     };
@@ -571,8 +582,8 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
     const atividade = atividadesAtivas[grupoOrigem];
     if (!atividade) return;
 
-    atividade.historicoLutas.push({ vencedor: vencedorObj.nome, perdedor: perdedorObj.nome });
-    atividade.derrotados.push(perdedorObj.nome);
+    atividade.historicoLutas.push({ vencedor: vencedorObj, perdedor: perdedorObj });
+    atividade.derrotados.push(perdedorObj);
 
     atividade.lutadoresAtivos = atividade.lutadoresAtivos.filter(
         l => l.p1.lid !== vencedorObj.lid && l.p2.lid !== vencedorObj.lid
@@ -583,7 +594,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
     if (ehAtacante) {
         atividade.vitoriasAtacantes++;
         
-        // Verifica se ainda restam inimigos vivos (no banco de defensores ou lutando ativamente)
         const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
         const totalDefensoresVivos = atividade.bancoDefensores.length + defensoresEmLuta.length;
 
@@ -593,15 +603,13 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             await verificarEParearAutomatico(sock, grupoOrigem);
             return;
         } else if (totalDefensoresVivos > 0) {
-            // Se houver defensores ainda lutando em outras arenas, o vencedor fica no banco atacante aguardando
-            if (!atividade.bancoAtacantes.some(a => a.lid === vencedorObj.lid)) {
+            if (!atividade.bancoAtacantes.some(a => a.lid === vencedorObj.lid || a.uid === vencedorObj.uid)) {
                 atividade.bancoAtacantes.push(vencedorObj);
             }
         }
     } else {
         atividade.vitoriasDefensores++;
 
-        // Verifica se ainda restam inimigos vivos (no banco de atacantes ou lutando ativamente)
         const atacantesEmLuta = atividade.lutadoresAtivos.map(l => l.p1);
         const totalAtacantesVivos = atividade.bancoAtacantes.length + atacantesEmLuta.length;
 
@@ -611,8 +619,7 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             await verificarEParearAutomatico(sock, grupoOrigem);
             return;
         } else if (totalAtacantesVivos > 0) {
-            // Se houver atacantes ainda lutando em outras arenas, o vencedor fica no banco defensor aguardando
-            if (!atividade.bancoDefensores.some(d => d.lid === vencedorObj.lid)) {
+            if (!atividade.bancoDefensores.some(d => d.lid === vencedorObj.lid || d.uid === vencedorObj.uid)) {
                 atividade.bancoDefensores.push(vencedorObj);
             }
         }
@@ -622,7 +629,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
     const atacantesTotalmenteEliminados = atividade.bancoAtacantes.length === 0 && !atividade.lutadoresAtivos.some(l => l.p1);
     const defensoresTotalmenteEliminados = atividade.bancoDefensores.length === 0 && !atividade.lutadoresAtivos.some(l => l.p2);
 
-    // A atividade só é finalizada se uma das facções for 100% eliminada e não houver lutas em andamento
     if (semLutasEmAndamento && (atacantesTotalmenteEliminados || defensoresTotalmenteEliminados) && !atividade.proximoDesafiante) {
         await finalizarAtividade(sock, grupoOrigem);
     } else {
@@ -634,46 +640,72 @@ async function enviarRelatorioGrupo(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
-    const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
-
-    let historicoTexto = atividade.historicoLutas.length > 0
-        ? atividade.historicoLutas.map(h => `✅ ${h.vencedor} venceu ${h.perdedor}`).join('\n')
-        : 'Nenhum combate concluído.';
+    const horaInicioStr = atividade.horaInicio || '16:30';
 
     let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.join('\n')
-        : 'Nenhum jogador derrotado.';
+        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d.faccao)}`).join('\n')
+        : 'Nenhum';
 
-    let bancoAtqTexto = atividade.bancoAtacantes.length > 0
-        ? atividade.bancoAtacantes.map(a => a.nome).join(', ')
-        : 'Vazio';
+    const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
+    if (atividade.proximoDesafiante) {
+        if (!todosAguardando.some(p => p.uid === atividade.proximoDesafiante.uid)) {
+            todosAguardando.push(atividade.proximoDesafiante);
+        }
+    }
 
-    let bancoDefTexto = atividade.bancoDefensores.length > 0
-        ? atividade.bancoDefensores.map(d => d.nome).join(', ')
-        : 'Vazio';
+    let aguardandoTexto = todosAguardando.length > 0
+        ? todosAguardando.map(a => `➔ ${a.nome} ${obterEmojiFaccao(a.faccao)}`).join('\n')
+        : 'Nenhum';
 
-    const statusArenas = await obterStatusFormatadoArenas(atividade);
+    const blocoArenas = await obterBlocoArenasFormatado(atividade);
 
-    const msgStatus = `📊 *STATUS DA ATIVIDADE: ${atividade.nomeAtividade.toUpperCase()}*\n\n` +
-        `${statusArenas}\n\n` +
-        `⚔️ *Histórico de Vitórias:*\n${historicoTexto}\n\n` +
-        `💀 *Jogadores Derrotados:*\n${derrotadosTexto}\n\n` +
-        `🏦 *Banco ${atividade.faccaoCriador}:* ${bancoAtqTexto}\n` +
-        `🏦 *Banco ${nomeDefesa}:* ${bancoDefTexto}`;
+    const msgStatus = `📊 STATUS DA ATIVIDADE 📊\n\n` +
+        `> Início: ${horaInicioStr} (UTC-3)\n` +
+        `───────────────────\n` +
+        `LUTAS EM ANDAMENTO:\n\n` +
+        `${blocoArenas}\n` +
+        `───────────────────\n` +
+        `JOGADORES DERROTADOS:\n\n` +
+        `${derrotadosTexto}\n` +
+        `───────────────────\n` +
+        `JOGADORES AGUARDANDO:\n\n` +
+        `${aguardandoTexto}`;
 
     await sock.sendMessage(from, { text: msgStatus });
+}
+
+async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista) {
+    const atividade = atividadesAtivas[from];
+    if (!atividade) return;
+
+    const horaInicioStr = atividade.horaInicio || '16:30';
+
+    let sobreviventesTexto = sobreviventesLista.length > 0
+        ? sobreviventesLista.map(s => `➔ ${s.nome} ${obterEmojiFaccao(s.faccao)}`).join('\n')
+        : 'Nenhum';
+
+    let derrotadosTexto = atividade.derrotados.length > 0
+        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d.faccao)}`).join('\n')
+        : 'Nenhum';
+
+    const msgStatusFinal = `📊 STATUS DA ATIVIDADE 📊\n\n` +
+        `> Início: ${horaInicioStr} (UTC-3)\n` +
+        `───────────────────\n` +
+        `JOGADORES SOBREVIVENTES:\n\n` +
+        `${sobreviventesTexto}\n` +
+        `───────────────────\n` +
+        `JOGADORES DERROTADOS:\n\n` +
+        `${derrotadosTexto}`;
+
+    await sock.sendMessage(from, { text: msgStatusFinal });
 }
 
 async function finalizarAtividade(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
-    // Envia o último relatório com o resultado do combate final antes de decretar a vitória
-    await enviarRelatorioGrupo(sock, from);
-
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
-    // Identifica quais jogadores/sobreviventes ainda restaram em cada lado
     const atacantesEmLuta = atividade.lutadoresAtivos.map(l => l.p1);
     const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
 
@@ -694,7 +726,6 @@ async function finalizarAtividade(sock, from) {
     let faccaoVencedora = null;
     let vencedoresLista = [];
 
-    // O vencedor é determinado puramente por qual facção manteve integrantes vivos
     if (atacantesVivos.length > 0 && defensoresVivos.length === 0) {
         faccaoVencedora = atividade.faccaoCriador;
         vencedoresLista = atacantesVivos;
@@ -703,40 +734,72 @@ async function finalizarAtividade(sock, from) {
         vencedoresLista = defensoresVivos;
     }
 
+    // Envia o último relatório antes de decretar a vitória com os Sobreviventes
+    await enviarRelatorioFinalSobreviventes(sock, from, vencedoresLista);
+
     let textoRecompensas = '';
 
     if (faccaoVencedora && vencedoresLista.length > 0) {
         try {
-            // Busca as recompensas da atividade configuradas na facção vencedora
-            const ativRes = await axios.get(`${FIREBASE_URL}/faccoes/${faccaoVencedora}/atividades.json`);
-            const atividadesFaccao = ativRes.data || {};
+            // Busca no nó geral do firebase /faccoes todas as atividades para garantir que vai achar
+            const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes.json`);
+            const faccoesData = faccoesRes.data || {};
 
-            const chaveAtividade = Object.keys(atividadesFaccao).find(k => 
+            let recompensa = null;
+
+            // Tenta achar na própria facção vencedora primeiro
+            const ativsFaccao = faccoesData[faccaoVencedora]?.atividades || {};
+            let chaveAtividade = Object.keys(ativsFaccao).find(k => 
                 k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
-                (atividadesFaccao[k]?.nome && atividadesFaccao[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
+                (ativsFaccao[k]?.nome && ativsFaccao[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
             );
 
-            if (chaveAtividade && atividadesFaccao[chaveAtividade]) {
-                const dadosAtiv = atividadesFaccao[chaveAtividade];
-                const recompensa = dadosAtiv.recompensa || {};
+            if (chaveAtividade && ativsFaccao[chaveAtividade]) {
+                recompensa = ativsFaccao[chaveAtividade].recompensa;
+            } else {
+                // Varre qualquer facção caso não encontre
+                for (const f of Object.keys(faccoesData)) {
+                    const ativs = faccoesData[f]?.atividades || {};
+                    const kFound = Object.keys(ativs).find(k => 
+                        k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
+                        (ativs[k]?.nome && ativs[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
+                    );
+                    if (kFound && ativs[kFound]?.recompensa) {
+                        recompensa = ativs[kFound].recompensa;
+                        break;
+                    }
+                }
+            }
 
-                const berriesGanho = Number(recompensa.dinheiro || 0);
+            if (recompensa) {
+                const berriesGanho = Number(recompensa.dinheiro || recompensa.saldo || recompensa.berries || 0);
                 const expGanho = Number(recompensa.exp || 0);
 
-                // Aplica as recompensas no Firebase para cada jogador sobrevivente em /players/{uid}/info
                 for (const jogador of vencedoresLista) {
                     if (!jogador.uid) continue;
 
-                    const playerRes = await axios.get(`${FIREBASE_URL}/players/${jogador.uid}/info.json`);
-                    const playerInfo = playerRes.data || {};
+                    const playerRes = await axios.get(`${FIREBASE_URL}/players/${jogador.uid}.json`);
+                    const playerData = playerRes.data || {};
+                    const playerInfo = playerData.info || {};
 
-                    const expAtual = Number(playerInfo.exp || 0);
-                    const saldoAtual = Number(playerInfo.saldo || 0);
+                    const expAtual = Number(playerInfo.exp || playerData.exp || 0);
+                    const saldoAtual = Number(playerInfo.saldo || playerData.saldo || 0);
 
+                    const novoExp = expAtual + expGanho;
+                    const novoSaldo = saldoAtual + berriesGanho;
+
+                    // Atualiza tanto em /info quanto na raiz para garantir compatibilidade
                     await axios.patch(`${FIREBASE_URL}/players/${jogador.uid}/info.json`, {
-                        exp: expAtual + expGanho,
-                        saldo: saldoAtual + berriesGanho
+                        exp: novoExp,
+                        saldo: novoSaldo
                     });
+
+                    if (playerData.exp !== undefined || playerData.saldo !== undefined) {
+                        await axios.patch(`${FIREBASE_URL}/players/${jogador.uid}.json`, {
+                            exp: novoExp,
+                            saldo: novoSaldo
+                        });
+                    }
                 }
 
                 textoRecompensas = `\n\n🎁 *Recompensas Aplicadas aos Sobreviventes:*\n💰 Berries: +${berriesGanho.toLocaleString('pt-BR')}\n⭐ EXP: +${expGanho.toLocaleString('pt-BR')}`;
@@ -770,7 +833,6 @@ async function enviarPainelAtividade(sock, from, atividade) {
 
     const tituloDefesa = atividade.faccaoDefensora || 'Defensores';
 
-    // Cálculo do horário de término (+30 minutos em UTC-3)
     const dataTermino = new Date(Date.now() + 30 * 60 * 1000);
     let horas = dataTermino.getUTCHours() - 3;
     if (horas < 0) horas += 24;

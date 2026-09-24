@@ -13,7 +13,7 @@ const EMOJIS_FACCAO = {
 
 function obterEmojiFaccao(param) {
     // Aceita tanto a string do nome da facção quanto o próprio objeto do jogador
-    const nomeFaccao = (typeof param === 'object' && param !== null) ? param.faccao : param;
+    const nomeFaccao = (typeof param === 'object' && param !== null) ? (param.faccao || param.faction) : param;
     return EMOJIS_FACCAO[nomeFaccao] || '⚔️';
 }
 
@@ -337,7 +337,9 @@ async function obterBlocoArenasFormatado(atividade) {
         const arenaData = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
 
         const nomeArena = arenaData?.nomeArena || (indexArena > 0 ? `Campo de Batalha ${indexArena}` : 'Campo de Batalha');
-        blocos.push(`${nomeArena}:\n${luta.p1.nome} VS ${luta.p2.nome}`);
+        const emojiP1 = obterEmojiFaccao(luta.p1);
+        const emojiP2 = obterEmojiFaccao(luta.p2);
+        blocos.push(`${nomeArena}:\n${luta.p1.nome} ${emojiP1} VS ${luta.p2.nome} ${emojiP2}`);
     });
 
     return blocos.join('\n\n');
@@ -649,7 +651,7 @@ async function enviarRelatorioGrupo(sock, from) {
     const horaInicioStr = atividade.horaInicio || '16:30';
 
     let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d)}`).join('\n')
+        ? atividade.derrotados.map(d => `➔ ${(typeof d === 'object' && d !== null ? d.nome : d)} ${obterEmojiFaccao(d)}`).join('\n')
         : 'Nenhum';
 
     const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
@@ -691,7 +693,7 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
         : 'Nenhum';
 
     let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d)}`).join('\n')
+        ? atividade.derrotados.map(d => `➔ ${(typeof d === 'object' && d !== null ? d.nome : d)} ${obterEmojiFaccao(d)}`).join('\n')
         : 'Nenhum';
 
     const msgStatusFinal = `📊 STATUS DA ATIVIDADE 📊\n\n` +

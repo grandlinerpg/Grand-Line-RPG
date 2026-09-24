@@ -11,7 +11,9 @@ const EMOJIS_FACCAO = {
     'Caçadores de Recompensa': '🎯'
 };
 
-function obterEmojiFaccao(nomeFaccao) {
+function obterEmojiFaccao(param) {
+    // Aceita tanto a string do nome da facção quanto o próprio objeto do jogador
+    const nomeFaccao = (typeof param === 'object' && param !== null) ? param.faccao : param;
     return EMOJIS_FACCAO[nomeFaccao] || '⚔️';
 }
 
@@ -647,7 +649,7 @@ async function enviarRelatorioGrupo(sock, from) {
     const horaInicioStr = atividade.horaInicio || '16:30';
 
     let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d.faccao)}`).join('\n')
+        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d)}`).join('\n')
         : 'Nenhum';
 
     const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
@@ -658,7 +660,7 @@ async function enviarRelatorioGrupo(sock, from) {
     }
 
     let aguardandoTexto = todosAguardando.length > 0
-        ? todosAguardando.map(a => `➔ ${a.nome} ${obterEmojiFaccao(a.faccao)}`).join('\n')
+        ? todosAguardando.map(a => `➔ ${a.nome} ${obterEmojiFaccao(a)}`).join('\n')
         : 'Nenhum';
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
@@ -685,11 +687,11 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     const horaInicioStr = atividade.horaInicio || '16:30';
 
     let sobreviventesTexto = sobreviventesLista.length > 0
-        ? sobreviventesLista.map(s => `➔ ${s.nome} ${obterEmojiFaccao(s.faccao)}`).join('\n')
+        ? sobreviventesLista.map(s => `➔ ${s.nome} ${obterEmojiFaccao(s)}`).join('\n')
         : 'Nenhum';
 
     let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d.faccao)}`).join('\n')
+        ? atividade.derrotados.map(d => `➔ ${d.nome || d} ${obterEmojiFaccao(d)}`).join('\n')
         : 'Nenhum';
 
     const msgStatusFinal = `📊 STATUS DA ATIVIDADE 📊\n\n` +

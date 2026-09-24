@@ -1,4 +1,4 @@
-const axios = require('axios');
+const axios = require('axios'); 
 const { FIREBASE_URL, GRUPOS_ARENA, obterJidEfetivo } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates'); 
 

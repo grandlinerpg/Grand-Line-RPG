@@ -91,7 +91,7 @@ async function comecarCombateDeFato(grupoJid, sock) {
     const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
                 `🔄 *TURNO 1* 🔄\n` +
                 `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
-                `> Término: ${horarioFim} (UTC-3)\n` ;
+                `> Término: ${horarioFim} (UTC-3)` ;
 
     const socketParaEnviar = sock || bat.sock;
     if (socketParaEnviar) {

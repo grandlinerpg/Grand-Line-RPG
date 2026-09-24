@@ -606,6 +606,8 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             if (!atividade.bancoAtacantes.some(a => a.lid === vencedorObj.lid || a.uid === vencedorObj.uid)) {
                 atividade.bancoAtacantes.push(vencedorObj);
             }
+        } else {
+            atividade.proximoDesafiante = vencedorObj;
         }
     } else {
         atividade.vitoriasDefensores++;
@@ -622,6 +624,8 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             if (!atividade.bancoDefensores.some(d => d.lid === vencedorObj.lid || d.uid === vencedorObj.uid)) {
                 atividade.bancoDefensores.push(vencedorObj);
             }
+        } else {
+            atividade.proximoDesafiante = vencedorObj;
         }
     }
 
@@ -629,7 +633,7 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
     const atacantesTotalmenteEliminados = atividade.bancoAtacantes.length === 0 && !atividade.lutadoresAtivos.some(l => l.p1);
     const defensoresTotalmenteEliminados = atividade.bancoDefensores.length === 0 && !atividade.lutadoresAtivos.some(l => l.p2);
 
-    if (semLutasEmAndamento && (atacantesTotalmenteEliminados || defensoresTotalmenteEliminados) && !atividade.proximoDesafiante) {
+    if (semLutasEmAndamento && (atacantesTotalmenteEliminados || defensoresTotalmenteEliminados)) {
         await finalizarAtividade(sock, grupoOrigem);
     } else {
         await enviarRelatorioGrupo(sock, grupoOrigem);
@@ -648,7 +652,7 @@ async function enviarRelatorioGrupo(sock, from) {
 
     const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
     if (atividade.proximoDesafiante) {
-        if (!todosAguardando.some(p => p.uid === atividade.proximoDesafiante.uid)) {
+        if (!todosAguardando.some(p => p.lid === atividade.proximoDesafiante.lid)) {
             todosAguardando.push(atividade.proximoDesafiante);
         }
     }
@@ -710,16 +714,16 @@ async function finalizarAtividade(sock, from) {
     const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
 
     const atacantesVivos = [...atividade.bancoAtacantes, ...atacantesEmLuta];
-    if (atividade.proximoDesafiante && atividade.anunciantes.some(a => a.uid === atividade.proximoDesafiante.uid)) {
-        if (!atacantesVivos.some(a => a.uid === atividade.proximoDesafiante.uid)) {
-            atacantesVivos.push(atividade.proximoDesafiante);
-        }
-    }
-
     const defensoresVivos = [...atividade.bancoDefensores, ...defensoresEmLuta];
-    if (atividade.proximoDesafiante && atividade.defensores.some(d => d.uid === atividade.proximoDesafiante.uid)) {
-        if (!defensoresVivos.some(d => d.uid === atividade.proximoDesafiante.uid)) {
-            defensoresVivos.push(atividade.proximoDesafiante);
+
+    // Inclui o próximo desafiante (vencedor da última luta que ficou sem oponente) na lista de vivos correspondente
+    if (atividade.proximoDesafiante) {
+        const pd = atividade.proximoDesafiante;
+        const ehAtacante = atividade.anunciantes.some(a => a.lid === pd.lid || a.numero === pd.numero || a.uid === pd.uid);
+        if (ehAtacante) {
+            if (!atacantesVivos.some(a => a.lid === pd.lid)) atacantesVivos.push(pd);
+        } else {
+            if (!defensoresVivos.some(d => d.lid === pd.lid)) defensoresVivos.push(pd);
         }
     }
 
@@ -775,27 +779,42 @@ async function finalizarAtividade(sock, from) {
                 const berriesGanho = Number(recompensa.dinheiro || recompensa.saldo || recompensa.berries || 0);
                 const expGanho = Number(recompensa.exp || 0);
 
-                for (const jogador of vencedoresLista) {
-                    if (!jogador.uid) continue;
+                // Carrega todos os jogadores para garantir a localização pelo LID
+                const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
+                const playersAllData = playersAllRes.data || {};
 
-                    const playerRes = await axios.get(`${FIREBASE_URL}/players/${jogador.uid}.json`);
-                    const playerData = playerRes.data || {};
+                for (const jogador of vencedoresLista) {
+                    const targetLid = String(jogador.lid || '').trim();
+                    const targetNum = String(jogador.numero || '').trim();
+
+                    // Procura a chave real no Firebase pelo LID ou número
+                    const realFirebaseKey = Object.keys(playersAllData).find(key => {
+                        const p = playersAllData[key];
+                        const pLid = String(p?.number?.LID || '').trim();
+                        const pNum = String(p?.number?.n || '').trim();
+                        return (targetLid && pLid === targetLid) || (targetNum && pNum === targetNum) || key === jogador.uid;
+                    });
+
+                    if (!realFirebaseKey) continue;
+
+                    const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
 
-                    const expAtual = Number(playerInfo.exp || playerData.exp || 0);
-                    const saldoAtual = Number(playerInfo.saldo || playerData.saldo || 0);
+                    const expAtual = Number(playerInfo.exp ?? playerData.exp ?? 0);
+                    const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
 
                     const novoExp = expAtual + expGanho;
                     const novoSaldo = saldoAtual + berriesGanho;
 
-                    // Atualiza tanto em /info quanto na raiz para garantir compatibilidade
-                    await axios.patch(`${FIREBASE_URL}/players/${jogador.uid}/info.json`, {
+                    // Atualiza em /info
+                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
                         saldo: novoSaldo
                     });
 
+                    // Atualiza na raiz se os campos existirem lá
                     if (playerData.exp !== undefined || playerData.saldo !== undefined) {
-                        await axios.patch(`${FIREBASE_URL}/players/${jogador.uid}.json`, {
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,
                             saldo: novoSaldo
                         });

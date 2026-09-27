@@ -412,3 +412,38 @@ body.modal-open{
     font-size: 14px;
   }
 }
+
+/* CONTAINER DE INFORMAÇÕES DO COLISEU */
+.coliseu-info-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 15px auto 5px auto;
+  padding: 0 10px;
+}
+
+.coliseu-info-box {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #d4af37;
+  border-radius: 8px;
+  padding: 8px 18px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Cinzel', serif;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.coliseu-temporada-label {
+  color: #f39c12;
+  font-weight: bold;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+}
+
+.coliseu-periodo-label {
+  color: #ddd;
+  font-size: 0.85rem;
+}

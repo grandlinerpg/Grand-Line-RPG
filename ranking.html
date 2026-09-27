@@ -55,6 +55,14 @@
     <button class="tab-btn" id="btn-coliseu" onclick="alternarAba('coliseu')">🏟️ COLISEU</button>
   </div>
 
+  <!-- CONTAINER DE INFORMAÇÕES DA TEMPORADA DO COLISEU -->
+  <div id="coliseu-info-header" class="coliseu-info-container" style="display: none;">
+    <div class="coliseu-info-box">
+      <span class="coliseu-temporada-label" id="coliseu-temporada-txt">Temporada --</span>
+      <span class="coliseu-periodo-label" id="coliseu-periodo-txt">Período: --</span>
+    </div>
+  </div>
+
   <main id="players-container"></main>
 
   <!-- MODAL -->
@@ -111,6 +119,7 @@
     const auth = getAuth(app);
 
     const container = document.getElementById("players-container");
+    const coliseuInfoHeader = document.getElementById("coliseu-info-header");
     let abaAtual = "arena";
 
     // TROCA INÍCIO POR PERFIL SE ESTIVER LOGADO
@@ -138,6 +147,7 @@
 
     // CARREGA RANKING DA ARENA
     async function carregarRankingArena() {
+      coliseuInfoHeader.style.display = "none";
       container.innerHTML = "<p style='color:#fff; text-align:center;'>Carregando ranking da Arena...</p>";
 
       const [rankSnap, playersSnap] = await Promise.all([
@@ -179,8 +189,14 @@
         get(ref(db, "players"))
       ]);
 
-      const info = infoSnap.val() || { temporada: 1 };
+      const info = infoSnap.val() || { temporada: 1, periodo: "--" };
       const temporadaAtual = info.temporada || 1;
+      const periodoAtual = info.periodo || "--";
+
+      // Exibe os dados da temporada no cabeçalho do Coliseu
+      document.getElementById("coliseu-temporada-txt").innerText = `TEMPORADA ${temporadaAtual}`;
+      document.getElementById("coliseu-periodo-txt").innerText = `📅 ${periodoAtual}`;
+      coliseuInfoHeader.style.display = "flex";
 
       const coliseuSnap = await get(ref(db, `coliseu/temporadas/temporada_${temporadaAtual}/jogadores`));
 

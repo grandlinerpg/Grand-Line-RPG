@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mapa - Grand Line RPG</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="jogadores.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Estilos específicos para a visualização dos tópicos das Ilhas */
+    .ilhas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+
+    .ilha-card {
+      background: rgba(10, 15, 30, 0.85);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .ilha-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 215, 0, 0.8);
+    }
+
+    .ilha-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ilha-num {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      color: #000;
+      font-weight: bold;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-family: 'Cinzel', serif;
+    }
+
+    .ilha-nome {
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-family: 'Cinzel', serif;
+      margin: 0;
+    }
+
+    .ilha-detalhes {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .ilha-dominio {
+      color: #ddd;
+      font-size: 0.95rem;
+    }
+
+    .ilha-escudo {
+      color: #ffd700;
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+    }
+
+    @media (max-width: 600px) {
+      .ilha-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .ilha-detalhes {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <header class="navbar">
+
+    <div class="logo-area">
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+    </div>
+
+    <!-- BOTÃO MENU -->
+    <button class="menu-toggle" id="menu-toggle" aria-label="Abrir Menu">
+      ☰
+    </button>
+
+    <!-- MENU -->
+    <nav id="nav-menu">
+      <a href="index.html" id="home-link">INÍCIO</a>
+      <a href="faccao.html">FACÇÃO</a>
+      <a href="ranking.html">RANKING</a>
+      <a href="mapa.html" class="active">MAPA</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
+
+  </header>
+
+  <section class="players-title">
+    <h1>MAPA DA GRAND LINE</h1>
+    <p>Acompanhe o domínio territorial das ilhas e os exploradores dos mares.</p>
+  </section>
+
+  <!-- SELETOR DE ABAS DA DOMINAÇÃO / JOGADORES -->
+  <div class="ranking-tabs">
+    <button class="tab-btn active" id="btn-dominacao" onclick="alternarAba('dominacao')">🏴‍☠️ DOMINAÇÃO</button>
+    <button class="tab-btn" id="btn-jogadores" onclick="alternarAba('jogadores')">👥 JOGADORES</button>
+  </div>
+
+  <main id="mapa-container"></main>
+
+  <!-- FIREBASE SCRIPT -->
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4kgy_L79WYFQr9XZhoDuBfqG4AGTVUQ",
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+      projectId: "grand-line-rpg-dcda9",
+      storageBucket: "grand-line-rpg-dcda9.appspot.com",
+      messagingSenderId: "172042779786",
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    const container = document.getElementById("mapa-container");
+    let abaAtual = "dominacao";
+
+    // TROCA INÍCIO POR PERFIL SE ESTIVER LOGADO
+    onAuthStateChanged(auth, (user) => {
+      const homeLink = document.getElementById("home-link");
+      if (user) {
+        homeLink.innerText = "PERFIL";
+        homeLink.href = "perfil.html";
+      } else {
+        homeLink.innerText = "INÍCIO";
+        homeLink.href = "index.html";
+      }
+    });
+
+    // Mapeamento de emojis para cada facção
+    function getEmojiFaccao(dominio) {
+      if (!dominio) return "❓";
+      const dom = dominio.toLowerCase().trim();
+
+      if (dom.includes("governo")) return "🏛️";
+      if (dom.includes("pirata")) return "☠️";
+      if (dom.includes("neutro")) return "🕊️";
+
+      return "🚩";
+    }
+
+    // Gera o texto dos escudos (ex: 🛡️🛡️🛡️ 1/3)
+    function formatarEscudos(qtd) {
+      const valor = Math.max(0, Math.min(3, parseInt(qtd) || 0));
+      const escudosPreenchidos = "🛡️".repeat(valor);
+      const escudosVazios = "🛡️".repeat(3 - valor);
+      
+      // Aplicamos um efeito de opacidade via span no CSS inline para os escudos vazios
+      return `<span style="opacity: 1;">${escudosPreenchidos}</span><span style="opacity: 0.25;">${escudosVazios}</span> (${valor}/3)`;
+    }
+
+    // CARREGA A ABA DOMINAÇÃO (ILHAS)
+    async function carregarDominacao() {
+      container.innerHTML = "<p style='color:#fff; text-align:center;'>Carregando ilhas da Grand Line...</p>";
+
+      try {
+        const ilhasSnap = await get(ref(db, "ilhas"));
+
+        if (!ilhasSnap.exists()) {
+          container.innerHTML = "<p style='color:#fff; text-align:center;'>Nenhuma ilha cadastrada no momento.</p>";
+          return;
+        }
+
+        const ilhasData = ilhasSnap.val();
+        container.innerHTML = "";
+
+        const listContainer = document.createElement("div");
+        listContainer.classList.add("ilhas-list");
+
+        const ids = Object.keys(ilhasData).sort((a, b) => Number(a) - Number(b));
+
+        ids.forEach((id) => {
+          const ilha = ilhasData[id];
+          const emoji = getEmojiFaccao(ilha.dominio);
+          const escudosHTML = formatarEscudos(ilha.escudo);
+
+          const card = document.createElement("div");
+          card.classList.add("ilha-card");
+
+          card.innerHTML = `
+            <div class="ilha-header">
+              <span class="ilha-num">${id}</span>
+              <h2 class="ilha-nome">${ilha.nome}</h2>
+            </div>
+            <div class="ilha-detalhes">
+              <span class="ilha-dominio">${emoji} <strong>${ilha.dominio || "Desconhecido"}</strong></span>
+              <span class="ilha-escudo">${escudosHTML}</span>
+            </div>
+          `;
+
+          listContainer.appendChild(card);
+        });
+
+        container.appendChild(listContainer);
+
+      } catch (error) {
+        console.error("Erro ao carregar ilhas:", error);
+        container.innerHTML = "<p style='color:#ff5555; text-align:center;'>Erro ao carregar dados do mapa.</p>";
+      }
+    }
+
+    // CARREGA A ABA JOGADORES
+    function carregarJogadores() {
+      container.innerHTML = `
+        <div style="text-align: center; color: #fff; padding: 40px 20px;">
+          <p style="font-size: 1.2rem; color: #aaa;">📍 Localização dos Jogadores em breve...</p>
+        </div>
+      `;
+    }
+
+    // ALTERNA ENTRE AS ABAS
+    window.alternarAba = function (aba) {
+      abaAtual = aba;
+
+      document.getElementById("btn-dominacao").classList.toggle("active", aba === "dominacao");
+      document.getElementById("btn-jogadores").classList.toggle("active", aba === "jogadores");
+
+      if (aba === "dominacao") {
+        carregarDominacao();
+      } else {
+        carregarJogadores();
+      }
+    };
+
+    // Inicialização
+    carregarDominacao();
+
+  </script>
+
+  <!-- MENU MOBILE SCRIPT -->
+  <script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const navMenu = document.getElementById("nav-menu");
+
+    menuToggle.addEventListener("click", () => {
+      navMenu.classList.toggle("active");
+    });
+  </script>
+
+</body>
+
+</html>

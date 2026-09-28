@@ -11,9 +11,33 @@ const EMOJIS_FACCAO = {
     'Caçadores de Recompensa': '🎯'
 };
 
-function obterEmojiFaccao(param) {
-    // Aceita tanto a string do nome da facção quanto o próprio objeto do jogador ou atributo faccao
-    const nomeFaccao = (typeof param === 'object' && param !== null) ? (param.faccao || param.faction) : param;
+function obterEmojiFaccao(param, atividade = null) {
+    let nomeFaccao = null;
+
+    if (typeof param === 'object' && param !== null) {
+        nomeFaccao = param.faccao || param.faction;
+    } else if (typeof param === 'string') {
+        // Se a string já for o nome direto de uma facção conhecida
+        if (EMOJIS_FACCAO[param]) {
+            nomeFaccao = param;
+        }
+    }
+
+    // Se não encontrou o nome da facção diretamente, busca pelo jogador dentro da atividade ativa
+    if (!nomeFaccao && atividade) {
+        const idOuNome = (typeof param === 'object' && param !== null) ? (param.lid || param.uid || param.nome) : param;
+        
+        const atacante = atividade.anunciantes?.find(a => a.lid === idOuNome || a.uid === idOuNome || a.nome === idOuNome);
+        if (atacante) {
+            nomeFaccao = atacante.faccao || atividade.faccaoCriador;
+        } else {
+            const defensor = atividade.defensores?.find(d => d.lid === idOuNome || d.uid === idOuNome || d.nome === idOuNome);
+            if (defensor) {
+                nomeFaccao = defensor.faccao || atividade.faccaoDefensora;
+            }
+        }
+    }
+
     return EMOJIS_FACCAO[nomeFaccao] || '⚔️';
 }
 
@@ -649,7 +673,7 @@ async function enviarRelatorioGrupo(sock, from) {
     const horaInicioStr = atividade.horaInicio || '16:30';
 
     let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d)}`).join('\n')
+        ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n')
         : 'Nenhum';
 
     const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
@@ -660,7 +684,7 @@ async function enviarRelatorioGrupo(sock, from) {
     }
 
     let aguardandoTexto = todosAguardando.length > 0
-        ? todosAguardando.map(a => `➔ ${a.nome} ${obterEmojiFaccao(a)}`).join('\n')
+        ? todosAguardando.map(a => `➔ ${a.nome} ${obterEmojiFaccao(a, atividade)}`).join('\n')
         : 'Nenhum';
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
@@ -687,11 +711,11 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     const horaInicioStr = atividade.horaInicio || '16:30';
 
     let sobreviventesTexto = sobreviventesLista.length > 0
-        ? sobreviventesLista.map(s => `➔ ${s.nome} ${obterEmojiFaccao(s)}`).join('\n')
+        ? sobreviventesLista.map(s => `➔ ${s.nome} ${obterEmojiFaccao(s, atividade)}`).join('\n')
         : 'Nenhum';
 
     let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d)}`).join('\n')
+        ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n')
         : 'Nenhum';
 
     const msgStatusFinal = `📊 *STATUS DA ATIVIDADE* 📊\n\n` +
@@ -844,7 +868,7 @@ async function enviarPainelAtividade(sock, from, atividade) {
     const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + curr.level, 0);
     const forcaDefensores = atividade.defensores.reduce((acc, curr) => acc + curr.level, 0);
 
-    const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador);
+    const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
 
     let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');

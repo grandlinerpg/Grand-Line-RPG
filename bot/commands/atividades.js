@@ -665,16 +665,16 @@ async function enviarRelatorioGrupo(sock, from) {
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
 
-    const msgStatus = `📊 STATUS DA ATIVIDADE 📊\n\n` +
+    const msgStatus = `📊 *STATUS DA ATIVIDADE* 📊\n\n` +
         `> Início: ${horaInicioStr} (UTC-3)\n` +
         `───────────────────\n` +
-        `LUTAS EM ANDAMENTO:\n\n` +
+        `*LUTAS EM ANDAMENTO:*\n\n` +
         `${blocoArenas}\n` +
         `───────────────────\n` +
-        `JOGADORES DERROTADOS:\n\n` +
+        `*JOGADORES DERROTADOS:*\n\n` +
         `${derrotadosTexto}\n` +
         `───────────────────\n` +
-        `JOGADORES AGUARDANDO:\n\n` +
+        `*JOGADORES AGUARDANDO:*\n\n` +
         `${aguardandoTexto}`;
 
     await sock.sendMessage(from, { text: msgStatus });
@@ -694,13 +694,13 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
         ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d)}`).join('\n')
         : 'Nenhum';
 
-    const msgStatusFinal = `📊 STATUS DA ATIVIDADE 📊\n\n` +
+    const msgStatusFinal = `📊 *STATUS DA ATIVIDADE* 📊\n\n` +
         `> Início: ${horaInicioStr} (UTC-3)\n` +
         `───────────────────\n` +
-        `JOGADORES SOBREVIVENTES:\n\n` +
+        `*JOGADORES RESTANTES:*\n\n` +
         `${sobreviventesTexto}\n` +
         `───────────────────\n` +
-        `JOGADORES DERROTADOS:\n\n` +
+        `*JOGADORES DERROTADOS:*\n\n` +
         `${derrotadosTexto}`;
 
     await sock.sendMessage(from, { text: msgStatusFinal });

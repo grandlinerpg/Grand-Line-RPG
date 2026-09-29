@@ -17,13 +17,11 @@ function obterEmojiFaccao(param, atividade = null) {
     if (typeof param === 'object' && param !== null) {
         nomeFaccao = param.faccao || param.faction;
     } else if (typeof param === 'string') {
-        // Se a string já for o nome direto de uma facção conhecida
         if (EMOJIS_FACCAO[param]) {
             nomeFaccao = param;
         }
     }
 
-    // Se não encontrou o nome da facção diretamente, busca pelo jogador dentro da atividade ativa
     if (!nomeFaccao && atividade) {
         const idOuNome = (typeof param === 'object' && param !== null) ? (param.lid || param.uid || param.nome) : param;
         
@@ -48,6 +46,26 @@ function obterHoraAtualUTC3() {
     const horasStr = String(horas).padStart(2, '0');
     const minutosStr = String(agora.getUTCMinutes()).padStart(2, '0');
     return `${horasStr}:${minutosStr}`;
+}
+
+async function obterNomeTerritorio(idIlha) {
+    if (idIlha === undefined || idIlha === null || Number(idIlha) === 0) {
+        return null;
+    }
+
+    try {
+        const ilhasRes = await axios.get(`${FIREBASE_URL}/ilhas.json`);
+        const ilhasData = ilhasRes.data || {};
+        const ilhaObj = ilhasData[idIlha] || ilhasData[String(idIlha)];
+
+        if (ilhaObj && ilhaObj.nome) {
+            return `> Território: ${idIlha}. ${ilhaObj.nome}`;
+        }
+        return `> Território: ${idIlha}`;
+    } catch (e) {
+        console.error('Erro ao buscar ilhas no Firebase:', e.message);
+        return `> Território: ${idIlha}`;
+    }
 }
 
 // Armazena as sessões de criação
@@ -136,7 +154,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
         }
     }
 
-    // 3. Passo 2: Participantes Inicializadores
+    // 3. Passo 2: Participantes Inicializadores (Atacantes)
     if (sessoesCriacao[from] && sessoesCriacao[from].fase === 'aguardando_participantes') {
         const sessao = sessoesCriacao[from];
 
@@ -168,20 +186,39 @@ async function handleAtividadesCommands(sock, m, text, from) {
         }
 
         const anunciantes = [];
+        let ilhaReferencia = null;
+
         for (const uid of uidsParticipantes) {
             const player = playersData[uid];
+            const nomePlayer = player?.character?.charName || player?.nome || 'Lutador';
+
             if (player?.character?.faction !== sessao.faccaoCriador) {
-                const nomeInvalido = player?.character?.charName || player?.nome || 'Um dos jogadores';
-                await sock.sendMessage(from, { text: `❌ O jogador *${nomeInvalido}* não pertence à facção *${sessao.faccaoCriador}*!` }, { quoted: m });
+                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* não pertence à facção *${sessao.faccaoCriador}*!` }, { quoted: m });
                 return true;
             }
+
+            const ilhaJogador = Number(player?.character?.ilha ?? 0);
+
+            if (ilhaJogador === 0) {
+                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* não está localizado em uma ilha válida (Ilha 0).` }, { quoted: m });
+                return true;
+            }
+
+            if (ilhaReferencia === null) {
+                ilhaReferencia = ilhaJogador;
+            } else if (ilhaJogador !== ilhaReferencia) {
+                await sock.sendMessage(from, { text: `❌ Todos os atacantes escolhidos devem estar na mesma ilha!` }, { quoted: m });
+                return true;
+            }
+
             anunciantes.push({
                 uid: uid,
-                nome: player?.character?.charName || player?.nome || 'Lutador',
+                nome: nomePlayer,
                 level: player?.info?.level ?? 1,
                 lid: player?.number?.LID || senderId,
                 numero: player?.number?.n || senderId,
-                faccao: sessao.faccaoCriador
+                faccao: sessao.faccaoCriador,
+                ilha: ilhaJogador
             });
         }
 
@@ -201,7 +238,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
             vitoriasDefensores: 0,
             historicoLutas: [],
             derrotados: [],
-            horaInicio: null
+            horaInicio: null,
+            idIlha: ilhaReferencia
         };
 
         atividadesAtivas[from].timer = setTimeout(async () => {
@@ -279,7 +317,6 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     continue;
                 }
 
-                // Checagem de força máxima para defensores
                 const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + curr.level, 0);
                 const forcaDefensoresAtual = atividade.defensores.reduce((acc, curr) => acc + curr.level, 0);
                 const nivelNovoJogador = player?.info?.level ?? 1;
@@ -768,9 +805,15 @@ async function enviarRelatorioGrupo(sock, from) {
         : 'Nenhum';
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
+    const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
 
-    const msgStatus = `📊 *STATUS DA ATIVIDADE* 📊\n\n` +
-        `> Início: ${horaInicioStr} (BRT)\n` +
+    let cabecalho = `📊 *STATUS DA ATIVIDADE* 📊\n\n`;
+    if (textoTerritorio) {
+        cabecalho += `${textoTerritorio}\n`;
+    }
+    cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
+
+    const msgStatus = cabecalho +
         `──────────────────\n` +
         `*LUTAS EM ANDAMENTO:*\n\n` +
         `${blocoArenas}\n` +
@@ -798,8 +841,15 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
         ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n')
         : 'Nenhum';
 
-    const msgStatusFinal = `📊 *STATUS DA ATIVIDADE* 📊\n\n` +
-        `> Início: ${horaInicioStr} (BRT)\n` +
+    const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
+
+    let cabecalho = `📊 *STATUS DA ATIVIDADE* 📊\n\n`;
+    if (textoTerritorio) {
+        cabecalho += `${textoTerritorio}\n`;
+    }
+    cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
+
+    const msgStatusFinal = cabecalho +
         `──────────────────\n` +
         `*JOGADORES RESTANTES:*\n\n` +
         `${sobreviventesTexto}\n` +
@@ -822,7 +872,6 @@ async function finalizarAtividade(sock, from) {
     const atacantesVivos = [...atividade.bancoAtacantes, ...atacantesEmLuta];
     const defensoresVivos = [...atividade.bancoDefensores, ...defensoresEmLuta];
 
-    // Inclui o próximo desafiante (vencedor da última luta que ficou sem oponente) na lista de vivos correspondente
     if (atividade.proximoDesafiante) {
         const pd = atividade.proximoDesafiante;
         const ehAtacante = atividade.anunciantes.some(a => a.lid === pd.lid || a.numero === pd.numero || a.uid === pd.uid);
@@ -844,20 +893,17 @@ async function finalizarAtividade(sock, from) {
         vencedoresLista = defensoresVivos;
     }
 
-    // Envia o último relatório antes de decretar a vitória com os Sobreviventes
     await enviarRelatorioFinalSobreviventes(sock, from, vencedoresLista);
 
     let textoRecompensas = '';
 
     if (faccaoVencedora && vencedoresLista.length > 0) {
         try {
-            // Busca no nó geral do firebase /faccoes todas as atividades para garantir que vai achar
             const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes.json`);
             const faccoesData = faccoesRes.data || {};
 
             let recompensa = null;
 
-            // Tenta achar na própria facção vencedora primeiro
             const ativsFaccao = faccoesData[faccaoVencedora]?.atividades || {};
             let chaveAtividade = Object.keys(ativsFaccao).find(k => 
                 k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
@@ -867,7 +913,6 @@ async function finalizarAtividade(sock, from) {
             if (chaveAtividade && ativsFaccao[chaveAtividade]) {
                 recompensa = ativsFaccao[chaveAtividade].recompensa;
             } else {
-                // Varre qualquer facção caso não encontre
                 for (const f of Object.keys(faccoesData)) {
                     const ativs = faccoesData[f]?.atividades || {};
                     const kFound = Object.keys(ativs).find(k => 
@@ -885,7 +930,6 @@ async function finalizarAtividade(sock, from) {
                 const berriesGanho = Number(recompensa.dinheiro || recompensa.saldo || recompensa.berries || 0);
                 const expGanho = Number(recompensa.exp || 0);
 
-                // Carrega todos os jogadores para garantir a localização pelo LID
                 const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
                 const playersAllData = playersAllRes.data || {};
 
@@ -893,7 +937,6 @@ async function finalizarAtividade(sock, from) {
                     const targetLid = String(jogador.lid || '').trim();
                     const targetNum = String(jogador.numero || '').trim();
 
-                    // Procura a chave real no Firebase pelo LID ou número
                     const realFirebaseKey = Object.keys(playersAllData).find(key => {
                         const p = playersAllData[key];
                         const pLid = String(p?.number?.LID || '').trim();
@@ -912,13 +955,11 @@ async function finalizarAtividade(sock, from) {
                     const novoExp = expAtual + expGanho;
                     const novoSaldo = saldoAtual + berriesGanho;
 
-                    // Atualiza em /info
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
                         saldo: novoSaldo
                     });
 
-                    // Atualiza na raiz se os campos existirem lá
                     if (playerData.exp !== undefined || playerData.saldo !== undefined) {
                         await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,
@@ -966,8 +1007,13 @@ async function enviarPainelAtividade(sock, from, atividade) {
     const minutosStr = String(dataTermino.getUTCMinutes()).padStart(2, '0');
     const horarioFormatado = `${horasStr}:${minutosStr}`;
 
-    const mensagemPainel = `*${nomeAtividadeMaiusculo}*\n\n` +
-        `> Término: ${horarioFormatado} (BRT)\n\n` +
+    const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
+
+    let mensagemPainel = `*${nomeAtividadeMaiusculo}*\n\n`;
+    if (textoTerritorio) {
+        mensagemPainel += `${textoTerritorio}\n`;
+    }
+    mensagemPainel += `> Término: ${horarioFormatado} (BRT)\n\n` +
         `${atividade.faccaoCriador}:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +

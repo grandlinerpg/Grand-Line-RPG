@@ -69,7 +69,7 @@ const { handleInfoCommands } = require('./commands/info');
 const { handleDesafiosCommands } = require('./commands/desafios');
 const { handleQuizCommands, dispararQuizNoGrupo } = require('./commands/quiz');
 const { handleCombatesCommands } = require('./commands/combates');
-const { handleAtividadesCommands } = require('./commands/atividades');
+const { handleAtividadesCommands } = require('./commands/atividades_lista');
 const { handleVincularCommands } = require('./commands/vincular');
 
 // SERVIDOR WEB + AUTO-PING

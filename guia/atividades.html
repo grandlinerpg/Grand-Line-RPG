@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="../perfil/ficha-edit.css">
   <link rel="stylesheet" href="atividades.css">
   <link rel="stylesheet" href="atividade.css">
+  <link rel="stylesheet" href="jogadores-ilhas.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 
@@ -35,6 +36,7 @@
       gap: 15px;
       margin-top: 15px;
       margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
     #list {
@@ -54,7 +56,7 @@
       transition: all 0.3s ease;
     }
 
-    .top-btn:hover {
+    .top-btn:hover, .top-btn.active {
       background: #c8a355;
       color: #000;
       box-shadow: 0 0 10px rgba(200, 163, 85, 0.5);
@@ -118,6 +120,7 @@
     <div class="top-buttons">
       <button class="top-btn" id="btn-ativas">ATIVAS</button>
       <button class="top-btn" id="btn-passivas">PASSIVAS</button>
+      <button class="top-btn" id="btn-jogadores">JOGADORES</button>
     </div>
 
   </section>
@@ -152,18 +155,25 @@
     };
 
     const app = initializeApp(firebaseConfig);
-
     const db = getDatabase(app);
 
-    const list =
-      document.getElementById("list");
+    const list = document.getElementById("list");
+
+    // Mapeamento de logos de facções (adicione ou edite os links conforme suas imagens)
+    const LOGOS_FACCOES = {
+      "Governo Mundial": "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/governo_mundial.png",
+      "Marinha": "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/marinha.png",
+      "Pirata": "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/pirata.png",
+      "Exército Revolucionário": "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/revolucionario.png"
+    };
+
+    const LOGO_PADRAO = "https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png";
 
     async function loadAtividades(){
 
       list.innerHTML = "";
 
-      const snap =
-      await get(ref(db,"faccoes"));
+      const snap = await get(ref(db, "faccoes"));
 
       if(!snap.exists()) return;
 
@@ -171,6 +181,7 @@
 
       const btnAtivas = document.getElementById("btn-ativas");
       const btnPassivas = document.getElementById("btn-passivas");
+      const btnJogadores = document.getElementById("btn-jogadores");
 
       // Função auxiliar para abrir atividade sem recompensas
       const abrirSemRecompensas = (atividadeId) => {
@@ -188,18 +199,17 @@
         btnPassivas.onclick = () => abrirSemRecompensas("passivas");
       }
 
+      if (btnJogadores) {
+        btnJogadores.onclick = () => carregarJogadoresPorIlha();
+      }
+
       Object.entries(faccoes).forEach(([id,faccao])=>{
 
         if (id === "Gerais") return;
 
-        const titulo =
-        document.createElement("div");
-
-        titulo.className =
-        "skill-rank";
-
-        titulo.innerText =
-        faccao.nome || id;
+        const titulo = document.createElement("div");
+        titulo.className = "skill-rank";
+        titulo.innerText = faccao.nome || id;
 
         list.appendChild(titulo);
 
@@ -207,11 +217,8 @@
 
         Object.entries(faccao.atividades).forEach(([atividadeId,atividade])=>{
 
-          const card =
-          document.createElement("div");
-
-          card.className =
-          "item";
+          const card = document.createElement("div");
+          card.className = "item";
 
           card.innerHTML = `
             <div class="item-emoji">
@@ -245,6 +252,96 @@
 
       });
 
+    }
+
+    // Função para carregar a aba de Jogadores nas Ilhas
+    async function carregarJogadoresPorIlha() {
+      list.innerHTML = "<p class='loading-txt'>Carregando presença nas ilhas...</p>";
+
+      try {
+        const snap = await get(ref(db, "players"));
+        if (!snap.exists()) {
+          list.innerHTML = "<p class='empty-txt'>Nenhum jogador encontrado.</p>";
+          return;
+        }
+
+        const players = snap.val();
+        const ilhasAgrupadas = {};
+
+        // Agrupamento dos jogadores por Ilha e Facção
+        Object.values(players).forEach(player => {
+          const ilha = Number(player.character?.ilha ?? player.ilha ?? 0);
+          
+          // Ignora jogadores na ilha 0
+          if (ilha === 0) return;
+
+          const faccao = player.character?.faction || player.faction || "Sem Facção";
+          const nivel = Number(player.info?.level || player.level || 1);
+
+          if (!ilhasAgrupadas[ilha]) {
+            ilhasAgrupadas[ilha] = {};
+          }
+
+          if (!ilhasAgrupadas[ilha][faccao]) {
+            ilhasAgrupadas[ilha][faccao] = {
+              forcaTotal: 0,
+              qtdJogadores: 0
+            };
+          }
+
+          ilhasAgrupadas[ilha][faccao].forcaTotal += nivel;
+          ilhasAgrupadas[ilha][faccao].qtdJogadores += 1;
+        });
+
+        const ilhasOrdenadas = Object.keys(ilhasAgrupadas).sort((a, b) => Number(a) - Number(b));
+
+        if (ilhasOrdenadas.length === 0) {
+          list.innerHTML = "<p class='empty-txt'>Nenhuma ilha ocupada no momento (todos na ilha 0).</p>";
+          return;
+        }
+
+        const containerIlhas = document.createElement("div");
+        containerIlhas.className = "ilhas-grid";
+
+        ilhasOrdenadas.forEach(numIlha => {
+          const cardIlha = document.createElement("div");
+          cardIlha.className = "card-ilha";
+
+          let HTMLFaccoes = "";
+
+          Object.entries(ilhasAgrupadas[numIlha]).forEach(([nomeFaccao, dados]) => {
+            const logoUrl = LOGOS_FACCOES[nomeFaccao] || LOGO_PADRAO;
+
+            HTMLFaccoes += `
+              <div class="faccao-item">
+                <img src="${logoUrl}" alt="${nomeFaccao}" class="faccao-logo" onerror="this.src='${LOGO_PADRAO}'">
+                <div class="faccao-detalhes">
+                  <span class="faccao-nome">${nomeFaccao}</span>
+                  <span class="faccao-forca">⚡ Força: <strong>${dados.forcaTotal}</strong> (${dados.qtdJogadores} ${dados.qtdJogadores === 1 ? 'membro' : 'membros'})</span>
+                </div>
+              </div>
+            `;
+          });
+
+          cardIlha.innerHTML = `
+            <div class="ilha-header">
+              <h3>ILHA #${numIlha}</h3>
+            </div>
+            <div class="ilha-corpo">
+              ${HTMLFaccoes}
+            </div>
+          `;
+
+          containerIlhas.appendChild(cardIlha);
+        });
+
+        list.innerHTML = "";
+        list.appendChild(containerIlhas);
+
+      } catch (err) {
+        console.error("Erro ao carregar presença de jogadores:", err);
+        list.innerHTML = "<p class='error-txt'>Erro ao carregar dados dos jogadores.</p>";
+      }
     }
 
     loadAtividades();

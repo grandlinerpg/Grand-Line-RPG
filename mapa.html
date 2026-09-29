@@ -190,34 +190,49 @@
       }
     });
 
-    // Obtém o nome da imagem armazenado no nó "png" do Firebase
+    // Obtém a imagem armazenada no nó "png" do Firebase
     async function obterIconeFaccao(dominio) {
       if (!dominio) return "🚩";
       
       const baseUrl = "https://res.cloudinary.com/djh45admn/image/upload/v1790680862/";
       let nomePng = null;
+      const dominioFormatado = dominio.toLowerCase().trim();
 
       try {
-        // 1. Busca no nó 'faccoes' usando o nó 'png'
+        // 1. Busca em 'faccoes' (Governo Mundial, Exército Revolucionário, etc.)
         const faccoesSnap = await get(ref(db, "faccoes"));
         if (faccoesSnap.exists()) {
           const faccoesData = faccoesSnap.val();
           
+          // Verifica facções na raiz do nó faccoes
           for (const key in faccoesData) {
-            if (key.toLowerCase().trim() === dominio.toLowerCase().trim()) {
-              nomePng = faccoesData[key].png;
-              break;
+            if (key.toLowerCase().trim() === dominioFormatado) {
+              if (typeof faccoesData[key] === 'object' && faccoesData[key].png) {
+                nomePng = faccoesData[key].png;
+                break;
+              }
+            }
+          }
+
+          // 2. Se não encontrou na raiz, procura dentro de faccoes/piratas/bandos/
+          if (!nomePng && faccoesData.piratas && faccoesData.piratas.bandos) {
+            const bandosPiratas = faccoesData.piratas.bandos;
+            for (const key in bandosPiratas) {
+              if (key.toLowerCase().trim() === dominioFormatado) {
+                nomePng = bandosPiratas[key].png;
+                break;
+              }
             }
           }
         }
 
-        // 2. Se não encontrou em facções, busca no nó 'bandos' (para piratas) usando o nó 'png'
+        // 3. Fallback extra: procura em 'bandos' na raiz caso exista
         if (!nomePng) {
           const bandosSnap = await get(ref(db, "bandos"));
           if (bandosSnap.exists()) {
             const bandosData = bandosSnap.val();
             for (const key in bandosData) {
-              if (key.toLowerCase().trim() === dominio.toLowerCase().trim()) {
+              if (key.toLowerCase().trim() === dominioFormatado) {
                 nomePng = bandosData[key].png;
                 break;
               }
@@ -225,7 +240,7 @@
           }
         }
 
-        // 3. Monta a URL caso encontre o valor no nó 'png'
+        // 4. Se encontrou o png, monta a URL do Cloudinary
         if (nomePng) {
           const limpaNome = String(nomePng).replace(/\.png$/i, "").trim();
           const fullUrl = `${baseUrl}${limpaNome}.png`;
@@ -236,7 +251,7 @@
         console.error("Erro ao buscar PNG da facção/bando:", error);
       }
 
-      // Ícone padrão caso não encontre no banco
+      // Ícone padrão caso não encontre
       return "🚩";
     }
 

@@ -114,7 +114,6 @@ async function encerrarListaEIniciarPartida(sock, from) {
         return;
     }
 
-    // Inicializa a propriedade lutadoresAtivos caso não exista
     atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
     atividade.bancoAtacantes = [...atividade.anunciantes];
     atividade.bancoDefensores = [...atividade.defensores];
@@ -309,7 +308,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     });
 
     if (!arenaDisponivelJid) {
-        await sock.sendMessage(grupoOrigem, { text: '⚠ Todas as arenas estão ocupadas no momento! Aguardando vaga...' });
+        await sock.sendMessage(grupoOrigem, { text: '⚠️ Todas as arenas estão ocupadas no momento! Aguardando vaga...' });
         return false;
     }
 

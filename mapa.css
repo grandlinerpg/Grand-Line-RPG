@@ -1,0 +1,94 @@
+/* Estilos específicos para a visualização dos tópicos das Ilhas */
+.ilhas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.ilha-card {
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 10px;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ilha-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 215, 0, 0.8);
+}
+
+.ilha-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ilha-num {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #000;
+  font-weight: bold;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-family: 'Cinzel', serif;
+}
+
+.ilha-nome {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: 'Cinzel', serif;
+  margin: 0;
+}
+
+.ilha-detalhes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ilha-dominio {
+  color: #ddd;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ilha-icone-faccao {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.ilha-escudo {
+  color: #ffd700;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 600px) {
+  .ilha-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .ilha-detalhes {
+    align-items: flex-start;
+  }
+}

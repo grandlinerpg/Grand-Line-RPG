@@ -214,9 +214,9 @@
             }
           }
 
-          // 2. Se não encontrou na raiz, procura dentro de faccoes/piratas/bandos/
-          if (!nomePng && faccoesData.piratas && faccoesData.piratas.bandos) {
-            const bandosPiratas = faccoesData.piratas.bandos;
+          // 2. Se não encontrou na raiz, procura dentro de faccoes/Piratas/bandos/
+          if (!nomePng && faccoesData.Piratas && faccoesData.Piratas.bandos) {
+            const bandosPiratas = faccoesData.Piratas.bandos;
             for (const key in bandosPiratas) {
               if (key.toLowerCase().trim() === dominioFormatado) {
                 nomePng = bandosPiratas[key].png;

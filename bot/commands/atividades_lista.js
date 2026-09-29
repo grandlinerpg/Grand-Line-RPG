@@ -252,8 +252,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     continue;
                 }
 
-                const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + curr.level, 0);
-                const forcaDefensoresAtual = atividade.defensores.reduce((acc, curr) => acc + curr.level, 0);
+                const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
+                const forcaDefensoresAtual = atividade.defensores.reduce((acc, curr) => acc + (curr.level || 0), 0);
                 const nivelNovoJogador = player?.info?.level ?? 1;
 
                 if (forcaDefensoresAtual + nivelNovoJogador > forcaAtacantes) {
@@ -390,15 +390,15 @@ async function handleAtividadesCommands(sock, m, text, from) {
 }
 
 async function enviarPainelAtividade(sock, from, atividade) {
-    const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + curr.level, 0);
-    const forcaDefensores = atividade.defensores.reduce((acc, curr) => acc + curr.level, 0);
+    const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
+    const forcaDefensores = atividade.defensores.reduce((acc, curr) => acc + (curr.level || 0), 0);
 
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
 
-    let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
+    let anunciantesTexto = atividade.anunciantes.map(a => `➔ ${a.nome} (${a.level || 1})`).join('\n');
     let defensoresTexto = atividade.defensores.length > 0
-        ? atividade.defensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n')
+        ? atividade.defensores.map(d => `➔ ${d.nome} (${d.level || 1})`).join('\n')
         : 'Nenhum nome registrado.';
 
     const tituloDefesa = atividade.faccaoDefensora || 'Defensores';

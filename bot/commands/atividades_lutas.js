@@ -441,7 +441,7 @@ async function enviarRelatorioGrupo(sock, from) {
     if (textoTerritorio) {
         cabecalho += `${textoTerritorio}\n`;
     }
-    cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
+    cabecalho += `> Início: ${horaInicioStr} BRT\n`;
 
     const msgStatus = cabecalho +
         `──────────────────\n` +
@@ -477,7 +477,7 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     if (textoTerritorio) {
         cabecalho += `${textoTerritorio}\n`;
     }
-    cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
+    cabecalho += `> Início: ${horaInicioStr} BRT\n`;
 
     const msgStatusFinal = cabecalho +
         `──────────────────\n` +
@@ -514,21 +514,24 @@ async function finalizarAtividade(sock, from) {
     }
 
     let faccaoVencedora = null;
+    let jogadoresVencedores = [];
 
     if (atacantesVivos.length > 0 && defensoresVivos.length === 0) {
         faccaoVencedora = atividade.faccaoCriador;
+        jogadoresVencedores = [...atividade.anunciantes];
     } else if (defensoresVivos.length > 0 && atacantesVivos.length === 0) {
         faccaoVencedora = nomeDefesa;
+        jogadoresVencedores = [...atividade.defensores];
     }
 
-    // Unifica todos os sobreviventes de ambas as facções para receberem suas recompensas
+    // Unifica todos os sobreviventes de ambas as facções para o relatório final
     const sobreviventesTodos = [...atacantesVivos, ...defensoresVivos];
 
     await enviarRelatorioFinalSobreviventes(sock, from, sobreviventesTodos);
 
     let textoRecompensas = '';
 
-    if (sobreviventesTodos.length > 0) {
+    if (jogadoresVencedores.length > 0) {
         try {
             const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes.json`);
             const faccoesData = faccoesRes.data || {};
@@ -566,7 +569,7 @@ async function finalizarAtividade(sock, from) {
                 const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
                 const playersAllData = playersAllRes.data || {};
 
-                for (const jogador of sobreviventesTodos) {
+                for (const jogador of jogadoresVencedores) {
                     const targetLid = String(jogador.lid || '').trim();
                     const targetNum = String(jogador.numero || '').trim();
 
@@ -579,15 +582,8 @@ async function finalizarAtividade(sock, from) {
 
                     if (!realFirebaseKey) continue;
 
-                    // Contabiliza lutas ganhas individualmente pelo jogador na atividade
-                    const vitoriasIndividuais = (atividade.historicoLutas || []).filter(h => 
-                        h.vencedor && (h.vencedor.lid === jogador.lid || h.vencedor.uid === jogador.uid || h.vencedor.numero === jogador.numero)
-                    ).length;
-
-                    // Multiplica a recompensa base pelas vitórias (ou aplica o valor total base caso o jogador não tenha lutado mas tenha sobrevivido)
-                    const multiplicador = vitoriasIndividuais > 0 ? vitoriasIndividuais : 1;
-                    const berriesGanho = baseBerries * multiplicador;
-                    const expGanho = baseExp * multiplicador;
+                    const berriesGanho = baseBerries;
+                    const expGanho = baseExp;
 
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
@@ -611,7 +607,7 @@ async function finalizarAtividade(sock, from) {
                     }
                 }
 
-                textoRecompensas = `\n\n🎁 *Recompensas Distribuídas aos Sobreviventes:*\n💰 Berries: +${baseBerries.toLocaleString('pt-BR')} (por vitória/sobrevivência)\n⭐ EXP: +${baseExp.toLocaleString('pt-BR')} (por vitória/sobrevivência)`;
+                textoRecompensas = `\n\n🎁 *Recompensas Distribuídas à Facção Vencedora:*\n💰 Berries: +${baseBerries.toLocaleString('pt-BR')}\n⭐ EXP: +${baseExp.toLocaleString('pt-BR')}`;
             }
         } catch (e) {
             console.error('Erro ao processar e creditar recompensas no Firebase:', e.message);

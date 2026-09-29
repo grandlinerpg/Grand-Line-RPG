@@ -4,7 +4,7 @@ const axios = require('axios');
 const cron = require('node-cron');     
 
 // CONSTANTES E CONFIGURAÇÕES
-const NUMERO_BOT = "5511918448331";
+const NUMERO_BOT = "5511943566512";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 const RECOMPENSA_ARENA_SALDO = 5000;
 const RECOMPENSA_ARENA_EXP = 500; 

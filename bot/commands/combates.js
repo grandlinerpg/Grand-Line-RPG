@@ -91,7 +91,7 @@ async function comecarCombateDeFato(grupoJid, sock) {
     const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
                 `🔄 *TURNO 1* 🔄\n` +
                 `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
-                `> Término: ${horarioFim} (UTC-3)` ;
+                `> Término: ${horarioFim} (UTC-3)`;
 
     const socketParaEnviar = sock || bat.sock;
     if (socketParaEnviar) {
@@ -362,9 +362,8 @@ async function handleCombatesCommands(sock, m, text, from) {
                         const posVencedor = parseInt(posVencedorStr, 10);
                         const posPerdedor = posPerdedorStr ? parseInt(posPerdedorStr, 10) : null;
 
-                        // Só sobe se o vencedor for quem desafiou (estava abaixo do perdedor)
                         if (posPerdedor && posVencedor > posPerdedor) {
-                            const posNova = posVencedor - 1; // Sobe exatamente 1 posição
+                            const posNova = posVencedor - 1;
                             if (posNova >= 1) {
                                 const uidQuemEstavaAcima = rankingObj[String(posNova)];
 

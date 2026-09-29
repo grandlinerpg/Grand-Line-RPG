@@ -80,7 +80,7 @@
   letter-spacing: 2px;
 }
 
-/* Estilo da Imagem da Facção/Bando (Tamanho aumentado no PC) */
+/* Estilo da Imagem da Facção/Bando */
 .ilha-icone-faccao {
   width: 58px;
   height: 58px;
@@ -98,140 +98,90 @@
   height: 58px;
 }
 
-/* Ajustes Responsivos para Mobile */
-@media (max-width: 600px) {
-  .ilha-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .ilha-detalhes-container {
-    width: 100%;
-    display: flex;
-    justify-content: space-between; /* Empurra o texto para a esquerda e a PNG para o canto direito */
-    align-items: center;
-  }
-
-  .ilha-detalhes-texto {
-    align-items: flex-start; /* Texto alinhado à esquerda no mobile */
-  }
-
-  .ilha-icone-faccao {
-    width: 52px;
-    height: 52px;
-    order: 2; /* Garante que a imagem fique à direita do texto */
-  }
-
-  .ilha-icone-fallback {
-    width: 52px;
-    height: 52px;
-    font-size: 1.8rem;
-    order: 2;
-  }
-}
-
-/* Estilos específicos para a visualização dos tópicos das Ilhas (Tamanho Padrão) */
-.ilhas-list {
+/* Container das Ilhas com Jogadores Presentes */
+.jogadores-ilhas-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  width: 100%;
-  max-width: 800px;
+  gap: 20px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 10px;
 }
 
-.ilha-card {
-  background: rgba(10, 15, 30, 0.85);
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  border-radius: 10px;
-  padding: 15px 20px;
+/* Card Principal da Ilha na Aba Jogadores */
+.presenca-ilha-card {
+  background: rgba(18, 18, 24, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+/* Lista de Grupos Dentro da Ilha */
+.grupos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Item de Presença de Cada Facção / Bando */
+.grupo-presenca-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  background: rgba(30, 30, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 16px;
 }
 
-.ilha-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255, 215, 0, 0.8);
-}
-
-.ilha-header {
+.grupo-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.ilha-num {
-  background: linear-gradient(135deg, #ffd700, #ff8c00);
-  color: #000;
-  font-weight: bold;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
+.grupo-nome {
   font-family: 'Cinzel', serif;
-}
-
-.ilha-nome {
-  color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  font-family: 'Cinzel', serif;
-  margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* Container do Ícone + Texto (Nome e Escudos/Força) */
-.ilha-detalhes-container {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+/* Ícone do Bando / Facção */
+.grupo-info .ilha-icone-faccao {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 
-/* Texto contendo Domínio/Grupo e Força empilhados */
-.ilha-detalhes-texto {
+/* Exibição da Força */
+.grupo-forca {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
 }
 
-.ilha-dominio {
-  color: #ddd;
-  font-size: 0.95rem;
+.label-forca {
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: #888;
+  font-weight: bold;
 }
 
-.ilha-escudo {
-  color: #ffd700;
-  font-size: 0.9rem;
-  letter-spacing: 2px;
+.valor-forca {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffca28;
+  text-shadow: 0 0 8px rgba(255, 202, 40, 0.3);
 }
 
-/* Estilo da Imagem da Facção/Bando */
-.ilha-icone-faccao {
-  width: 58px;
-  height: 58px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-/* Fallback do ícone de bandeira */
-.ilha-icone-fallback {
-  font-size: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 58px;
-  height: 58px;
-}
-
-/* Ajustes Responsivos para Mobile */
+/* Ajustes Responsivos para Telemóveis / Mobile */
 @media (max-width: 600px) {
   .ilha-card {
     flex-direction: column;
@@ -261,5 +211,17 @@
     height: 52px;
     font-size: 1.8rem;
     order: 2;
+  }
+
+  .grupo-presenca-item {
+    padding: 8px 12px;
+  }
+
+  .grupo-nome {
+    font-size: 0.95rem;
+  }
+
+  .valor-forca {
+    font-size: 1rem;
   }
 }

@@ -121,11 +121,11 @@ async function encerrarListaEIniciarPartida(sock, from) {
 
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
-    const forcaAtacantes = atividade.bancoAtacantes.reduce((acc, curr) => acc + curr.level, 0);
-    const forcaDefensores = atividade.bancoDefensores.reduce((acc, curr) => acc + curr.level, 0);
+    const forcaAtacantes = atividade.bancoAtacantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
+    const forcaDefensores = atividade.bancoDefensores.reduce((acc, curr) => acc + (curr.level || 0), 0);
 
-    let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
-    let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n');
+    let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level || 1})`).join('\n');
+    let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level || 1})`).join('\n');
 
     const msgInicioConfrontos = `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\n` +
         `${atividade.faccaoCriador}:\n\n${atacantesTexto}\n\n` +
@@ -248,7 +248,7 @@ async function processarEscolhaLutador(sock, from, targetId) {
 
         const randDefIdx = Math.floor(Math.random() * atividade.bancoDefensores.length);
         p2 = atividade.bancoDefensores.splice(randDefIdx, 1)[0];
-        p1 = atividade.bancoAtacantes.shift();
+        p1 = atividade.bancoAtacantes.splice(idxAtq, 1)[0];
 
         await alocarLutaNaArena(sock, from, p1, p2);
         await enviarRelatorioGrupo(sock, from);
@@ -297,13 +297,13 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
         
-        const ocupadaNoFirebase = arenaRemote && arenaRemote.fase !== 'aguardando';
+        const ocupadaNoFirebase = arenaRemote && arenaRemote.fase && arenaRemote.fase !== 'aguardando' && arenaRemote.fase !== 'livre';
 
         return !ocupadaNoFirebase;
     });
 
     if (!arenaDisponivelJid) {
-        await sock.sendMessage(grupoOrigem, { text: '⚠️️ Todas as arenas estão ocupadas no momento! Aguardando vaga...' });
+        await sock.sendMessage(grupoOrigem, { text: '⚠ Todas as arenas estão ocupadas no momento! Aguardando vaga...' });
         return false;
     }
 
@@ -345,14 +345,41 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
     const atividade = atividadesAtivas[grupoOrigem];
     if (!atividade) return;
 
+    // 1. Identificar e liberar a arena ocupada por este combate
+    const lutaIndex = atividade.lutadoresAtivos.findIndex(l => 
+        (l.p1.lid === vencedorObj.lid || l.p1.uid === vencedorObj.uid || l.p1.numero === vencedorObj.numero || l.p2.lid === vencedorObj.lid || l.p2.uid === vencedorObj.uid || l.p2.numero === vencedorObj.numero) &&
+        (l.p1.lid === perdedorObj.lid || l.p1.uid === perdedorObj.uid || l.p1.numero === perdedorObj.numero || l.p2.lid === perdedorObj.lid || l.p2.uid === perdedorObj.uid || l.p2.numero === perdedorObj.numero)
+    );
+
+    if (lutaIndex !== -1) {
+        const arenaJid = atividade.lutadoresAtivos[lutaIndex].arena;
+        const chaveSemGus = arenaJid.replace('@g.us', '');
+
+        // Atualizar estado da arena no Firebase para desocupada
+        try {
+            await axios.patch(`${FIREBASE_URL}/arenas_ativas/${chaveSemGus}.json`, {
+                fase: 'aguardando',
+                p1: null,
+                p2: null,
+                grupoOrigemAtividade: null
+            });
+        } catch (e) {
+            console.error('Erro ao libertar arena no Firebase:', e.message);
+        }
+
+        // Remover combate ativo da lista
+        atividade.lutadoresAtivos.splice(lutaIndex, 1);
+    }
+
+    // 2. Registar o histórico
     atividade.historicoLutas.push({ vencedor: vencedorObj, perdedor: perdedorObj });
     atividade.derrotados.push(perdedorObj);
 
-    atividade.lutadoresAtivos = atividade.lutadoresAtivos.filter(
-        l => l.p1.lid !== vencedorObj.lid && l.p2.lid !== vencedorObj.lid
+    const ehAtacante = atividade.anunciantes.some(a => 
+        (a.lid && a.lid === vencedorObj.lid) || 
+        (a.uid && a.uid === vencedorObj.uid) || 
+        (a.numero && a.numero === vencedorObj.numero)
     );
-
-    const ehAtacante = atividade.anunciantes.some(a => a.lid === vencedorObj.lid || a.numero === vencedorObj.numero || a.uid === vencedorObj.uid);
 
     if (ehAtacante) {
         atividade.vitoriasAtacantes++;
@@ -392,6 +419,7 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
         }
     }
 
+    // 3. Verificar condição final ou enviar relatório atualizado
     const semLutasEmAndamento = atividade.lutadoresAtivos.length === 0;
     const atacantesTotalmenteEliminados = atividade.bancoAtacantes.length === 0 && !atividade.lutadoresAtivos.some(l => l.p1);
     const defensoresTotalmenteEliminados = atividade.bancoDefensores.length === 0 && !atividade.lutadoresAtivos.some(l => l.p2);
@@ -415,7 +443,7 @@ async function enviarRelatorioGrupo(sock, from) {
 
     const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
     if (atividade.proximoDesafiante) {
-        if (!todosAguardando.some(p => p.lid === atividade.proximoDesafiante.lid)) {
+        if (!todosAguardando.some(p => p.lid === atividade.proximoDesafiante.lid || p.uid === atividade.proximoDesafiante.uid)) {
             todosAguardando.push(atividade.proximoDesafiante);
         }
     }
@@ -496,9 +524,9 @@ async function finalizarAtividade(sock, from) {
         const pd = atividade.proximoDesafiante;
         const ehAtacante = atividade.anunciantes.some(a => a.lid === pd.lid || a.numero === pd.numero || a.uid === pd.uid);
         if (ehAtacante) {
-            if (!atacantesVivos.some(a => a.lid === pd.lid)) atacantesVivos.push(pd);
+            if (!atacantesVivos.some(a => a.lid === pd.lid || a.uid === pd.uid)) atacantesVivos.push(pd);
         } else {
-            if (!defensoresVivos.some(d => d.lid === pd.lid)) defensoresVivos.push(pd);
+            if (!defensoresVivos.some(d => d.lid === pd.lid || d.uid === pd.uid)) defensoresVivos.push(pd);
         }
     }
 

@@ -189,7 +189,6 @@
           const card = document.createElement("div");
           card.classList.add("ilha-card");
 
-          // Estrutura atualizada: Ícone e Detalhes lado a lado
           card.innerHTML = `
             <div class="ilha-header">
               <span class="ilha-num">${id}</span>
@@ -215,12 +214,110 @@
       }
     }
 
-    function carregarJogadores() {
-      container.innerHTML = `
-        <div style="text-align: center; color: #fff; padding: 40px 20px;">
-          <p style="font-size: 1.2rem; color: #aaa;">📍 Localização dos Jogadores em breve...</p>
-        </div>
-      `;
+    // CARREGA A ABA JOGADORES (PRESENÇA NAS ILHAS)
+    async function carregarJogadores() {
+      container.innerHTML = "<p style='color:#fff; text-align:center;'>Mapeando presença das facções e bandos...</p>";
+
+      try {
+        const [playersSnap, ilhasSnap] = await Promise.all([
+          get(ref(db, "players")),
+          get(ref(db, "ilhas"))
+        ]);
+
+        if (!playersSnap.exists()) {
+          container.innerHTML = "<p style='color:#fff; text-align:center;'>Nenhum jogador encontrado.</p>";
+          return;
+        }
+
+        const playersData = playersSnap.val();
+        const ilhasData = ilhasSnap.exists() ? ilhasSnap.val() : {};
+
+        // Mapeamento: ilhaId -> { faccaoOuBando -> { forcaTotal: X, quantidade: Y } }
+        const presencasPorIlha = {};
+
+        Object.values(playersData).forEach(player => {
+          const char = player.character || {};
+          const info = player.info || {};
+
+          const ilhaId = Number(char.ilha);
+          
+          // Regra: Não mostra ilha 0 ou indefinida
+          if (!ilhaId || ilhaId === 0) return;
+
+          // Define o grupo (Se tiver bando usa bando, senão usa a facção)
+          const grupo = char.bando || player.bando || char.faction || "Desconhecido";
+          
+          // Pega o level (da estrutura info.level ou character.level)
+          const nivel = Number(info.level || char.level || 1);
+
+          if (!presencasPorIlha[ilhaId]) {
+            presencasPorIlha[ilhaId] = {};
+          }
+
+          if (!presencasPorIlha[ilhaId][grupo]) {
+            presencasPorIlha[ilhaId][grupo] = { forcaTotal: 0, quantidade: 0 };
+          }
+
+          presencasPorIlha[ilhaId][grupo].forcaTotal += nivel;
+          presencasPorIlha[ilhaId][grupo].quantidade += 1;
+        });
+
+        const ilhasComPresenca = Object.keys(presencasPorIlha).sort((a, b) => Number(a) - Number(b));
+
+        if (ilhasComPresenca.length === 0) {
+          container.innerHTML = "<p style='color:#fff; text-align:center;'>Nenhum grupo ativo nas ilhas no momento.</p>";
+          return;
+        }
+
+        container.innerHTML = "";
+        const listContainer = document.createElement("div");
+        listContainer.classList.add("jogadores-ilhas-list");
+
+        for (const ilhaId of ilhasComPresenca) {
+          const ilhaNome = ilhasData[ilhaId] ? ilhasData[ilhaId].nome : `Ilha ${ilhaId}`;
+          const grupos = presencasPorIlha[ilhaId];
+
+          const ilhaCard = document.createElement("div");
+          ilhaCard.classList.add("presenca-ilha-card");
+
+          let gruposHTML = "";
+
+          for (const [nomeGrupo, dados] of Object.entries(grupos)) {
+            const iconeHTML = await obterIconeFaccao(nomeGrupo);
+
+            gruposHTML += `
+              <div class="grupo-presenca-item">
+                <div class="grupo-info">
+                  ${iconeHTML}
+                  <span class="grupo-nome">${nomeGrupo}</span>
+                </div>
+                <div class="grupo-forca">
+                  <span class="label-forca">FORÇA TOTAL</span>
+                  <span class="valor-forca">⚔️ ${dados.forcaTotal}</span>
+                </div>
+              </div>
+            `;
+          }
+
+          ilhaCard.innerHTML = `
+            <div class="ilha-header">
+              <span class="ilha-num">${ilhaId}</span>
+              <h2 class="ilha-nome">${ilhaNome}</h2>
+            </div>
+            <div class="grupos-container">
+              ${gruposHTML}
+            </div>
+          `;
+
+          listContainer.appendChild(ilhaCard);
+        }
+
+        container.appendChild(listContainer);
+
+      } catch (error) {
+        console.error("Erro ao carregar presença dos jogadores:", error);
+        container.innerHTML = "<p style='color:#ff5555; text-align:center;'>Erro ao carregar presença nas ilhas.</p>";
+      }
     }
 
     window.alternarAba = function (aba) {

@@ -21,7 +21,7 @@
   <header class="navbar">
 
     <div class="logo-area">
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo">
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo" alt="Logo">
 
       <div class="logo-text">
         <h1>GRAND LINE</h1>
@@ -85,12 +85,14 @@
     // TROCA INÍCIO POR PERFIL SE ESTIVER LOGADO
     onAuthStateChanged(auth, (user) => {
       const homeLink = document.getElementById("home-link");
-      if (user) {
-        homeLink.innerText = "PERFIL";
-        homeLink.href = "perfil.html";
-      } else {
-        homeLink.innerText = "INÍCIO";
-        homeLink.href = "index.html";
+      if (homeLink) {
+        if (user) {
+          homeLink.innerText = "PERFIL";
+          homeLink.href = "perfil.html";
+        } else {
+          homeLink.innerText = "INÍCIO";
+          homeLink.href = "index.html";
+        }
       }
     });
 
@@ -195,11 +197,11 @@
               <h2 class="ilha-nome">${ilha.nome}</h2>
             </div>
             <div class="ilha-detalhes-container">
-              ${iconeHTML}
               <div class="ilha-detalhes-texto">
                 <span class="ilha-dominio"><strong>${ilha.dominio || "Desconhecido"}</strong></span>
                 <span class="ilha-escudo">${escudosHTML}</span>
               </div>
+              ${iconeHTML}
             </div>
           `;
 
@@ -232,7 +234,6 @@
         const playersData = playersSnap.val();
         const ilhasData = ilhasSnap.exists() ? ilhasSnap.val() : {};
 
-        // Mapeamento: ilhaId -> { faccaoOuBando -> { forcaTotal: X, quantidade: Y } }
         const presencasPorIlha = {};
 
         Object.values(playersData).forEach(player => {
@@ -241,13 +242,9 @@
 
           const ilhaId = Number(char.ilha);
           
-          // Regra: Não mostra ilha 0 ou indefinida
           if (!ilhaId || ilhaId === 0) return;
 
-          // Define o grupo (Se tiver bando usa bando, senão usa a facção)
           const grupo = char.bando || player.bando || char.faction || "Desconhecido";
-          
-          // Pega o level (da estrutura info.level ou character.level)
           const nivel = Number(info.level || char.level || 1);
 
           if (!presencasPorIlha[ilhaId]) {
@@ -342,9 +339,11 @@
     const menuToggle = document.getElementById("menu-toggle");
     const navMenu = document.getElementById("nav-menu");
 
-    menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-    });
+    if (menuToggle && navMenu) {
+      menuToggle.addEventListener("click", () => {
+        navMenu.classList.toggle("active");
+      });
+    }
   </script>
 
 </body>

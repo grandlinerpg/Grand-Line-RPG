@@ -130,3 +130,101 @@
     order: 2;
   }
 }
+
+/* Container das Ilhas com Jogadores Presentes */
+.jogadores-ilhas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* Card Principal da Ilha na Aba Jogadores */
+.presenca-ilha-card {
+  background: rgba(18, 18, 24, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+/* Lista de Grupos Dentro da Ilha */
+.grupos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Item de Presença de Cada Facção / Bando */
+.grupo-presenca-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(30, 30, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+
+.grupo-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.grupo-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Ícone do Bando / Facção */
+.grupo-info .ilha-icone-faccao {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+/* Exibição da Força */
+.grupo-forca {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.label-forca {
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: #888;
+  font-weight: bold;
+}
+
+.valor-forca {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffca28;
+  text-shadow: 0 0 8px rgba(255, 202, 40, 0.3);
+}
+
+/* Responsividade para Celulares */
+@media (max-width: 600px) {
+  .grupo-presenca-item {
+    padding: 8px 12px;
+  }
+
+  .grupo-nome {
+    font-size: 0.95rem;
+  }
+
+  .valor-forca {
+    font-size: 1rem;
+  }
+}

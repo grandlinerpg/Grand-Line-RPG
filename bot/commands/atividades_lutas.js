@@ -4,7 +4,7 @@ const { iniciarEstruturaBatalha } = require('./combates');
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
-    'Marinha': '⚓',
+    'Marinha': '⚓', 
     'Piratas': '🏴‍☠️',
     'Exército Revolucionário': '⚔️',
     'Governo Mundial': '⚓',

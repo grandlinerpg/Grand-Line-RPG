@@ -569,44 +569,35 @@ async function finalizarAtividade(sock, from) {
                     const targetNum = String(jogador.numero || '').trim();
                     const targetUid = String(jogador.uid || '').trim();
 
-                    // Mapeia e localiza a chave exata no Firebase (ex: 7kykKF0A4pd43uTDEWJnfoePO3f2)
                     const realFirebaseKey = Object.keys(playersAllData).find(key => {
-                        const p = playersAllData[key] || {};
+                        const p = playersAllData[key];
                         const pLid = String(p?.number?.LID || p?.lid || '').trim();
                         const pNum = String(p?.number?.n || p?.numero || '').trim();
-                        const pUid = String(p?.uid || key).trim();
 
-                        return (
-                            key === targetUid ||
-                            key === targetLid ||
-                            pUid === targetUid ||
-                            (targetLid && pLid === targetLid) ||
-                            (targetNum && pNum === targetNum)
-                        );
+                        return key === targetUid || 
+                               (targetLid && pLid === targetLid) || 
+                               (targetNum && pNum === targetNum);
                     });
 
                     if (!realFirebaseKey) {
-                        console.error(`[RECOMPENSA] Jogador não encontrado no Firebase: ${jogador.nome}`);
+                        console.error(`[Recompensas] Jogador não encontrado no Firebase: ${jogador.nome}`);
                         continue;
                     }
 
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
 
-                    // Captura os valores de EXP e Saldo existentes em info
                     const expAtual = Number(playerInfo.exp ?? playerData.exp ?? 0);
                     const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
 
                     const novoExp = expAtual + expGanho;
                     const novoSaldo = saldoAtual + berriesGanho;
 
-                    // Atualiza diretamente no nó "info" do jogador
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
                         saldo: novoSaldo
                     });
 
-                    // Mantém sincronizado na raiz do player caso a propriedade existisse lá previamente
                     if (playerData.exp !== undefined || playerData.saldo !== undefined) {
                         await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,

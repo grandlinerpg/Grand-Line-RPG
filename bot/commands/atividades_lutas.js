@@ -109,7 +109,7 @@ async function encerrarListaEIniciarPartida(sock, from) {
     if (!atividade) return;
 
     if (atividade.defensores.length === 0) {
-        await sock.sendMessage(from, { text: `⚠️ A atividade *${atividade.nomeAtividade}* foi encerrada sem defensores.` });
+        await sock.sendMessage(from, { text: `⚠️️ A atividade *${atividade.nomeAtividade}* foi encerrada sem defensores.` });
         delete atividadesAtivas[from];
         return;
     }
@@ -355,7 +355,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
         const arenaJid = atividade.lutadoresAtivos[lutaIndex].arena;
         const chaveSemGus = arenaJid.replace('@g.us', '');
 
-        // Atualizar estado da arena no Firebase para desocupada
         try {
             await axios.patch(`${FIREBASE_URL}/arenas_ativas/${chaveSemGus}.json`, {
                 fase: 'aguardando',
@@ -367,11 +366,10 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             console.error('Erro ao libertar arena no Firebase:', e.message);
         }
 
-        // Remover combate ativo da lista
         atividade.lutadoresAtivos.splice(lutaIndex, 1);
     }
 
-    // 2. Registar o histórico
+    // 2. Registrar histórico
     atividade.historicoLutas.push({ vencedor: vencedorObj, perdedor: perdedorObj });
     atividade.derrotados.push(perdedorObj);
 
@@ -419,7 +417,7 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
         }
     }
 
-    // 3. Verificar condição final ou enviar relatório atualizado
+    // 3. Verificar fim da atividade
     const semLutasEmAndamento = atividade.lutadoresAtivos.length === 0;
     const atacantesTotalmenteEliminados = atividade.bancoAtacantes.length === 0 && !atividade.lutadoresAtivos.some(l => l.p1);
     const defensoresTotalmenteEliminados = atividade.bancoDefensores.length === 0 && !atividade.lutadoresAtivos.some(l => l.p2);
@@ -611,7 +609,7 @@ async function finalizarAtividade(sock, from) {
                     if (playerData.exp !== undefined || playerData.saldo !== undefined) {
                         await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,
-                            saldo: novoSaldo
+                            saldo: saldoAtual + berriesGanho
                         });
                     }
                 }

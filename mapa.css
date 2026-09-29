@@ -54,7 +54,15 @@
   margin: 0;
 }
 
-.ilha-detalhes {
+/* Container do Ícone + Texto (Nome e Escudos) */
+.ilha-detalhes-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Texto contendo Domínio e Escudos empilhados */
+.ilha-detalhes-texto {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -64,16 +72,6 @@
 .ilha-dominio {
   color: #ddd;
   font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ilha-icone-faccao {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-  vertical-align: middle;
 }
 
 .ilha-escudo {
@@ -82,13 +80,35 @@
   letter-spacing: 2px;
 }
 
+/* Estilo da Imagem da Facção/Bando (maior e ao lado) */
+.ilha-icone-faccao {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Fallback do ícone de bandeira caso não haja PNG */
+.ilha-icone-fallback {
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+}
+
 @media (max-width: 600px) {
   .ilha-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
-  .ilha-detalhes {
+  .ilha-detalhes-container {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .ilha-detalhes-texto {
     align-items: flex-start;
   }
 }

@@ -514,35 +514,37 @@ async function finalizarAtividade(sock, from) {
     }
 
     let faccaoVencedora = null;
-    let vencedoresLista = [];
 
     if (atacantesVivos.length > 0 && defensoresVivos.length === 0) {
         faccaoVencedora = atividade.faccaoCriador;
-        vencedoresLista = atacantesVivos;
     } else if (defensoresVivos.length > 0 && atacantesVivos.length === 0) {
         faccaoVencedora = nomeDefesa;
-        vencedoresLista = defensoresVivos;
     }
 
-    await enviarRelatorioFinalSobreviventes(sock, from, vencedoresLista);
+    // Unifica todos os sobreviventes de ambas as facções para receberem suas recompensas
+    const sobreviventesTodos = [...atacantesVivos, ...defensoresVivos];
+
+    await enviarRelatorioFinalSobreviventes(sock, from, sobreviventesTodos);
 
     let textoRecompensas = '';
 
-    if (faccaoVencedora && vencedoresLista.length > 0) {
+    if (sobreviventesTodos.length > 0) {
         try {
             const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes.json`);
             const faccoesData = faccoesRes.data || {};
 
-            let recompensa = null;
+            let recompensaBase = null;
 
-            const ativsFaccao = faccoesData[faccaoVencedora]?.atividades || {};
+            // Busca as regras de recompensa da atividade no Firebase
+            const buscaFaccao = faccaoVencedora || atividade.faccaoCriador;
+            const ativsFaccao = faccoesData[buscaFaccao]?.atividades || {};
             let chaveAtividade = Object.keys(ativsFaccao).find(k => 
                 k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
                 (ativsFaccao[k]?.nome && ativsFaccao[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
             );
 
             if (chaveAtividade && ativsFaccao[chaveAtividade]) {
-                recompensa = ativsFaccao[chaveAtividade].recompensa;
+                recompensaBase = ativsFaccao[chaveAtividade].recompensa;
             } else {
                 for (const f of Object.keys(faccoesData)) {
                     const ativs = faccoesData[f]?.atividades || {};
@@ -551,38 +553,41 @@ async function finalizarAtividade(sock, from) {
                         (ativs[k]?.nome && ativs[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
                     );
                     if (kFound && ativs[kFound]?.recompensa) {
-                        recompensa = ativs[kFound].recompensa;
+                        recompensaBase = ativs[kFound].recompensa;
                         break;
                     }
                 }
             }
 
-            if (recompensa) {
-                const berriesGanho = Number(recompensa.dinheiro || recompensa.saldo || recompensa.berries || 0);
-                const expGanho = Number(recompensa.exp || 0);
+            if (recompensaBase) {
+                const baseBerries = Number(recompensaBase.dinheiro || recompensaBase.saldo || recompensaBase.berries || 0);
+                const baseExp = Number(recompensaBase.exp || 0);
 
                 const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
                 const playersAllData = playersAllRes.data || {};
 
-                for (const jogador of vencedoresLista) {
+                for (const jogador of sobreviventesTodos) {
                     const targetLid = String(jogador.lid || '').trim();
                     const targetNum = String(jogador.numero || '').trim();
-                    const targetUid = String(jogador.uid || '').trim();
 
                     const realFirebaseKey = Object.keys(playersAllData).find(key => {
                         const p = playersAllData[key];
-                        const pLid = String(p?.number?.LID || p?.lid || '').trim();
-                        const pNum = String(p?.number?.n || p?.numero || '').trim();
-
-                        return key === targetUid || 
-                               (targetLid && pLid === targetLid) || 
-                               (targetNum && pNum === targetNum);
+                        const pLid = String(p?.number?.LID || '').trim();
+                        const pNum = String(p?.number?.n || '').trim();
+                        return (targetLid && pLid === targetLid) || (targetNum && pNum === targetNum) || key === jogador.uid;
                     });
 
-                    if (!realFirebaseKey) {
-                        console.error(`[Recompensas] Jogador não encontrado no Firebase: ${jogador.nome}`);
-                        continue;
-                    }
+                    if (!realFirebaseKey) continue;
+
+                    // Contabiliza lutas ganhas individualmente pelo jogador na atividade
+                    const vitoriasIndividuais = (atividade.historicoLutas || []).filter(h => 
+                        h.vencedor && (h.vencedor.lid === jogador.lid || h.vencedor.uid === jogador.uid || h.vencedor.numero === jogador.numero)
+                    ).length;
+
+                    // Multiplica a recompensa base pelas vitórias (ou aplica o valor total base caso o jogador não tenha lutado mas tenha sobrevivido)
+                    const multiplicador = vitoriasIndividuais > 0 ? vitoriasIndividuais : 1;
+                    const berriesGanho = baseBerries * multiplicador;
+                    const expGanho = baseExp * multiplicador;
 
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
@@ -606,7 +611,7 @@ async function finalizarAtividade(sock, from) {
                     }
                 }
 
-                textoRecompensas = `\n\n🎁 *Recompensas Aplicadas aos Sobreviventes:*\n💰 Berries: +${berriesGanho.toLocaleString('pt-BR')}\n⭐ EXP: +${expGanho.toLocaleString('pt-BR')}`;
+                textoRecompensas = `\n\n🎁 *Recompensas Distribuídas aos Sobreviventes:*\n💰 Berries: +${baseBerries.toLocaleString('pt-BR')} (por vitória/sobrevivência)\n⭐ EXP: +${baseExp.toLocaleString('pt-BR')} (por vitória/sobrevivência)`;
             }
         } catch (e) {
             console.error('Erro ao processar e creditar recompensas no Firebase:', e.message);

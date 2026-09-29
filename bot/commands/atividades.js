@@ -59,12 +59,12 @@ async function obterNomeTerritorio(idIlha) {
         const ilhaObj = ilhasData[idIlha] || ilhasData[String(idIlha)];
 
         if (ilhaObj && ilhaObj.nome) {
-            return `> Ilha: ${idIlha}. ${ilhaObj.nome}`;
+            return `> Local: ${idIlha}. ${ilhaObj.nome}`;
         }
-        return `> Ilha: ${idIlha}`;
+        return `> Local: ${idIlha}`;
     } catch (e) {
         console.error('Erro ao buscar ilhas no Firebase:', e.message);
-        return `> Ilha: ${idIlha}`;
+        return `> Local: ${idIlha}`;
     }
 }
 

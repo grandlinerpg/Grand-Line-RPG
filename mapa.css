@@ -58,7 +58,7 @@
 .ilha-detalhes-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* Texto contendo Domínio e Escudos empilhados */
@@ -80,35 +80,53 @@
   letter-spacing: 2px;
 }
 
-/* Estilo da Imagem da Facção/Bando (maior e ao lado) */
+/* Estilo da Imagem da Facção/Bando (Tamanho aumentado no PC) */
 .ilha-icone-faccao {
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 /* Fallback do ícone de bandeira caso não haja PNG */
 .ilha-icone-fallback {
-  font-size: 1.8rem;
+  font-size: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
 }
 
+/* Ajustes Responsivos para Mobile */
 @media (max-width: 600px) {
   .ilha-card {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
+
   .ilha-detalhes-container {
     width: 100%;
-    justify-content: flex-start;
+    display: flex;
+    justify-content: space-between; /* Empurra o texto para a esquerda e a PNG para o canto direito */
+    align-items: center;
   }
+
   .ilha-detalhes-texto {
-    align-items: flex-start;
+    align-items: flex-start; /* Texto alinhado à esquerda no mobile */
+  }
+
+  .ilha-icone-faccao {
+    width: 52px;
+    height: 52px;
+    order: 2; /* Garante que a imagem fique à direita do texto */
+  }
+
+  .ilha-icone-fallback {
+    width: 52px;
+    height: 52px;
+    font-size: 1.8rem;
+    order: 2;
   }
 }

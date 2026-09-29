@@ -78,6 +78,16 @@
     .ilha-dominio {
       color: #ddd;
       font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ilha-icone-faccao {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      vertical-align: middle;
     }
 
     .ilha-escudo {
@@ -180,15 +190,53 @@
       }
     });
 
-    // Mapeamento de emojis para cada facção
-    function getEmojiFaccao(dominio) {
-      if (!dominio) return "❓";
-      const dom = dominio.toLowerCase().trim();
+    // Obtém o nome da imagem armazenado no nó "png" do Firebase
+    async function obterIconeFaccao(dominio) {
+      if (!dominio) return "🚩";
+      
+      const baseUrl = "https://res.cloudinary.com/djh45admn/image/upload/v1790680862/";
+      let nomePng = null;
 
-      if (dom.includes("governo")) return "🏛️";
-      if (dom.includes("pirata")) return "☠️";
-      if (dom.includes("neutro")) return "🕊️";
+      try {
+        // 1. Busca no nó 'faccoes' usando o nó 'png'
+        const faccoesSnap = await get(ref(db, "faccoes"));
+        if (faccoesSnap.exists()) {
+          const faccoesData = faccoesSnap.val();
+          
+          for (const key in faccoesData) {
+            if (key.toLowerCase().trim() === dominio.toLowerCase().trim()) {
+              nomePng = faccoesData[key].png;
+              break;
+            }
+          }
+        }
 
+        // 2. Se não encontrou em facções, busca no nó 'bandos' (para piratas) usando o nó 'png'
+        if (!nomePng) {
+          const bandosSnap = await get(ref(db, "bandos"));
+          if (bandosSnap.exists()) {
+            const bandosData = bandosSnap.val();
+            for (const key in bandosData) {
+              if (key.toLowerCase().trim() === dominio.toLowerCase().trim()) {
+                nomePng = bandosData[key].png;
+                break;
+              }
+            }
+          }
+        }
+
+        // 3. Monta a URL caso encontre o valor no nó 'png'
+        if (nomePng) {
+          const limpaNome = String(nomePng).replace(/\.png$/i, "").trim();
+          const fullUrl = `${baseUrl}${limpaNome}.png`;
+          return `<img src="${fullUrl}" alt="${dominio}" class="ilha-icone-faccao">`;
+        }
+
+      } catch (error) {
+        console.error("Erro ao buscar PNG da facção/bando:", error);
+      }
+
+      // Ícone padrão caso não encontre no banco
       return "🚩";
     }
 
@@ -198,7 +246,6 @@
       const escudosPreenchidos = "🛡️".repeat(valor);
       const escudosVazios = "🛡️".repeat(3 - valor);
       
-      // Aplicamos um efeito de opacidade via span no CSS inline para os escudos vazios
       return `<span style="opacity: 1;">${escudosPreenchidos}</span><span style="opacity: 0.25;">${escudosVazios}</span> (${valor}/3)`;
     }
 
@@ -222,9 +269,9 @@
 
         const ids = Object.keys(ilhasData).sort((a, b) => Number(a) - Number(b));
 
-        ids.forEach((id) => {
+        for (const id of ids) {
           const ilha = ilhasData[id];
-          const emoji = getEmojiFaccao(ilha.dominio);
+          const iconeHTML = await obterIconeFaccao(ilha.dominio);
           const escudosHTML = formatarEscudos(ilha.escudo);
 
           const card = document.createElement("div");
@@ -236,13 +283,13 @@
               <h2 class="ilha-nome">${ilha.nome}</h2>
             </div>
             <div class="ilha-detalhes">
-              <span class="ilha-dominio">${emoji} <strong>${ilha.dominio || "Desconhecido"}</strong></span>
+              <span class="ilha-dominio">${iconeHTML} <strong>${ilha.dominio || "Desconhecido"}</strong></span>
               <span class="ilha-escudo">${escudosHTML}</span>
             </div>
           `;
 
           listContainer.appendChild(card);
-        });
+        }
 
         container.appendChild(listContainer);
 

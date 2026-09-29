@@ -80,7 +80,7 @@
   letter-spacing: 2px;
 }
 
-/* Estilo da Imagem da Facção/Bando */
+/* Estilo da Imagem da Facção/Bando (Tamanho aumentado no PC) */
 .ilha-icone-faccao {
   width: 58px;
   height: 58px;
@@ -109,80 +109,24 @@
   .ilha-detalhes-container {
     width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Empurra o texto para a esquerda e a PNG para o canto direito */
     align-items: center;
   }
 
   .ilha-detalhes-texto {
-    align-items: flex-start;
+    align-items: flex-start; /* Texto alinhado à esquerda no mobile */
   }
 
-  /* No mobile, oculta o escudo dentro do bloco do texto da esquerda */
-  .ilha-detalhes-texto .ilha-escudo {
-    display: none;
+  .ilha-icone-faccao {
+    width: 52px;
+    height: 52px;
+    order: 2; /* Garante que a imagem fique à direita do texto */
   }
 
-  /* Cria a coluna do canto direito (PNG em cima, Escudo em baixo) */
-  .ilha-detalhes-container::after {
-    content: "";
-  }
-
-  .ilha-icone-faccao,
   .ilha-icone-fallback {
     width: 52px;
     height: 52px;
-  }
-
-  /* Faz a imagem e o escudo ficarem empilhados à direita */
-  .ilha-detalhes-container {
-    position: relative;
-  }
-
-  /* Cria um container flex vertical do lado direito via CSS */
-  .ilha-card {
-    position: relative;
-  }
-
-  /* Reorganização móvel limpa */
-  .ilha-detalhes-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
-  /* Opcional: Para mover o escudo para baixo da PNG no mobile, formatamos a coluna direita */
-  .ilha-detalhes-container {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-  }
-
-  /* Lado direito empilhado: PNG no topo, Escudos abaixo */
-  .ilha-detalhes-container .ilha-icone-faccao,
-  .ilha-detalhes-container .ilha-icone-fallback {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-
-  .ilha-detalhes-texto .ilha-escudo {
-    display: block; /* Mantém visível */
-  }
-
-  /* Faz o container de texto separar domínio e escudos quando no mobile */
-  .ilha-detalhes-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
-  /* Lado direito do card no Mobile */
-  .ilha-coluna-direita-mobile {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
+    font-size: 1.8rem;
+    order: 2;
   }
 }

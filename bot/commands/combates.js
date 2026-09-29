@@ -281,7 +281,8 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         if (bat.tipo === 'ATIVIDADE' && bat.grupoOrigemAtividade) {
             try {
-                const { registrarResultadoLutaAtividade } = require('./atividades');
+                // Importação dinâmica atualizada para o novo arquivo 'atividades_lutas'
+                const { registrarResultadoLutaAtividade } = require('./atividades_lutas');
                 await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
             } catch (e) {
                 console.error('Erro ao registrar atividade:', e.message);
@@ -362,8 +363,9 @@ async function handleCombatesCommands(sock, m, text, from) {
                         const posVencedor = parseInt(posVencedorStr, 10);
                         const posPerdedor = posPerdedorStr ? parseInt(posPerdedorStr, 10) : null;
 
+                        // Só sobe se o vencedor for quem desafiou (estava abaixo do perdedor)
                         if (posPerdedor && posVencedor > posPerdedor) {
-                            const posNova = posVencedor - 1;
+                            const posNova = posVencedor - 1; // Sobe exatamente 1 posição
                             if (posNova >= 1) {
                                 const uidQuemEstavaAcima = rankingObj[String(posNova)];
 

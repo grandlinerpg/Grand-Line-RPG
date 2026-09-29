@@ -1,4 +1,64 @@
-<!-- FIREBASE SCRIPT -->
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mapa - Grand Line RPG</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="jogadores.css">
+  <link rel="stylesheet" href="mapa.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="background"></div>
+  <div class="overlay"></div>
+
+  <header class="navbar">
+
+    <div class="logo-area">
+      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo" alt="Logo">
+
+      <div class="logo-text">
+        <h1>GRAND LINE</h1>
+        <p>— RPG —</p>
+      </div>
+    </div>
+
+    <!-- BOTÃO MENU MOBILE -->
+    <button class="menu-toggle" id="menu-toggle" aria-label="Abrir Menu">
+      ☰
+    </button>
+
+    <!-- MENU -->
+    <nav id="nav-menu">
+      <a href="index.html" id="home-link">INÍCIO</a>
+      <a href="faccao.html">FACÇÃO</a>
+      <a href="ranking.html">RANKING</a>
+      <a href="mapa.html" class="active">MAPA</a>
+      <a href="guia.html">GUIA</a>
+    </nav>
+
+  </header>
+
+  <section class="players-title">
+    <h1>MAPA DA GRAND LINE</h1>
+    <p>Acompanhe o domínio territorial das ilhas e os exploradores dos mares.</p>
+  </section>
+
+  <!-- SELETOR DE ABAS DA DOMINAÇÃO / JOGADORES -->
+  <div class="ranking-tabs">
+    <button class="tab-btn active" id="btn-dominacao">🏴‍☠️ DOMINAÇÃO</button>
+    <button class="tab-btn" id="btn-jogadores">👥 JOGADORES</button>
+  </div>
+
+  <main id="mapa-container"></main>
+
+  <!-- FIREBASE SCRIPT -->
   <script type="module">
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -20,8 +80,11 @@
     const auth = getAuth(app);
 
     const container = document.getElementById("mapa-container");
-    let abaAtual = "dominacao";
-    let currentRequestId = 0; // Previne duplicidade e concorrência de chamadas
+    const btnDominacao = document.getElementById("btn-dominacao");
+    const btnJogadores = document.getElementById("btn-jogadores");
+    const baseUrl = "https://res.cloudinary.com/djh45admn/image/upload/v1790680862/";
+
+    let mapaIcones = {}; // Cache local para imagens de facções e bandos
 
     // TROCA INÍCIO POR PERFIL SE ESTIVER LOGADO
     onAuthStateChanged(auth, (user) => {
@@ -37,11 +100,9 @@
       }
     });
 
-    // Mapeamento em memória de ícones para evitar múltiplas chamadas repetidas ao banco
-    async function carregarMapaIcones() {
-      const iconesMap = {};
-      const baseUrl = "https://res.cloudinary.com/djh45admn/image/upload/v1790680862/";
-
+    // Mapeia previamente todos os PNGs para evitar múltiplas requisições assíncronas em loop
+    async function carregarCacheIcones() {
+      mapaIcones = {};
       try {
         const [faccoesSnap, bandosSnap] = await Promise.all([
           get(ref(db, "faccoes")),
@@ -51,15 +112,18 @@
         if (faccoesSnap.exists()) {
           const faccoesData = faccoesSnap.val();
           for (const key in faccoesData) {
-            if (faccoesData[key] && faccoesData[key].png) {
-              iconesMap[key.toLowerCase().trim()] = faccoesData[key].png;
+            const item = faccoesData[key];
+            if (item && item.png) {
+              mapaIcones[key.toLowerCase().trim()] = item.png;
             }
           }
+
           if (faccoesData.Piratas && faccoesData.Piratas.bandos) {
             const bandosPiratas = faccoesData.Piratas.bandos;
             for (const key in bandosPiratas) {
-              if (bandosPiratas[key] && bandosPiratas[key].png) {
-                iconesMap[key.toLowerCase().trim()] = bandosPiratas[key].png;
+              const item = bandosPiratas[key];
+              if (item && item.png) {
+                mapaIcones[key.toLowerCase().trim()] = item.png;
               }
             }
           }
@@ -68,24 +132,21 @@
         if (bandosSnap.exists()) {
           const bandosData = bandosSnap.val();
           for (const key in bandosData) {
-            if (bandosData[key] && bandosData[key].png) {
-              iconesMap[key.toLowerCase().trim()] = bandosData[key].png;
+            const item = bandosData[key];
+            if (item && item.png) {
+              mapaIcones[key.toLowerCase().trim()] = item.png;
             }
           }
         }
-      } catch (err) {
-        console.error("Erro ao carregar mapa de ícones:", err);
+      } catch (error) {
+        console.error("Erro ao carregar cache de ícones:", error);
       }
-
-      return iconesMap;
     }
 
-    function obterIconeHTML(dominio, iconesMap) {
+    function obterIconeHTML(dominio) {
       if (!dominio) return `<span class="ilha-icone-fallback">🚩</span>`;
-      
-      const baseUrl = "https://res.cloudinary.com/djh45admn/image/upload/v1790680862/";
       const chave = dominio.toLowerCase().trim();
-      const nomePng = iconesMap[chave];
+      const nomePng = mapaIcones[chave];
 
       if (nomePng) {
         const limpaNome = String(nomePng).replace(/\.png$/i, "").trim();
@@ -98,7 +159,7 @@
 
     function formatarEscudos(qtd) {
       const valor = Math.max(0, Math.min(3, parseInt(qtd) || 0));
-      const escudosPreenchidos = "🛡️".repeat(valor);
+      const escudosPreenchidos = "🛡️️".repeat(valor);
       const escudosVazios = "🛡️".repeat(3 - valor);
       
       return `<span style="opacity: 1;">${escudosPreenchidos}</span><span style="opacity: 0.25;">${escudosVazios}</span> (${valor}/3)`;
@@ -106,16 +167,11 @@
 
     // CARREGA A ABA DOMINAÇÃO (ILHAS)
     async function carregarDominacao() {
-      const requestId = ++currentRequestId;
       container.innerHTML = "<p style='color:#fff; text-align:center;'>Carregando ilhas da Grand Line...</p>";
 
       try {
-        const [ilhasSnap, iconesMap] = await Promise.all([
-          get(ref(db, "ilhas")),
-          carregarMapaIcones()
-        ]);
-
-        if (requestId !== currentRequestId) return; // Se mudou de aba enquanto carregava, aborta
+        await carregarCacheIcones();
+        const ilhasSnap = await get(ref(db, "ilhas"));
 
         if (!ilhasSnap.exists()) {
           container.innerHTML = "<p style='color:#fff; text-align:center;'>Nenhuma ilha cadastrada no momento.</p>";
@@ -131,8 +187,8 @@
         const ids = Object.keys(ilhasData).sort((a, b) => Number(a) - Number(b));
 
         for (const id of ids) {
-          const ilha = ilhasData[id];
-          const iconeHTML = obterIconeHTML(ilha.dominio, iconesMap);
+          const ilha = ilhasData[id] || {};
+          const iconeHTML = obterIconeHTML(ilha.dominio);
           const escudosHTML = formatarEscudos(ilha.escudo);
 
           const card = document.createElement("div");
@@ -141,7 +197,7 @@
           card.innerHTML = `
             <div class="ilha-header">
               <span class="ilha-num">${id}</span>
-              <h2 class="ilha-nome">${ilha.nome}</h2>
+              <h2 class="ilha-nome">${ilha.nome || 'Ilha Sem Nome'}</h2>
             </div>
             <div class="ilha-detalhes-container">
               <div class="ilha-detalhes-texto">
@@ -155,31 +211,25 @@
           listContainer.appendChild(card);
         }
 
-        if (requestId === currentRequestId) {
-          container.appendChild(listContainer);
-        }
+        container.appendChild(listContainer);
 
       } catch (error) {
-        if (requestId === currentRequestId) {
-          console.error("Erro ao carregar ilhas:", error);
-          container.innerHTML = "<p style='color:#ff5555; text-align:center;'>Erro ao carregar dados do mapa.</p>";
-        }
+        console.error("Erro ao carregar ilhas:", error);
+        container.innerHTML = "<p style='color:#ff5555; text-align:center;'>Erro ao carregar dados do mapa.</p>";
       }
     }
 
     // CARREGA A ABA JOGADORES (PRESENÇA NAS ILHAS)
     async function carregarJogadores() {
-      const requestId = ++currentRequestId;
       container.innerHTML = "<p style='color:#fff; text-align:center;'>Mapeando presença das facções e bandos...</p>";
 
       try {
-        const [playersSnap, ilhasSnap, iconesMap] = await Promise.all([
-          get(ref(db, "players")),
-          get(ref(db, "ilhas")),
-          carregarMapaIcones()
-        ]);
+        await carregarCacheIcones();
 
-        if (requestId !== currentRequestId) return; // Se mudou de aba enquanto carregava, aborta
+        const [playersSnap, ilhasSnap] = await Promise.all([
+          get(ref(db, "players")),
+          get(ref(db, "ilhas"))
+        ]);
 
         if (!playersSnap.exists()) {
           container.innerHTML = "<p style='color:#fff; text-align:center;'>Nenhum jogador encontrado.</p>";
@@ -192,6 +242,7 @@
         const presencasPorIlha = {};
 
         Object.values(playersData).forEach(player => {
+          if (!player) return;
           const char = player.character || {};
           const info = player.info || {};
 
@@ -235,7 +286,7 @@
           let gruposHTML = "";
 
           for (const [nomeGrupo, dados] of Object.entries(grupos)) {
-            const iconeHTML = obterIconeHTML(nomeGrupo, iconesMap);
+            const iconeHTML = obterIconeHTML(nomeGrupo);
 
             gruposHTML += `
               <div class="grupo-presenca-item">
@@ -264,31 +315,54 @@
           listContainer.appendChild(ilhaCard);
         }
 
-        if (requestId === currentRequestId) {
-          container.appendChild(listContainer);
-        }
+        container.appendChild(listContainer);
 
       } catch (error) {
-        if (requestId === currentRequestId) {
-          console.error("Erro ao carregar presença dos jogadores:", error);
-          container.innerHTML = "<p style='color:#ff5555; text-align:center;'>Erro ao carregar presença nas ilhas.</p>";
-        }
+        console.error("Erro ao carregar presença dos jogadores:", error);
+        container.innerHTML = "<p style='color:#ff5555; text-align:center;'>Erro ao carregar presença nas ilhas.</p>";
       }
     }
 
-    window.alternarAba = function (aba) {
-      abaAtual = aba;
-
-      document.getElementById("btn-dominacao").classList.toggle("active", aba === "dominacao");
-      document.getElementById("btn-jogadores").classList.toggle("active", aba === "jogadores");
+    // ALTERNADOR DE ABAS
+    function alternarAba(aba) {
+      if (btnDominacao) btnDominacao.classList.toggle("active", aba === "dominacao");
+      if (btnJogadores) btnJogadores.classList.toggle("active", aba === "jogadores");
 
       if (aba === "dominacao") {
         carregarDominacao();
       } else {
         carregarJogadores();
       }
-    };
+    }
 
+    // LISTENERS DE CLIQUE DAS ABAS
+    if (btnDominacao) {
+      btnDominacao.addEventListener("click", () => alternarAba("dominacao"));
+    }
+    if (btnJogadores) {
+      btnJogadores.addEventListener("click", () => alternarAba("jogadores"));
+    }
+
+    // EXPORTA PARA O ESCOPO GLOBAL (caso ainda seja necessário chamar via console ou scripts externos)
+    window.alternarAba = alternarAba;
+
+    // INICIALIZADOR DA PÁGINA
     carregarDominacao();
 
   </script>
+
+  <!-- MENU MOBILE SCRIPT -->
+  <script>
+    const menuToggle = document.getElementById("menu-toggle");
+    const navMenu = document.getElementById("nav-menu");
+
+    if (menuToggle && navMenu) {
+      menuToggle.addEventListener("click", () => {
+        navMenu.classList.toggle("active");
+      });
+    }
+  </script>
+
+</body>
+
+</html>

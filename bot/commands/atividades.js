@@ -690,14 +690,14 @@ async function enviarRelatorioGrupo(sock, from) {
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
 
     const msgStatus = `📊 *STATUS DA ATIVIDADE* 📊\n\n` +
-        `> Início: ${horaInicioStr} (UTC-3)\n` +
-        `───────────────────\n` +
+        `> Início: ${horaInicioStr} (BRT)\n` +
+        `──────────────────\n` +
         `*LUTAS EM ANDAMENTO:*\n\n` +
         `${blocoArenas}\n` +
-        `───────────────────\n` +
+        `──────────────────\n` +
         `*JOGADORES DERROTADOS:*\n\n` +
         `${derrotadosTexto}\n` +
-        `───────────────────\n` +
+        `──────────────────\n` +
         `*JOGADORES AGUARDANDO:*\n\n` +
         `${aguardandoTexto}`;
 
@@ -719,11 +719,11 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
         : 'Nenhum';
 
     const msgStatusFinal = `📊 *STATUS DA ATIVIDADE* 📊\n\n` +
-        `> Início: ${horaInicioStr} (UTC-3)\n` +
-        `───────────────────\n` +
+        `> Início: ${horaInicioStr} (BRT)\n` +
+        `──────────────────\n` +
         `*JOGADORES RESTANTES:*\n\n` +
         `${sobreviventesTexto}\n` +
-        `───────────────────\n` +
+        `──────────────────\n` +
         `*JOGADORES DERROTADOS:*\n\n` +
         `${derrotadosTexto}`;
 
@@ -887,7 +887,7 @@ async function enviarPainelAtividade(sock, from, atividade) {
     const horarioFormatado = `${horasStr}:${minutosStr}`;
 
     const mensagemPainel = `*${nomeAtividadeMaiusculo}*\n\n` +
-        `> Término: ${horarioFormatado} (UTC-3)\n\n` +
+        `> Término: ${horarioFormatado} (BRT)\n\n` +
         `${atividade.faccaoCriador}:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +

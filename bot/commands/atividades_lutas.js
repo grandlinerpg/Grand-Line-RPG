@@ -109,11 +109,13 @@ async function encerrarListaEIniciarPartida(sock, from) {
     if (!atividade) return;
 
     if (atividade.defensores.length === 0) {
-        await sock.sendMessage(from, { text: `⚠️️ A atividade *${atividade.nomeAtividade}* foi encerrada sem defensores.` });
+        await sock.sendMessage(from, { text: `⚠️ A atividade *${atividade.nomeAtividade}* foi encerrada sem defensores.` });
         delete atividadesAtivas[from];
         return;
     }
 
+    // Inicializa a propriedade lutadoresAtivos caso não exista
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
     atividade.bancoAtacantes = [...atividade.anunciantes];
     atividade.bancoDefensores = [...atividade.defensores];
     atividade.fase = 'selecao';
@@ -121,11 +123,11 @@ async function encerrarListaEIniciarPartida(sock, from) {
 
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
-    const forcaAtacantes = atividade.bancoAtacantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
-    const forcaDefensores = atividade.bancoDefensores.reduce((acc, curr) => acc + (curr.level || 0), 0);
+    const forcaAtacantes = atividade.bancoAtacantes.reduce((acc, curr) => acc + curr.level, 0);
+    const forcaDefensores = atividade.bancoDefensores.reduce((acc, curr) => acc + curr.level, 0);
 
-    let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level || 1})`).join('\n');
-    let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level || 1})`).join('\n');
+    let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
+    let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n');
 
     const msgInicioConfrontos = `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\n` +
         `${atividade.faccaoCriador}:\n\n${atacantesTexto}\n\n` +
@@ -142,6 +144,7 @@ async function verificarEParearAutomatico(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
     if (atividade.proximoDesafiante) {
@@ -221,6 +224,7 @@ async function processarEscolhaLutador(sock, from, targetId) {
     const atividade = atividadesAtivas[from];
     if (!atividade || atividade.fase !== 'selecao') return;
 
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
     let p1, p2;
 
     if (atividade.vezSelecao === 'atacante') {
@@ -248,7 +252,7 @@ async function processarEscolhaLutador(sock, from, targetId) {
 
         const randDefIdx = Math.floor(Math.random() * atividade.bancoDefensores.length);
         p2 = atividade.bancoDefensores.splice(randDefIdx, 1)[0];
-        p1 = atividade.bancoAtacantes.splice(idxAtq, 1)[0];
+        p1 = atividade.bancoAtacantes.shift();
 
         await alocarLutaNaArena(sock, from, p1, p2);
         await enviarRelatorioGrupo(sock, from);
@@ -287,6 +291,8 @@ async function processarEscolhaLutador(sock, from, targetId) {
 
 async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const atividade = atividadesAtivas[grupoOrigem];
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
+
     let arenasAtivas = {};
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
@@ -297,7 +303,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
         
-        const ocupadaNoFirebase = arenaRemote && arenaRemote.fase && arenaRemote.fase !== 'aguardando' && arenaRemote.fase !== 'livre';
+        const ocupadaNoFirebase = arenaRemote && arenaRemote.fase !== 'aguardando';
 
         return !ocupadaNoFirebase;
     });
@@ -345,42 +351,21 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
     const atividade = atividadesAtivas[grupoOrigem];
     if (!atividade) return;
 
-    // 1. Identificar e liberar a arena ocupada por este combate
-    const lutaIndex = atividade.lutadoresAtivos.findIndex(l => 
-        (l.p1.lid === vencedorObj.lid || l.p1.uid === vencedorObj.uid || l.p1.numero === vencedorObj.numero || l.p2.lid === vencedorObj.lid || l.p2.uid === vencedorObj.uid || l.p2.numero === vencedorObj.numero) &&
-        (l.p1.lid === perdedorObj.lid || l.p1.uid === perdedorObj.uid || l.p1.numero === perdedorObj.numero || l.p2.lid === perdedorObj.lid || l.p2.uid === perdedorObj.uid || l.p2.numero === perdedorObj.numero)
-    );
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
+    atividade.historicoLutas = atividade.historicoLutas || [];
+    atividade.derrotados = atividade.derrotados || [];
 
-    if (lutaIndex !== -1) {
-        const arenaJid = atividade.lutadoresAtivos[lutaIndex].arena;
-        const chaveSemGus = arenaJid.replace('@g.us', '');
-
-        try {
-            await axios.patch(`${FIREBASE_URL}/arenas_ativas/${chaveSemGus}.json`, {
-                fase: 'aguardando',
-                p1: null,
-                p2: null,
-                grupoOrigemAtividade: null
-            });
-        } catch (e) {
-            console.error('Erro ao libertar arena no Firebase:', e.message);
-        }
-
-        atividade.lutadoresAtivos.splice(lutaIndex, 1);
-    }
-
-    // 2. Registrar histórico
     atividade.historicoLutas.push({ vencedor: vencedorObj, perdedor: perdedorObj });
     atividade.derrotados.push(perdedorObj);
 
-    const ehAtacante = atividade.anunciantes.some(a => 
-        (a.lid && a.lid === vencedorObj.lid) || 
-        (a.uid && a.uid === vencedorObj.uid) || 
-        (a.numero && a.numero === vencedorObj.numero)
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos.filter(
+        l => l.p1.lid !== vencedorObj.lid && l.p2.lid !== vencedorObj.lid
     );
 
+    const ehAtacante = atividade.anunciantes.some(a => a.lid === vencedorObj.lid || a.numero === vencedorObj.numero || a.uid === vencedorObj.uid);
+
     if (ehAtacante) {
-        atividade.vitoriasAtacantes++;
+        atividade.vitoriasAtacantes = (atividade.vitoriasAtacantes || 0) + 1;
         
         const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
         const totalDefensoresVivos = atividade.bancoDefensores.length + defensoresEmLuta.length;
@@ -398,7 +383,7 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
             atividade.proximoDesafiante = vencedorObj;
         }
     } else {
-        atividade.vitoriasDefensores++;
+        atividade.vitoriasDefensores = (atividade.vitoriasDefensores || 0) + 1;
 
         const atacantesEmLuta = atividade.lutadoresAtivos.map(l => l.p1);
         const totalAtacantesVivos = atividade.bancoAtacantes.length + atacantesEmLuta.length;
@@ -417,7 +402,6 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
         }
     }
 
-    // 3. Verificar fim da atividade
     const semLutasEmAndamento = atividade.lutadoresAtivos.length === 0;
     const atacantesTotalmenteEliminados = atividade.bancoAtacantes.length === 0 && !atividade.lutadoresAtivos.some(l => l.p1);
     const defensoresTotalmenteEliminados = atividade.bancoDefensores.length === 0 && !atividade.lutadoresAtivos.some(l => l.p2);
@@ -433,6 +417,7 @@ async function enviarRelatorioGrupo(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
     const horaInicioStr = atividade.horaInicio || '16:30';
 
     let derrotadosTexto = atividade.derrotados.length > 0
@@ -441,7 +426,7 @@ async function enviarRelatorioGrupo(sock, from) {
 
     const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
     if (atividade.proximoDesafiante) {
-        if (!todosAguardando.some(p => p.lid === atividade.proximoDesafiante.lid || p.uid === atividade.proximoDesafiante.uid)) {
+        if (!todosAguardando.some(p => p.lid === atividade.proximoDesafiante.lid)) {
             todosAguardando.push(atividade.proximoDesafiante);
         }
     }
@@ -510,6 +495,7 @@ async function finalizarAtividade(sock, from) {
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
     const nomeDefesa = atividade.faccaoDefensora || 'Defensora';
 
     const atacantesEmLuta = atividade.lutadoresAtivos.map(l => l.p1);
@@ -522,9 +508,9 @@ async function finalizarAtividade(sock, from) {
         const pd = atividade.proximoDesafiante;
         const ehAtacante = atividade.anunciantes.some(a => a.lid === pd.lid || a.numero === pd.numero || a.uid === pd.uid);
         if (ehAtacante) {
-            if (!atacantesVivos.some(a => a.lid === pd.lid || a.uid === pd.uid)) atacantesVivos.push(pd);
+            if (!atacantesVivos.some(a => a.lid === pd.lid)) atacantesVivos.push(pd);
         } else {
-            if (!defensoresVivos.some(d => d.lid === pd.lid || d.uid === pd.uid)) defensoresVivos.push(pd);
+            if (!defensoresVivos.some(d => d.lid === pd.lid)) defensoresVivos.push(pd);
         }
     }
 
@@ -609,7 +595,7 @@ async function finalizarAtividade(sock, from) {
                     if (playerData.exp !== undefined || playerData.saldo !== undefined) {
                         await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,
-                            saldo: saldoAtual + berriesGanho
+                            saldo: novoSaldo
                         });
                     }
                 }

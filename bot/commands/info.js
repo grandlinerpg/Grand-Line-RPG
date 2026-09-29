@@ -3,7 +3,7 @@ const {
     FIREBASE_URL, 
     obterTemporadaAtual, 
     obterEmojiFaccao, 
-    obterJidEfetivo 
+    obterJidEfetivo  
 } = require('../index');
 
 async function handleInfoCommands(sock, m, text, from) {

@@ -279,6 +279,16 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     continue;
                 }
 
+                // Checagem de força máxima para defensores
+                const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + curr.level, 0);
+                const forcaDefensoresAtual = atividade.defensores.reduce((acc, curr) => acc + curr.level, 0);
+                const nivelNovoJogador = player?.info?.level ?? 1;
+
+                if (forcaDefensoresAtual + nivelNovoJogador > forcaAtacantes) {
+                    await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* (Level ${nivelNovoJogador}) não pode ser inserido! A força da defesa (${forcaDefensoresAtual + nivelNovoJogador}) ultrapassaria a força dos atacantes (${forcaAtacantes}).` }, { quoted: m });
+                    continue;
+                }
+
                 if (!atividade.faccaoDefensora) {
                     atividade.faccaoDefensora = faccaoJogador;
                 }
@@ -286,7 +296,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 atividade.defensores.push({
                     uid: playerUid,
                     nome: player?.character?.charName || player?.nome || 'Defensor',
-                    level: player?.info?.level ?? 1,
+                    level: nivelNovoJogador,
                     lid: player?.number?.LID || senderId,
                     numero: player?.number?.n || senderId,
                     faccao: faccaoJogador
@@ -305,7 +315,77 @@ async function handleAtividadesCommands(sock, m, text, from) {
         }
     }
 
-    // 5. Encerrar Lista e Iniciar Confrontos: !encerrar
+    // 5. Remover da lista: !remover ou !remover @jogador
+    if (text.startsWith('!remover')) {
+        const atividade = atividadesAtivas[from];
+        if (!atividade || atividade.fase !== 'lista') {
+            await sock.sendMessage(from, { text: '❌ Não há nenhuma atividade aberta em fase de inscrição para remover participantes.' }, { quoted: m });
+            return true;
+        }
+
+        try {
+            const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+            const playersData = playersRes.data || {};
+
+            const mentionedJids = m.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
+            const targetsToRemove = [];
+
+            if (mentionedJids.length > 0) {
+                for (const jid of mentionedJids) {
+                    const targetId = jid.split('@')[0].split(':')[0].trim();
+                    const targetUid = Object.keys(playersData).find(u => 
+                        String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                        String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
+                    );
+                    if (targetUid) targetsToRemove.push(targetUid);
+                }
+            } else {
+                const playerUid = Object.keys(playersData).find(u => 
+                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                    String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
+                );
+                if (playerUid) targetsToRemove.push(playerUid);
+            }
+
+            if (targetsToRemove.length === 0) {
+                await sock.sendMessage(from, { text: '❌ Jogador não encontrado no banco de dados.' }, { quoted: m });
+                return true;
+            }
+
+            let removeuAlguem = false;
+
+            for (const uid of targetsToRemove) {
+                const idxAtq = atividade.anunciantes.findIndex(a => a.uid === uid);
+                if (idxAtq !== -1) {
+                    atividade.anunciantes.splice(idxAtq, 1);
+                    removeuAlguem = true;
+                    continue;
+                }
+
+                const idxDef = atividade.defensores.findIndex(d => d.uid === uid);
+                if (idxDef !== -1) {
+                    atividade.defensores.splice(idxDef, 1);
+                    removeuAlguem = true;
+                    if (atividade.defensores.length === 0) {
+                        atividade.faccaoDefensora = null;
+                    }
+                }
+            }
+
+            if (removeuAlguem) {
+                await enviarPainelAtividade(sock, from, atividade);
+            } else {
+                await sock.sendMessage(from, { text: '⚠️ O(s) jogador(es) informado(s) não estão inscritos na atividade.' }, { quoted: m });
+            }
+
+            return true;
+        } catch (e) {
+            await sock.sendMessage(from, { text: '❌ Erro ao remover participante.' }, { quoted: m });
+            return true;
+        }
+    }
+
+    // 6. Encerrar Lista e Iniciar Confrontos: !encerrar
     if (text === '!encerrar') {
         const atividade = atividadesAtivas[from];
         if (!atividade || atividade.fase !== 'lista') {
@@ -318,7 +398,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
         return true;
     }
 
-    // 6. Selecionar oponente durante as rodadas de pareamento: !escolher @jogador
+    // 7. Selecionar oponente durante as rodadas de pareamento: !escolher @jogador
     if (text.startsWith('!escolher')) {
         const atividade = atividadesAtivas[from];
         if (!atividade || atividade.fase !== 'selecao') return false;

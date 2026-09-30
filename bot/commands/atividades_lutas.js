@@ -441,7 +441,7 @@ async function enviarRelatorioGrupo(sock, from) {
     if (textoTerritorio) {
         cabecalho += `${textoTerritorio}\n`;
     }
-    cabecalho += `> Início: ${horaInicioStr} BRT\n`;
+    cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
 
     const msgStatus = cabecalho +
         `──────────────────\n` +

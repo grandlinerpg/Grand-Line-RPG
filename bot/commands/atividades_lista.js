@@ -34,13 +34,30 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 return true;
             }
 
+            // Buscar atividades da facção para listar na pergunta
+            const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes/${faccao}/atividades.json`);
+            const atividadesFaccao = faccoesRes.data || {};
+
+            const chavesAtividades = Object.keys(atividadesFaccao);
+            if (chavesAtividades.length === 0) {
+                await sock.sendMessage(from, { text: `❌ Não há atividades cadastradas para a facção *${faccao}*.` }, { quoted: m });
+                return true;
+            }
+
+            let listaTexto = `❓ *Qual atividade você deseja iniciar?*\n\n*Atividades disponíveis para ${faccao}:*\n`;
+            chavesAtividades.forEach(key => {
+                const ativ = atividadesFaccao[key];
+                const nomeAtiv = ativ?.nome || key;
+                listaTexto += `• *${nomeAtiv}*\n`;
+            });
+
             sessoesCriacao[from] = {
                 fase: 'aguardando_nome',
                 criadorUid: playerUid,
                 faccaoCriador: faccao
             };
 
-            await sock.sendMessage(from, { text: '❓ *Qual atividade você quer iniciar?*' }, { quoted: m });
+            await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
             return true;
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao validar personagem para atividade.' }, { quoted: m });
@@ -76,6 +93,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
             }
 
             const ativDados = atividadesFaccao[chaveAtividade];
+            sessao.chaveAtividade = chaveAtividade;
             sessao.nomeAtividade = ativDados?.nome || text;
             sessao.nivelAtividade = ativDados?.nivel || 1;
             sessao.fase = 'aguardando_participantes';
@@ -118,6 +136,29 @@ async function handleAtividadesCommands(sock, m, text, from) {
         if (uidsParticipantes.size === 0) {
             await sock.sendMessage(from, { text: '❌ Nenhum jogador válido foi identificado. Marque alguém com @ ou digite "eu".' }, { quoted: m });
             return true;
+        }
+
+        // Validação da quantidade mínima e máxima de jogadores definida no Firebase
+        try {
+            const ativRes = await axios.get(`${FIREBASE_URL}/faccoes/${sessao.faccaoCriador}/atividades/${sessao.chaveAtividade}/jogadores.json`);
+            const limitesJogadores = ativRes.data || {};
+
+            const min = limitesJogadores.min !== undefined ? Number(limitesJogadores.min) : null;
+            const max = limitesJogadores.max !== undefined ? Number(limitesJogadores.max) : null;
+
+            const qtd = uidsParticipantes.size;
+
+            if (min !== null && qtd < min) {
+                await sock.sendMessage(from, { text: `❌ A quantidade de jogadores escolhida (${qtd}) é menor que o mínimo necessário (${min}) para esta atividade.` }, { quoted: m });
+                return true;
+            }
+
+            if (max !== null && qtd > max) {
+                await sock.sendMessage(from, { text: `❌ A quantidade de jogadores escolhida (${qtd}) excede o máximo permitido (${max}) para esta atividade.` }, { quoted: m });
+                return true;
+            }
+        } catch (e) {
+            // Caso ocorra erro ao buscar os limites, segue o fluxo
         }
 
         const anunciantes = [];

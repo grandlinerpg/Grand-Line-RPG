@@ -126,8 +126,17 @@ async function handleInfoCommands(sock, m, text, from) {
                 const escudosAbertos = '⛉'.repeat(Math.max(0, 3 - qtdEscudos));
                 const formatEscudos = `(${escudosFechados}${escudosAbertos})`;
 
+                const dominioNome = ilha.dominio || 'Nenhum';
+                let emojiFaccao = '🏴‍☠️';
+
+                if (dominioNome.trim().toLowerCase() === 'governo mundial') {
+                    emojiFaccao = '⚓';
+                } else if (dominioNome.trim().toLowerCase() === 'independente') {
+                    emojiFaccao = '🚩';
+                }
+
                 domText += `*${index + 1}. ${ilha.nome || 'Ilha Sem Nome'} ${formatEscudos}*\n`;
-                domText += `> Domínio: ${ilha.dominio || 'Nenhum'}\n\n`;
+                domText += `> ${dominioNome} ${emojiFaccao}\n\n`;
             });
 
             await sock.sendMessage(from, { text: domText.trim() }, { quoted: m });
@@ -203,7 +212,7 @@ async function handleInfoCommands(sock, m, text, from) {
                 const dados = coliseuData[uid] || {};
                 const player = playersData[uid];
                 const emoji = obterEmojiFaccao(player?.character?.faction);
-                coliseuText += `${index + 1}º ${player?.character?.charName || 'Lutador'}${emoji ? ' ' + emoji : ''}\n> *✔️ ${dados.vitorias || 0} | ✖️ ${dados.derrotas || 0} | 🏅${dados.pontos || 0}*\n\n`;
+                coliseuText += `${index + 1}º ${player?.character?.charName || 'Lutador'}${emoji ? ' ' + emoji : ''}\n> *✔️ ${dados.vitorias || 0} | ✖️️ ${dados.derrotas || 0} | 🏅${dados.pontos || 0}*\n\n`;
             });
 
             await sock.sendMessage(from, { text: coliseuText.trim() }, { quoted: m });

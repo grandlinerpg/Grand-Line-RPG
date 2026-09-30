@@ -1,11 +1,23 @@
 const axios = require('axios');
 const { FIREBASE_URL, obterJidEfetivo } = require('../index');
 
-// Grupo onde os anúncios/listas são enviados (mesmo grupo da atividade)
+// Grupo onde os anúncios/listas são enviados
 const GRUPO_ATIVIDADES_LISTA = '120363409325935641@g.us';
 
 // Sessoes temporárias para controle do fluxo do comando !viajar
 const sessoesViagem = {};
+
+// Função auxiliar para buscar o nome da ilha no Firebase e formatar como "X. Nome da Ilha"
+async function obterNomeFormatadoIlha(idIlha) {
+    if (Number(idIlha) === 0) return '0. Base Operacional';
+    try {
+        const res = await axios.get(`${FIREBASE_URL}/ilhas/${idIlha}.json`);
+        const nomeIlha = res.data?.nome;
+        return nomeIlha ? `${idIlha}. ${nomeIlha}` : `${idIlha}. Ilha ${idIlha}`;
+    } catch (e) {
+        return `${idIlha}. Ilha ${idIlha}`;
+    }
+}
 
 async function handleViagemCommands(sock, m, text, from) {
     const senderId = obterJidEfetivo(m, from);
@@ -119,19 +131,37 @@ async function handleViagemCommands(sock, m, text, from) {
             });
         }
 
+        const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
+        const ehPirata = faccaoLower.includes('pirata');
+
+        if (ehPirata && ilhaAtualGrupo === 0) {
+            await sock.sendMessage(from, { text: '❌ Membros da facção *Piratas* não possuem acesso à Ilha 0!' }, { quoted: m });
+            delete sessoesViagem[from];
+            return true;
+        }
+
         sessao.membros = membrosViajantes;
         sessao.ilhaAtual = ilhaAtualGrupo;
         sessao.fase = 'aguardando_ilha_destino';
 
+        const nomeIlhaAtualFormatado = await obterNomeFormatadoIlha(ilhaAtualGrupo);
+
+        let instrucaoRetornoBase = '';
+        if (!ehPirata && ilhaAtualGrupo !== 0) {
+            instrucaoRetornoBase = '\n💡 *Digite 0 para retornar à Base.*';
+        }
+
+        const limiteTexto = ehPirata ? '1 a 12' : '0 a 12';
+
         await sock.sendMessage(from, { 
             text: `🏝️ *Para qual ilha os jogadores desejam viajar?*\n\n` +
-                  `Você está atualmente na *Ilha ${ilhaAtualGrupo}*.\n` +
-                  `Digite um número de *0 a 12*.` 
+                  `Você está atualmente na *${nomeIlhaAtualFormatado}*.\n` +
+                  `Digite o número da ilha desejada (*${limiteTexto}*).${instrucaoRetornoBase}` 
         }, { quoted: m });
         return true;
     }
 
-    // 3. Passo 2: Escolha do número da ilha (0 a 12) e validação de movimento
+    // 3. Passo 2: Escolha do número da ilha e validação de movimento
     if (sessoesViagem[from] && sessoesViagem[from].fase === 'aguardando_ilha_destino') {
         const sessao = sessoesViagem[from];
 
@@ -146,9 +176,16 @@ async function handleViagemCommands(sock, m, text, from) {
         if (responderUid !== sessao.criadorUid) return false;
 
         const ilhaDestino = parseInt(text.trim(), 10);
+        const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
+        const ehPirata = faccaoLower.includes('pirata');
+
+        if (ehPirata && ilhaDestino === 0) {
+            await sock.sendMessage(from, { text: '❌ Membros da facção *Piratas* não possuem opção de acesso à Ilha 0!' }, { quoted: m });
+            return true;
+        }
 
         if (isNaN(ilhaDestino) || ilhaDestino < 0 || ilhaDestino > 12) {
-            await sock.sendMessage(from, { text: '❌ Por favor, digite um número de ilha válido de 0 a 12.' }, { quoted: m });
+            await sock.sendMessage(from, { text: '❌ Por favor, digite um número de ilha válido.' }, { quoted: m });
             return true;
         }
 
@@ -159,15 +196,19 @@ async function handleViagemCommands(sock, m, text, from) {
             if (ilhaAtual === 0) {
                 // De 0 pode ir para qualquer uma (1 a 12)
             } else if (ilhaDestino === 0) {
-                // De qualquer ilha (1 a 12) pode voltar para a 0
+                // De qualquer ilha (1 a 12) pode voltar para a 0 (somente Governo Mundial ou Exército Revolucionário)
             } else {
                 // Regra circular de 1 a 12: 1 para frente, 1 para trás, 12 -> 1, 1 -> 12
-                const avanco = (ilhaAtual % 12) + 1; // Ex: 1->2, 12->1
-                const recuo = ilhaAtual === 1 ? 12 : ilhaAtual - 1; // Ex: 2->1, 1->12
+                const avanco = (ilhaAtual % 12) + 1;
+                const recuo = ilhaAtual === 1 ? 12 : ilhaAtual - 1;
 
                 if (ilhaDestino !== avanco && ilhaDestino !== recuo) {
+                    const nomeRecuo = await obterNomeFormatadoIlha(recuo);
+                    const nomeAvanco = await obterNomeFormatadoIlha(avanco);
+                    const opcaoZero = ehPirata ? '' : '*0 (Retornar à Base)*, ';
+
                     await sock.sendMessage(from, { 
-                        text: `❌ Movimento inválido! Estando na *Ilha ${ilhaAtual}*, você só pode ir para a *Ilha 0*, *Ilha ${recuo}* ou *Ilha ${avanco}*.` 
+                        text: `❌ Movimento inválido! Estando na *Ilha ${ilhaAtual}*, você só pode ir para ${opcaoZero}*${nomeRecuo}* ou *${nomeAvanco}*.` 
                     }, { quoted: m });
                     return true;
                 }
@@ -180,7 +221,7 @@ async function handleViagemCommands(sock, m, text, from) {
         // Salvar Viagem no Firebase
         try {
             const dataInicio = new Date();
-            const dataTermino = new Date(dataInicio.getTime() + 5 * 60 * 1000); // 5 minutos depois
+            const dataTermino = new Date(dataInicio.getTime() + 1 * 60 * 1000); // 1 minuto depois
 
             const formatarData = (d) => {
                 const dia = String(d.getDate()).padStart(2, '0');
@@ -197,7 +238,7 @@ async function handleViagemCommands(sock, m, text, from) {
                 jogadoresObj[index + 1] = membro.nome;
             });
 
-            // Buscar viagens existentes para definir a próxima chave numérica (1, 2, 3...)
+            // Buscar viagens existentes para definir a próxima chave numérica
             const viagensRes = await axios.get(`${FIREBASE_URL}/ilhas/viagens.json`);
             const viagensExistentes = viagensRes.data || {};
             const proximoId = Object.keys(viagensExistentes).length + 1;
@@ -212,20 +253,22 @@ async function handleViagemCommands(sock, m, text, from) {
 
             await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosViagem);
 
+            const nomeIlhaDestinoFormatado = await obterNomeFormatadoIlha(ilhaDestino);
+
             await sock.sendMessage(from, { 
                 text: `⛵ *Viagem iniciada com sucesso!*\n\n` +
-                      `📍 Destino: *Ilha ${ilhaDestino}*\n` +
-                      `⏳ Chegada prevista em 5 minutos.` 
+                      `📍 Destino: *${nomeIlhaDestinoFormatado}*\n` +
+                      `⏳ Chegada prevista em 1 minuto.` 
             }, { quoted: m });
 
             const forcaTotal = sessao.membros.reduce((acc, curr) => acc + (curr.level || 0), 0);
             const faccaoNome = sessao.faccaoCriador;
             const nomesJogadores = sessao.membros.map(m => m.nome).join(', ');
 
-            // Agendar anúncio após 5 minutos
+            // Agendar anúncio de chegada após 1 minuto
             setTimeout(async () => {
                 try {
-                    // Atualiza a ilha atual dos jogadores no banco
+                    // Atualiza a ilha atual dos jogadores no banco de dados
                     for (const membro of sessao.membros) {
                         await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
                             ilha: ilhaDestino
@@ -233,15 +276,15 @@ async function handleViagemCommands(sock, m, text, from) {
                     }
 
                     const mensagemChegada = 
-                        `⚓ *CHEGADA NA ILHA ${ilhaDestino}*\n\n` +
-                        `Membros da facção *${faccaoNome}* (${nomesJogadores}) acabaram de chegar na *Ilha ${ilhaDestino}*!\n\n` +
+                        `⚓ *CHEGADA NA ${nomeIlhaDestinoFormatado.toUpperCase()}*\n\n` +
+                        `Membros da facção *${faccaoNome}* (${nomesJogadores}) acabaram de chegar na *${nomeIlhaDestinoFormatado}*!\n\n` +
                         `💪 *Força total do grupo:* ${forcaTotal}`;
 
                     await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemChegada });
                 } catch (err) {
                     console.error('Erro ao processar chegada da viagem:', err);
                 }
-            }, 5 * 60 * 1000);
+            }, 1 * 60 * 1000);
 
             delete sessoesViagem[from];
             return true;

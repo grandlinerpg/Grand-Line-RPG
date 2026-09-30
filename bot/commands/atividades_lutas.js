@@ -42,7 +42,7 @@ function obterEmojiFaccao(param, atividade = null) {
         }
     }
 
-    return EMOJIS_FACCAO[nomeFaccao] || '⚔️';
+    return EMOJIS_FACCAO[nomeFaccao] || '⚔️️';
 }
 
 function obterHoraAtualUTC3() {
@@ -128,7 +128,17 @@ async function encerrarListaEIniciarPartida(sock, from) {
     let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
     let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n');
 
-    const msgInicioConfrontos = `⚔️ *INÍCIO DA FASE DE CONFRONTOS!*\n\n` +
+    // Título idêntico ao painel da lista de atividades
+    const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
+    const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
+    const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
+
+    let cabecalho = `*${nomeAtividadeMaiusculo}*\n\n`;
+    if (textoTerritorio) {
+        cabecalho += `${textoTerritorio}\n`;
+    }
+
+    const msgInicioConfrontos = `${cabecalho}\n` +
         `${atividade.faccaoCriador}:\n\n${atacantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${nomeDefesa}:\n\n${defensoresTexto}\n\n` +
@@ -435,9 +445,13 @@ async function enviarRelatorioGrupo(sock, from) {
         : 'Nenhum';
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
+    
+    // Título idêntico ao painel da lista de atividades
+    const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
+    const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
 
-    let cabecalho = `📊 *STATUS DA ATIVIDADE* 📊\n\n`;
+    let cabecalho = `*${nomeAtividadeMaiusculo}*\n\n`;
     if (textoTerritorio) {
         cabecalho += `${textoTerritorio}\n`;
     }
@@ -471,9 +485,12 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
         ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n')
         : 'Nenhum';
 
+    // Título idêntico ao painel da lista de atividades
+    const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
+    const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
 
-    let cabecalho = `📊 *STATUS DA ATIVIDADE* 📊\n\n`;
+    let cabecalho = `*${nomeAtividadeMaiusculo}*\n\n`;
     if (textoTerritorio) {
         cabecalho += `${textoTerritorio}\n`;
     }

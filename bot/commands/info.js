@@ -98,6 +98,45 @@ async function handleInfoCommands(sock, m, text, from) {
         return true;
     }
 
+    if (text === '!dom' || text.startsWith('!dom ')) {
+        try {
+            const response = await axios.get(`${FIREBASE_URL}/ilhas.json`);
+            const ilhasData = response.data;
+
+            if (!ilhasData) {
+                return await sock.sendMessage(from, { text: '🌎 *Nenhuma ilha cadastrada.*' }, { quoted: m });
+            }
+
+            // Garante o tratamento caso ilhas venha como Array ou Objeto do Firebase
+            const listaIlhas = Array.isArray(ilhasData) 
+                ? ilhasData.filter(Boolean) 
+                : Object.values(ilhasData);
+
+            if (listaIlhas.length === 0) {
+                return await sock.sendMessage(from, { text: '🌎 *Nenhuma ilha encontrada.*' }, { quoted: m });
+            }
+
+            let domText = `🌎 *— DOMINAÇÃO —* 🌎\n\n`;
+
+            listaIlhas.forEach((ilha, index) => {
+                const qtdEscudos = parseInt(ilha.escudo) || 0;
+                
+                // Constrói os escudos: ⛊ para os escudos ativos e ⛉ para os restantes (até o limite de 3)
+                const escudosFechados = '⛊'.repeat(Math.min(qtdEscudos, 3));
+                const escudosAbertos = '⛉'.repeat(Math.max(0, 3 - qtdEscudos));
+                const formatEscudos = `(${escudosFechados}${escudosAbertos})`;
+
+                domText += `*${index + 1}. ${ilha.nome || 'Ilha Sem Nome'} ${formatEscudos}*\n`;
+                domText += `> Domínio: ${ilha.dominio || 'Nenhum'}\n\n`;
+            });
+
+            await sock.sendMessage(from, { text: domText.trim() }, { quoted: m });
+        } catch (e) {
+            await sock.sendMessage(from, { text: '❌ Erro ao buscar dados de dominação.' }, { quoted: m });
+        }
+        return true;
+    }
+
     if (text === '!inscrever' || text.startsWith('!inscrever ')) {
         try {
             const senderId = obterJidEfetivo(m, from);

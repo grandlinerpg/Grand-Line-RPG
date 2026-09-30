@@ -96,6 +96,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
             sessao.chaveAtividade = chaveAtividade;
             sessao.nomeAtividade = ativDados?.nome || text;
             sessao.nivelAtividade = ativDados?.nivel || 1;
+            sessao.tipoAtividade = Number(ativDados?.tipo || 1);
             sessao.fase = 'aguardando_participantes';
 
             await sock.sendMessage(from, { text: '👥 *Quais jogadores vão participar da atividade?*\n\n_(Mencione usando @ ou digite "eu" para incluir a si mesmo)_' }, { quoted: m });
@@ -198,10 +199,43 @@ async function handleAtividadesCommands(sock, m, text, from) {
             });
         }
 
+        // Validação da Ilha / Facção Dominante para Tipo 2 e Tipo 3
+        let faccaoDefensoraCalculada = null;
+        const tipoAtiv = sessao.tipoAtividade || 1;
+
+        if (tipoAtiv === 2 || tipoAtiv === 3) {
+            try {
+                const ilhaRes = await axios.get(`${FIREBASE_URL}/ilhas/${ilhaReferencia}.json`);
+                const ilhaDados = ilhaRes.data || {};
+                const dominioIlha = ilhaDados.dominio;
+                const escudoIlha = Number(ilhaDados.escudo ?? 0);
+
+                // Não pode iniciar atividade contra território da sua própria facção
+                if (dominioIlha === sessao.faccaoCriador) {
+                    await sock.sendMessage(from, { text: `❌ A sua facção (*${sessao.faccaoCriador}*) já domina este território!` }, { quoted: m });
+                    delete sessoesCriacao[from];
+                    return true;
+                }
+
+                // No tipo 3 a atividade só pode ser iniciada se escudo: 0
+                if (tipoAtiv === 3 && escudoIlha !== 0) {
+                    await sock.sendMessage(from, { text: `❌ Esta atividade não pode ser iniciada porque a ilha possui escudo ativo (Escudo: ${escudoIlha})!` }, { quoted: m });
+                    delete sessoesCriacao[from];
+                    return true;
+                }
+
+                faccaoDefensoraCalculada = dominioIlha || null;
+            } catch (e) {
+                await sock.sendMessage(from, { text: '❌ Erro ao consultar dados da ilha no Firebase.' }, { quoted: m });
+                delete sessoesCriacao[from];
+                return true;
+            }
+        }
+
         atividadesAtivas[from] = {
             nomeAtividade: sessao.nomeAtividade,
             faccaoCriador: sessao.faccaoCriador,
-            faccaoDefensora: null,
+            faccaoDefensora: faccaoDefensoraCalculada,
             anunciantes: anunciantes,
             defensores: [],
             fase: 'lista',
@@ -388,7 +422,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
             if (removeuAlguem) {
                 await enviarPainelAtividade(sock, from, atividade);
             } else {
-                await sock.sendMessage(from, { text: '⚠️ O(s) jogador(es) informado(s) não estão inscritos na atividade.' }, { quoted: m });
+                await sock.sendMessage(from, { text: '⚠️️ O(s) jogador(es) informado(s) não estão inscritos na atividade.' }, { quoted: m });
             }
 
             return true;

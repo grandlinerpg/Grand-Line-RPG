@@ -9,6 +9,8 @@ const {
     processarEscolhaLutador 
 } = require('./atividades_lutas');
 
+const GRUPO_ATIVIDADES_LISTA = '120363409325935641@g.us';
+
 async function handleAtividadesCommands(sock, m, text, from) {
     const senderId = obterJidEfetivo(m, from);
 
@@ -243,7 +245,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
             }
         }
 
-        atividadesAtivas[from] = {
+        // Armazena a atividade no grupo de destino (GRUPO_ATIVIDADES_LISTA)
+        atividadesAtivas[GRUPO_ATIVIDADES_LISTA] = {
             nomeAtividade: sessao.nomeAtividade,
             faccaoCriador: sessao.faccaoCriador,
             faccaoDefensora: faccaoDefensoraCalculada,
@@ -263,16 +266,22 @@ async function handleAtividadesCommands(sock, m, text, from) {
             idIlha: ilhaReferencia
         };
 
-        atividadesAtivas[from].timer = setTimeout(async () => {
-            if (atividadesAtivas[from] && atividadesAtivas[from].fase === 'lista') {
-                await sock.sendMessage(from, { text: `⏳ *O tempo de 30 minutos da atividade "${atividadesAtivas[from].nomeAtividade}" encerrou! Iniciando fase de combates...*` });
-                await encerrarListaEIniciarPartida(sock, from);
+        atividadesAtivas[GRUPO_ATIVIDADES_LISTA].timer = setTimeout(async () => {
+            if (atividadesAtivas[GRUPO_ATIVIDADES_LISTA] && atividadesAtivas[GRUPO_ATIVIDADES_LISTA].fase === 'lista') {
+                await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: `⏳ *O tempo de 30 minutos da atividade "${atividadesAtivas[GRUPO_ATIVIDADES_LISTA].nomeAtividade}" encerrou! Iniciando fase de combates...*` });
+                await encerrarListaEIniciarPartida(sock, GRUPO_ATIVIDADES_LISTA);
             }
         }, 30 * 60 * 1000);
 
         delete sessoesCriacao[from];
-        await enviarPainelAtividade(sock, from, atividadesAtivas[from]);
+        await enviarPainelAtividade(sock, GRUPO_ATIVIDADES_LISTA, atividadesAtivas[GRUPO_ATIVIDADES_LISTA]);
         return true;
+    }
+
+    // A partir deste ponto, todos os comandos subsequentes (!participar, !remover, !encerrar, !escolher)
+    // só podem ser executados dentro do grupo GRUPO_ATIVIDADES_LISTA
+    if (from !== GRUPO_ATIVIDADES_LISTA) {
+        return false;
     }
 
     // 4. Entrar na defesa: !participar ou !participar @jogador
@@ -475,7 +484,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
     return false;
 }
 
-async function enviarPainelAtividade(sock, from, atividade) {
+async function enviarPainelAtividade(sock, targetGroup, atividade) {
     const forcaAtacantes = atividade.anunciantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
     const forcaDefensores = atividade.defensores.reduce((acc, curr) => acc + (curr.level || 0), 0);
 
@@ -509,8 +518,7 @@ async function enviarPainelAtividade(sock, from, atividade) {
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}`;
 
-    const grupoListaDestino = '120363409325935641@g.us';
-    await sock.sendMessage(grupoListaDestino, { text: mensagemPainel });
+    await sock.sendMessage(targetGroup, { text: mensagemPainel });
 }
 
 module.exports = { 

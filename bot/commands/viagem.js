@@ -277,8 +277,8 @@ async function handleViagemCommands(sock, m, text, from) {
 
                     const mensagemChegada = 
                         `⚓ *CHEGADA NA ${nomeIlhaDestinoFormatado.toUpperCase()}*\n\n` +
-                        `Membros da facção *${faccaoNome}* (${nomesJogadores}) acabaram de chegar na *${nomeIlhaDestinoFormatado}*!\n\n` +
-                        `💪 *Força total do grupo:* ${forcaTotal}`;
+                        `Membros da facção *${faccaoNome}* acabaram de chegar em *${nomeIlhaDestinoFormatado}*!\n\n` +
+                        `> Força: ${forcaTotal}`;
 
                     await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemChegada });
                 } catch (err) {

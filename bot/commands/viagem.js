@@ -255,10 +255,15 @@ async function handleViagemCommands(sock, m, text, from) {
 
             const nomeIlhaDestinoFormatado = await obterNomeFormatadoIlha(ilhaDestino);
 
+            // Formatação do horário de término (HH:mm)
+            const horaTermino = String(dataTermino.getHours()).padStart(2, '0');
+            const minTermino = String(dataTermino.getMinutes()).padStart(2, '0');
+            const horarioFormatado = `${horaTermino}:${minTermino}`;
+
             await sock.sendMessage(from, { 
                 text: `⛵ *Viagem iniciada com sucesso!*\n\n` +
                       `📍 Destino: *${nomeIlhaDestinoFormatado}*\n` +
-                      `⏳ Chegada prevista em 1 minuto.` 
+                      `> Término: ${horarioFormatado} (UTC-3)` 
             }, { quoted: m });
 
             const forcaTotal = sessao.membros.reduce((acc, curr) => acc + (curr.level || 0), 0);

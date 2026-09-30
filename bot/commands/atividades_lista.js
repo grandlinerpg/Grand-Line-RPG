@@ -14,6 +14,17 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
     // 1. Comando Inicial: !iniciaratividade
     if (text === '!iniciaratividade') {
+        const gruposPermitidos = [
+            '120363408918568715@g.us',
+            '120363408644122202@g.us',
+            '120363411388017464@g.us'
+        ];
+
+        if (!gruposPermitidos.includes(from)) {
+            await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos permitidos!' }, { quoted: m });
+            return true;
+        }
+
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
@@ -422,7 +433,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
             if (removeuAlguem) {
                 await enviarPainelAtividade(sock, from, atividade);
             } else {
-                await sock.sendMessage(from, { text: '⚠️️ O(s) jogador(es) informado(s) não estão inscritos na atividade.' }, { quoted: m });
+                await sock.sendMessage(from, { text: '⚠ O(s) jogador(es) informado(s) não estão inscritos na atividade.' }, { quoted: m });
             }
 
             return true;
@@ -498,7 +509,8 @@ async function enviarPainelAtividade(sock, from, atividade) {
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}`;
 
-    await sock.sendMessage(from, { text: mensagemPainel });
+    const grupoListaDestino = '120363409325935641@g.us';
+    await sock.sendMessage(grupoListaDestino, { text: mensagemPainel });
 }
 
 module.exports = { 

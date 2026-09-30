@@ -2,7 +2,7 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const express = require('express');  
 const axios = require('axios');  
 const cron = require('node-cron');     
-
+ 
 // CONSTANTES E CONFIGURAÇÕES
 const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";

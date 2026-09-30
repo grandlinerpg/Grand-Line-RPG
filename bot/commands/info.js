@@ -63,7 +63,7 @@ async function handleInfoCommands(sock, m, text, from) {
             const expFormatado = (player?.info?.exp ?? 0).toLocaleString('pt-BR');
             const saldoFormatado = (player?.info?.saldo ?? 0).toLocaleString('pt-BR');
 
-            const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n👤 *Nome:* ${player?.character?.charName || player?.nome || 'Sem Nome'}\n⭐ *Nível:* ${player?.info?.level ?? 1}\n✨ *EXP:* ${expFormatado}\n💰 *Saldo:* ฿ ${saldoFormatado}`;
+            const infoText = `*📜 — INFORMAÇÕES — 📜*\n\n👤 *Nome:* ${player?.character?.charName || player?.nome || 'Sem Nome'}\n➔ *Nível:* ${player?.info?.level ?? 1}\n➔ *EXP:* ${expFormatado}\n➔ *Saldo:* ฿ ${saldoFormatado}`;
 
             await sock.sendMessage(from, { text: infoText }, { quoted: m });
         } catch (e) {

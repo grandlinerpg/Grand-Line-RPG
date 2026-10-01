@@ -116,27 +116,110 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
         await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemInicioExterna });
 
-        // 3. Conclusão após 1 minuto: Notifica apenas no GRUPO DE ORIGEM
+        // 3. Conclusão após 1 minuto: Atualiza ilha, credita recompensas e notifica no GRUPO DE ORIGEM
         setTimeout(async () => {
             try {
-                // Atualiza ilha do personagem no banco de dados
+                // Atualiza a ilha atual dos personagens no Firebase
                 for (const membro of sessao.anunciantes) {
                     await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
                         ilha: ilhaDestino
                     });
                 }
 
+                // --- LÓGICA DE BUSCA E CRÉDITO DE RECOMPENSAS (TAL QUAL ATIVIDADE DE LUTA) ---
+                let baseBerries = 0;
+                let baseExp = 0;
+
+                try {
+                    const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes.json`);
+                    const faccoesData = faccoesRes.data || {};
+
+                    let recompensaBase = null;
+
+                    // Busca as regras de recompensa da atividade no Firebase
+                    const ativsFaccao = faccoesData[sessao.faccaoCriador]?.atividades || {};
+                    let chaveAtividade = Object.keys(ativsFaccao).find(k => 
+                        k.toLowerCase() === sessao.nomeAtividade.toLowerCase() || 
+                        (ativsFaccao[k]?.nome && ativsFaccao[k].nome.toLowerCase() === sessao.nomeAtividade.toLowerCase()) ||
+                        k === sessao.chaveAtividade
+                    );
+
+                    if (chaveAtividade && ativsFaccao[chaveAtividade]) {
+                        recompensaBase = ativsFaccao[chaveAtividade].recompensa;
+                    } else {
+                        for (const f of Object.keys(faccoesData)) {
+                            const ativs = faccoesData[f]?.atividades || {};
+                            const kFound = Object.keys(ativs).find(k => 
+                                k.toLowerCase() === sessao.nomeAtividade.toLowerCase() || 
+                                (ativs[k]?.nome && ativs[k].nome.toLowerCase() === sessao.nomeAtividade.toLowerCase()) ||
+                                k === sessao.chaveAtividade
+                            );
+                            if (kFound && ativs[kFound]?.recompensa) {
+                                recompensaBase = ativs[kFound].recompensa;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (recompensaBase) {
+                        baseBerries = Number(recompensaBase.dinheiro || recompensaBase.saldo || recompensaBase.berries || 0);
+                        baseExp = Number(recompensaBase.exp || 0);
+                    } else {
+                        // Valor padrão fallback baseado na força total caso não encontre no /faccoes.json
+                        baseBerries = forcaTotal * 500;
+                        baseExp = forcaTotal * 50;
+                    }
+
+                    // Credita a recompensa no banco de dados para todos os participantes
+                    const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
+                    const playersAllData = playersAllRes.data || {};
+
+                    for (const membro of sessao.anunciantes) {
+                        const targetUid = membro.uid;
+                        const targetLid = String(membro.lid || '').trim();
+                        const targetNum = String(membro.numero || '').trim();
+
+                        const realFirebaseKey = Object.keys(playersAllData).find(key => {
+                            const p = playersAllData[key];
+                            const pLid = String(p?.number?.LID || '').trim();
+                            const pNum = String(p?.number?.n || '').trim();
+                            return key === targetUid || (targetLid && pLid === targetLid) || (targetNum && pNum === targetNum);
+                        }) || targetUid;
+
+                        const playerData = playersAllData[realFirebaseKey] || {};
+                        const playerInfo = playerData.info || {};
+
+                        const expAtual = Number(playerInfo.exp ?? playerData.exp ?? 0);
+                        const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
+
+                        const novoExp = expAtual + baseExp;
+                        const novoSaldo = saldoAtual + baseBerries;
+
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
+                            exp: novoExp,
+                            saldo: novoSaldo
+                        });
+
+                        if (playerData.exp !== undefined || playerData.saldo !== undefined) {
+                            await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
+                                exp: novoExp,
+                                saldo: novoSaldo
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('Erro ao buscar e creditar recompensas no Firebase:', e.message);
+                }
+
                 const nomesFormatados = sessao.anunciantes.map(a => a.nome).join(', ');
-                const recompensaBerries = forcaTotal * 500;
-                const recompensaExp = forcaTotal * 50;
 
                 const mensagemConclusao = 
                     `🎉 *ATIVIDADE CONCLUÍDA!*\n\n` +
                     `A atividade *${sessao.nomeAtividade}* em *${nomeIlhaFormatado}* foi finalizada com sucesso!\n\n` +
-                    `👥 *Participantes:* ${nomesFormatados}\n` +
-                    `💰 *Recompensas do Grupo:*\n` +
-                    `• +${recompensaBerries} Berries\n` +
-                    `• +${recompensaExp} EXP`;
+                    `👥 *Participantes:* ${nomesFormatados}\n\n` +
+                    `🎁 *Recompensas Distribuídas:*\n` +
+                    `• +${baseBerries.toLocaleString('pt-BR')} Berries\n` +
+                    `• +${baseExp.toLocaleString('pt-BR')} EXP`;
 
                 await sock.sendMessage(grupoOrigem, { text: mensagemConclusao });
             } catch (err) {

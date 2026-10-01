@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { 
-    FIREBASE_URL, 
+    FIREBASE_URL,  
     obterEmojiFaccao 
 } = require('../index');
 

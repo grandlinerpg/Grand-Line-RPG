@@ -8,6 +8,7 @@ const {
     encerrarListaEIniciarPartida, 
     processarEscolhaLutador 
 } = require('./atividades_lutas');
+const { iniciarProcessoTipo1 } = require('./viagem');
 
 const GRUPO_ATIVIDADES_LISTA = '120363409325935641@g.us';
 
@@ -121,7 +122,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
         }
     }
 
-    // 3. Passo 2: Participantes Inicializadores (Atacantes)
+    // 3. Passo 2: Participantes Inicializadores
     if (sessoesCriacao[from] && sessoesCriacao[from].fase === 'aguardando_participantes') {
         const sessao = sessoesCriacao[from];
 
@@ -152,14 +153,13 @@ async function handleAtividadesCommands(sock, m, text, from) {
             return true;
         }
 
-        // Validação da quantidade mínima e máxima de jogadores definida no Firebase
+        // Validação de quantidade min e max
         try {
             const ativRes = await axios.get(`${FIREBASE_URL}/faccoes/${sessao.faccaoCriador}/atividades/${sessao.chaveAtividade}/jogadores.json`);
             const limitesJogadores = ativRes.data || {};
 
             const min = limitesJogadores.min !== undefined ? Number(limitesJogadores.min) : null;
             const max = limitesJogadores.max !== undefined ? Number(limitesJogadores.max) : null;
-
             const qtd = uidsParticipantes.size;
 
             if (min !== null && qtd < min) {
@@ -171,9 +171,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 await sock.sendMessage(from, { text: `❌ A quantidade de jogadores escolhida (${qtd}) excede o máximo permitido (${max}) para esta atividade.` }, { quoted: m });
                 return true;
             }
-        } catch (e) {
-            // Caso ocorra erro ao buscar os limites, segue o fluxo
-        }
+        } catch (e) {}
 
         const anunciantes = [];
         let ilhaReferencia = null;
@@ -189,15 +187,10 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
             const ilhaJogador = Number(player?.character?.ilha ?? 0);
 
-            if (ilhaJogador === 0) {
-                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* não está localizado em uma ilha válida (Ilha 0).` }, { quoted: m });
-                return true;
-            }
-
             if (ilhaReferencia === null) {
                 ilhaReferencia = ilhaJogador;
             } else if (ilhaJogador !== ilhaReferencia) {
-                await sock.sendMessage(from, { text: `❌ Todos os atacantes escolhidos devem estar na mesma ilha!` }, { quoted: m });
+                await sock.sendMessage(from, { text: `❌ Todos os participantes escolhidos devem estar na mesma ilha!` }, { quoted: m });
                 return true;
             }
 
@@ -212,26 +205,41 @@ async function handleAtividadesCommands(sock, m, text, from) {
             });
         }
 
-        // Validação da Ilha / Facção Dominante para Tipo 2 e Tipo 3
-        let faccaoDefensoraCalculada = null;
-        const tipoAtiv = sessao.tipoAtividade || 1;
+        sessao.anunciantes = anunciantes;
+        sessao.ilhaReferencia = ilhaReferencia;
 
-        if (tipoAtiv === 2 || tipoAtiv === 3) {
+        // ==========================================
+        // TRANSFERÊNCIA SE FOR TIPO 1
+        // ==========================================
+        if (sessao.tipoAtividade === 1) {
+            delete sessoesCriacao[from];
+            return await iniciarProcessoTipo1(sock, from, sessao, m);
+        }
+
+        // ==========================================
+        // FLUXO PARA ATIVIDADES TIPO 2 E TIPO 3
+        // ==========================================
+        if (ilhaReferencia === 0) {
+            await sock.sendMessage(from, { text: `❌ Os participantes não podem estar na Ilha 0 para iniciar este tipo de atividade.` }, { quoted: m });
+            delete sessoesCriacao[from];
+            return true;
+        }
+
+        let faccaoDefensoraCalculada = null;
+        if (sessao.tipoAtividade === 2 || sessao.tipoAtividade === 3) {
             try {
                 const ilhaRes = await axios.get(`${FIREBASE_URL}/ilhas/${ilhaReferencia}.json`);
                 const ilhaDados = ilhaRes.data || {};
                 const dominioIlha = ilhaDados.dominio;
                 const escudoIlha = Number(ilhaDados.escudo ?? 0);
 
-                // Não pode iniciar atividade contra território da sua própria facção
                 if (dominioIlha === sessao.faccaoCriador) {
                     await sock.sendMessage(from, { text: `❌ A sua facção (*${sessao.faccaoCriador}*) já domina este território!` }, { quoted: m });
                     delete sessoesCriacao[from];
                     return true;
                 }
 
-                // No tipo 3 a atividade só pode ser iniciada se escudo: 0
-                if (tipoAtiv === 3 && escudoIlha !== 0) {
+                if (sessao.tipoAtividade === 3 && escudoIlha !== 0) {
                     await sock.sendMessage(from, { text: `❌ Esta atividade não pode ser iniciada porque a ilha possui escudo ativo (Escudo: ${escudoIlha})!` }, { quoted: m });
                     delete sessoesCriacao[from];
                     return true;
@@ -245,7 +253,6 @@ async function handleAtividadesCommands(sock, m, text, from) {
             }
         }
 
-        // Armazena a atividade no grupo de destino (GRUPO_ATIVIDADES_LISTA)
         atividadesAtivas[GRUPO_ATIVIDADES_LISTA] = {
             nomeAtividade: sessao.nomeAtividade,
             faccaoCriador: sessao.faccaoCriador,
@@ -278,13 +285,10 @@ async function handleAtividadesCommands(sock, m, text, from) {
         return true;
     }
 
-    // A partir deste ponto, todos os comandos subsequentes (!participar, !remover, !encerrar, !escolher)
-    // só podem ser executados dentro do grupo GRUPO_ATIVIDADES_LISTA
     if (from !== GRUPO_ATIVIDADES_LISTA) {
         return false;
     }
 
-    // 4. Entrar na defesa: !participar ou !participar @jogador
     if (text.startsWith('!participar')) {
         const atividade = atividadesAtivas[from];
         if (!atividade || atividade.fase !== 'lista') {
@@ -382,7 +386,6 @@ async function handleAtividadesCommands(sock, m, text, from) {
         }
     }
 
-    // 5. Remover da lista: !remover ou !remover @jogador
     if (text.startsWith('!remover')) {
         const atividade = atividadesAtivas[from];
         if (!atividade || atividade.fase !== 'lista') {
@@ -452,7 +455,6 @@ async function handleAtividadesCommands(sock, m, text, from) {
         }
     }
 
-    // 6. Encerrar Lista e Iniciar Confrontos: !encerrar
     if (text === '!encerrar') {
         const atividade = atividadesAtivas[from];
         if (!atividade || atividade.fase !== 'lista') {
@@ -465,7 +467,6 @@ async function handleAtividadesCommands(sock, m, text, from) {
         return true;
     }
 
-    // 7. Selecionar oponente durante as rodadas de pareamento: !escolher @jogador
     if (text.startsWith('!escolher')) {
         const atividade = atividadesAtivas[from];
         if (!atividade || atividade.fase !== 'selecao') return false;

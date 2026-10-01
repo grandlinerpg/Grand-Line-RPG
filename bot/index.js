@@ -72,6 +72,7 @@ const { handleCombatesCommands } = require('./commands/combates');
 const { handleAtividadesCommands } = require('./commands/atividades_lista');
 const { handleVincularCommands } = require('./commands/vincular');
 const { handleViagemCommands } = require('./commands/viagem');
+const { handleMapaCommands } = require('./commands/mapa');
 
 // SERVIDOR WEB + AUTO-PING
 const app = express();
@@ -154,6 +155,7 @@ async function connectToWhatsApp() {
             if (await handleDesafiosCommands(sock, m, text, from)) return;
             if (await handleAtividadesCommands(sock, m, text, from)) return;
             if (await handleViagemCommands(sock, m, text, from)) return;
+            if (await handleMapaCommands(sock, m, text, from)) return;
             if (await handleCombatesCommands(sock, m, text, from)) return;
             if (await handleVincularCommands(sock, m, text, from)) return;
 

@@ -12,6 +12,16 @@ const { iniciarProcessoTipo1 } = require('./viagem');
 
 const GRUPO_ATIVIDADES_LISTA = '120363409325935641@g.us';
 
+// Função auxiliar para obter a identidade/organização do jogador
+function obterIdentidadeJogador(playerData) {
+    const faccao = playerData?.character?.faction;
+    const bando = playerData?.character?.bando;
+    if (faccao === 'Piratas' && bando) {
+        return bando;
+    }
+    return faccao;
+}
+
 async function handleAtividadesCommands(sock, m, text, from) {
     const senderId = obterJidEfetivo(m, from);
 
@@ -48,17 +58,19 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 return true;
             }
 
-            // Buscar atividades da facção para listar na pergunta
+            const organizacao = obterIdentidadeJogador(playersData[playerUid]);
+
+            // As atividades continuam no nó Piratas (ou nó da facção)
             const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes/${faccao}/atividades.json`);
             const atividadesFaccao = faccoesRes.data || {};
 
             const chavesAtividades = Object.keys(atividadesFaccao);
             if (chavesAtividades.length === 0) {
-                await sock.sendMessage(from, { text: `❌ Não há atividades cadastradas para a facção *${faccao}*.` }, { quoted: m });
+                await sock.sendMessage(from, { text: `❌ Não há atividades cadastradas para *${organizacao}*.` }, { quoted: m });
                 return true;
             }
 
-            let listaTexto = `❓ *Qual atividade você deseja iniciar?*\n\n*Atividades disponíveis para ${faccao}:*\n`;
+            let listaTexto = `❓ *Qual atividade você deseja iniciar?*\n\n*Atividades disponíveis para ${organizacao}:*\n`;
             chavesAtividades.forEach(key => {
                 const ativ = atividadesFaccao[key];
                 const nomeAtiv = ativ?.nome || key;
@@ -68,7 +80,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
             sessoesCriacao[from] = {
                 fase: 'aguardando_nome',
                 criadorUid: playerUid,
-                faccaoCriador: faccao
+                faccaoCriador: faccao,
+                organizacaoCriador: organizacao
             };
 
             await sock.sendMessage(from, { text: listaTexto }, { quoted: m });
@@ -101,7 +114,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
             );
 
             if (!chaveAtividade) {
-                await sock.sendMessage(from, { text: `❌ A atividade "*${text}*" não pertence ou não está disponível para a facção *${sessao.faccaoCriador}*.` }, { quoted: m });
+                await sock.sendMessage(from, { text: `❌ A atividade "*${text}*" não pertence ou não está disponível para *${sessao.organizacaoCriador || sessao.faccaoCriador}*.` }, { quoted: m });
                 delete sessoesCriacao[from];
                 return true;
             }
@@ -179,9 +192,10 @@ async function handleAtividadesCommands(sock, m, text, from) {
         for (const uid of uidsParticipantes) {
             const player = playersData[uid];
             const nomePlayer = player?.character?.charName || player?.nome || 'Lutador';
+            const orgPlayer = obterIdentidadeJogador(player);
 
-            if (player?.character?.faction !== sessao.faccaoCriador) {
-                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* não pertence à facção *${sessao.faccaoCriador}*!` }, { quoted: m });
+            if (orgPlayer !== sessao.organizacaoCriador) {
+                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* não pertence ao grupo *${sessao.organizacaoCriador}*!` }, { quoted: m });
                 return true;
             }
 
@@ -201,6 +215,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 lid: player?.number?.LID || senderId,
                 numero: player?.number?.n || senderId,
                 faccao: sessao.faccaoCriador,
+                organizacao: orgPlayer,
                 ilha: ilhaJogador
             });
         }
@@ -233,8 +248,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const dominioIlha = ilhaDados.dominio;
                 const escudoIlha = Number(ilhaDados.escudo ?? 0);
 
-                if (dominioIlha === sessao.faccaoCriador) {
-                    await sock.sendMessage(from, { text: `❌ A sua facção (*${sessao.faccaoCriador}*) já domina este território!` }, { quoted: m });
+                if (dominioIlha === sessao.organizacaoCriador || dominioIlha === sessao.faccaoCriador) {
+                    await sock.sendMessage(from, { text: `❌ A sua facção/bando (*${sessao.organizacaoCriador}*) já domina este território!` }, { quoted: m });
                     delete sessoesCriacao[from];
                     return true;
                 }
@@ -256,6 +271,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
         atividadesAtivas[GRUPO_ATIVIDADES_LISTA] = {
             nomeAtividade: sessao.nomeAtividade,
             faccaoCriador: sessao.faccaoCriador,
+            organizacaoCriador: sessao.organizacaoCriador,
             faccaoDefensora: faccaoDefensoraCalculada,
             anunciantes: anunciantes,
             defensores: [],
@@ -330,16 +346,19 @@ async function handleAtividadesCommands(sock, m, text, from) {
             for (const playerUid of targetsToRegister) {
                 const player = playersData[playerUid];
                 const faccaoJogador = player?.character?.faction;
+                const orgJogador = obterIdentidadeJogador(player);
 
                 if (!faccaoJogador) continue;
 
-                if (faccaoJogador === atividade.faccaoCriador) {
-                    await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* pertence à mesma facção atacante (*${atividade.faccaoCriador}*) e não pode entrar na defesa!` }, { quoted: m });
+                // Valida se pertence ao mesmo bando/facção atacante
+                if (orgJogador === atividade.organizacaoCriador) {
+                    await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* pertence à mesma facção/bando atacante (*${atividade.organizacaoCriador}*) e não pode entrar na defesa!` }, { quoted: m });
                     continue;
                 }
 
-                if (atividade.faccaoDefensora && faccaoJogador !== atividade.faccaoDefensora) {
-                    await sock.sendMessage(from, { text: `❌ Todos os defensores devem pertencer à mesma facção! A defesa atual pertence à facção *${atividade.faccaoDefensora}*.` }, { quoted: m });
+                // Valida se todos os defensores são do mesmo bando/facção
+                if (atividade.faccaoDefensora && orgJogador !== atividade.faccaoDefensora) {
+                    await sock.sendMessage(from, { text: `❌ Todos os defensores devem pertencer ao mesmo bando/facção! A defesa atual pertence a *${atividade.faccaoDefensora}*.` }, { quoted: m });
                     continue;
                 }
 
@@ -361,7 +380,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 }
 
                 if (!atividade.faccaoDefensora) {
-                    atividade.faccaoDefensora = faccaoJogador;
+                    atividade.faccaoDefensora = orgJogador;
                 }
 
                 atividade.defensores.push({
@@ -370,7 +389,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     level: nivelNovoJogador,
                     lid: player?.number?.LID || senderId,
                     numero: player?.number?.n || senderId,
-                    faccao: faccaoJogador
+                    faccao: faccaoJogador,
+                    organizacao: orgJogador
                 });
 
                 adicionouAlguem = true;
@@ -497,6 +517,7 @@ async function enviarPainelAtividade(sock, targetGroup, atividade) {
         ? atividade.defensores.map(d => `➔ ${d.nome} (${d.level || 1})`).join('\n')
         : 'Nenhum nome registrado.';
 
+    const tituloAtacante = atividade.organizacaoCriador || atividade.faccaoCriador;
     const tituloDefesa = atividade.faccaoDefensora || 'Defensores';
 
     const dataTermino = new Date(Date.now() + 30 * 60 * 1000);
@@ -514,7 +535,7 @@ async function enviarPainelAtividade(sock, targetGroup, atividade) {
         mensagemPainel += `${textoTerritorio}\n`;
     }
     mensagemPainel += `> Término: ${horarioFormatado} (BRT)\n\n` +
-        `${atividade.faccaoCriador}:\n\n${anunciantesTexto}\n\n` +
+        `${tituloAtacante}:\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
         `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}`;

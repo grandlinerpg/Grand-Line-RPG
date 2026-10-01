@@ -27,8 +27,8 @@ async function handleMapaCommands(sock, m, text, from) {
                 const faccao = player?.character?.faction;
                 const level = Number(player?.info?.level || 1);
 
-                // Processa apenas se o jogador tiver uma ilha e facção definidas
-                if (!isNaN(ilha) && faccao) {
+                // Processa apenas se o jogador tiver uma ilha válida (ignora Ilha 0) e facção definida
+                if (!isNaN(ilha) && ilha !== 0 && faccao) {
                     if (!ilhasPresenca[ilha]) {
                         ilhasPresenca[ilha] = {};
                     }
@@ -39,9 +39,10 @@ async function handleMapaCommands(sock, m, text, from) {
                 }
             });
 
-            // Pega os IDs das ilhas que possuem jogadores e ordena numericamente
+            // Pega os IDs das ilhas que possuem jogadores (exceto 0) e ordena numericamente
             const ilhasOcupadas = Object.keys(ilhasPresenca)
                 .map(Number)
+                .filter(id => id !== 0)
                 .sort((a, b) => a - b);
 
             if (ilhasOcupadas.length === 0) {
@@ -49,7 +50,7 @@ async function handleMapaCommands(sock, m, text, from) {
                 return true;
             }
 
-            let mapaText = `🌍 *— GRAND LINE —* 🌍\n\n`;
+            let mapaText = `🌍 — GRAND LINE — 🌍\n\n`;
             const blocosIlhas = [];
 
             for (const idIlha of ilhasOcupadas) {
@@ -59,11 +60,9 @@ async function handleMapaCommands(sock, m, text, from) {
                     if (ilhasData[idIlha]?.nome) nomeIlha = ilhasData[idIlha].nome;
                 } else if (ilhasData[idIlha]?.nome) {
                     nomeIlha = ilhasData[idIlha].nome;
-                } else if (idIlha === 0) {
-                    nomeIlha = 'Base Operacional';
                 }
 
-                let bloco = `${idIlha}. ${nomeIlha}\n\n`;
+                let bloco = `**${idIlha}. ${nomeIlha}**\n\n`;
 
                 const faccoesPresentes = ilhasPresenca[idIlha];
                 const linhasFaccoes = [];

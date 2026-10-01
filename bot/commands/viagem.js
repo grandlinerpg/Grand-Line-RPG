@@ -1,11 +1,12 @@
 const axios = require('axios');
 const { FIREBASE_URL, obterJidEfetivo } = require('../index');
 
-// Grupo onde os anúncios/listas são enviados
+// Grupo onde os anúncios gerais de atividades e viagens são enviados
 const GRUPO_ATIVIDADES_LISTA = '120363409325935641@g.us';
 
-// Sessoes temporárias para controle do fluxo do comando !viajar
+// Sessoes temporárias para controle de viagens e atividades tipo 1
 const sessoesViagem = {};
+const sessoesAtividadeTipo1 = {};
 
 // Função auxiliar para buscar o nome da ilha no Firebase e formatar como "X. Nome da Ilha"
 async function obterNomeFormatadoIlha(idIlha) {
@@ -19,8 +20,164 @@ async function obterNomeFormatadoIlha(idIlha) {
     }
 }
 
+// Função auxiliar para formatação da data
+function formatarData(d) {
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const ano = d.getFullYear();
+    const hora = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    const seg = String(d.getSeconds()).padStart(2, '0');
+    return `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
+}
+
+// =========================================================================
+// FUNÇÃO EXPORTADA: Recebe o fluxo de Atividade Tipo 1 do atividades_lista.js
+// =========================================================================
+async function iniciarProcessoTipo1(sock, grupoOrigem, sessao, m) {
+    if (sessao.ilhaReferencia === 0) {
+        const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
+        if (faccaoLower.includes('pirata')) {
+            await sock.sendMessage(grupoOrigem, { text: '❌ Membros da facção *Piratas* não possuem acesso à Ilha 0!' }, { quoted: m });
+            return true;
+        }
+
+        sessoesAtividadeTipo1[grupoOrigem] = {
+            criadorUid: sessao.criadorUid,
+            faccaoCriador: sessao.faccaoCriador,
+            chaveAtividade: sessao.chaveAtividade,
+            nomeAtividade: sessao.nomeAtividade,
+            anunciantes: sessao.anunciantes
+        };
+
+        await sock.sendMessage(grupoOrigem, { 
+            text: `🏝️ *Em qual ilha será iniciada a atividade?*\n\n` +
+                  `Você está na *Base Operacional (Ilha 0)*.\n` +
+                  `Digite o número da ilha desejada (*1 a 12*).` 
+        }, { quoted: m });
+        return true;
+    } else {
+        // Já está em uma ilha (> 0), inicia imediatamente
+        return await finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, sessao.ilhaReferencia, m);
+    }
+}
+
+// Executa o registro, notificações e conclusão da Atividade Tipo 1
+async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDestino, m) {
+    try {
+        const dataInicio = new Date();
+        const dataTermino = new Date(dataInicio.getTime() + 1 * 60 * 1000); // 1 minuto de duração
+
+        // Mapeia os jogadores salvando exclusivamente seus UIDs
+        const jogadoresObj = {};
+        sessao.anunciantes.forEach((membro, index) => {
+            jogadoresObj[index + 1] = membro.uid;
+        });
+
+        const viagensRes = await axios.get(`${FIREBASE_URL}/ilhas/viagens.json`);
+        const viagensExistentes = viagensRes.data || {};
+        const proximoId = Object.keys(viagensExistentes).length + 1;
+
+        const dadosAtividade = {
+            tipo: 'atividade',
+            atividade: sessao.chaveAtividade,
+            nomeAtividade: sessao.nomeAtividade,
+            inicio: formatarData(dataInicio),
+            termino: formatarData(dataTermino),
+            jogadores: jogadoresObj,
+            ilhaDestino: ilhaDestino,
+            faccao: sessao.faccaoCriador,
+            grupoOrigem: grupoOrigem
+        };
+
+        await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosAtividade);
+
+        const nomeIlhaFormatado = await obterNomeFormatadoIlha(ilhaDestino);
+        const horaTermino = String(dataTermino.getHours()).padStart(2, '0');
+        const minTermino = String(dataTermino.getMinutes()).padStart(2, '0');
+        const horarioFormatado = `${horaTermino}:${minTermino}`;
+        const forcaTotal = sessao.anunciantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
+
+        // 1. Mensagem de Confirmação no GRUPO DE ORIGEM
+        await sock.sendMessage(grupoOrigem, { 
+            text: `🎯 *Atividade Iniciada com Sucesso!*\n\n` +
+                  `📌 Atividade: *${sessao.nomeAtividade}*\n` +
+                  `📍 Local: *${nomeIlhaFormatado}*\n` +
+                  `⚡ Força Total: *${forcaTotal}*\n` +
+                  `> Término: ${horarioFormatado} (BRT)` 
+        }, { quoted: m });
+
+        // 2. Anúncio de INÍCIO no GRUPO DE ATIVIDADES GERAL
+        const mensagemInicioExterna = 
+            `📢 *ATIVIDADE INICIADA NA ${nomeIlhaFormatado.toUpperCase()}*\n\n` +
+            `A atividade *${sessao.nomeAtividade}* foi iniciada por membros da facção *${sessao.faccaoCriador}*!\n\n` +
+            `> Força Total: ${forcaTotal}\n` +
+            `> Término Previsto: ${horarioFormatado} (BRT)`;
+
+        await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemInicioExterna });
+
+        // 3. Conclusão após 1 minuto: Notifica apenas no GRUPO DE ORIGEM
+        setTimeout(async () => {
+            try {
+                // Atualiza ilha do personagem no banco de dados
+                for (const membro of sessao.anunciantes) {
+                    await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
+                        ilha: ilhaDestino
+                    });
+                }
+
+                const nomesFormatados = sessao.anunciantes.map(a => a.nome).join(', ');
+                const recompensaBerries = forcaTotal * 500;
+                const recompensaExp = forcaTotal * 50;
+
+                const mensagemConclusao = 
+                    `🎉 *ATIVIDADE CONCLUÍDA!*\n\n` +
+                    `A atividade *${sessao.nomeAtividade}* em *${nomeIlhaFormatado}* foi finalizada com sucesso!\n\n` +
+                    `👥 *Participantes:* ${nomesFormatados}\n` +
+                    `💰 *Recompensas do Grupo:*\n` +
+                    `• +${recompensaBerries} Berries\n` +
+                    `• +${recompensaExp} EXP`;
+
+                await sock.sendMessage(grupoOrigem, { text: mensagemConclusao });
+            } catch (err) {
+                console.error('Erro ao concluir atividade Tipo 1:', err);
+            }
+        }, 1 * 60 * 1000);
+
+        delete sessoesAtividadeTipo1[grupoOrigem];
+        return true;
+    } catch (e) {
+        await sock.sendMessage(grupoOrigem, { text: '❌ Erro ao salvar a atividade no Firebase.' }, { quoted: m });
+        delete sessoesAtividadeTipo1[grupoOrigem];
+        return true;
+    }
+}
+
+// Handler de Comandos e Respostas de Viagem / Atividade Tipo 1
 async function handleViagemCommands(sock, m, text, from) {
     const senderId = obterJidEfetivo(m, from);
+
+    // Resposta do Selecionador de Ilha para Atividade Tipo 1 (Apenas se veio da Ilha 0)
+    if (sessoesAtividadeTipo1[from]) {
+        const sessao = sessoesAtividadeTipo1[from];
+
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersData = playersRes.data || {};
+        const responderUid = Object.keys(playersData).find(u => 
+            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
+        );
+
+        if (responderUid !== sessao.criadorUid) return false;
+
+        const ilhaEscolhida = parseInt(text.trim(), 10);
+        if (isNaN(ilhaEscolhida) || ilhaEscolhida < 1 || ilhaEscolhida > 12) {
+            await sock.sendMessage(from, { text: '❌ Escolha uma ilha válida entre 1 e 12.' }, { quoted: m });
+            return true;
+        }
+
+        return await finalizarEGravarAtividadeTipo1(sock, from, sessao, ilhaEscolhida, m);
+    }
 
     // 1. Comando Inicial: !viajar
     if (text === '!viajar') {
@@ -196,9 +353,9 @@ async function handleViagemCommands(sock, m, text, from) {
             if (ilhaAtual === 0) {
                 // De 0 pode ir para qualquer uma (1 a 12)
             } else if (ilhaDestino === 0) {
-                // De qualquer ilha (1 a 12) pode voltar para a 0 (somente Governo Mundial ou Exército Revolucionário)
+                // De qualquer ilha (1 a 12) pode voltar para a 0
             } else {
-                // Regra circular de 1 a 12: 1 para frente, 1 para trás, 12 -> 1, 1 -> 12
+                // Regra circular de 1 a 12
                 const avanco = (ilhaAtual % 12) + 1;
                 const recuo = ilhaAtual === 1 ? 12 : ilhaAtual - 1;
 
@@ -223,39 +380,30 @@ async function handleViagemCommands(sock, m, text, from) {
             const dataInicio = new Date();
             const dataTermino = new Date(dataInicio.getTime() + 1 * 60 * 1000); // 1 minuto depois
 
-            const formatarData = (d) => {
-                const dia = String(d.getDate()).padStart(2, '0');
-                const mes = String(d.getMonth() + 1).padStart(2, '0');
-                const ano = d.getFullYear();
-                const hora = String(d.getHours()).padStart(2, '0');
-                const min = String(d.getMinutes()).padStart(2, '0');
-                const seg = String(d.getSeconds()).padStart(2, '0');
-                return `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
-            };
-
+            // Mapeia os jogadores salvando seus UIDs
             const jogadoresObj = {};
             sessao.membros.forEach((membro, index) => {
-                jogadoresObj[index + 1] = membro.nome;
+                jogadoresObj[index + 1] = membro.uid;
             });
 
-            // Buscar viagens existentes para definir a próxima chave numérica
             const viagensRes = await axios.get(`${FIREBASE_URL}/ilhas/viagens.json`);
             const viagensExistentes = viagensRes.data || {};
             const proximoId = Object.keys(viagensExistentes).length + 1;
 
             const dadosViagem = {
+                tipo: 'viagem',
                 inicio: formatarData(dataInicio),
                 termino: formatarData(dataTermino),
                 jogadores: jogadoresObj,
                 ilhaDestino: ilhaDestino,
-                faccao: sessao.faccaoCriador
+                faccao: sessao.faccaoCriador,
+                grupoOrigem: from
             };
 
             await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosViagem);
 
             const nomeIlhaDestinoFormatado = await obterNomeFormatadoIlha(ilhaDestino);
 
-            // Formatação do horário de término (HH:mm)
             const horaTermino = String(dataTermino.getHours()).padStart(2, '0');
             const minTermino = String(dataTermino.getMinutes()).padStart(2, '0');
             const horarioFormatado = `${horaTermino}:${minTermino}`;
@@ -268,7 +416,6 @@ async function handleViagemCommands(sock, m, text, from) {
 
             const forcaTotal = sessao.membros.reduce((acc, curr) => acc + (curr.level || 0), 0);
             const faccaoNome = sessao.faccaoCriador;
-            const nomesJogadores = sessao.membros.map(m => m.nome).join(', ');
 
             // Agendar anúncio de chegada após 1 minuto
             setTimeout(async () => {
@@ -304,5 +451,6 @@ async function handleViagemCommands(sock, m, text, from) {
 }
 
 module.exports = {
-    handleViagemCommands
+    handleViagemCommands,
+    iniciarProcessoTipo1
 };

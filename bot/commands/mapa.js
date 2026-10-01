@@ -50,7 +50,7 @@ async function handleMapaCommands(sock, m, text, from) {
                 return true;
             }
 
-            let mapaText = `🌍 — GRAND LINE — 🌍\n\n`;
+            let mapaText = `🌍 *— GRAND LINE —* 🌍\n\n`;
             const blocosIlhas = [];
 
             for (const idIlha of ilhasOcupadas) {
@@ -62,7 +62,7 @@ async function handleMapaCommands(sock, m, text, from) {
                     nomeIlha = ilhasData[idIlha].nome;
                 }
 
-                let bloco = `**${idIlha}. ${nomeIlha}**\n\n`;
+                let bloco = `*${idIlha}. ${nomeIlha}*\n\n`;
 
                 const faccoesPresentes = ilhasPresenca[idIlha];
                 const linhasFaccoes = [];

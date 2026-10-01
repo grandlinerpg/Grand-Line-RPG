@@ -49,7 +49,7 @@ async function handleMapaCommands(sock, m, text, from) {
                 return true;
             }
 
-            let mapaText = `🌍 — GRAND LINE — 🌍\n\n`;
+            let mapaText = `🌍 *— GRAND LINE —* 🌍\n\n`;
             const blocosIlhas = [];
 
             for (const idIlha of ilhasOcupadas) {

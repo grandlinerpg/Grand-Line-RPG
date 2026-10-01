@@ -272,7 +272,15 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     return true;
                 }
 
-                faccaoDefensoraCalculada = dominioIlha || null;
+                if (dominioIlha) {
+                    const faccoesConhecidas = ['Marinha', 'Exército Revolucionário', 'Revolucionarios', 'Governo Mundial'];
+                    if (faccoesConhecidas.includes(dominioIlha)) {
+                        faccaoDefensoraCalculada = dominioIlha;
+                    } else {
+                        faccaoDefensoraCalculada = 'Piratas';
+                        bandoDefensorCalculado = dominioIlha;
+                    }
+                }
             } catch (e) {
                 await sock.sendMessage(from, { text: '❌ Erro ao consultar dados da ilha no Firebase.' }, { quoted: m });
                 delete sessoesCriacao[from];
@@ -364,8 +372,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 if (!faccaoJogador) continue;
 
                 // Verificação de mesmo bando / facção do atacante
-                const ehMesmoGrupoAtacante = (faccaoJogador === 'Piratas' && atividade.faccaoCriador === 'Piratas')
-                    ? (bandoJogador === atividade.bandoCriador)
+                const ehMesmoGrupoAtacante = (faccaoJogador === 'Piratas' || atividade.faccaoCriador === 'Piratas')
+                    ? (bandoJogador && atividade.bandoCriador && bandoJogador === atividade.bandoCriador)
                     : (faccaoJogador === atividade.faccaoCriador);
 
                 if (ehMesmoGrupoAtacante) {
@@ -375,10 +383,16 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 }
 
                 // Verificação de mesmo bando / facção dos defensores
-                if (atividade.faccaoDefensora) {
-                    const mesmoBandoDefensora = (faccaoJogador === 'Piratas' && atividade.faccaoDefensora === 'Piratas')
-                        ? (bandoJogador === atividade.bandoDefensor)
-                        : (faccaoJogador === atividade.faccaoDefensora);
+                if (atividade.faccaoDefensora || atividade.bandoDefensor) {
+                    let mesmoBandoDefensora = false;
+
+                    if (faccaoJogador === 'Piratas' || atividade.faccaoDefensora === 'Piratas') {
+                        mesmoBandoDefensora = (bandoJogador && atividade.bandoDefensor) 
+                            ? (bandoJogador === atividade.bandoDefensor)
+                            : (bandoJogador === atividade.faccaoDefensora || faccaoJogador === atividade.faccaoDefensora);
+                    } else {
+                        mesmoBandoDefensora = (faccaoJogador === atividade.faccaoDefensora);
+                    }
 
                     if (!mesmoBandoDefensora) {
                         const nomeDefesa = obterNomeExibicaoFaccao(atividade.faccaoDefensora, atividade.bandoDefensor);
@@ -404,7 +418,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     continue;
                 }
 
-                if (!atividade.faccaoDefensora) {
+                if (!atividade.faccaoDefensora && !atividade.bandoDefensor) {
                     atividade.faccaoDefensora = faccaoJogador;
                     atividade.bandoDefensor = bandoJogador;
                 }
@@ -545,7 +559,7 @@ async function enviarPainelAtividade(sock, targetGroup, atividade) {
         : 'Nenhum nome registrado.';
 
     const tituloAtacante = obterNomeExibicaoFaccao(atividade.faccaoCriador, atividade.bandoCriador);
-    const tituloDefesa = atividade.faccaoDefensora 
+    const tituloDefesa = atividade.faccaoDefensora || atividade.bandoDefensor
         ? obterNomeExibicaoFaccao(atividade.faccaoDefensora, atividade.bandoDefensor)
         : 'Defensores';
 

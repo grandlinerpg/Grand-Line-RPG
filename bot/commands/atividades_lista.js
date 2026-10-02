@@ -290,6 +290,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
         atividadesAtivas[GRUPO_ATIVIDADES_LISTA] = {
             nomeAtividade: sessao.nomeAtividade,
+            tipoAtividade: sessao.tipoAtividade,
             faccaoCriador: sessao.faccaoCriador,
             bandoCriador: sessao.bandoCriador,
             faccaoDefensora: faccaoDefensoraCalculada,
@@ -368,8 +369,17 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const player = playersData[playerUid];
                 const faccaoJogador = player?.character?.faction;
                 const bandoJogador = player?.character?.bando;
+                const ilhaJogador = Number(player?.character?.ilha ?? 0);
 
                 if (!faccaoJogador) continue;
+
+                // Restrição de ilha para atividades do tipo 2 e 3
+                if (atividade.tipoAtividade === 2 || atividade.tipoAtividade === 3) {
+                    if (ilhaJogador !== 0 && ilhaJogador !== atividade.idIlha) {
+                        await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* não está na mesma ilha da atividade e nem na Ilha 0!` }, { quoted: m });
+                        continue;
+                    }
+                }
 
                 // Verificação de mesmo bando / facção do atacante
                 const ehMesmoGrupoAtacante = (faccaoJogador === 'Piratas' || atividade.faccaoCriador === 'Piratas')

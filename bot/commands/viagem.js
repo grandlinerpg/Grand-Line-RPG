@@ -126,7 +126,7 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
                     });
                 }
 
-                // --- LÓGICA DE BUSCA E CRÉDITO DE RECOMPENSAS (TAL QUAL ATIVIDADE DE LUTA) ---
+                // --- LÓGICA DE BUSCA E CRÉDITO DE RECOMPENSAS ---
                 let baseBerries = 0;
                 let baseExp = 0;
 
@@ -289,27 +289,102 @@ async function handleViagemCommands(sock, m, text, from) {
                 return true;
             }
 
-            const faccao = playersData[playerUid]?.character?.faction;
+            const criadorChar = playersData[playerUid]?.character || {};
+            const faccao = criadorChar.faction;
+
             if (!faccao) {
                 await sock.sendMessage(from, { text: '❌ Seu personagem não possui uma facção definida no banco de dados!' }, { quoted: m });
                 return true;
             }
 
-            sessoesViagem[from] = {
-                fase: 'aguardando_participantes',
-                criadorUid: playerUid,
-                faccaoCriador: faccao
-            };
+            const faccaoLower = String(faccao).toLowerCase();
+            const ehPirata = faccaoLower.includes('pirata');
 
-            await sock.sendMessage(from, { text: '👥 *Quais membros querem viajar?*\n\n_(Mencione usando @ ou digite "eu" para incluir a si mesmo)_' }, { quoted: m });
-            return true;
+            if (ehPirata) {
+                const bandoCriador = criadorChar.bando;
+                if (!bandoCriador) {
+                    await sock.sendMessage(from, { text: '❌ Seu personagem pertence aos Piratas mas não está cadastrado em nenhum bando!' }, { quoted: m });
+                    return true;
+                }
+
+                // Busca automaticamente todos os membros do mesmo bando
+                const membrosBando = [];
+                let ilhaAtualGrupo = null;
+
+                for (const uid of Object.keys(playersData)) {
+                    const pChar = playersData[uid]?.character || {};
+                    if (pChar.bando && String(pChar.bando).trim().toLowerCase() === String(bandoCriador).trim().toLowerCase()) {
+                        const nomePlayer = pChar.charName || playersData[uid]?.nome || 'Jogador';
+                        const ilhaJogador = Number(pChar.ilha ?? 0);
+
+                        if (ilhaAtualGrupo === null) {
+                            ilhaAtualGrupo = ilhaJogador;
+                        } else if (ilhaJogador !== ilhaAtualGrupo) {
+                            await sock.sendMessage(from, { text: `❌ Nem todos os membros do bando *${bandoCriador}* estão na mesma ilha!` }, { quoted: m });
+                            return true;
+                        }
+
+                        membrosBando.push({
+                            uid: uid,
+                            nome: nomePlayer,
+                            level: playersData[uid]?.info?.level ?? 1,
+                            faccao: faccao,
+                            ilhaAtual: ilhaJogador
+                        });
+                    }
+                }
+
+                if (membrosBando.length === 0) {
+                    await sock.sendMessage(from, { text: `❌ Nenhum membro encontrado para o bando *${bandoCriador}*.` }, { quoted: m });
+                    return true;
+                }
+
+                if (ilhaAtualGrupo === 0) {
+                    await sock.sendMessage(from, { text: '❌ Membros da facção *Piratas* não possuem acesso à Ilha 0!' }, { quoted: m });
+                    return true;
+                }
+
+                // Define a sessão diretamente na fase de escolha da ilha de destino
+                sessoesViagem[from] = {
+                    fase: 'aguardando_ilha_destino',
+                    criadorUid: playerUid,
+                    faccaoCriador: faccao,
+                    bando: bandoCriador,
+                    membros: membrosBando,
+                    ilhaAtual: ilhaAtualGrupo
+                };
+
+                const nomeIlhaAtualFormatado = await obterNomeFormatadoIlha(ilhaAtualGrupo);
+                const nomesIntegrantes = membrosBando.map(m => m.nome).join(', ');
+
+                await sock.sendMessage(from, { 
+                    text: `🏴‍☠️ *Bando:* ${bandoCriador}\n` +
+                          `👥 *Integrantes:* ${nomesIntegrantes}\n\n` +
+                          `🏝️ *Para qual ilha os Piratas desejam viajar?*\n` +
+                          `Atualmente na *${nomeIlhaAtualFormatado}*.\n` +
+                          `Digite o número da ilha desejada (*1 a 12*).` 
+                }, { quoted: m });
+                return true;
+
+            } else {
+                // Outras facções continuam com a pergunta de quem vai viajar
+                sessoesViagem[from] = {
+                    fase: 'aguardando_participantes',
+                    criadorUid: playerUid,
+                    faccaoCriador: faccao
+                };
+
+                await sock.sendMessage(from, { text: '👥 *Quais membros querem viajar?*\n\n_(Mencione usando @ ou digite "eu" para incluir a si mesmo)_' }, { quoted: m });
+                return true;
+            }
+
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao iniciar a viagem.' }, { quoted: m });
             return true;
         }
     }
 
-    // 2. Passo 1: Quais membros querem viajar?
+    // 2. Passo 1 (Para outras facções): Quais membros querem viajar?
     if (sessoesViagem[from] && sessoesViagem[from].fase === 'aguardando_participantes') {
         const sessao = sessoesViagem[from];
 
@@ -371,15 +446,6 @@ async function handleViagemCommands(sock, m, text, from) {
             });
         }
 
-        const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
-        const ehPirata = faccaoLower.includes('pirata');
-
-        if (ehPirata && ilhaAtualGrupo === 0) {
-            await sock.sendMessage(from, { text: '❌ Membros da facção *Piratas* não possuem acesso à Ilha 0!' }, { quoted: m });
-            delete sessoesViagem[from];
-            return true;
-        }
-
         sessao.membros = membrosViajantes;
         sessao.ilhaAtual = ilhaAtualGrupo;
         sessao.fase = 'aguardando_ilha_destino';
@@ -387,16 +453,14 @@ async function handleViagemCommands(sock, m, text, from) {
         const nomeIlhaAtualFormatado = await obterNomeFormatadoIlha(ilhaAtualGrupo);
 
         let instrucaoRetornoBase = '';
-        if (!ehPirata && ilhaAtualGrupo !== 0) {
+        if (ilhaAtualGrupo !== 0) {
             instrucaoRetornoBase = '\n💡 *Digite 0 para retornar à Base.*';
         }
-
-        const limiteTexto = ehPirata ? '1 a 12' : '0 a 12';
 
         await sock.sendMessage(from, { 
             text: `🏝️ *Para qual ilha os jogadores desejam viajar?*\n\n` +
                   `Você está atualmente na *${nomeIlhaAtualFormatado}*.\n` +
-                  `Digite o número da ilha desejada (*${limiteTexto}*).${instrucaoRetornoBase}` 
+                  `Digite o número da ilha desejada (*0 a 12*).${instrucaoRetornoBase}` 
         }, { quoted: m });
         return true;
     }
@@ -483,6 +547,10 @@ async function handleViagemCommands(sock, m, text, from) {
                 grupoOrigem: from
             };
 
+            if (sessao.bando) {
+                dadosViagem.bando = sessao.bando;
+            }
+
             await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosViagem);
 
             const nomeIlhaDestinoFormatado = await obterNomeFormatadoIlha(ilhaDestino);
@@ -512,7 +580,7 @@ async function handleViagemCommands(sock, m, text, from) {
 
                     const mensagemChegada = 
                         `⚓ *CHEGADA NA ${nomeIlhaDestinoFormatado.toUpperCase()}*\n\n` +
-                        `Membros da facção *${faccaoNome}* acabaram de chegar em *${nomeIlhaDestinoFormatado}*!\n\n` +
+                        `Membros da facção *${faccaoNome}* ${sessao.bando ? `(*${sessao.bando}*) ` : ''}acabaram de chegar em *${nomeIlhaDestinoFormatado}*!\n\n` +
                         `> Força: ${forcaTotal}`;
 
                     await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemChegada });

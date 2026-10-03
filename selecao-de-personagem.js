@@ -73,14 +73,18 @@ function controlarEstilo(valor) {
 // ======================
 async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDoUsuario) {
   const takenSnap = await get(ref(db, "personagens"));
-  const ocupados = takenSnap.exists() ? takenSnap.val() : {};
+  const ocupadosMap = takenSnap.exists() ? takenSnap.val() : {};
+
+  // Extrai a lista de nomes de personagens que já estão sendo usados por outros UIDs
+  const personagensEmUso = Object.entries(ocupadosMap)
+    .filter(([uid, nomeChar]) => uid !== uidUsuarioAtual)
+    .map(([uid, nomeChar]) => nomeChar);
 
   selectPersonagem.innerHTML = "";
 
   todasOpcoes.forEach(opt => {
-    const dono = ocupados[opt.value];
-    // "Sem Personagem" ou livre ou pertencente ao usuário atual
-    if (opt.value === "Sem Personagem" || !dono || dono === uidUsuarioAtual) {
+    // Exibe "Sem Personagem", ou personagens que NÃO estão em uso por outros
+    if (opt.value === "Sem Personagem" || !personagensEmUso.includes(opt.value)) {
       const optionEl = document.createElement("option");
       optionEl.value = opt.value;
       optionEl.textContent = opt.text;
@@ -148,30 +152,35 @@ window.criarPersonagem = async function () {
     }
 
     // --- TRAVA DO PERSONAGEM ---
-    // "Sem Personagem" não é travado no nó global
+    // Agora verifica no nó geral se o personagem já não está reservado por OUTRO UID
     if (!ehSemPersonagem) {
-      const novoCharRef = ref(db, `personagens/${novoPersonagem}`);
-      const txResult = await runTransaction(novoCharRef, (currentOwner) => {
-        if (currentOwner === null || currentOwner === user.uid) {
-          return user.uid;
-        } else {
-          return; // Alguém pegou primeiro
-        }
-      });
+      const todosPersonagensSnap = await get(ref(db, "personagens"));
+      const todosPersonagens = todosPersonagensSnap.exists() ? todosPersonagensSnap.val() : {};
 
-      if (!txResult.committed) {
+      // Procura se o novoPersonagem já pertence a outro usuário
+      const jaOcupadoPorOutro = Object.entries(todosPersonagens).some(
+        ([uid, nomeChar]) => nomeChar === novoPersonagem && uid !== user.uid
+      );
+
+      if (jaOcupadoPorOutro) {
         alert("Ops! Alguém acabou de escolher este personagem. Por favor, selecione outro.");
         await carregarPersonagensDisponiveis(user.uid, antigoPersonagem);
         return;
       }
+
+      // Trava o personagem salvando: uidjogador: "Roronoa Zoro"
+      await update(ref(db, "personagens"), {
+        [user.uid]: novoPersonagem
+      });
+    } else {
+      // Se selecionou "Sem Personagem", remove o registro do jogador no nó geral
+      await update(ref(db, "personagens"), {
+        [user.uid]: null
+      });
     }
 
-    // Se trocou de personagem e tinha um anterior válido, libera o antigo na lista global
+    // Se trocou de personagem e tinha um anterior válido, descontar item de troca
     if (antigoPersonagem && antigoPersonagem !== novoPersonagem && antigoPersonagem !== "Sem Personagem") {
-      await update(ref(db, "personagens"), {
-        [antigoPersonagem]: null
-      });
-
       // --- DESCONTO DO ITEM DE TROCA ---
       if (!ehSemPersonagem) {
         if (qtdItem > 1) {

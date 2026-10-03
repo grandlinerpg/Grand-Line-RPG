@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase, ref, update, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, update, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // ======================
 // FIREBASE CONFIG
@@ -27,8 +27,8 @@ const selectEstilo = document.getElementById("estilo");
 const grupoEstilo = document.getElementById("grupo-estilo");
 const img = document.getElementById("preview-img");
 
-// Copia as opções do HTML no carregamento para poder filtrar dinamicamente
-const todasOpcoes = Array.from(selectPersonagem.options).map(opt => ({
+// Captura as opções originais do HTML mantendo o array fixo e imutável
+const todasOpcoes = Array.from(selectPersonagem.querySelectorAll("option")).map(opt => ({
   value: opt.value,
   text: opt.text
 }));
@@ -71,20 +71,25 @@ function controlarEstilo(valor) {
 // ======================
 // FILTRAR PERSONAGENS OCUPADOS
 // ======================
-async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDoUsuario) {
+async function carregarPersonagensDisponiveis(uidUsuarioAtual) {
   const takenSnap = await get(ref(db, "personagens"));
   const ocupadosMap = takenSnap.exists() ? takenSnap.val() : {};
 
-  // Extrai a lista de nomes de personagens que já estão sendo usados por outros UIDs
-  const personagensEmUso = Object.entries(ocupadosMap)
-    .filter(([uid, nomeChar]) => uid !== uidUsuarioAtual)
-    .map(([uid, nomeChar]) => nomeChar);
+  // Mapeia quais nomes de personagens estão associados a OUTROS UIDs
+  const personagensEmUso = new Set();
+  
+  Object.entries(ocupadosMap).forEach(([uid, nomeChar]) => {
+    if (uid !== uidUsuarioAtual && nomeChar && nomeChar !== "Sem Personagem") {
+      personagensEmUso.add(nomeChar);
+    }
+  });
 
+  // Limpa o select para reconstruir
   selectPersonagem.innerHTML = "";
 
   todasOpcoes.forEach(opt => {
-    // Exibe "Sem Personagem", ou personagens que NÃO estão em uso por outros
-    if (opt.value === "Sem Personagem" || !personagensEmUso.includes(opt.value)) {
+    // Mantém a opção se for "Sem Personagem" ou se não estiver na lista de ocupados por outro jogador
+    if (opt.value === "Sem Personagem" || !personagensEmUso.has(opt.value)) {
       const optionEl = document.createElement("option");
       optionEl.value = opt.value;
       optionEl.textContent = opt.text;
@@ -92,7 +97,6 @@ async function carregarPersonagensDisponiveis(uidUsuarioAtual, personagemAtualDo
     }
   });
 
-  // Força a seleção para a primeira opção carregada na lista
   if (selectPersonagem.options.length > 0) {
     selectPersonagem.value = selectPersonagem.options[0].value;
   }
@@ -128,7 +132,6 @@ window.criarPersonagem = async function () {
     const data = snap.exists() ? snap.val() : {};
     const antigoPersonagem = data.charName || null;
 
-    // Se escolheu o mesmo personagem que já possui, apenas volta pro perfil
     if (antigoPersonagem === novoPersonagem) {
       window.location.href = "perfil.html";
       return;
@@ -137,7 +140,6 @@ window.criarPersonagem = async function () {
     const ehSemPersonagem = (novoPersonagem === "Sem Personagem");
 
     // --- VERIFICAÇÃO DO ITEM DE TROCA ---
-    // Isenta a troca se o destino for "Sem Personagem"
     const itemRef = ref(db, `players/${user.uid}/inventory/trocadepersonagem`);
     let qtdItem = 0;
 
@@ -152,46 +154,39 @@ window.criarPersonagem = async function () {
     }
 
     // --- TRAVA DO PERSONAGEM ---
-    // Agora verifica no nó geral se o personagem já não está reservado por OUTRO UID
     if (!ehSemPersonagem) {
       const todosPersonagensSnap = await get(ref(db, "personagens"));
       const todosPersonagens = todosPersonagensSnap.exists() ? todosPersonagensSnap.val() : {};
 
-      // Procura se o novoPersonagem já pertence a outro usuário
+      // Verifica se o personagem já pertence a outro usuário
       const jaOcupadoPorOutro = Object.entries(todosPersonagens).some(
         ([uid, nomeChar]) => nomeChar === novoPersonagem && uid !== user.uid
       );
 
       if (jaOcupadoPorOutro) {
         alert("Ops! Alguém acabou de escolher este personagem. Por favor, selecione outro.");
-        await carregarPersonagensDisponiveis(user.uid, antigoPersonagem);
+        await carregarPersonagensDisponiveis(user.uid);
         return;
       }
 
-      // Trava o personagem salvando: uidjogador: "Roronoa Zoro"
+      // Atualiza diretamente na chave uid: "Nome do Personagem"
       await update(ref(db, "personagens"), {
         [user.uid]: novoPersonagem
       });
     } else {
-      // Se selecionou "Sem Personagem", remove o registro do jogador no nó geral
-      await update(ref(db, "personagens"), {
-        [user.uid]: null
-      });
+      // Se selecionou "Sem Personagem", remove o registro deste UID
+      await remove(ref(db, `personagens/${user.uid}`));
     }
 
-    // Se trocou de personagem e tinha um anterior válido, descontar item de troca
+    // Desconto do item de troca
     if (antigoPersonagem && antigoPersonagem !== novoPersonagem && antigoPersonagem !== "Sem Personagem") {
-      // --- DESCONTO DO ITEM DE TROCA ---
       if (!ehSemPersonagem) {
         if (qtdItem > 1) {
           await update(ref(db, `players/${user.uid}/inventory`), {
             trocadepersonagem: qtdItem - 1
           });
         } else {
-          // Se só tinha 1, remove a chave do inventário
-          await update(ref(db, `players/${user.uid}/inventory`), {
-            trocadepersonagem: null
-          });
+          await remove(ref(db, `players/${user.uid}/inventory/trocadepersonagem`));
         }
       }
     }
@@ -201,10 +196,8 @@ window.criarPersonagem = async function () {
     const rankingSnap = await get(rankingRef);
     const rankingData = rankingSnap.exists() ? rankingSnap.val() : {};
 
-    // Converte o objeto/matriz em lista para verificar se o UID já existe
     const uidsNoRanking = Object.values(rankingData);
     if (!uidsNoRanking.includes(user.uid)) {
-      // Descobre a próxima posição numérica livre no ranking (1-based)
       const chaves = Object.keys(rankingData).map(Number).filter(n => !isNaN(n));
       const proximaPosicao = chaves.length > 0 ? Math.max(...chaves) + 1 : 1;
 
@@ -244,15 +237,13 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   const snap = await get(ref(db, `players/${user.uid}/character`));
-  let personagemAtual = null;
   let estiloAtual = "—";
 
   if (snap.exists()) {
     const data = snap.val();
-    personagemAtual = data.charName || null;
     estiloAtual = data.style || "—";
   }
 
   controlarEstilo(estiloAtual);
-  await carregarPersonagensDisponiveis(user.uid, personagemAtual);
+  await carregarPersonagensDisponiveis(user.uid);
 });

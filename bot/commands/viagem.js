@@ -92,13 +92,20 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
         await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosAtividade);
 
+        // 1. Atualiza a ilha atual dos personagens para a ilha da atividade IMEDIATAMENTE AO INICIAR
+        for (const membro of sessao.anunciantes) {
+            await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
+                ilha: ilhaDestino
+            });
+        }
+
         const nomeIlhaFormatado = await obterNomeFormatadoIlha(ilhaDestino);
         const horaTermino = String(dataTermino.getHours()).padStart(2, '0');
         const minTermino = String(dataTermino.getMinutes()).padStart(2, '0');
         const horarioFormatado = `${horaTermino}:${minTermino}`;
         const forcaTotal = sessao.anunciantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
 
-        // 1. Mensagem de Confirmação no GRUPO DE ORIGEM
+        // Mensagem de Confirmação no GRUPO DE ORIGEM
         await sock.sendMessage(grupoOrigem, { 
             text: `🎯 *Atividade Iniciada com Sucesso!*\n\n` +
                   `📌 Atividade: *${sessao.nomeAtividade}*\n` +
@@ -107,7 +114,7 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
                   `> Término: ${horarioFormatado} (BRT)` 
         }, { quoted: m });
 
-        // 2. Anúncio de INÍCIO no GRUPO DE ATIVIDADES GERAL
+        // Anúncio de INÍCIO no GRUPO DE ATIVIDADES GERAL
         const mensagemInicioExterna = 
             `📢 *ATIVIDADE INICIADA NA ${nomeIlhaFormatado.toUpperCase()}*\n\n` +
             `A atividade *${sessao.nomeAtividade}* foi iniciada por membros da facção *${sessao.faccaoCriador}*!\n\n` +
@@ -116,14 +123,20 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
         await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemInicioExterna });
 
-        // 3. Conclusão após 1 minuto: Atualiza ilha, credita recompensas e notifica no GRUPO DE ORIGEM
+        // Conclusão após 1 minuto: Ajusta ilha dos não-piratas, credita recompensas e notifica no GRUPO DE ORIGEM
         setTimeout(async () => {
             try {
-                // Atualiza a ilha atual dos personagens no Firebase
-                for (const membro of sessao.anunciantes) {
-                    await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
-                        ilha: ilhaDestino
-                    });
+                // Verificação da Facção ao TERMINAR a atividade
+                const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
+                const ehPirata = faccaoLower.includes('pirata');
+
+                // Se NÃO for pirata, redefine a ilha de todos os participantes para 0 (Base Operacional)
+                if (!ehPirata) {
+                    for (const membro of sessao.anunciantes) {
+                        await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
+                            ilha: 0
+                        });
+                    }
                 }
 
                 // --- LÓGICA DE BUSCA E CRÉDITO DE RECOMPENSAS ---

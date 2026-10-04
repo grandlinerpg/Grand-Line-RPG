@@ -42,7 +42,7 @@ function obterEmojiFaccao(param, atividade = null) {
         }
     }
 
-    return EMOJIS_FACCAO[nomeFaccao] || '⚔️️';
+    return EMOJIS_FACCAO[nomeFaccao] || '⚔';
 }
 
 function obterHoraAtualUTC3() {
@@ -52,6 +52,19 @@ function obterHoraAtualUTC3() {
     const horasStr = String(horas).padStart(2, '0');
     const minutosStr = String(agora.getUTCMinutes()).padStart(2, '0');
     return `${horasStr}:${minutosStr}`;
+}
+
+function obterDataFormatada() {
+    const agora = new Date();
+    // Ajuste para Fuso Horário de Brasília (UTC-3)
+    const dataBrt = new Date(agora.getTime() - (3 * 60 * 60 * 1000));
+    const dia = String(dataBrt.getUTCDate()).padStart(2, '0');
+    const mes = String(dataBrt.getUTCMonth() + 1).padStart(2, '0');
+    const ano = dataBrt.getUTCFullYear();
+    const horas = String(dataBrt.getUTCHours()).padStart(2, '0');
+    const minutos = String(dataBrt.getUTCMinutes()).padStart(2, '0');
+    
+    return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
 }
 
 async function obterNomeTerritorio(idIlha) {
@@ -223,7 +236,7 @@ async function verificarEParearAutomatico(sock, from) {
             let faccaoAlvo = atividade.vezSelecao === 'atacante' ? nomeDefesa : atividade.faccaoCriador;
 
             await sock.sendMessage(from, { 
-                text: `⚔️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
+                text: `⚔️️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
             });
         }
     }
@@ -545,6 +558,53 @@ async function finalizarAtividade(sock, from) {
     const sobreviventesTodos = [...atacantesVivos, ...defensoresVivos];
 
     await enviarRelatorioFinalSobreviventes(sock, from, sobreviventesTodos);
+
+    // =========================================================================
+    // REGISTRO NO BANCO DE DADOS DA ATIVIDADE PARA OS ATACANTES (VENCAM OU PERCAM)
+    // =========================================================================
+    try {
+        const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersAllData = playersAllRes.data || {};
+        const nomeAtividadeChave = (atividade.nomeAtividade || 'geral').toLowerCase().trim();
+        const dataFormatadaAtual = obterDataFormatada();
+
+        for (const atacante of atividade.anunciantes) {
+            const targetLid = String(atacante.lid || '').trim();
+            const targetNum = String(atacante.numero || '').trim();
+
+            const realFirebaseKey = Object.keys(playersAllData).find(key => {
+                const p = playersAllData[key];
+                const pLid = String(p?.number?.LID || '').trim();
+                const pNum = String(p?.number?.n || '').trim();
+                return (targetLid && pLid === targetLid) || (targetNum && pNum === targetNum) || key === atacante.uid;
+            });
+
+            if (realFirebaseKey) {
+                // Obtém a quantidade de atividades atual do nó do player
+                const resAtivAtual = await axios.get(`${FIREBASE_URL}/players/${realFirebaseKey}/atividades/${nomeAtividadeChave}.json`);
+                const dadosAtivAtual = resAtivAtual.data || {};
+
+                let qtdAtual = 0;
+                if (typeof dadosAtivAtual === 'number') {
+                    qtdAtual = dadosAtivAtual;
+                } else if (typeof dadosAtivAtual === 'object' && dadosAtivAtual.quantidade !== undefined) {
+                    qtdAtual = Number(dadosAtivAtual.quantidade) || 0;
+                } else if (typeof dadosAtivAtual === 'object' && dadosAtivAtual.qtd !== undefined) {
+                    qtdAtual = Number(dadosAtivAtual.qtd) || 0;
+                }
+
+                const novaQtd = qtdAtual + 1;
+
+                // Salva a quantidade incrementada e a data atual no nó /players/{UID}/atividades/{nome_da_atividade}
+                await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/atividades/${nomeAtividadeChave}.json`, {
+                    quantidade: novaQtd,
+                    data: dataFormatadaAtual
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Erro ao registrar atividades para os atacantes:', e.message);
+    }
 
     let textoRecompensas = '';
 

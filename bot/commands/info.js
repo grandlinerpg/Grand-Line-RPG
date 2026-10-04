@@ -98,7 +98,7 @@ async function handleInfoCommands(sock, m, text, from) {
         return true;
     }
 
-    if (text === '!dom' || text.startsWith('!dom ')) {
+    if (text === '!dom' || text.startsWith('!dominio ')) {
         try {
             const response = await axios.get(`${FIREBASE_URL}/ilhas.json`);
             const ilhasData = response.data;

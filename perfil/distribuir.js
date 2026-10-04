@@ -23,9 +23,10 @@ let tempPoints = {};
 let originalStats = {};
 let originalPoints = {};
 
-// 🔥 Controle de Pedras no Inventário
-let originalPedra3 = 0;
-let tempPedra3 = 0;
+// 🔥 Controle do Item de Regressão
+let originalPedraRegressao = 0;
+let tempPedraRegressao = 0;
+let nomeItemRegressao = "Pedra de Regressão"; // Nome padrão até buscar no Firebase
 
 const LIMITES_RANK = {
   1: 20,
@@ -68,10 +69,26 @@ fetch("perfil/distribuir.html")
 
         userRef = ref(db, `players/${user.uid}`);
 
-        const snap = await get(userRef);
+        // Busca dados do jogador e da lista global de itens
+        const [snap, itensSnap] = await Promise.all([
+          get(userRef),
+          get(ref(db, "itens"))
+        ]);
+
         if (!snap.exists()) return;
 
         const data = snap.val();
+
+        // 🔥 Busca o nome real do item "pedraregressao" no banco de dados
+        if (itensSnap.exists()) {
+          const categorias = itensSnap.val();
+          for (const cat in categorias) {
+            if (categorias[cat]?.pedraregressao?.nome) {
+              nomeItemRegressao = categorias[cat].pedraregressao.nome;
+              break;
+            }
+          }
+        }
 
         const rank = data.character?.rank || 1;
 
@@ -80,12 +97,12 @@ fetch("perfil/distribuir.html")
         originalStats = structuredClone(data.stats || {});
         originalPoints = structuredClone(data.points || {});
         
-        // 🔥 Lê a quantidade atual de "pedra3" no inventário
-        originalPedra3 = Number(data.inventory?.pedra3 || 0);
+        // 🔥 Lê a quantidade atual de "pedraregressao" no inventário do jogador
+        originalPedraRegressao = Number(data.inventory?.pedraregressao || 0);
 
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
-        tempPedra3 = originalPedra3;
+        tempPedraRegressao = originalPedraRegressao;
 
         modal.style.display = "flex";
 
@@ -117,7 +134,7 @@ fetch("perfil/distribuir.html")
         // desfaz alterações não confirmadas
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
-        tempPedra3 = originalPedra3;
+        tempPedraRegressao = originalPedraRegressao;
 
         // reabre atributos
         const attrModal = document.querySelector(".attributes-modal");
@@ -174,14 +191,14 @@ fetch("perfil/distribuir.html")
               return;
             }
 
-            // Verifica se possui pedra3 no buffer para gastar
-            if (tempPedra3 <= 0) {
-              alert("Você precisa do item 'pedra3' para diminuir pontos de atributo.");
+            // Verifica se possui o item no inventário temporário
+            if (tempPedraRegressao <= 0) {
+              alert(`Você precisa do item "${nomeItemRegressao}" para diminuir pontos de atributo.`);
               return;
             }
 
-            // Desconta 1 pedra3 e altera o atributo e os pontos
-            tempPedra3 -= 1;
+            // Consome 1 pedra e devolve o ponto
+            tempPedraRegressao -= 1;
             tempStats[stat] -= 1;
             tempPoints.available += 1;
             tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
@@ -226,13 +243,13 @@ fetch("perfil/distribuir.html")
           points: tempPoints
         };
 
-        // 🔥 Se houve consumo de pedra3, atualiza a chave no inventário
-        if (tempPedra3 !== originalPedra3) {
-          if (tempPedra3 <= 0) {
+        // 🔥 Se houve consumo de pedraregressao, atualiza a chave no inventário
+        if (tempPedraRegressao !== originalPedraRegressao) {
+          if (tempPedraRegressao <= 0) {
             // Remove o item se zerar
-            updates["inventory/pedra3"] = null;
+            updates["inventory/pedraregressao"] = null;
           } else {
-            updates["inventory/pedra3"] = tempPedra3;
+            updates["inventory/pedraregressao"] = tempPedraRegressao;
           }
         }
 

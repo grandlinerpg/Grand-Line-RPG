@@ -5,7 +5,7 @@ const {
 } = require('../index');
 
 /**
- * Mapeia os dados do Firebase e retorna a presença de cada facção por ilha.
+ * Mapeia os dados do Firebase e retorna a presença de cada facção e bando por ilha.
  */
 async function handleMapaCommands(sock, m, text, from) {
     if (text === '!mapa' || text.startsWith('!mapa ')) {
@@ -18,13 +18,13 @@ async function handleMapaCommands(sock, m, text, from) {
             const ilhasData = ilhasRes.data || {};
             const playersData = playersRes.data || {};
 
-            // Mapeia os jogadores agrupados por ilha e depois por facção
-            // Estrutura: { [idIlha]: { [faccao]: forçaTotal } }
+            // Estrutura: { [idIlha]: { [faccaoOuBando]: forçaTotal } }
             const ilhasPresenca = {};
 
             Object.values(playersData).forEach(player => {
                 const ilha = Number(player?.character?.ilha);
                 const faccao = player?.character?.faction;
+                const bando = player?.character?.bando;
                 const level = Number(player?.info?.level || 1);
 
                 // Processa apenas se o jogador tiver uma ilha válida (ignora Ilha 0) e facção definida
@@ -32,10 +32,21 @@ async function handleMapaCommands(sock, m, text, from) {
                     if (!ilhasPresenca[ilha]) {
                         ilhasPresenca[ilha] = {};
                     }
-                    if (!ilhasPresenca[ilha][faccao]) {
-                        ilhasPresenca[ilha][faccao] = 0;
+
+                    // Se a facção for Piratas e houver bando informado, agrupa pelo nome do bando
+                    let chaveGrupo = faccao;
+                    if (faccao.trim().toLowerCase() === 'piratas') {
+                        chaveGrupo = bando ? bando.trim() : 'Piratas (Sem Bando)';
                     }
-                    ilhasPresenca[ilha][faccao] += level;
+
+                    if (!ilhasPresenca[ilha][chaveGrupo]) {
+                        ilhasPresenca[ilha][chaveGrupo] = {
+                            forca: 0,
+                            faccaoOriginal: faccao
+                        };
+                    }
+
+                    ilhasPresenca[ilha][chaveGrupo].forca += level;
                 }
             });
 
@@ -64,15 +75,15 @@ async function handleMapaCommands(sock, m, text, from) {
 
                 let bloco = `*${idIlha}. ${nomeIlha}*\n\n`;
 
-                const faccoesPresentes = ilhasPresenca[idIlha];
-                const linhasFaccoes = [];
+                const gruposPresentes = ilhasPresenca[idIlha];
+                const linhasGrupos = [];
 
-                for (const [faccao, forca] of Object.entries(faccoesPresentes)) {
-                    const emoji = obterEmojiFaccao(faccao) || '🚩';
-                    linhasFaccoes.push(`➔ ${faccao} ${emoji}\n> Força: ${forca}`);
+                for (const [nomeGrupo, dados] of Object.entries(gruposPresentes)) {
+                    const emoji = obterEmojiFaccao(dados.faccaoOriginal) || '🏴‍☠️';
+                    linhasGrupos.push(`➔ ${nomeGrupo} ${emoji}\n> Força: ${dados.forca}`);
                 }
 
-                bloco += linhasFaccoes.join('\n');
+                bloco += linhasGrupos.join('\n');
                 blocosIlhas.push(bloco);
             }
 

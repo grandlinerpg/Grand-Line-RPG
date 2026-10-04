@@ -17,6 +17,22 @@ async function handleInfoCommands(sock, m, text, from) {
         return true;
     }
 
+    if (text === '!comandos' || text.startsWith('!comandos ')) {
+        const comandosText = `📜 *— LISTA DE COMANDOS —* 📜\n\n` +
+            `🔹 *!dado*\n` +
+            `🔹 *!info*\n` +
+            `🔹 *!rank*\n` +
+            `🔹 *!dominio*\n` +
+            `🔹 *!mapa*` +
+            `🔹 *!coliseu*\n` +
+            `🔹 *!inscrever*\n` +
+            `🔹 *!viajar*\n` +
+            `🔹 *!iniciaratividade*\n`;
+
+        await sock.sendMessage(from, { text: comandosText }, { quoted: m });
+        return true;
+    }
+
     if (text === '!dado' || text.startsWith('!dado ')) {
         const resultado = Math.floor(Math.random() * 100) + 1;
         const senderId = obterJidEfetivo(m, from);
@@ -98,7 +114,7 @@ async function handleInfoCommands(sock, m, text, from) {
         return true;
     }
 
-    if (text === '!dom' || text.startsWith('!dominio ')) {
+    if (text === '!dominacao' || text.startsWith('!dominio ')) {
         try {
             const response = await axios.get(`${FIREBASE_URL}/ilhas.json`);
             const ilhasData = response.data;

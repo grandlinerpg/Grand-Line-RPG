@@ -760,7 +760,7 @@ async function usarTipo7(item) {
   // 2. Busca o inventário do jogador
   const invSnap = await get(ref(db, `players/${user.uid}/inventory`));
   if (!invSnap.exists()) {
-    window.mostrarResultado("AÇÃO NEGADA!", "Você não possui nenhuma caixa de Akuma no Mi para revelar.", "❌");
+    window.mostrarResultado("AÇÃO NEGADA!", "Você não possui nenhuma Akuma no Mi para revelar.", "❌");
     return;
   }
 
@@ -781,7 +781,7 @@ async function usarTipo7(item) {
   if (!caixaEncontradaId) {
     window.mostrarResultado(
       "AÇÃO NEGADA!",
-      "Você não possui nenhuma caixa/fruta não identificada (Tipo 1) no inventário.",
+      "Você não possui nenhuma Akuma no Mi para revelar.",
       "❌"
     );
     return;

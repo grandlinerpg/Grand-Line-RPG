@@ -22,11 +22,16 @@ async function handleInfoCommands(sock, m, text, from) {
             `🔹 *!dado*\n` +
             `🔹 *!info*\n` +
             `🔹 *!rank*\n` +
+            `🔹 *!desafios*\n` +
+            `🔹 *!desafiar*\n` +
+            `🔹 *!aceitar*\n` +
             `🔹 *!dominio*\n` +
             `🔹 *!mapa*\n` +
             `🔹 *!coliseu*\n` +
             `🔹 *!inscrever*\n` +
             `🔹 *!viajar*\n` +
+            `🔹 *!participar*\n` +
+            `🔹 *!remover*\n` +
             `🔹 *!iniciaratividade*\n`;
 
         await sock.sendMessage(from, { text: comandosText }, { quoted: m });

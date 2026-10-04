@@ -13,6 +13,9 @@ const app = getApp();
 const auth = getAuth(app);
 const db = getDatabase(app);
 
+// ID exato do item no Firebase
+const ITEM_REGRESSAO_ID = "pedraregressao";
+
 let userRef = null;
 
 // ======================
@@ -22,11 +25,8 @@ let tempStats = {};
 let tempPoints = {};
 let originalStats = {};
 let originalPoints = {};
-
-// 🔥 Controle do Item de Regressão
-let originalPedraRegressao = 0;
-let tempPedraRegressao = 0;
-let nomeItemRegressao = "Pedra de Regressão"; // Nome padrão até buscar no Firebase
+let pedrasDisponiveis = 0;
+let pedrasUsadas = 0;
 
 const LIMITES_RANK = {
   1: 20,
@@ -69,40 +69,28 @@ fetch("perfil/distribuir.html")
 
         userRef = ref(db, `players/${user.uid}`);
 
-        // Busca dados do jogador e da lista global de itens
-        const [snap, itensSnap] = await Promise.all([
+        // Busca dados do jogador e da pedra de regressão no inventário
+        const [snap, invSnap] = await Promise.all([
           get(userRef),
-          get(ref(db, "itens"))
+          get(ref(db, `players/${user.uid}/inventory/${ITEM_REGRESSAO_ID}`))
         ]);
 
         if (!snap.exists()) return;
 
         const data = snap.val();
-
-        // 🔥 Busca o nome real do item "pedraregressao" no banco de dados
-        if (itensSnap.exists()) {
-          const categorias = itensSnap.val();
-          for (const cat in categorias) {
-            if (categorias[cat]?.pedraregressao?.nome) {
-              nomeItemRegressao = categorias[cat].pedraregressao.nome;
-              break;
-            }
-          }
-        }
-
         const rank = data.character?.rank || 1;
 
         limiteAtributo = LIMITES_RANK[rank] || 20;
 
         originalStats = structuredClone(data.stats || {});
         originalPoints = structuredClone(data.points || {});
-        
-        // 🔥 Lê a quantidade atual de "pedraregressao" no inventário do jogador
-        originalPedraRegressao = Number(data.inventory?.pedraregressao || 0);
 
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
-        tempPedraRegressao = originalPedraRegressao;
+
+        // Quantidade de pedras no inventário
+        pedrasDisponiveis = invSnap.exists() ? Number(invSnap.val()) || 0 : 0;
+        pedrasUsadas = 0;
 
         modal.style.display = "flex";
 
@@ -134,7 +122,7 @@ fetch("perfil/distribuir.html")
         // desfaz alterações não confirmadas
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
-        tempPedraRegressao = originalPedraRegressao;
+        pedrasUsadas = 0;
 
         // reabre atributos
         const attrModal = document.querySelector(".attributes-modal");
@@ -146,16 +134,18 @@ fetch("perfil/distribuir.html")
       });
 
       // ======================
-      // EVENTOS DE CLIQUE (+ E -)
+      // + ATRIBUTOS
       // ======================
       document.addEventListener("click", (e) => {
 
-        // --- BOTÃO DE ADICIONAR (+) ---
-        const plusBtn = e.target.closest(".plus-btn");
-        if (plusBtn) {
+        const btnPlus = e.target.closest(".plus-btn");
+        const btnMinus = e.target.closest(".minus-btn");
+
+        // 🔥 AUMENTAR PONTO
+        if (btnPlus) {
           if ((tempPoints.available || 0) <= 0) return;
 
-          const id = plusBtn.id;
+          const id = btnPlus.id;
 
           const add = (stat) => {
             if ((tempStats[stat] || 0) >= limiteAtributo) {
@@ -167,7 +157,14 @@ fetch("perfil/distribuir.html")
             tempPoints.available -= 1;
             tempPoints.used += 1;
 
-            updateStatUI(stat);
+            const statEl = document.getElementById(`modal-${stat}`);
+            if (statEl) statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;
+
+            const av = document.getElementById("available-points");
+            const us = document.getElementById("used-points");
+
+            if (av) av.innerText = tempPoints.available;
+            if (us) us.innerText = tempPoints.used;
           };
 
           if (id === "up-str") add("str");
@@ -176,34 +173,42 @@ fetch("perfil/distribuir.html")
           if (id === "up-agi") add("agi");
           if (id === "up-sta") add("sta");
           if (id === "up-hp") add("hp");
-          return;
         }
 
-        // --- BOTÃO DE SUBTRAIR (-) ---
-        const minusBtn = e.target.closest(".minus-btn");
-        if (minusBtn) {
-          const id = minusBtn.id;
+        // 🔥 DIMINUIR PONTO (UTILIZA PEDRA DE REGRESSÃO CASO REDUZA PONTOS ORIGINAIS)
+        if (btnMinus) {
+          const id = btnMinus.id;
 
           const remove = (stat) => {
-            // Não permite diminuir abaixo de 0
-            if ((tempStats[stat] || 0) <= 0) {
-              alert("O atributo não pode ser menor que 0.");
-              return;
+            const valorAtual = tempStats[stat] || 0;
+            const valorOriginal = originalStats[stat] || 0;
+
+            if (valorAtual <= 0) return;
+
+            // Se for tentar reduzir um ponto que já estava salvo no banco, precisa da pedra
+            if (valorAtual <= valorOriginal) {
+              const pedrasRestantes = pedrasDisponiveis - pedrasUsadas;
+
+              if (pedrasRestantes <= 0) {
+                alert("Você precisa de 1 Pedra de Regressão para reduzir pontos já distribuídos!");
+                return;
+              }
+
+              pedrasUsadas += 1;
             }
 
-            // Verifica se possui o item no inventário temporário
-            if (tempPedraRegressao <= 0) {
-              alert(`Você precisa do item "${nomeItemRegressao}" para diminuir pontos de atributo.`);
-              return;
-            }
-
-            // Consome 1 pedra e devolve o ponto
-            tempPedraRegressao -= 1;
-            tempStats[stat] -= 1;
-            tempPoints.available += 1;
+            tempStats[stat] = valorAtual - 1;
+            tempPoints.available = (tempPoints.available || 0) + 1;
             tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
 
-            updateStatUI(stat);
+            const statEl = document.getElementById(`modal-${stat}`);
+            if (statEl) statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;
+
+            const av = document.getElementById("available-points");
+            const us = document.getElementById("used-points");
+
+            if (av) av.innerText = tempPoints.available;
+            if (us) us.innerText = tempPoints.used;
           };
 
           if (id === "down-str") remove("str");
@@ -216,20 +221,6 @@ fetch("perfil/distribuir.html")
 
       });
 
-      // Função auxiliar para atualizar a interface dos atributos
-      function updateStatUI(stat) {
-        const statEl = document.getElementById(`modal-${stat}`);
-        if (statEl) {
-          statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;
-        }
-
-        const av = document.getElementById("available-points");
-        const us = document.getElementById("used-points");
-
-        if (av) av.innerText = tempPoints.available;
-        if (us) us.innerText = tempPoints.used;
-      }
-
       // ======================
       // CONFIRMAR (SALVA DE VERDADE)
       // ======================
@@ -238,22 +229,26 @@ fetch("perfil/distribuir.html")
         const user = auth.currentUser;
         if (!user || !userRef) return;
 
-        const updates = {
-          stats: tempStats,
-          points: tempPoints
-        };
+        const updates = {};
+        updates[`players/${user.uid}/stats`] = tempStats;
+        updates[`players/${user.uid}/points`] = tempPoints;
 
-        // 🔥 Se houve consumo de pedraregressao, atualiza a chave no inventário
-        if (tempPedraRegressao !== originalPedraRegressao) {
-          if (tempPedraRegressao <= 0) {
-            // Remove o item se zerar
-            updates["inventory/pedraregressao"] = null;
+        // Se gastou Pedras de Regressão, atualiza a quantidade no inventário
+        if (pedrasUsadas > 0) {
+          const novaQtdPedras = pedrasDisponiveis - pedrasUsadas;
+
+          if (novaQtdPedras > 0) {
+            updates[`players/${user.uid}/inventory/${ITEM_REGRESSAO_ID}`] = novaQtdPedras;
           } else {
-            updates["inventory/pedraregressao"] = tempPedraRegressao;
+            // Se zerar as pedras, remove a chave do inventário
+            updates[`players/${user.uid}/inventory/${ITEM_REGRESSAO_ID}`] = null;
           }
         }
 
-        await update(userRef, updates);
+        await update(ref(db), updates);
+
+        pedrasDisponiveis -= pedrasUsadas;
+        pedrasUsadas = 0;
 
         modal.style.display = "none";
 

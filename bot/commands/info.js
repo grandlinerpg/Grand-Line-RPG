@@ -18,12 +18,12 @@ async function handleInfoCommands(sock, m, text, from) {
     }
 
     if (text === '!comandos' || text.startsWith('!comandos ')) {
-        const comandosText = `📜 *— LISTA DE COMANDOS —* 📜\n\n` +
+        const comandosText = `📜 *— COMANDOS —* 📜\n\n` +
             `🔹 *!dado*\n` +
             `🔹 *!info*\n` +
             `🔹 *!rank*\n` +
             `🔹 *!dominio*\n` +
-            `🔹 *!mapa*` +
+            `🔹 *!mapa*\n` +
             `🔹 *!coliseu*\n` +
             `🔹 *!inscrever*\n` +
             `🔹 *!viajar*\n` +

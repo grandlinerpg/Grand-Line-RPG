@@ -230,8 +230,10 @@ window.abrirAtividade = async function(
 
     if(saldo){
 
+        const valorDinheiro = Number(atividade.recompensa?.dinheiro) || 0;
+
         saldo.innerText =
-        atividade.recompensa?.dinheiro || 0;
+        valorDinheiro.toLocaleString('pt-BR');
 
     }
 
@@ -239,8 +241,10 @@ window.abrirAtividade = async function(
 
     if(exp){
 
+        const valorExp = Number(atividade.recompensa?.exp) || 0;
+
         exp.innerText =
-        atividade.recompensa?.exp || 0;
+        valorExp.toLocaleString('pt-BR');
 
     }
 

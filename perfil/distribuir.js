@@ -23,6 +23,10 @@ let tempPoints = {};
 let originalStats = {};
 let originalPoints = {};
 
+// 🔥 Controle de Pedras no Inventário
+let originalPedra3 = 0;
+let tempPedra3 = 0;
+
 const LIMITES_RANK = {
   1: 20,
   2: 40,
@@ -75,9 +79,13 @@ fetch("perfil/distribuir.html")
 
         originalStats = structuredClone(data.stats || {});
         originalPoints = structuredClone(data.points || {});
+        
+        // 🔥 Lê a quantidade atual de "pedra3" no inventário
+        originalPedra3 = Number(data.inventory?.pedra3 || 0);
 
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
+        tempPedra3 = originalPedra3;
 
         modal.style.display = "flex";
 
@@ -103,15 +111,16 @@ fetch("perfil/distribuir.html")
       // ======================
       closeBtn.addEventListener("click", () => {
 
-         // fecha distribuir
+        // fecha distribuir
         modal.style.display = "none";
 
         // desfaz alterações não confirmadas
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
+        tempPedra3 = originalPedra3;
 
         // reabre atributos
-       const attrModal = document.querySelector(".attributes-modal");
+        const attrModal = document.querySelector(".attributes-modal");
 
         if (attrModal) {
           attrModal.style.display = "flex";
@@ -120,48 +129,89 @@ fetch("perfil/distribuir.html")
       });
 
       // ======================
-      // + ATRIBUTOS
+      // EVENTOS DE CLIQUE (+ E -)
       // ======================
       document.addEventListener("click", (e) => {
 
-        const btn = e.target.closest(".plus-btn");
-        if (!btn) return;
+        // --- BOTÃO DE ADICIONAR (+) ---
+        const plusBtn = e.target.closest(".plus-btn");
+        if (plusBtn) {
+          if ((tempPoints.available || 0) <= 0) return;
 
-        if ((tempPoints.available || 0) <= 0) return;
+          const id = plusBtn.id;
 
-        const id = btn.id;
+          const add = (stat) => {
+            if ((tempStats[stat] || 0) >= limiteAtributo) {
+              alert(`Limite desse atributo atingido (${limiteAtributo})`);
+              return;
+            }
 
-        const add = (stat) => {
+            tempStats[stat] = (tempStats[stat] || 0) + 1;
+            tempPoints.available -= 1;
+            tempPoints.used += 1;
 
-          if ((tempStats[stat] || 0) >= limiteAtributo) {
-            alert(`Limite desse atributo atingido (${limiteAtributo})`);
-            return;
-          }
+            updateStatUI(stat);
+          };
 
-          tempStats[stat] = (tempStats[stat] || 0) + 1;
-          tempPoints.available -= 1;
-          tempPoints.used += 1;
+          if (id === "up-str") add("str");
+          if (id === "up-res") add("res");
+          if (id === "up-dex") add("dex");
+          if (id === "up-agi") add("agi");
+          if (id === "up-sta") add("sta");
+          if (id === "up-hp") add("hp");
+          return;
+        }
 
-          const statEl = document.getElementById(`modal-${stat}`);
-          if (statEl) {
-            statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;
-          }
+        // --- BOTÃO DE SUBTRAIR (-) ---
+        const minusBtn = e.target.closest(".minus-btn");
+        if (minusBtn) {
+          const id = minusBtn.id;
 
-          const av = document.getElementById("available-points");
-          const us = document.getElementById("used-points");
+          const remove = (stat) => {
+            // Não permite diminuir abaixo de 0
+            if ((tempStats[stat] || 0) <= 0) {
+              alert("O atributo não pode ser menor que 0.");
+              return;
+            }
 
-          if (av) av.innerText = tempPoints.available;
-          if (us) us.innerText = tempPoints.used;
-        };
+            // Verifica se possui pedra3 no buffer para gastar
+            if (tempPedra3 <= 0) {
+              alert("Você precisa do item 'pedra3' para diminuir pontos de atributo.");
+              return;
+            }
 
-        if (id === "up-str") add("str");
-        if (id === "up-res") add("res");
-        if (id === "up-dex") add("dex");
-        if (id === "up-agi") add("agi");
-        if (id === "up-sta") add("sta");
-        if (id === "up-hp") add("hp");
+            // Desconta 1 pedra3 e altera o atributo e os pontos
+            tempPedra3 -= 1;
+            tempStats[stat] -= 1;
+            tempPoints.available += 1;
+            tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
+
+            updateStatUI(stat);
+          };
+
+          if (id === "down-str") remove("str");
+          if (id === "down-res") remove("res");
+          if (id === "down-dex") remove("dex");
+          if (id === "down-agi") remove("agi");
+          if (id === "down-sta") remove("sta");
+          if (id === "down-hp") remove("hp");
+        }
 
       });
+
+      // Função auxiliar para atualizar a interface dos atributos
+      function updateStatUI(stat) {
+        const statEl = document.getElementById(`modal-${stat}`);
+        if (statEl) {
+          statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;
+        }
+
+        const av = document.getElementById("available-points");
+        const us = document.getElementById("used-points");
+
+        if (av) av.innerText = tempPoints.available;
+        if (us) us.innerText = tempPoints.used;
+      }
 
       // ======================
       // CONFIRMAR (SALVA DE VERDADE)
@@ -171,10 +221,22 @@ fetch("perfil/distribuir.html")
         const user = auth.currentUser;
         if (!user || !userRef) return;
 
-        await update(userRef, {
+        const updates = {
           stats: tempStats,
           points: tempPoints
-        });
+        };
+
+        // 🔥 Se houve consumo de pedra3, atualiza a chave no inventário
+        if (tempPedra3 !== originalPedra3) {
+          if (tempPedra3 <= 0) {
+            // Remove o item se zerar
+            updates["inventory/pedra3"] = null;
+          } else {
+            updates["inventory/pedra3"] = tempPedra3;
+          }
+        }
+
+        await update(userRef, updates);
 
         modal.style.display = "none";
 

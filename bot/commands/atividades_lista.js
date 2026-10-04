@@ -250,6 +250,26 @@ async function handleAtividadesCommands(sock, m, text, from) {
             });
         }
 
+        // ==========================================
+        // REGISTRO DE ATIVIDADES E DATA NO FIREBASE
+        // ==========================================
+        try {
+            const dataAtualIso = new Date().toISOString();
+            for (const uid of uidsParticipantes) {
+                const player = playersData[uid];
+                const qtdAtual = Number(player?.atividades?.[sessao.chaveAtividade] ?? 0);
+
+                // Incrementa a atividade iniciada em +1 e atualiza o campo data em /atividades
+                await axios.patch(`${FIREBASE_URL}/players/${uid}/atividades.json`, {
+                    [sessao.chaveAtividade]: qtdAtual + 1,
+                    data: dataAtualIso
+                });
+            }
+        } catch (e) {
+            await sock.sendMessage(from, { text: '❌ Erro ao registrar o incremento de atividade dos jogadores no Firebase.' }, { quoted: m });
+            return true;
+        }
+
         sessao.anunciantes = anunciantes;
         sessao.ilhaReferencia = ilhaReferencia;
 

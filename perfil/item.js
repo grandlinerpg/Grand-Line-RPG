@@ -30,7 +30,7 @@ window.usarItem = async function(item) {
 
     // =====================
     // TIPO 1
-    // SORTEIA ITEM
+    // SORTEIA ITEM / ALTERA PERSONAGEM (SE FOR AKUMA NO MI)
     // =====================
     case 1:
       await usarTipo1(item);
@@ -75,6 +75,14 @@ window.usarItem = async function(item) {
     // =====================
     case 6:
       await usarTipo6(item);
+      break;
+
+    // =====================
+    // TIPO 7
+    // REVELA AKUMA NO MI
+    // =====================
+    case 7:
+      await usarTipo7(item);
       break;
   }
 };
@@ -163,6 +171,7 @@ function limparNome(nome, categoria) {
 
   return nome.trim();
 }
+
 // =========================
 // SORTEAR TIER
 // =========================
@@ -190,10 +199,14 @@ function sortearTier() {
 
 // =========================
 // TIPO 1
-// GERA ITEM ALEATÓRIO (COM SUPORTE A UNICIDADE DE AKUMA NO MI)
+// GERA ITEM ALEATÓRIO OU DESPERTA AKUMA NO MI DIRETO NO PERSONAGEM
 // =========================
 async function usarTipo1(item) {
+  const auth = window.auth;
   const db = window.db;
+  const user = auth.currentUser;
+
+  if (!user) return;
 
   const categoriaRef = ref(db, `itens/${item.categoria}`);
   const snap = await get(categoriaRef);
@@ -204,13 +217,27 @@ async function usarTipo1(item) {
   const lista = [];
 
   // ==========================================
-  // SE FOR AKUMA NO MI: VERIFICA UNICIDADE
+  // SE FOR AKUMA NO MI: VERIFICA UNICIDADE E SE PLAYER JÁ TEM FRUTA
   // ==========================================
   let akumasExistentes = [];
   if (item.categoria === "Akuma no Mi") {
+    const charRef = ref(db, `players/${user.uid}/character`);
+    const charSnap = await get(charRef);
+
+    if (charSnap.exists()) {
+      const personagem = charSnap.val();
+      if (personagem.fruit && personagem.fruit !== "—") {
+        window.mostrarResultado(
+          "AÇÃO NEGADA!",
+          "Você já possui uma <b>Akuma no Mi</b>.",
+          "❌"
+        );
+        return;
+      }
+    }
+
     const akumasSnap = await get(ref(db, "akumas-existentes"));
     if (akumasSnap.exists()) {
-      // Cria uma lista de IDs de Akumas que já existem no jogo
       akumasExistentes = Object.keys(akumasSnap.val());
     }
   }
@@ -258,24 +285,44 @@ async function usarTipo1(item) {
   // Sorteia o item final
   const itemFinal = filtrados[Math.floor(Math.random() * filtrados.length)];
 
-  // Se for Akuma no Mi, registra na lista de existentes no Firebase
-  if (item.categoria === "Akuma no Mi") {
-    await set(ref(db, `akumas-existentes/${itemFinal.id}`), true);
-  }
-
-  // Remove o item consumível usado (ex: baú/caixa de fruta)
+  // Remove o item consumível usado (ex: caixa/baú)
   await removerItem(item.id);
 
-  // Adiciona o novo item sorteado ao inventário
-  await adicionarItem(itemFinal.id);
+  // ==========================================
+  // COMPORTAMENTO DEPENDENDO DA CATEGORIA
+  // ==========================================
+  if (item.categoria === "Akuma no Mi") {
+    // Registra na lista de existentes no Firebase
+    await set(ref(db, `akumas-existentes/${itemFinal.id}`), true);
 
-  window.mostrarResultado(
-    "ITEM SORTEADO!",
-    `Você recebeu um(a) <b>${itemFinal.nome || itemFinal.id}</b>.`,
-    itemFinal.img
-      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemFinal.img}.png" class="item-open-img">`
-      : (itemFinal.item || itemFinal.emoji || itemFinal.icon || "🎁")
-  );
+    // Altera diretamente o personagem (igual Tipo 2)
+    const charRef = ref(db, `players/${user.uid}/character`);
+    const nomeLimpo = limparNome(itemFinal.nome || itemFinal.id, "Akuma no Mi");
+
+    await update(charRef, {
+      fruit: nomeLimpo
+    });
+
+    window.mostrarResultado(
+      "PERSONAGEM ALTERADO!",
+      `Você despertou o poder da <b>${nomeLimpo}</b>.`,
+      itemFinal.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemFinal.img}.png" class="item-open-img">`
+        : (itemFinal.item || itemFinal.emoji || itemFinal.icon || "⚡")
+    );
+
+  } else {
+    // Caso seja outro tipo de item da Tipo 1, envia ao inventário
+    await adicionarItem(itemFinal.id);
+
+    window.mostrarResultado(
+      "ITEM SORTEADO!",
+      `Você recebeu um(a) <b>${itemFinal.nome || itemFinal.id}</b>.`,
+      itemFinal.img
+        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemFinal.img}.png" class="item-open-img">`
+        : (itemFinal.item || itemFinal.emoji || itemFinal.icon || "🎁")
+    );
+  }
 }
 
 // =========================
@@ -378,182 +425,182 @@ function usarTipo3(item) {
     `${item.value}.html`;
 }
 
-  // =========================
-  // TIPO 4
-  // BAÚ
-  // =========================
-    async function usarTipo4(item) {
+// =========================
+// TIPO 4
+// BAÚ
+// =========================
+async function usarTipo4(item) {
 
-    console.log("USANDO BAÚ", item);
+  console.log("USANDO BAÚ", item);
 
-    const auth = window.auth;
-    const db = window.db;
+  const auth = window.auth;
+  const db = window.db;
 
-    const user = auth.currentUser;
+  const user = auth.currentUser;
 
-    if (!user) return;
+  if (!user) return;
 
-    // =====================
-    // PEGA BAÚ
-    // =====================
-    const bauRef =
-      ref(db, `itens/Baú do Tesouro/${item.id}`);
+  // =====================
+  // PEGA BAÚ
+  // =====================
+  const bauRef =
+    ref(db, `itens/Baú do Tesouro/${item.id}`);
 
-    const snap = await get(bauRef);
+  const snap = await get(bauRef);
 
-    console.log("SNAP:", snap.exists(), snap.val());
+  console.log("SNAP:", snap.exists(), snap.val());
 
-    if (!snap.exists()) return;
-  
-    const bau = snap.val();
+  if (!snap.exists()) return;
 
-    // =====================
-    // DINHEIRO
-    // =====================
-    const saldoRef =
-      ref(db, `players/${user.uid}/info/saldo`);
+  const bau = snap.val();
 
-    const saldoSnap = await get(saldoRef);
+  // =====================
+  // DINHEIRO
+  // =====================
+  const saldoRef =
+    ref(db, `players/${user.uid}/info/saldo`);
 
-    let saldoAtual = 0;
+  const saldoSnap = await get(saldoRef);
 
-    if (saldoSnap.exists()) {
-      saldoAtual = Number(saldoSnap.val()) || 0;
-    }
+  let saldoAtual = 0;
 
-    const min =
-      Number(bau.dinheiro?.min) || 0;
-
-    const max =
-      Number(bau.dinheiro?.max) || 0;
-
-    const dinheiro =
-      Math.floor(
-        Math.random() * (max - min + 1)
-      ) + min;
-
-    console.log("DINHEIRO:", dinheiro);
-
-    await set(
-      saldoRef,
-      saldoAtual + dinheiro
-    );
-
-    // =====================
-    // CHANCE DE ITEM
-    // =====================
-    let itemRecebido = null;
-
-    const prob =
-      Number(bau.prob) || 0;
-
-    console.log("PROB:", prob);
-
-    const rngProb =
-      Math.random() * 100;
-
-    if (rngProb <= prob) {
-
-      const drops =
-        bau.drops || {};
-
-      const lista =
-        Object.entries(drops);
-
-      if (lista.length) {
-
-        const totalChance =
-          lista.reduce(
-            (acc, [, chance]) =>
-              acc + (Number(chance) || 0),
-            0
-          );
-
-        let rng =
-          Math.random() * totalChance;
-
-        let acumulado = 0;
-
-        for (const [itemId, chance] of lista) {
-
-          acumulado +=
-            Number(chance) || 0;
-
-          if (rng <= acumulado) {
-
-            itemRecebido = {
-              id: itemId
-            };
-
-            break;
-          }
-        }
-
-        console.log("DROP:", itemRecebido);
-
-        if (itemRecebido) {
-          await adicionarItem(itemRecebido.id);
-        }
-      }
-    }
-
-    // =====================
-    // BUSCA DADOS DO ITEM
-    // =====================
-    if (itemRecebido) {
-
-      const categoriasSnap =
-        await get(ref(db, "itens"));
-
-      if (categoriasSnap.exists()) {
-
-        const categorias =
-          categoriasSnap.val();
-
-        for (const categoria in categorias) {
-
-          if (categorias[categoria]?.[itemRecebido.id]) {
-
-            itemRecebido = {
-              id: itemRecebido.id,
-              ...categorias[categoria][itemRecebido.id]
-            };
-
-            break;
-          }
-        }
-      }
-    }
-
-    // =====================
-    // REMOVE BAÚ
-    // =====================
-    await removerItem(item.id);
-
-    // =====================
-    // ALERTA
-    // =====================
-    console.log("REC:", item.rec);
-    console.log(item);
-    window.mostrarResultado(
-      "BAÚ ABERTO!",
-      `
-      Você recebeu <b>${dinheiro} Berries</b>.<br>
-      ${
-        itemRecebido
-          ? `Você encontrou um(a) <b>${itemRecebido.nome || itemRecebido.id}</b>.`
-          : ""
-      }
-      `,
-      itemRecebido?.img
-        ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemRecebido.img}.png"
-            class="item-open-img">`
-        : itemRecebido
-          ? (itemRecebido.item || itemRecebido.emoji || itemRecebido.icon || "📦")
-          : `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.rec}.png"
-              class="item-open-img">`
-    );
+  if (saldoSnap.exists()) {
+    saldoAtual = Number(saldoSnap.val()) || 0;
   }
+
+  const min =
+    Number(bau.dinheiro?.min) || 0;
+
+  const max =
+    Number(bau.dinheiro?.max) || 0;
+
+  const dinheiro =
+    Math.floor(
+      Math.random() * (max - min + 1)
+    ) + min;
+
+  console.log("DINHEIRO:", dinheiro);
+
+  await set(
+    saldoRef,
+    saldoAtual + dinheiro
+  );
+
+  // =====================
+  // CHANCE DE ITEM
+  // =====================
+  let itemRecebido = null;
+
+  const prob =
+    Number(bau.prob) || 0;
+
+  console.log("PROB:", prob);
+
+  const rngProb =
+    Math.random() * 100;
+
+  if (rngProb <= prob) {
+
+    const drops =
+      bau.drops || {};
+
+    const lista =
+      Object.entries(drops);
+
+    if (lista.length) {
+
+      const totalChance =
+        lista.reduce(
+          (acc, [, chance]) =>
+            acc + (Number(chance) || 0),
+          0
+        );
+
+      let rng =
+        Math.random() * totalChance;
+
+      let acumulado = 0;
+
+      for (const [itemId, chance] of lista) {
+
+        acumulado +=
+          Number(chance) || 0;
+
+        if (rng <= acumulado) {
+
+          itemRecebido = {
+            id: itemId
+          };
+
+          break;
+        }
+      }
+
+      console.log("DROP:", itemRecebido);
+
+      if (itemRecebido) {
+        await adicionarItem(itemRecebido.id);
+      }
+    }
+  }
+
+  // =====================
+  // BUSCA DADOS DO ITEM
+  // =====================
+  if (itemRecebido) {
+
+    const categoriasSnap =
+      await get(ref(db, "itens"));
+
+    if (categoriasSnap.exists()) {
+
+      const categorias =
+        categoriasSnap.val();
+
+      for (const categoria in categorias) {
+
+        if (categorias[categoria]?.[itemRecebido.id]) {
+
+          itemRecebido = {
+            id: itemRecebido.id,
+            ...categorias[categoria][itemRecebido.id]
+          };
+
+          break;
+        }
+      }
+    }
+  }
+
+  // =====================
+  // REMOVE BAÚ
+  // =====================
+  await removerItem(item.id);
+
+  // =====================
+  // ALERTA
+  // =====================
+  console.log("REC:", item.rec);
+  console.log(item);
+  window.mostrarResultado(
+    "BAÚ ABERTO!",
+    `
+    Você recebeu <b>${dinheiro} Berries</b>.<br>
+    ${
+      itemRecebido
+        ? `Você encontrou um(a) <b>${itemRecebido.nome || itemRecebido.id}</b>.`
+        : ""
+    }
+    `,
+    itemRecebido?.img
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${itemRecebido.img}.png"
+          class="item-open-img">`
+      : itemRecebido
+        ? (itemRecebido.item || itemRecebido.emoji || itemRecebido.icon || "📦")
+        : `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${item.rec}.png"
+            class="item-open-img">`
+  );
+}
 
 // =========================
 // TIPO 5
@@ -610,6 +657,7 @@ async function usarTipo5(item) {
       : (item.item || item.emoji || item.icon || "🍎")
   );
 }
+
 // =========================
 // TIPO 6
 // RECUPERA SKILL PERDIDA
@@ -623,25 +671,21 @@ async function usarTipo6(item) {
 
   if (!user) return;
 
-
   const perdidosRef =
     ref(db, `players/${user.uid}/points/perdidos`);
 
   const disponivelRef =
     ref(db, `players/${user.uid}/points/skill-available`);
 
-
   // pega pontos perdidos
   const perdidoSnap =
     await get(perdidosRef);
-
 
   let perdidos = 0;
 
   if (perdidoSnap.exists()) {
     perdidos = Number(perdidoSnap.val()) || 0;
   }
-
 
   if (perdidos <= 0) {
 
@@ -654,11 +698,9 @@ async function usarTipo6(item) {
     return;
   }
 
-
   // pega pontos atuais disponíveis
   const disponivelSnap =
     await get(disponivelRef);
-
 
   let disponivel = 0;
 
@@ -666,13 +708,11 @@ async function usarTipo6(item) {
     disponivel = Number(disponivelSnap.val()) || 0;
   }
 
-
   // adiciona perdido ao disponível
   await set(
     disponivelRef,
     disponivel + perdidos
   );
-
 
   // zera perdidos
   await set(
@@ -680,10 +720,8 @@ async function usarTipo6(item) {
     0
   );
 
-
   // remove item
   await removerItem(item.id);
-
 
   window.mostrarResultado(
     "PONTOS RESTAURADOS!",
@@ -699,20 +737,126 @@ async function usarTipo6(item) {
   );
 }
 
-  // =====================
-  // RESULTADO
-  // =====================
-  window.mostrarResultado = function(titulo, texto, icon = "📦") {
+// =========================
+// TIPO 7
+// REVELA AKUMA NO MI
+// =========================
+async function usarTipo7(item) {
+  const auth = window.auth;
+  const db = window.db;
+  const user = auth.currentUser;
 
-    const modal = document.getElementById("result-modal");
-    const title = document.getElementById("result-title");
-    const content = document.getElementById("result-content");
-    const iconBox = document.getElementById("result-icon");
+  if (!user) return;
 
-    title.innerText = titulo;
-    content.innerHTML = texto;
-    iconBox.innerHTML = icon;
+  // 1. Busca todas as Akumas no Mi cadastradas
+  const akumasSnap = await get(ref(db, "itens/Akuma no Mi"));
+  if (!akumasSnap.exists()) {
+    window.mostrarResultado("AÇÃO NEGADA!", "Nenhuma Akuma no Mi encontrada no sistema.", "❌");
+    return;
+  }
 
-    modal.style.display = "flex";
-  };
+  const akumasCadastradas = akumasSnap.val();
 
+  // 2. Busca o inventário do jogador
+  const invSnap = await get(ref(db, `players/${user.uid}/inventory`));
+  if (!invSnap.exists()) {
+    window.mostrarResultado("AÇÃO NEGADA!", "Você não possui nenhuma caixa de Akuma no Mi para revelar.", "❌");
+    return;
+  }
+
+  const inventario = invSnap.val();
+
+  // 3. Verifica se o jogador tem algum item no inventário que seja da categoria Akuma no Mi e Tipo 1
+  let caixaEncontradaId = null;
+
+  for (const itemId in inventario) {
+    if (inventario[itemId] > 0 && akumasCadastradas[itemId]) {
+      if (Number(akumasCadastradas[itemId].tipo) === 1) {
+        caixaEncontradaId = itemId;
+        break;
+      }
+    }
+  }
+
+  if (!caixaEncontradaId) {
+    window.mostrarResultado(
+      "AÇÃO NEGADA!",
+      "Você não possui nenhuma caixa/fruta não identificada (Tipo 1) no inventário.",
+      "❌"
+    );
+    return;
+  }
+
+  // 4. Busca Akumas já existentes no mundo
+  let akumasExistentes = [];
+  const existentesSnap = await get(ref(db, "akumas-existentes"));
+  if (existentesSnap.exists()) {
+    akumasExistentes = Object.keys(existentesSnap.val());
+  }
+
+  // 5. Filtra frutas disponíveis que ainda não foram sorteadas
+  const listaDisponiveis = [];
+  for (const itemId in akumasCadastradas) {
+    if (itemId === caixaEncontradaId) continue;
+    if (akumasExistentes.includes(itemId)) continue;
+
+    listaDisponiveis.push({
+      id: itemId,
+      ...akumasCadastradas[itemId]
+    });
+  }
+
+  if (!listaDisponiveis.length) {
+    window.mostrarResultado(
+      "AÇÃO NEGADA!",
+      "Todas as <b>Akuma no Mi</b> já foram reveladas no jogo!",
+      "❌"
+    );
+    return;
+  }
+
+  // 6. Sorteia por tier
+  const tierSorteado = sortearTier();
+  let filtrados = listaDisponiveis.filter(i => Number(i.tier) === tierSorteado);
+
+  if (!filtrados.length) {
+    filtrados = listaDisponiveis.filter(i => Number(i.tier) < tierSorteado);
+  }
+  if (!filtrados.length) {
+    filtrados = listaDisponiveis;
+  }
+
+  const akumaSorteada = filtrados[Math.floor(Math.random() * filtrados.length)];
+
+  // 7. Processa as remoções e adições
+  await set(ref(db, `akumas-existentes/${akumaSorteada.id}`), true); // Registra que a fruta já existe
+  await removerItem(caixaEncontradaId); // Consome a caixa Tipo 1
+  await removerItem(item.id); // Consome o item Tipo 7
+  await adicionarItem(akumaSorteada.id); // Adiciona a Akuma no Mi identificada ao inventário
+
+  // 8. Exibe mensagem de sucesso
+  window.mostrarResultado(
+    "AKUMA NO MI REVELADA!",
+    `Sua fruta misteriosa foi revelada como: <b>${akumaSorteada.nome || akumaSorteada.id}</b>! Ela foi adicionada ao seu inventário.`,
+    akumaSorteada.img
+      ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${akumaSorteada.img}.png" class="item-open-img">`
+      : (akumaSorteada.item || akumaSorteada.emoji || akumaSorteada.icon || "📜")
+  );
+}
+
+// =====================
+// RESULTADO
+// =====================
+window.mostrarResultado = function(titulo, texto, icon = "📦") {
+
+  const modal = document.getElementById("result-modal");
+  const title = document.getElementById("result-title");
+  const content = document.getElementById("result-content");
+  const iconBox = document.getElementById("result-icon");
+
+  title.innerText = titulo;
+  content.innerHTML = texto;
+  iconBox.innerHTML = icon;
+
+  modal.style.display = "flex";
+};

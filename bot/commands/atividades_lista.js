@@ -188,6 +188,28 @@ async function handleAtividadesCommands(sock, m, text, from) {
             }
         } catch (e) {}
 
+        // Validação do limite de realização da atividade por jogador (Apenas Atacantes)
+        try {
+            const limiteRes = await axios.get(`${FIREBASE_URL}/faccoes/${sessao.faccaoCriador}/atividades/${sessao.chaveAtividade}/limite.json`);
+            const limiteAtividade = limiteRes.data !== null ? Number(limiteRes.data) : null;
+
+            if (limiteAtividade !== null) {
+                for (const uid of uidsParticipantes) {
+                    const player = playersData[uid];
+                    const nomePlayer = player?.character?.charName || player?.nome || 'Jogador';
+                    const realizadas = Number(player?.atividades?.[sessao.chaveAtividade] ?? 0);
+
+                    if (realizadas >= limiteAtividade) {
+                        await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* já atingiu o limite semanal desta atividade (${realizadas}/${limiteAtividade})!` }, { quoted: m });
+                        return true;
+                    }
+                }
+            }
+        } catch (e) {
+            await sock.sendMessage(from, { text: '❌ Erro ao consultar limite da atividade no Firebase.' }, { quoted: m });
+            return true;
+        }
+
         const anunciantes = [];
         let ilhaReferencia = null;
 

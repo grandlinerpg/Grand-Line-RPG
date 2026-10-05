@@ -20,6 +20,9 @@ const GRUPOS_ARENA = [
     "120363429534972500@g.us"
 ];
 
+// IMPORTAÇÃO DO MÓDULO DE LEVEL
+const { processarGanhoExp } = require('./level');
+
 // FUNÇÕES DE SUPORTE COMPARTILHADAS
 async function obterTemporadaAtual() {
     try {
@@ -61,7 +64,8 @@ module.exports = {
     obterTemporadaAtual,
     obterEmojiFaccao,
     formatarJidPv,
-    obterJidEfetivo
+    obterJidEfetivo,
+    processarGanhoExp
 };
 
 // IMPORTAÇÃO DOS MÓDULOS DE COMANDOS

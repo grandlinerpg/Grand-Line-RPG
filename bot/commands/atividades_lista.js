@@ -630,10 +630,10 @@ async function enviarPainelAtividade(sock, targetGroup, atividade) {
     if (textoTerritorio) {
         mensagemPainel += `${textoTerritorio}\n`;
     }
-    mensagemPainel += `> Término: ${horarioFormatado} (BRT)\n\n` +
+    mensagemPainel += `> Término: ${horarioFormatado} (BRT)\n` +
         `──────────────────\n` +
         `*${tituloAtacante}:*\n\n${anunciantesTexto}\n\n` +
-        `> Força: ${forcaAtacantes}\n\n` +
+        `> Força: ${forcaAtacantes}\n` +
         `──────────────────\n` +
         `*${tituloDefesa}:*\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}`;

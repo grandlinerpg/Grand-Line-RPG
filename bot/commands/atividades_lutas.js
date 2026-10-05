@@ -1,6 +1,7 @@
 const axios = require('axios'); 
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates'); 
+const { processarGanhoExp } = require('./level');
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
@@ -223,7 +224,7 @@ async function verificarEParearAutomatico(sock, from) {
             let faccaoAlvo = atividade.vezSelecao === 'atacante' ? nomeDefesa : atividade.faccaoCriador;
 
             await sock.sendMessage(from, { 
-                text: `⚔️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
+                text: `⚔️️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
             });
         }
     }
@@ -650,20 +651,21 @@ async function finalizarAtividade(sock, from) {
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
 
-                    const expAtual = Number(playerInfo.exp ?? playerData.exp ?? 0);
+                    // Processa ganho de EXP e recalcula Level pelo modulo level.js
+                    const { novoExp, novoLevel } = processarGanhoExp(playerInfo, expGanho);
                     const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
-
-                    const novoExp = expAtual + expGanho;
                     const novoSaldo = saldoAtual + berriesGanho;
 
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
+                        level: novoLevel,
                         saldo: novoSaldo
                     });
 
-                    if (playerData.exp !== undefined || playerData.saldo !== undefined) {
+                    if (playerData.exp !== undefined || playerData.saldo !== undefined || playerData.level !== undefined) {
                         await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,
+                            level: novoLevel,
                             saldo: novoSaldo
                         });
                     }

@@ -161,7 +161,7 @@ async function dispararQuizNoGrupo(chatJid, sock) {
         // Ajustado número máximo de perguntas para 30
         const QTD_PERGUNTAS = Math.min(30, listaPerguntas.length);
         const perguntasSorteadas = listaPerguntas.slice(0, QTD_PERGUNTAS);
-        const PREMIO_TOTAL = 3000;
+        const PREMIO_TOTAL = 30000;
 
         jogosQuiz[chatJid] = {
             perguntas: perguntasSorteadas,

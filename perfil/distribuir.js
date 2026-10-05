@@ -39,6 +39,19 @@ const LIMITES_RANK = {
 
 let limiteAtributo = 20;
 
+// Função auxiliar para recalcular total de pedras necessárias na sessão
+const calcularPedrasNecessarias = (statsAtuais, statsOriginais) => {
+  let total = 0;
+  for (const key in statsOriginais) {
+    const orig = statsOriginais[key] || 0;
+    const atual = statsAtuais[key] || 0;
+    if (atual < orig) {
+      total += (orig - atual);
+    }
+  }
+  return total;
+};
+
 fetch("perfil/distribuir.html")
   .then(res => res.text())
   .then(html => {
@@ -164,6 +177,9 @@ fetch("perfil/distribuir.html")
             tempPoints.available -= 1;
             tempPoints.used += 1;
 
+            // Recalcula as pedras usadas de forma dinâmica
+            pedrasUsadas = calcularPedrasNecessarias(tempStats, originalStats);
+
             const statEl = document.getElementById(`modal-${stat}`);
             if (statEl) statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;
 
@@ -198,21 +214,25 @@ fetch("perfil/distribuir.html")
               return;
             }
 
-            // Se for tentar reduzir um ponto que já estava salvo no banco, precisa da pedra
+            // Se for tentar reduzir um ponto abaixo do valor original, verifica disponibilidade de pedras
             if (valorAtual <= valorOriginal) {
-              const pedrasRestantes = pedrasDisponiveis - pedrasUsadas;
+              const pedrasNecessariasAposRemocao = calcularPedrasNecessarias(
+                { ...tempStats, [stat]: valorAtual - 1 },
+                originalStats
+              );
 
-              if (pedrasRestantes <= 0) {
+              if (pedrasNecessariasAposRemocao > pedrasDisponiveis) {
                 alert("Você precisa de 1 Pedra de Regressão para reduzir pontos já distribuídos!");
                 return;
               }
-
-              pedrasUsadas += 1;
             }
 
             tempStats[stat] = valorAtual - 1;
             tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
             tempPoints.available = (tempPoints.available || 0) + 1;
+
+            // Recalcula as pedras usadas de forma dinâmica
+            pedrasUsadas = calcularPedrasNecessarias(tempStats, originalStats);
 
             const statEl = document.getElementById(`modal-${stat}`);
             if (statEl) statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;

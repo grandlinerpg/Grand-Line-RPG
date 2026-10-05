@@ -3,8 +3,7 @@ import {
   get,
   set,
   update,
-  remove,
-  runTransaction
+  remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // =========================
@@ -19,101 +18,76 @@ const tierChance = {
 };
 
 // =========================
-// FUNÇÃO AUXILIAR: RESETAR SKILLS E REMANEJAR PONTOS
+// MAPEAMENTO DE CATEGORIAS DE SKILL
 // =========================
-async function resetarSkillsPorCategoria(uid, tipoReset) {
+const CATEGORIA_SKILL_MAP = {
+  "Akuma no Mi": "skill-fruit",
+  "Fator de Linhagem": "skill-race",
+  "Pergaminho de Ensinamento": "skill-style"
+};
+
+// =========================
+// FUNÇÃO AUXILIAR: RESET DE SKILLS E RECONCILIAÇÃO DE PONTOS
+// =========================
+async function resetarSkillsCategoria(uid, categoriaNome) {
   const db = window.db;
-  if (!uid || !tipoReset) return;
+  const skillPointsKey = CATEGORIA_SKILL_MAP[categoriaNome];
+  if (!skillPointsKey) return;
 
-  // Mapeamento do tipo de alteração para a chave de pontos correspondente
-  let chavePontoTarget = "";
-  if (tipoReset === "fruit") chavePontoTarget = "skill-fruit";
-  if (tipoReset === "race") chavePontoTarget = "skill-race";
-  if (tipoReset === "style") chavePontoTarget = "skill-style";
+  const playerRef = ref(db, `players/${uid}`);
+  const playerSnap = await get(playerRef);
 
-  if (!chavePontoTarget) return;
+  if (!playerSnap.exists()) return;
 
-  const skillsRef = ref(db, `players/${uid}/skills`);
-  const skillsSnap = await get(skillsRef);
+  const playerData = playerSnap.val();
+  const playerSkills = playerData.skills || {};
+  const points = playerData.points || {};
 
-  if (!skillsSnap.exists()) return;
-
-  const skillsDoPlayer = skillsSnap.val();
+  let pontosCalculados = 0;
   const skillsParaRemover = [];
 
-  // Percorre as skills aprendidas para identificar quais pertencem à categoria
-  for (const skillUid in skillsDoPlayer) {
-    const sData = skillsDoPlayer[skillUid];
-    const cat = String(sData?.categoria || "").toLowerCase();
-    const sub = String(sData?.sub || "").toLowerCase();
+  // 1. Identifica as habilidades do arsenal que pertencem a esta categoria
+  for (const [skillId, info] of Object.entries(playerSkills)) {
+    if (info && info.categoria === categoriaNome) {
+      skillsParaRemover.push(skillId);
 
-    let pertence = false;
-
-    if (tipoReset === "fruit" && (cat.includes("akuma") || cat.includes("fruit") || cat.includes("fruta") || sub.includes("akuma") || sub.includes("fruit"))) {
-      pertence = true;
-    } else if (tipoReset === "race" && (cat.includes("raça") || cat.includes("raca") || cat.includes("race") || sub.includes("raça") || sub.includes("raca") || sub.includes("race"))) {
-      pertence = true;
-    } else if (tipoReset === "style" && (cat.includes("estilo") || cat.includes("style") || sub.includes("estilo") || sub.includes("style"))) {
-      pertence = true;
-    }
-
-    if (pertence) {
-      skillsParaRemover.push(skillUid);
-    }
-  }
-
-  if (skillsParaRemover.length === 0) return;
-
-  // Busca os dados das habilidades no banco global 'skills' para calcular o custo total gasto
-  let pontosRecuperados = 0;
-  const globalSkillsSnap = await get(ref(db, "skills"));
-  const globalSkills = globalSkillsSnap.exists() ? globalSkillsSnap.val() : {};
-
-  for (const skillUid of skillsParaRemover) {
-    let custoSkill = 0;
-
-    // Procura o custo da habilidade na estrutura global de habilidades
-    for (const catKey in globalSkills) {
-      if (globalSkills[catKey]?.[skillUid]) {
-        custoSkill = Number(globalSkills[catKey][skillUid].custo) || 0;
-        break;
-      }
-      for (const subKey in globalSkills[catKey]) {
-        if (globalSkills[catKey][subKey]?.[skillUid]) {
-          custoSkill = Number(globalSkills[catKey][subKey][skillUid].custo) || 0;
-          break;
+      // Busca o custo original da skill no nó global de skills
+      if (info.sub) {
+        const skillGlobalSnap = await get(ref(db, `skills/${info.categoria}/${info.sub}/${skillId}`));
+        if (skillGlobalSnap.exists()) {
+          const skillData = skillGlobalSnap.val();
+          pontosCalculados += Number(skillData.custo) || 0;
         }
       }
     }
-
-    pontosRecuperados += custoSkill;
-
-    // Remove a skill do jogador
-    await remove(ref(db, `players/${uid}/skills/${skillUid}`));
   }
 
-  if (pontosRecuperados > 0) {
-    // Atualiza a árvore de pontos do jogador
-    const pointsRef = ref(db, `players/${uid}/points`);
-    await runTransaction(pointsRef, (points) => {
-      if (!points) points = {};
+  // 2. Pontos gastos da categoria específica
+  const pontosCategoriaAtuais = Number(points[skillPointsKey]) || 0;
+  // Se houver cálculo real via custo, usa ele; senão usa o total registrado na categoria
+  const pontosRestaurar = pontosCalculados > 0 ? pontosCalculados : pontosCategoriaAtuais;
 
-      const pontosCatAtuais = Number(points[chavePontoTarget]) || 0;
-      const skillUsedAtual = Number(points["skill-used"]) || 0;
-      const perdidosAtuais = Number(points["perdidos"]) || 0;
+  if (pontosRestaurar <= 0 && skillsParaRemover.length === 0) return;
 
-      // Desconta dos pontos específicos da categoria
-      points[chavePontoTarget] = Math.max(0, pontosCatAtuais - pontosRecuperados);
+  // 3. Atualiza os contadores de pontos
+  const currentUsed = Number(points["skill-used"]) || 0;
+  const currentPerdidos = Number(points["perdidos"]) || 0;
 
-      // Desconta do total de skills usadas
-      points["skill-used"] = Math.max(0, skillUsedAtual - pontosRecuperados);
+  const newCategoryPoints = Math.max(0, pontosCategoriaAtuais - pontosRestaurar);
+  const newUsed = Math.max(0, currentUsed - pontosRestaurar);
+  const newPerdidos = currentPerdidos + pontosRestaurar;
 
-      // Adiciona aos pontos perdidos
-      points["perdidos"] = perdidosAtuais + pontosRecuperados;
+  const updates = {};
+  updates[`players/${uid}/points/${skillPointsKey}`] = newCategoryPoints;
+  updates[`players/${uid}/points/skill-used`] = newUsed;
+  updates[`players/${uid}/points/perdidos`] = newPerdidos;
 
-      return points;
-    });
+  // 4. Remove as skills do arsenal do jogador
+  for (const skillId of skillsParaRemover) {
+    updates[`players/${uid}/skills/${skillId}`] = null;
   }
+
+  await update(ref(db), updates);
 }
 
 // =========================
@@ -474,7 +448,6 @@ async function usarTipo2(item) {
   // =====================
   if (item.categoria === "Fator de Linhagem") {
     updates.race = nomeLimpo;
-    await resetarSkillsPorCategoria(user.uid, "race");
   }
 
   // =====================
@@ -482,8 +455,10 @@ async function usarTipo2(item) {
   // =====================
   if (item.categoria === "Pergaminho de Ensinamento") {
     updates.style = nomeLimpo;
-    await resetarSkillsPorCategoria(user.uid, "style");
   }
+
+  // 🔥 Executa o reset de skills e pontos da categoria que foi trocada
+  await resetarSkillsCategoria(user.uid, item.categoria);
 
   await update(charRef, updates);
 
@@ -742,8 +717,8 @@ async function usarTipo5(item) {
     }
   }
 
-  // Remove as skills associadas à fruta e remaneja os pontos para 'perdidos'
-  await resetarSkillsPorCategoria(user.uid, "fruit");
+  // 🔥 Reset das skills e recalculação de pontos da Akuma no Mi
+  await resetarSkillsCategoria(user.uid, "Akuma no Mi");
 
   // Reseta a fruta do personagem no Firebase
   await update(charRef, {

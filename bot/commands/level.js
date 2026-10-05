@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { FIREBASE_URL } = require('../index');
+const { FIREBASE_URL } = require('../index'); 
 
 /**
  * Módulo de Gerenciamento de Level e Experiência (EXP)

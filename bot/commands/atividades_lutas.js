@@ -5,7 +5,7 @@ const { iniciarEstruturaBatalha } = require('./combates');
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
     'Marinha': '⚓', 
-    'Piratas': '🏴‍☠️️',
+    'Piratas': '🏴‍☠',
     'Exército Revolucionário': '⚔️',
     'Governo Mundial': '⚓',
     'Caçadores de Recompensa': '🎯'
@@ -427,11 +427,8 @@ async function enviarRelatorioGrupo(sock, from) {
     if (!atividade) return;
 
     atividade.lutadoresAtivos = atividade.lutadoresAtivos || [];
+    atividade.derrotados = atividade.derrotados || [];
     const horaInicioStr = atividade.horaInicio || '16:30';
-
-    let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n')
-        : 'Nenhum';
 
     const todosAguardando = [...atividade.bancoAtacantes, ...atividade.bancoDefensores];
     if (atividade.proximoDesafiante) {
@@ -439,10 +436,6 @@ async function enviarRelatorioGrupo(sock, from) {
             todosAguardando.push(atividade.proximoDesafiante);
         }
     }
-
-    let aguardandoTexto = todosAguardando.length > 0
-        ? todosAguardando.map(a => `➔ ${a.nome} ${obterEmojiFaccao(a, atividade)}`).join('\n')
-        : 'Nenhum';
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
     
@@ -457,16 +450,24 @@ async function enviarRelatorioGrupo(sock, from) {
     }
     cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
 
-    const msgStatus = cabecalho +
+    let msgStatus = cabecalho +
         `──────────────────\n` +
         `*LUTAS EM ANDAMENTO:*\n\n` +
-        `${blocoArenas}\n` +
-        `──────────────────\n` +
-        `*JOGADORES DERROTADOS:*\n\n` +
-        `${derrotadosTexto}\n` +
-        `──────────────────\n` +
-        `*JOGADORES AGUARDANDO:*\n\n` +
-        `${aguardandoTexto}`;
+        `${blocoArenas}`;
+
+    if (atividade.derrotados.length > 0) {
+        const derrotadosTexto = atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n');
+        msgStatus += `\n──────────────────\n` +
+            `*JOGADORES DERROTADOS:*\n\n` +
+            `${derrotadosTexto}`;
+    }
+
+    if (todosAguardando.length > 0) {
+        const aguardandoTexto = todosAguardando.map(a => `➔ ${a.nome} ${obterEmojiFaccao(a, atividade)}`).join('\n');
+        msgStatus += `\n──────────────────\n` +
+            `*JOGADORES AGUARDANDO:*\n\n` +
+            `${aguardandoTexto}`;
+    }
 
     await sock.sendMessage(from, { text: msgStatus });
 }
@@ -475,15 +476,8 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     const atividade = atividadesAtivas[from];
     if (!atividade) return;
 
+    atividade.derrotados = atividade.derrotados || [];
     const horaInicioStr = atividade.horaInicio || '16:30';
-
-    let sobreviventesTexto = sobreviventesLista.length > 0
-        ? sobreviventesLista.map(s => `➔ ${s.nome} ${obterEmojiFaccao(s, atividade)}`).join('\n')
-        : 'Nenhum';
-
-    let derrotadosTexto = atividade.derrotados.length > 0
-        ? atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n')
-        : 'Nenhum';
 
     // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
@@ -496,13 +490,25 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     }
     cabecalho += `> Início: ${horaInicioStr} BRT\n`;
 
-    const msgStatusFinal = cabecalho +
-        `──────────────────\n` +
-        `*JOGADORES RESTANTES:*\n\n` +
-        `${sobreviventesTexto}\n` +
-        `──────────────────\n` +
-        `*JOGADORES DERROTADOS:*\n\n` +
-        `${derrotadosTexto}`;
+    let msgStatusFinal = cabecalho;
+
+    if (sobreviventesLista.length > 0) {
+        const sobreviventesTexto = sobreviventesLista.map(s => `➔ ${s.nome} ${obterEmojiFaccao(s, atividade)}`).join('\n');
+        msgStatusFinal += `──────────────────\n` +
+            `*JOGADORES RESTANTES:*\n\n` +
+            `${sobreviventesTexto}`;
+    }
+
+    if (atividade.derrotados.length > 0) {
+        const derrotadosTexto = atividade.derrotados.map(d => `➔ ${typeof d === 'object' ? d.nome : d} ${obterEmojiFaccao(d, atividade)}`).join('\n');
+        if (sobreviventesLista.length > 0) {
+            msgStatusFinal += `\n──────────────────\n`;
+        } else {
+            msgStatusFinal += `──────────────────\n`;
+        }
+        msgStatusFinal += `*JOGADORES DERROTADOS:*\n\n` +
+            `${derrotadosTexto}`;
+    }
 
     await sock.sendMessage(from, { text: msgStatusFinal });
 }

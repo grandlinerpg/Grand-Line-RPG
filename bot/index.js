@@ -4,7 +4,7 @@ const axios = require('axios');
 const cron = require('node-cron');      
  
 // CONSTANTES E CONFIGURAÇÕES
-const NUMERO_BOT = "5511918448331"; 
+const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 const RECOMPENSA_ARENA_SALDO = 5000;
 const RECOMPENSA_ARENA_EXP = 500; 
@@ -20,8 +20,8 @@ const GRUPOS_ARENA = [
     "120363429534972500@g.us"
 ];
 
-// IMPORTAÇÃO DO MÓDULO DE LEVEL
-const { processarGanhoExp } = require('./level');
+// IMPORTAÇÃO DO MÓDULO DE LEVEL (Ajuste o caminho se estiver em ./level ou ./commands/level)
+const { processarGanhoExp, handleLevelCommands } = require('./commands/level');
 
 // FUNÇÕES DE SUPORTE COMPARTILHADAS
 async function obterTemporadaAtual() {
@@ -38,7 +38,7 @@ function obterEmojiFaccao(faccao) {
     const faccaoLimpa = String(faccao).trim().toLowerCase();
     if (faccaoLimpa.includes('exército revolucionário') || faccaoLimpa.includes('exercito revolucionario')) return '⚔️';
     if (faccaoLimpa.includes('governo mundial')) return '⚓️';
-    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) return '🏴‍☠️';
+    if (faccaoLimpa.includes('piratas') || faccaoLimpa.includes('pirata')) return '🏴‍‍☠️';
     return '';
 }
 
@@ -154,6 +154,7 @@ async function connectToWhatsApp() {
             if (!text) return;
 
             // ENCAMINHAMENTO PARA MÓDULOS DE COMANDOS
+            if (handleLevelCommands && await handleLevelCommands(sock, m, text, from)) return;
             if (await handleQuizCommands(sock, m, text, from)) return;
             if (await handleInfoCommands(sock, m, text, from)) return;
             if (await handleDesafiosCommands(sock, m, text, from)) return;

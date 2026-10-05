@@ -123,8 +123,8 @@ async function connectToWhatsApp() {
         } else if (connection === 'open') {
             console.log('✅ [WhatsApp] Bot conectado!');
 
-            cron.schedule('30 22 * * *', () => {
-                console.log('⏰ [CRON] Iniciando Quiz Automático das 22:30 (Horário de Brasília)...');
+            cron.schedule('0 21 * * *', () => {
+                console.log('⏰ [CRON] Iniciando Quiz Automático das 21:00 (Horário de Brasília)...');
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
             }, {
                 scheduled: true,

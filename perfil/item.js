@@ -916,7 +916,7 @@ async function usarTipo7(item) {
   // 8. Exibe mensagem de sucesso
   window.mostrarResultado(
     "AKUMA NO MI REVELADA!",
-    `Sua fruta misteriosa foi revelada como: <b>${akumaSorteada.nome || akumaSorteada.id}</b>! Ela foi adicionada ao seu inventário.`,
+    `Sua fruta misteriosa foi revelada como: <b>${akumaSorteada.nome || akumaSorteada.id}</b>!`,
     akumaSorteada.img
       ? `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/${akumaSorteada.img}.png" class="item-open-img">`
       : (akumaSorteada.item || akumaSorteada.emoji || akumaSorteada.icon || "📜")

@@ -92,6 +92,9 @@ fetch("perfil/distribuir.html")
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
 
+        if (tempPoints.available === undefined) tempPoints.available = 0;
+        if (tempPoints.used === undefined) tempPoints.used = 0;
+
         // Quantidade de pedras no inventário
         pedrasDisponiveis = invSnap.exists() ? Number(invSnap.val()) || 0 : 0;
         pedrasUsadas = 0;
@@ -110,8 +113,8 @@ fetch("perfil/distribuir.html")
         set("modal-sta", `${tempStats.sta || 0}/${limiteAtributo}`);
         set("modal-hp", `${tempStats.hp || 0}/${limiteAtributo}`);
 
-        set("available-points", tempPoints.available || 0);
-        set("used-points", tempPoints.used || 0);
+        set("available-points", tempPoints.available);
+        set("used-points", tempPoints.used);
 
       });
 
@@ -196,7 +199,7 @@ fetch("perfil/distribuir.html")
               return;
             }
 
-            // Se for tentar reduzir um ponto que já estava salvo no banco, precisa da pedra
+            // Se o valor atual for menor ou igual ao original salvo no banco, está tentando reduzir um ponto permanente -> precisa da pedra
             if (valorAtual <= valorOriginal) {
               const pedrasRestantes = pedrasDisponiveis - pedrasUsadas;
 
@@ -206,11 +209,13 @@ fetch("perfil/distribuir.html")
               }
 
               pedrasUsadas += 1;
+            } else {
+              // Se estava acima do valor original, estava apenas desfazendo um '+' colocado nesta sessão
+              tempPoints.used = Math.max(0, tempPoints.used - 1);
             }
 
             tempStats[stat] = valorAtual - 1;
             tempPoints.available = (tempPoints.available || 0) + 1;
-            tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
 
             const statEl = document.getElementById(`modal-${stat}`);
             if (statEl) statEl.innerText = `${tempStats[stat]}/${limiteAtributo}`;

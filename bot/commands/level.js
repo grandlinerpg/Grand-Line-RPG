@@ -2,19 +2,58 @@ const axios = require('axios');
 const { FIREBASE_URL } = require('../index'); 
 
 /**
- * Módulo de Gerenciamento de Level e Experiência (EXP)
+ * Módulo de Gerenciamento de Level e Experiência (EXP) Progressive
  */
 
 /**
- * Calcula o level baseado no EXP total acumulado.
- * Regra: Cada 1000 de EXP concede 1 Level (Level mínimo: 1).
+ * Retorna quanto EXP é necessário para subir do (level) para o (level + 1).
+ * 
+ * @param {number} level - Level atual.
+ * @returns {number} EXP necessário para o próximo nível.
+ */
+function expParaProximoNivel(level) {
+    if (level < 11) return 100;
+    if (level < 21) return 200;
+    if (level < 41) return 400;
+    if (level < 61) return 600;
+    return 800; // Do level 61 em diante (até o 100+)
+}
+
+/**
+ * Calcula o level atual baseado no EXP total acumulado.
  * 
  * @param {number} exp - Quantidade total de EXP.
- * @returns {number} O level calculado.
+ * @returns {number} O level calculado (mínimo: 1).
  */
 function calcularLevel(exp = 0) {
-    const expNum = Math.max(0, Number(exp) || 0);
-    return Math.floor(expNum / 1000) + 1;
+    let expRestante = Math.max(0, Number(exp) || 0);
+    let level = 1;
+
+    while (true) {
+        const custoProximo = expParaProximoNivel(level);
+        if (expRestante >= custoProximo) {
+            expRestante -= custoProximo;
+            level++;
+        } else {
+            break;
+        }
+    }
+
+    return level;
+}
+
+/**
+ * Retorna o EXP total necessário para se alcançar determinado nível a partir do nível 1.
+ * 
+ * @param {number} targetLevel - Nível de destino.
+ * @returns {number} EXP acumulado total necessário.
+ */
+function expTotalParaLevel(targetLevel) {
+    let expAcumulado = 0;
+    for (let lvl = 1; lvl < targetLevel; lvl++) {
+        expAcumulado += expParaProximoNivel(lvl);
+    }
+    return expAcumulado;
 }
 
 /**
@@ -27,19 +66,18 @@ function obterProgressoLevel(expTotal = 0) {
     const exp = Math.max(0, Number(expTotal) || 0);
     const levelAtual = calcularLevel(exp);
     
-    // EXP exigido para atingir o nível atual e o próximo nível
-    const expInicioLevelAtual = (levelAtual - 1) * 1000;
-    const expProximoLevel = levelAtual * 1000;
+    const expInicioLevelAtual = expTotalParaLevel(levelAtual);
+    const expNecessarioProximo = expParaProximoNivel(levelAtual);
     
     const expNoLevelAtual = exp - expInicioLevelAtual;
-    const expNecessarioLevelAtual = 1000;
-    const porcentagem = Math.min(100, Math.floor((expNoLevelAtual / expNecessarioLevelAtual) * 100));
+    const porcentagem = Math.min(100, Math.floor((expNoLevelAtual / expNecessarioProximo) * 100));
 
     return {
         levelAtual,
         expTotal: exp,
         expNoLevelAtual,
-        expNecessarioProximoLevel: expProximoLevel - exp,
+        expNecessarioProximoLevel: expNecessarioProximo - expNoLevelAtual,
+        expTotalNecessarioProximoLevel: expInicioLevelAtual + expNecessarioProximo,
         porcentagemProgresso: porcentagem
     };
 }
@@ -59,9 +97,7 @@ function processarGanhoExp(info = {}, expGanho = 0) {
     const qtdExpGanho = Math.max(0, Number(expGanho) || 0);
     const novoExp = expAtual + qtdExpGanho;
     
-    // Novo level calculado com a regra de 1000 exp por nível
     const novoLevel = calcularLevel(novoExp);
-    
     const subiuLevel = novoLevel > levelAtual;
     const levelsGanhos = Math.max(0, novoLevel - levelAtual);
 
@@ -78,7 +114,6 @@ function processarGanhoExp(info = {}, expGanho = 0) {
 
 /**
  * Atualiza o EXP e Level de um jogador diretamente no Firebase.
- * Sincroniza tanto no nó `info` quanto na raiz do nó do player se existirem campos duplicados.
  * 
  * @param {string} playerKey - Chave/ID do jogador no Firebase.
  * @param {number} expGanho - Quantidade de EXP a ser creditada.
@@ -94,7 +129,7 @@ async function adicionarExpJogadorFirebase(playerKey, expGanho) {
 
         const resultado = processarGanhoExp(playerInfo, expGanho);
 
-        // Atualização no nó info (padrão principal)
+        // Atualização no nó info
         await axios.patch(`${FIREBASE_URL}/players/${playerKey}/info.json`, {
             exp: resultado.novoExp,
             level: resultado.novoLevel
@@ -124,6 +159,8 @@ async function adicionarExpJogadorFirebase(playerKey, expGanho) {
 
 module.exports = {
     calcularLevel,
+    expParaProximoNivel,
+    expTotalParaLevel,
     obterProgressoLevel,
     processarGanhoExp,
     adicionarExpJogadorFirebase

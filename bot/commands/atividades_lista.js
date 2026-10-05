@@ -250,50 +250,22 @@ async function handleAtividadesCommands(sock, m, text, from) {
             });
         }
 
-        // ==========================================
-        // REGISTRO DE ATIVIDADES E DATA NO FIREBASE
-        // ==========================================
-        try {
-            const dataAtualIso = new Date().toISOString();
-            for (const uid of uidsParticipantes) {
-                const player = playersData[uid];
-                const qtdAtual = Number(player?.atividades?.[sessao.chaveAtividade] ?? 0);
-
-                // Incrementa a atividade iniciada em +1 e atualiza o campo data em /atividades
-                await axios.patch(`${FIREBASE_URL}/players/${uid}/atividades.json`, {
-                    [sessao.chaveAtividade]: qtdAtual + 1,
-                    data: dataAtualIso
-                });
-            }
-        } catch (e) {
-            await sock.sendMessage(from, { text: '❌ Erro ao registrar o incremento de atividade dos jogadores no Firebase.' }, { quoted: m });
-            return true;
-        }
-
         sessao.anunciantes = anunciantes;
         sessao.ilhaReferencia = ilhaReferencia;
 
         // ==========================================
-        // TRANSFERÊNCIA SE FOR TIPO 1
-        // ==========================================
-        if (sessao.tipoAtividade === 1) {
-            delete sessoesCriacao[from];
-            return await iniciarProcessoTipo1(sock, from, sessao, m);
-        }
-
-        // ==========================================
         // FLUXO PARA ATIVIDADES TIPO 2 E TIPO 3
         // ==========================================
-        if (ilhaReferencia === 0) {
-            await sock.sendMessage(from, { text: `❌ Os participantes não podem estar na Ilha 0 para iniciar este tipo de atividade.` }, { quoted: m });
-            delete sessoesCriacao[from];
-            return true;
-        }
-
         let faccaoDefensoraCalculada = null;
         let bandoDefensorCalculado = null;
 
         if (sessao.tipoAtividade === 2 || sessao.tipoAtividade === 3) {
+            if (ilhaReferencia === 0) {
+                await sock.sendMessage(from, { text: `❌ Os participantes não podem estar na Ilha 0 para iniciar este tipo de atividade.` }, { quoted: m });
+                delete sessoesCriacao[from];
+                return true;
+            }
+
             try {
                 const ilhaRes = await axios.get(`${FIREBASE_URL}/ilhas/${ilhaReferencia}.json`);
                 const ilhaDados = ilhaRes.data || {};
@@ -328,6 +300,35 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 delete sessoesCriacao[from];
                 return true;
             }
+        }
+
+        // ==========================================
+        // REGISTRO DE ATIVIDADES E DATA NO FIREBASE
+        // (Realizado apenas se passou em todas as validações de criação)
+        // ==========================================
+        try {
+            const dataAtualIso = new Date().toISOString();
+            for (const uid of uidsParticipantes) {
+                const player = playersData[uid];
+                const qtdAtual = Number(player?.atividades?.[sessao.chaveAtividade] ?? 0);
+
+                // Incrementa a atividade iniciada em +1 e atualiza o campo data em /atividades
+                await axios.patch(`${FIREBASE_URL}/players/${uid}/atividades.json`, {
+                    [sessao.chaveAtividade]: qtdAtual + 1,
+                    data: dataAtualIso
+                });
+            }
+        } catch (e) {
+            await sock.sendMessage(from, { text: '❌ Erro ao registrar o incremento de atividade dos jogadores no Firebase.' }, { quoted: m });
+            return true;
+        }
+
+        // ==========================================
+        // TRANSFERÊNCIA SE FOR TIPO 1
+        // ==========================================
+        if (sessao.tipoAtividade === 1) {
+            delete sessoesCriacao[from];
+            return await iniciarProcessoTipo1(sock, from, sessao, m);
         }
 
         atividadesAtivas[GRUPO_ATIVIDADES_LISTA] = {
@@ -630,9 +631,11 @@ async function enviarPainelAtividade(sock, targetGroup, atividade) {
         mensagemPainel += `${textoTerritorio}\n`;
     }
     mensagemPainel += `> Término: ${horarioFormatado} (BRT)\n\n` +
-        `${tituloAtacante}:\n\n${anunciantesTexto}\n\n` +
+        `──────────────────\n` +
+        `*${tituloAtacante}:*\n\n${anunciantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
-        `${tituloDefesa}:\n\n${defensoresTexto}\n\n` +
+        `──────────────────\n` +
+        `*${tituloDefesa}:*\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}`;
 
     await sock.sendMessage(targetGroup, { text: mensagemPainel });

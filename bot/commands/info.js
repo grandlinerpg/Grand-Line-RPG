@@ -119,7 +119,7 @@ async function handleInfoCommands(sock, m, text, from) {
         return true;
     }
 
-    if (text === '!dominacao' || text.startsWith('!dominio ')) {
+    if (text === '!dominacao' || text.startsWith('!dominio')) {
         try {
             const response = await axios.get(`${FIREBASE_URL}/ilhas.json`);
             const ilhasData = response.data;
@@ -152,8 +152,8 @@ async function handleInfoCommands(sock, m, text, from) {
 
                 if (dominioNome.trim().toLowerCase() === 'governo mundial') {
                     emojiFaccao = '⚓';
-                } else if (dominioNome.trim().toLowerCase() === 'independente') {
-                    emojiFaccao = '🚩';
+                } else if (dominioNome.trim().toLowerCase() === 'exército revolucionário') {
+                    emojiFaccao = '⚔️';
                 }
 
                 domText += `*${index + 1}. ${ilha.nome || 'Ilha Sem Nome'} ${formatEscudos}*\n`;

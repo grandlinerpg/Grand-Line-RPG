@@ -1,7 +1,7 @@
 const axios = require('axios'); 
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates'); 
-const { processarGanhoExp } = require('./level');
+const { processarGanhoExp, calcularRank } = require('./level');
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
@@ -651,15 +651,21 @@ async function finalizarAtividade(sock, from) {
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
 
-                    // Processa ganho de EXP e recalcula Level pelo modulo level.js
-                    const { novoExp, novoLevel } = processarGanhoExp(playerInfo, expGanho);
+                    // Processa ganho de EXP, Level e Rank
+                    const { novoExp, novoLevel, novoRank } = processarGanhoExp(playerInfo, expGanho);
                     const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
                     const novoSaldo = saldoAtual + berriesGanho;
 
+                    // Atualiza o nó info (exp, level, saldo)
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
                         level: novoLevel,
                         saldo: novoSaldo
+                    });
+
+                    // Atualiza o nó character (rank)
+                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
+                        rank: novoRank
                     });
 
                     if (playerData.exp !== undefined || playerData.saldo !== undefined || playerData.level !== undefined) {

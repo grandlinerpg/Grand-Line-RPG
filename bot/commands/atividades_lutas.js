@@ -5,7 +5,7 @@ const { iniciarEstruturaBatalha } = require('./combates');
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
     'Marinha': '⚓', 
-    'Piratas': '🏴‍☠️',
+    'Piratas': '🏴‍☠️️',
     'Exército Revolucionário': '⚔️',
     'Governo Mundial': '⚓',
     'Caçadores de Recompensa': '🎯'
@@ -42,7 +42,7 @@ function obterEmojiFaccao(param, atividade = null) {
         }
     }
 
-    return EMOJIS_FACCAO[nomeFaccao] || '⚔️️';
+    return EMOJIS_FACCAO[nomeFaccao] || '⚔';
 }
 
 function obterHoraAtualUTC3() {
@@ -539,6 +539,45 @@ async function finalizarAtividade(sock, from) {
     } else if (defensoresVivos.length > 0 && atacantesVivos.length === 0) {
         faccaoVencedora = nomeDefesa;
         jogadoresVencedores = [...atividade.defensores];
+    }
+
+    // Processamento de escudo e domínio da ilha para atividades tipo 2 e 3
+    if (atividade.idIlha && Number(atividade.idIlha) !== 0) {
+        try {
+            const ilhaRes = await axios.get(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`);
+            const ilhaDados = ilhaRes.data || {};
+            let escudoAtual = Number(ilhaDados.escudo ?? 0);
+
+            if (atividade.tipoAtividade === 2) {
+                if (faccaoVencedora === atividade.faccaoCriador) {
+                    // Atacante venceu: reduz escudo em 1 (mínimo 0)
+                    const novoEscudo = Math.max(0, escudoAtual - 1);
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                } else if (faccaoVencedora === nomeDefesa) {
+                    // Defensores venceram: aumenta escudo em 1 (máximo 3)
+                    const novoEscudo = Math.min(3, escudoAtual + 1);
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                }
+            } else if (atividade.tipoAtividade === 3) {
+                if (faccaoVencedora === atividade.faccaoCriador) {
+                    // Atacantes venceram: domínio passa a ser a facção vencedora (ou bando) e escudo fica em 1
+                    const novoDominio = (atividade.faccaoCriador === 'Piratas' && atividade.bandoCriador)
+                        ? atividade.bandoCriador
+                        : atividade.faccaoCriador;
+
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, {
+                        dominio: novoDominio,
+                        escudo: 1
+                    });
+                } else if (faccaoVencedora === nomeDefesa) {
+                    // Defensores venceram: ganham 1 ponto de escudo
+                    const novoEscudo = Math.min(3, escudoAtual + 1);
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                }
+            }
+        } catch (e) {
+            console.error('Erro ao atualizar escudo/domínio da ilha no Firebase:', e.message);
+        }
     }
 
     // Unifica todos os sobreviventes de ambas as facções para o relatório final

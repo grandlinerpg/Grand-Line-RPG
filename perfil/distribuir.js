@@ -27,6 +27,7 @@ let originalStats = {};
 let originalPoints = {};
 let pedrasDisponiveis = 0;
 let pedrasUsadas = 0;
+let playerLevel = 1;
 
 const LIMITES_RANK = {
   1: 20,
@@ -79,6 +80,9 @@ fetch("perfil/distribuir.html")
 
         const data = snap.val();
         const rank = data.character?.rank || 1;
+
+        // Pega o nível do personagem (suporta data.info.level ou data.character.info.level)
+        playerLevel = Number(data.info?.level || data.character?.info?.level || 1);
 
         limiteAtributo = LIMITES_RANK[rank] || 20;
 
@@ -182,8 +186,15 @@ fetch("perfil/distribuir.html")
           const remove = (stat) => {
             const valorAtual = tempStats[stat] || 0;
             const valorOriginal = originalStats[stat] || 0;
+            const limiteMinimo = Math.floor(playerLevel / 2);
 
             if (valorAtual <= 0) return;
+
+            // Requisito: Não permite diminuir abaixo de metade do level (arredondada para baixo)
+            if (valorAtual <= limiteMinimo) {
+              alert(`Não é possível reduzir o atributo para menos de ${limiteMinimo} (metade do seu nível).`);
+              return;
+            }
 
             // Se for tentar reduzir um ponto que já estava salvo no banco, precisa da pedra
             if (valorAtual <= valorOriginal) {

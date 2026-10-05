@@ -3,7 +3,8 @@ import {
   get,
   set,
   update,
-  remove
+  remove,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // =========================
@@ -16,6 +17,104 @@ const tierChance = {
   4: 3,
   5: 1
 };
+
+// =========================
+// FUNÇÃO AUXILIAR: RESETAR SKILLS E REMANEJAR PONTOS
+// =========================
+async function resetarSkillsPorCategoria(uid, tipoReset) {
+  const db = window.db;
+  if (!uid || !tipoReset) return;
+
+  // Mapeamento do tipo de alteração para a chave de pontos correspondente
+  let chavePontoTarget = "";
+  if (tipoReset === "fruit") chavePontoTarget = "skill-fruit";
+  if (tipoReset === "race") chavePontoTarget = "skill-race";
+  if (tipoReset === "style") chavePontoTarget = "skill-style";
+
+  if (!chavePontoTarget) return;
+
+  const skillsRef = ref(db, `players/${uid}/skills`);
+  const skillsSnap = await get(skillsRef);
+
+  if (!skillsSnap.exists()) return;
+
+  const skillsDoPlayer = skillsSnap.val();
+  const skillsParaRemover = [];
+
+  // Percorre as skills aprendidas para identificar quais pertencem à categoria
+  for (const skillUid in skillsDoPlayer) {
+    const sData = skillsDoPlayer[skillUid];
+    const cat = String(sData?.categoria || "").toLowerCase();
+    const sub = String(sData?.sub || "").toLowerCase();
+
+    let pertence = false;
+
+    if (tipoReset === "fruit" && (cat.includes("akuma") || cat.includes("fruit") || cat.includes("fruta") || sub.includes("akuma") || sub.includes("fruit"))) {
+      pertence = true;
+    } else if (tipoReset === "race" && (cat.includes("raça") || cat.includes("raca") || cat.includes("race") || sub.includes("raça") || sub.includes("raca") || sub.includes("race"))) {
+      pertence = true;
+    } else if (tipoReset === "style" && (cat.includes("estilo") || cat.includes("style") || sub.includes("estilo") || sub.includes("style"))) {
+      pertence = true;
+    }
+
+    if (pertence) {
+      skillsParaRemover.push(skillUid);
+    }
+  }
+
+  if (skillsParaRemover.length === 0) return;
+
+  // Busca os dados das habilidades no banco global 'skills' para calcular o custo total gasto
+  let pontosRecuperados = 0;
+  const globalSkillsSnap = await get(ref(db, "skills"));
+  const globalSkills = globalSkillsSnap.exists() ? globalSkillsSnap.val() : {};
+
+  for (const skillUid of skillsParaRemover) {
+    let custoSkill = 0;
+
+    // Procura o custo da habilidade na estrutura global de habilidades
+    for (const catKey in globalSkills) {
+      if (globalSkills[catKey]?.[skillUid]) {
+        custoSkill = Number(globalSkills[catKey][skillUid].custo) || 0;
+        break;
+      }
+      for (const subKey in globalSkills[catKey]) {
+        if (globalSkills[catKey][subKey]?.[skillUid]) {
+          custoSkill = Number(globalSkills[catKey][subKey][skillUid].custo) || 0;
+          break;
+        }
+      }
+    }
+
+    pontosRecuperados += custoSkill;
+
+    // Remove a skill do jogador
+    await remove(ref(db, `players/${uid}/skills/${skillUid}`));
+  }
+
+  if (pontosRecuperados > 0) {
+    // Atualiza a árvore de pontos do jogador
+    const pointsRef = ref(db, `players/${uid}/points`);
+    await runTransaction(pointsRef, (points) => {
+      if (!points) points = {};
+
+      const pontosCatAtuais = Number(points[chavePontoTarget]) || 0;
+      const skillUsedAtual = Number(points["skill-used"]) || 0;
+      const perdidosAtuais = Number(points["perdidos"]) || 0;
+
+      // Desconta dos pontos específicos da categoria
+      points[chavePontoTarget] = Math.max(0, pontosCatAtuais - pontosRecuperados);
+
+      // Desconta do total de skills usadas
+      points["skill-used"] = Math.max(0, skillUsedAtual - pontosRecuperados);
+
+      // Adiciona aos pontos perdidos
+      points["perdidos"] = perdidosAtuais + pontosRecuperados;
+
+      return points;
+    });
+  }
+}
 
 // =========================
 // FUNÇÃO GLOBAL
@@ -375,6 +474,7 @@ async function usarTipo2(item) {
   // =====================
   if (item.categoria === "Fator de Linhagem") {
     updates.race = nomeLimpo;
+    await resetarSkillsPorCategoria(user.uid, "race");
   }
 
   // =====================
@@ -382,6 +482,7 @@ async function usarTipo2(item) {
   // =====================
   if (item.categoria === "Pergaminho de Ensinamento") {
     updates.style = nomeLimpo;
+    await resetarSkillsPorCategoria(user.uid, "style");
   }
 
   await update(charRef, updates);
@@ -640,6 +741,9 @@ async function usarTipo5(item) {
       }
     }
   }
+
+  // Remove as skills associadas à fruta e remaneja os pontos para 'perdidos'
+  await resetarSkillsPorCategoria(user.uid, "fruit");
 
   // Reseta a fruta do personagem no Firebase
   await update(charRef, {

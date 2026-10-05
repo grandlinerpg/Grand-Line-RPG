@@ -141,7 +141,7 @@ fetch("perfil/distribuir.html")
       });
 
       // ======================
-      // + ATRIBUTOS
+      // + E - ATRIBUTOS
       // ======================
       document.addEventListener("click", (e) => {
 
@@ -181,9 +181,8 @@ fetch("perfil/distribuir.html")
           if (id === "up-sta") add("sta");
           if (id === "up-hp") add("hp");
         }
-
         // 🔥 DIMINUIR PONTO (UTILIZA PEDRA DE REGRESSÃO CASO REDUZA PONTOS ORIGINAIS)
-        if (btnMinus) {
+        else if (btnMinus) {
           const id = btnMinus.id;
 
           const remove = (stat) => {
@@ -199,7 +198,7 @@ fetch("perfil/distribuir.html")
               return;
             }
 
-            // Se o valor atual for menor ou igual ao original salvo no banco, está tentando reduzir um ponto permanente -> precisa da pedra
+            // Se for tentar reduzir um ponto que já estava salvo no banco, precisa da pedra
             if (valorAtual <= valorOriginal) {
               const pedrasRestantes = pedrasDisponiveis - pedrasUsadas;
 
@@ -211,7 +210,7 @@ fetch("perfil/distribuir.html")
               pedrasUsadas += 1;
             } else {
               // Se estava acima do valor original, estava apenas desfazendo um '+' colocado nesta sessão
-              tempPoints.used = Math.max(0, tempPoints.used - 1);
+              tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
             }
 
             tempStats[stat] = valorAtual - 1;

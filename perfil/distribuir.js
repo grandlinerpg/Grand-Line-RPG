@@ -26,6 +26,7 @@ let tempPoints = {};
 let originalStats = {};
 let originalPoints = {};
 let pedrasDisponiveis = 0;
+let pedrasUsadas = 0;
 let playerLevel = 1;
 
 const LIMITES_RANK = {
@@ -38,28 +39,13 @@ const LIMITES_RANK = {
 
 let limiteAtributo = 20;
 
-// Função auxiliar para calcular quantas pedras de regressão são necessárias atualmente
-function calcularPedrasNecessarias() {
-  let totalReduzido = 0;
-  for (const stat in originalStats) {
-    const valorOriginal = originalStats[stat] || 0;
-    const valorAtual = tempStats[stat] || 0;
-    
-    // Se o valor atual for menor que o original, contabiliza a diferença
-    if (valorAtual < valorOriginal) {
-      totalReduzido += (valorOriginal - valorAtual);
-    }
-  }
-  return totalReduzido;
-}
-
 fetch("perfil/distribuir.html")
   .then(res => res.text())
   .then(html => {
 
     document.getElementById("distribuir-container").innerHTML = html;
 
-    // ⚠️️ garante DOM pronto após inject
+    // ⚠️ garante DOM pronto após inject
     setTimeout(() => {
 
       const modal = document.querySelector(".points-modal");
@@ -111,6 +97,7 @@ fetch("perfil/distribuir.html")
 
         // Quantidade de pedras no inventário
         pedrasDisponiveis = invSnap.exists() ? Number(invSnap.val()) || 0 : 0;
+        pedrasUsadas = 0;
 
         modal.style.display = "flex";
 
@@ -142,6 +129,7 @@ fetch("perfil/distribuir.html")
         // desfaz alterações não confirmadas
         tempStats = structuredClone(originalStats);
         tempPoints = structuredClone(originalPoints);
+        pedrasUsadas = 0;
 
         // reabre atributos
         const attrModal = document.querySelector(".attributes-modal");
@@ -210,20 +198,20 @@ fetch("perfil/distribuir.html")
               return;
             }
 
-            // Se for tentar reduzir abaixo do valor original salvo, verifica as pedras necessárias
+            // Se for tentar reduzir um ponto que já estava salvo no banco, precisa da pedra
             if (valorAtual <= valorOriginal) {
-              const pedrasNecessariasAposReduzir = calcularPedrasNecessarias() + 1;
+              const pedrasRestantes = pedrasDisponiveis - pedrasUsadas;
 
-              if (pedrasNecessariasAposReduzir > pedrasDisponiveis) {
-                alert("Você não possui Pedras de Regressão suficientes para realizar esta redução!");
+              if (pedrasRestantes <= 0) {
+                alert("Você precisa de 1 Pedra de Regressão para reduzir pontos já distribuídos!");
                 return;
               }
-            } else {
-              // Se estava acima do valor original, estava apenas desfazendo um '+' colocado nesta sessão
-              tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
+
+              pedrasUsadas += 1;
             }
 
             tempStats[stat] = valorAtual - 1;
+            tempPoints.used = Math.max(0, (tempPoints.used || 0) - 1);
             tempPoints.available = (tempPoints.available || 0) + 1;
 
             const statEl = document.getElementById(`modal-${stat}`);
@@ -254,14 +242,6 @@ fetch("perfil/distribuir.html")
         const user = auth.currentUser;
         if (!user || !userRef) return;
 
-        // Calcula exatamente quantas pedras devem ser descontadas comparando o estado final com o inicial
-        const pedrasUsadas = calcularPedrasNecessarias();
-
-        if (pedrasUsadas > pedrasDisponiveis) {
-          alert("Erro: Você não tem pedras suficientes para salvar estas alterações.");
-          return;
-        }
-
         const updates = {};
         updates[`players/${user.uid}/stats`] = tempStats;
         updates[`players/${user.uid}/points`] = tempPoints;
@@ -281,6 +261,7 @@ fetch("perfil/distribuir.html")
         await update(ref(db), updates);
 
         pedrasDisponiveis -= pedrasUsadas;
+        pedrasUsadas = 0;
 
         modal.style.display = "none";
 

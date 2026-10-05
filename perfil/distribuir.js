@@ -1,6 +1,3 @@
-Aqui está o código com o desconto de `tempPoints.used` corrigido para **ambos** os casos de remoção (tanto ao desfaçar a adição da sessão quanto ao usar a Pedra de Regressão), sem alterar nenhuma outra estrutura:
-
-```javascript
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -273,5 +270,3 @@ fetch("perfil/distribuir.html")
     }, 0);
 
   });
-
-```

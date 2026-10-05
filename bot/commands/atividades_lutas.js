@@ -1,7 +1,7 @@
 const axios = require('axios'); 
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates'); 
-const { processarGanhoExp, calcularRank } = require('./level');
+const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
@@ -224,7 +224,7 @@ async function verificarEParearAutomatico(sock, from) {
             let faccaoAlvo = atividade.vezSelecao === 'atacante' ? nomeDefesa : atividade.faccaoCriador;
 
             await sock.sendMessage(from, { 
-                text: `⚔️️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
+                text: `⚔ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
             });
         }
     }
@@ -652,9 +652,21 @@ async function finalizarAtividade(sock, from) {
                     const playerInfo = playerData.info || {};
 
                     // Processa ganho de EXP, Level e Rank
-                    const { novoExp, novoLevel, novoRank } = processarGanhoExp(playerInfo, expGanho);
+                    const { novoExp, novoLevel, novoRank, subiuLevel, levelAnterior } = processarGanhoExp(playerInfo, expGanho);
                     const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
                     const novoSaldo = saldoAtual + berriesGanho;
+
+                    // Se subiu de nível, calcula e atualiza os pontos e atributos excedentes
+                    if (subiuLevel) {
+                        const { pointsAtualizados, statsAtualizados } = aplicarRecompensasLevelUp(
+                            playerData,
+                            levelAnterior,
+                            novoLevel
+                        );
+
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/points.json`, pointsAtualizados);
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
+                    }
 
                     // Atualiza o nó info (exp, level, saldo)
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {

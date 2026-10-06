@@ -2,9 +2,9 @@ const axios = require('axios');
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates'); 
 const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
- 
-// Mapeamento auxiliar de emojis de facção 
-const EMOJIS_FACCAO = { 
+
+// Mapeamento auxiliar de emojis de facção
+const EMOJIS_FACCAO = {
     'Marinha': '⚓', 
     'Piratas': '🏴‍☠',
     'Exército Revolucionário': '⚔️',
@@ -694,35 +694,6 @@ async function finalizarAtividade(sock, from) {
         } catch (e) {
             console.error('Erro ao processar e creditar recompensas no Firebase:', e.message);
         }
-    }
-
-    // ==========================================
-    // ALTERAÇÃO: ATUALIZAR STATUS DOS JOGADORES PARA FALSE
-    // ==========================================
-    try {
-        const todosParticipantes = [...(atividade.anunciantes || []), ...(atividade.defensores || [])];
-        const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
-        const playersAllData = playersAllRes.data || {};
-
-        for (const jogador of todosParticipantes) {
-            const targetLid = String(jogador.lid || '').trim();
-            const targetNum = String(jogador.numero || '').trim();
-
-            const realFirebaseKey = Object.keys(playersAllData).find(key => {
-                const p = playersAllData[key];
-                const pLid = String(p?.number?.LID || '').trim();
-                const pNum = String(p?.number?.n || '').trim();
-                return (targetLid && pLid === targetLid) || (targetNum && pNum === targetNum) || key === jogador.uid;
-            });
-
-            if (realFirebaseKey) {
-                await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
-                    status: false
-                });
-            }
-        }
-    } catch (e) {
-        console.error('Erro ao atualizar status dos jogadores para false no Firebase:', e.message);
     }
 
     const resultadoTexto = faccaoVencedora ? `Facção *${faccaoVencedora}*` : 'Empate!';

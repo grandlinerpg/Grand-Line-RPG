@@ -20,14 +20,23 @@ async function obterNomeFormatadoIlha(idIlha) {
     }
 }
 
-// Função auxiliar para formatação da data
+// Função auxiliar para obter horário no fuso Horário de Brasília (BRT / America/Sao_Paulo)
+function obterHorarioBRT(d) {
+    const dataBRT = new Date(d.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const hora = String(dataBRT.getHours()).padStart(2, '0');
+    const min = String(dataBRT.getMinutes()).padStart(2, '0');
+    return `${hora}:${min}`;
+}
+
+// Função auxiliar para formatação completa da data em BRT
 function formatarData(d) {
-    const dia = String(d.getDate()).padStart(2, '0');
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const ano = d.getFullYear();
-    const hora = String(d.getHours()).padStart(2, '0');
-    const min = String(d.getMinutes()).padStart(2, '0');
-    const seg = String(d.getSeconds()).padStart(2, '0');
+    const dataBRT = new Date(d.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+    const dia = String(dataBRT.getDate()).padStart(2, '0');
+    const mes = String(dataBRT.getMonth() + 1).padStart(2, '0');
+    const ano = dataBRT.getFullYear();
+    const hora = String(dataBRT.getHours()).padStart(2, '0');
+    const min = String(dataBRT.getMinutes()).padStart(2, '0');
+    const seg = String(dataBRT.getSeconds()).padStart(2, '0');
     return `${dia}/${mes}/${ano} ${hora}:${min}:${seg}`;
 }
 
@@ -100,9 +109,7 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
         }
 
         const nomeIlhaFormatado = await obterNomeFormatadoIlha(ilhaDestino);
-        const horaTermino = String(dataTermino.getHours()).padStart(2, '0');
-        const minTermino = String(dataTermino.getMinutes()).padStart(2, '0');
-        const horarioFormatado = `${horaTermino}:${minTermino}`;
+        const horarioFormatado = obterHorarioBRT(dataTermino);
         const forcaTotal = sessao.anunciantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
 
         // Mensagem de Confirmação no GRUPO DE ORIGEM
@@ -123,7 +130,7 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
         await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemInicioExterna });
 
-        // Conclusão após 1 minuto: Ajusta ilha dos não-piratas, credita recompensas e notifica no GRUPO DE ORIGEM
+        // Conclusão após 5 minutos: Ajusta ilha dos não-piratas, credita recompensas e notifica no GRUPO DE ORIGEM
         setTimeout(async () => {
             try {
                 // Verificação da Facção ao TERMINAR a atividade
@@ -567,21 +574,18 @@ async function handleViagemCommands(sock, m, text, from) {
             await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosViagem);
 
             const nomeIlhaDestinoFormatado = await obterNomeFormatadoIlha(ilhaDestino);
-
-            const horaTermino = String(dataTermino.getHours()).padStart(2, '0');
-            const minTermino = String(dataTermino.getMinutes()).padStart(2, '0');
-            const horarioFormatado = `${horaTermino}:${minTermino}`;
+            const horarioFormatado = obterHorarioBRT(dataTermino);
 
             await sock.sendMessage(from, { 
                 text: `⛵ *Viagem iniciada com sucesso!*\n\n` +
                       `📍 Destino: *${nomeIlhaDestinoFormatado}*\n` +
-                      `> Término: ${horarioFormatado} (UTC-3)` 
+                      `> Término: ${horarioFormatado} (BRT)` 
             }, { quoted: m });
 
             const forcaTotal = sessao.membros.reduce((acc, curr) => acc + (curr.level || 0), 0);
             const faccaoNome = sessao.faccaoCriador;
 
-            // Agendar anúncio de chegada após 1 minuto
+            // Agendar anúncio de chegada após 5 minutos
             setTimeout(async () => {
                 try {
                     // Atualiza a ilha atual dos jogadores no banco de dados

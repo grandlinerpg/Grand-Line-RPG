@@ -5,23 +5,89 @@ const {
 } = require('../index');
 
 /**
+ * Converte string no formato "DD/MM/YYYY HH:mm:ss" em objeto Date.
+ */
+function parseDataBRT(dataStr) {
+    if (!dataStr) return null;
+    const [dataPart, horaPart] = dataStr.trim().split(' ');
+    if (!dataPart || !horaPart) return null;
+
+    const [dia, mes, ano] = dataPart.split('/').map(Number);
+    const [hora, min, seg] = horaPart.split(':').map(Number);
+
+    return new Date(ano, mes - 1, dia, hora, min, seg || 0);
+}
+
+/**
  * Mapeia os dados do Firebase e retorna a presença de cada facção e bando por ilha.
  */
 async function handleMapaCommands(sock, m, text, from) {
     if (text === '!mapa' || text.startsWith('!mapa ')) {
         try {
-            const [ilhasRes, playersRes] = await Promise.all([
+            const agora = new Date();
+
+            const [ilhasRes, playersRes, viagensRes, faccoesRes] = await Promise.all([
                 axios.get(`${FIREBASE_URL}/ilhas.json`),
-                axios.get(`${FIREBASE_URL}/players.json`)
+                axios.get(`${FIREBASE_URL}/players.json`),
+                axios.get(`${FIREBASE_URL}/ilhas/viagens.json`),
+                axios.get(`${FIREBASE_URL}/faccoes.json`)
             ]);
 
             const ilhasData = ilhasRes.data || {};
             const playersData = playersRes.data || {};
+            const viagensData = viagensRes.data || {};
+            const faccoesData = faccoesRes.data || {};
 
-            // Estrutura: { [idIlha]: { [faccaoOuBando]: forçaTotal } }
+            // Mapeia emojis de atividades cadastrados no Firebase (/faccoes/{faccao}/atividades)
+            const emojisAtividadesMap = {};
+            Object.values(faccoesData).forEach(faccao => {
+                const atividades = faccao?.atividades || {};
+                Object.entries(atividades).forEach(([chaveAtiv, ativData]) => {
+                    if (ativData?.emoji) {
+                        emojisAtividadesMap[chaveAtiv.toLowerCase()] = ativData.emoji;
+                        if (ativData.nome) {
+                            emojisAtividadesMap[ativData.nome.toLowerCase()] = ativData.emoji;
+                        }
+                    }
+                });
+            });
+
+            // 1. Identifica jogadores em viagem ativa e em atividade ativa
+            const emViagemUids = new Set();
+            const emAtividadeMap = {}; // { [playerUid]: { nomeAtividade, chaveAtividade } }
+
+            Object.values(viagensData).forEach(registro => {
+                if (!registro) return;
+
+                const terminoDate = parseDataBRT(registro.termino);
+                const inicioDate = parseDataBRT(registro.inicio);
+
+                // Se o registro ainda está dentro do período de execução (em andamento)
+                if (terminoDate && terminoDate > agora && (!inicioDate || inicioDate <= agora)) {
+                    const uidsParticipantes = Object.values(registro.jogadores || {});
+
+                    if (registro.tipo === 'viagem') {
+                        uidsParticipantes.forEach(uid => emViagemUids.add(String(uid)));
+                    } else if (registro.tipo === 'atividade') {
+                        uidsParticipantes.forEach(uid => {
+                            emAtividadeMap[String(uid)] = {
+                                nomeAtividade: registro.nomeAtividade || 'Em Atividade',
+                                chaveAtividade: registro.atividade || ''
+                            };
+                        });
+                    }
+                }
+            });
+
+            // Estrutura: { [idIlha]: { [chaveGrupo]: { forca, emoji, eAtividade } } }
             const ilhasPresenca = {};
 
-            Object.values(playersData).forEach(player => {
+            Object.entries(playersData).forEach(([uid, player]) => {
+                // Se o jogador estiver em viagem ativa, não mostra no mapa
+                if (emViagemUids.has(String(uid))) {
+                    return;
+                }
+
                 const ilha = Number(player?.character?.ilha);
                 const faccao = player?.character?.faction;
                 const bando = player?.character?.bando;
@@ -33,16 +99,45 @@ async function handleMapaCommands(sock, m, text, from) {
                         ilhasPresenca[ilha] = {};
                     }
 
-                    // Se a facção for Piratas e houver bando informado, agrupa pelo nome do bando
-                    let chaveGrupo = faccao;
-                    if (faccao.trim().toLowerCase() === 'piratas') {
-                        chaveGrupo = bando ? bando.trim() : 'Piratas (Sem Bando)';
+                    const dadosAtividade = emAtividadeMap[String(uid)];
+
+                    let chaveGrupo = '';
+                    let emojiGrupo = '';
+                    let eAtividade = false;
+
+                    if (dadosAtividade) {
+                        eAtividade = true;
+                        const nomeAtiv = dadosAtividade.nomeAtividade;
+                        const chaveAtiv = dadosAtividade.chaveAtividade;
+
+                        // Busca emoji específico da atividade ou usa emoji genérico de ação
+                        const emojiAtiv = emojisAtividadesMap[chaveAtiv.toLowerCase()] || 
+                                          emojisAtividadesMap[nomeAtiv.toLowerCase()] || '⚔️';
+
+                        if (faccao.trim().toLowerCase() === 'piratas') {
+                            const nomeBando = bando ? bando.trim() : 'Piratas (Sem Bando)';
+                            chaveGrupo = `${nomeBando} - ${nomeAtiv}`;
+                        } else {
+                            chaveGrupo = `${faccao} - ${nomeAtiv}`;
+                        }
+
+                        emojiGrupo = `(${emojiAtiv})`;
+                    } else {
+                        // Jogadores parados na ilha
+                        if (faccao.trim().toLowerCase() === 'piratas') {
+                            chaveGrupo = bando ? bando.trim() : 'Piratas (Sem Bando)';
+                        } else {
+                            chaveGrupo = faccao;
+                        }
+
+                        emojiGrupo = obterEmojiFaccao(faccao) || '🏴‍☠️';
                     }
 
                     if (!ilhasPresenca[ilha][chaveGrupo]) {
                         ilhasPresenca[ilha][chaveGrupo] = {
                             forca: 0,
-                            faccaoOriginal: faccao
+                            emoji: emojiGrupo,
+                            eAtividade: eAtividade
                         };
                     }
 
@@ -79,8 +174,7 @@ async function handleMapaCommands(sock, m, text, from) {
                 const linhasGrupos = [];
 
                 for (const [nomeGrupo, dados] of Object.entries(gruposPresentes)) {
-                    const emoji = obterEmojiFaccao(dados.faccaoOriginal) || '🏴‍☠️';
-                    linhasGrupos.push(`➔ ${nomeGrupo} ${emoji}\n> Força: ${dados.forca}`);
+                    linhasGrupos.push(`➔ ${nomeGrupo} ${dados.emoji}\n> Força: ${dados.forca}`);
                 }
 
                 bloco += linhasGrupos.join('\n');

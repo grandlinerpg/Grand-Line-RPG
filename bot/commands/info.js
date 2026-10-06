@@ -6,6 +6,14 @@ const {
     obterJidEfetivo  
 } = require('../index');
 
+// Função auxiliar para determinar o nome de exibição da facção/bando
+function obterNomeExibicaoFaccao(faccao, bando) {
+    if (faccao === 'Piratas' && bando) {
+        return bando;
+    }
+    return faccao;
+}
+
 async function handleInfoCommands(sock, m, text, from) {
     if (text === '!jid') {
         await sock.sendMessage(from, { text: `🆔 *ID deste chat:* \`${from}\`` }, { quoted: m });
@@ -32,7 +40,8 @@ async function handleInfoCommands(sock, m, text, from) {
             `🔹 *!viajar*\n` +
             `🔹 *!participar*\n` +
             `🔹 *!remover*\n` +
-            `🔹 *!iniciaratividade*\n`;
+            `🔹 *!iniciaratividade*\n` +
+            `🔹 *!relatorio*\n`;
 
         await sock.sendMessage(from, { text: comandosText }, { quoted: m });
         return true;
@@ -153,7 +162,7 @@ async function handleInfoCommands(sock, m, text, from) {
                 if (dominioNome.trim().toLowerCase() === 'governo mundial') {
                     emojiFaccao = '⚓';
                 } else if (dominioNome.trim().toLowerCase() === 'exército revolucionário') {
-                    emojiFaccao = '⚔️';
+                    emojiFaccao = '⚔️️';
                 }
 
                 domText += `*${index + 1}. ${ilha.nome || 'Ilha Sem Nome'} ${formatEscudos}*\n`;
@@ -233,12 +242,70 @@ async function handleInfoCommands(sock, m, text, from) {
                 const dados = coliseuData[uid] || {};
                 const player = playersData[uid];
                 const emoji = obterEmojiFaccao(player?.character?.faction);
-                coliseuText += `${index + 1}º ${player?.character?.charName || 'Lutador'}${emoji ? ' ' + emoji : ''}\n> *✔️ ${dados.vitorias || 0} | ✖️️ ${dados.derrotas || 0} | 🏅${dados.pontos || 0}*\n\n`;
+                coliseuText += `${index + 1}º ${player?.character?.charName || 'Lutador'}${emoji ? ' ' + emoji : ''}\n> *✔️ ${dados.vitorias || 0} | ✖ ${dados.derrotas || 0} | 🏅${dados.pontos || 0}*\n\n`;
             });
 
             await sock.sendMessage(from, { text: coliseuText.trim() }, { quoted: m });
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao carregar Coliseu.' }, { quoted: m });
+        }
+        return true;
+    }
+
+    if (text === '!relatorio' || text.startsWith('!relatorio ')) {
+        const senderId = obterJidEfetivo(m, from);
+
+        try {
+            const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+            const playersData = playersRes.data || {};
+
+            const playerUid = Object.keys(playersData).find(uid => 
+                String(playersData[uid]?.number?.LID || '').trim() === senderId || 
+                String(playersData[uid]?.number?.n || '').trim() === senderId || uid === senderId
+            );
+
+            if (!playerUid) {
+                await sock.sendMessage(from, { text: '❌ Você precisa ter um personagem cadastrado para ver o relatório!' }, { quoted: m });
+                return true;
+            }
+
+            const player = playersData[playerUid];
+            const faccao = player?.character?.faction;
+            const bando = player?.character?.bando;
+            const nomeJogador = player?.character?.charName || player?.nome || 'Lutador';
+
+            if (!faccao) {
+                await sock.sendMessage(from, { text: '❌ Seu personagem não possui uma facção registrada no banco de dados!' }, { quoted: m });
+                return true;
+            }
+
+            const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes/${faccao}/atividades.json`);
+            const atividadesFaccao = faccoesRes.data || {};
+            const chavesAtividades = Object.keys(atividadesFaccao);
+
+            const nomeExibicaoFaccao = obterNomeExibicaoFaccao(faccao, bando);
+            const emojiFaccao = obterEmojiFaccao(faccao) || '🏴‍☠️';
+
+            if (chavesAtividades.length === 0) {
+                await sock.sendMessage(from, { text: `📊 *— RELATÓRIO DE ATIVIDADES —*\n\n👤 *Jogador:* ${nomeJogador}\n🏛️ *Grupo:* ${nomeExibicaoFaccao}\n\n❌ Não há atividades cadastradas para sua facção.` }, { quoted: m });
+                return true;
+            }
+
+            let relatorioTexto = `📊 *— RELATÓRIO DE ATIVIDADES —* 📊\n\n👤 *Jogador:* ${nomeJogador}\n${emojiFaccao} *Grupo:* ${nomeExibicaoFaccao}\n\n`;
+
+            chavesAtividades.forEach((chave) => {
+                const ativData = atividadesFaccao[chave] || {};
+                const nomeAtiv = ativData.nome || chave;
+                const limiteAtiv = ativData.limite !== undefined && ativData.limite !== null ? ativData.limite : 'Sem limite';
+                const realizadas = Number(player?.atividades?.[chave] ?? 0);
+
+                const textoLimite = limiteAtiv === 'Sem limite' ? 'Sem limite' : `${realizadas}/${limiteAtiv}`;
+                relatorioTexto += `• *${nomeAtiv}*: ${textoLimite}\n`;
+            });
+
+            await sock.sendMessage(from, { text: relatorioTexto.trim() }, { quoted: m });
+        } catch (e) {
+            await sock.sendMessage(from, { text: '❌ Erro ao gerar relatório de atividades.' }, { quoted: m });
         }
         return true;
     }

@@ -168,6 +168,16 @@ async function handleAtividadesCommands(sock, m, text, from) {
             return true;
         }
 
+        // Validação de status ocupado dos atacantes
+        for (const uid of uidsParticipantes) {
+            const player = playersData[uid];
+            const nomePlayer = player?.character?.charName || player?.nome || 'Jogador';
+            if (player?.character?.status === true) {
+                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                return true;
+            }
+        }
+
         // Validação de quantidade min e max
         try {
             const ativRes = await axios.get(`${FIREBASE_URL}/faccoes/${sessao.faccaoCriador}/atividades/${sessao.chaveAtividade}/jogadores.json`);
@@ -317,6 +327,11 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     [sessao.chaveAtividade]: qtdAtual + 1,
                     data: dataAtualIso
                 });
+
+                // Atualiza o status do personagem para true ao criar/iniciar a lista
+                await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, {
+                    status: true
+                });
             }
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao registrar o incremento de atividade dos jogadores no Firebase.' }, { quoted: m });
@@ -416,6 +431,11 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
                 if (!faccaoJogador) continue;
 
+                if (player?.character?.status === true) {
+                    await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                    continue;
+                }
+
                 // Restrição de ilha para atividades do tipo 2 e 3
                 if (atividade.tipoAtividade === 2 || atividade.tipoAtividade === 3) {
                     if (ilhaJogador !== 0 && ilhaJogador !== atividade.idIlha) {
@@ -458,7 +478,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const jaEhDefensor = atividade.defensores.some(d => d.uid === playerUid);
 
                 if (jaEhAnunciante || jaEhDefensor) {
-                    await sock.sendMessage(from, { text: `⚠️ *${player?.character?.charName || 'Jogador'}* já está registrado nesta atividade!` }, { quoted: m });
+                    await sock.sendMessage(from, { text: `⚠️️ *${player?.character?.charName || 'Jogador'}* já está registrado nesta atividade!` }, { quoted: m });
                     continue;
                 }
 
@@ -475,6 +495,11 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     atividade.faccaoDefensora = faccaoJogador;
                     atividade.bandoDefensor = bandoJogador;
                 }
+
+                // Muda o status do defensor para true ao entrar na atividade
+                await axios.patch(`${FIREBASE_URL}/players/${playerUid}/character.json`, {
+                    status: true
+                });
 
                 atividade.defensores.push({
                     uid: playerUid,
@@ -541,6 +566,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const idxAtq = atividade.anunciantes.findIndex(a => a.uid === uid);
                 if (idxAtq !== -1) {
                     atividade.anunciantes.splice(idxAtq, 1);
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: false });
                     removeuAlguem = true;
                     continue;
                 }
@@ -548,6 +574,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const idxDef = atividade.defensores.findIndex(d => d.uid === uid);
                 if (idxDef !== -1) {
                     atividade.defensores.splice(idxDef, 1);
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: false });
                     removeuAlguem = true;
                     if (atividade.defensores.length === 0) {
                         atividade.faccaoDefensora = null;

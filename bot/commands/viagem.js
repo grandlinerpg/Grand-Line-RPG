@@ -325,13 +325,6 @@ async function handleViagemCommands(sock, m, text, from) {
             }
 
             const criadorChar = playersData[playerUid]?.character || {};
-
-            // Verifica se o criador já está ocupado em viagem ou atividade
-            if (criadorChar.status === true) {
-                await sock.sendMessage(from, { text: '❌ Você já está ocupado em uma viagem ou atividade!' }, { quoted: m });
-                return true;
-            }
-
             const faccao = criadorChar.faction;
 
             if (!faccao) {
@@ -476,6 +469,7 @@ async function handleViagemCommands(sock, m, text, from) {
 
             if (pChar.status === true) {
                 await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                delete sessoesViagem[from];
                 return true;
             }
 
@@ -514,7 +508,7 @@ async function handleViagemCommands(sock, m, text, from) {
         }
 
         await sock.sendMessage(from, { 
-            text: `🏝️ *Para qual ilha os jogadores desejam viajar?*\n\n` +
+            text: `🏝️️ *Para qual ilha os jogadores desejam viajar?*\n\n` +
                   `Você está atualmente na *${nomeIlhaAtualFormatado}*.\n` +
                   `Digite o número da ilha desejada (*0 a 12*).${instrucaoRetornoBase}` 
         }, { quoted: m });

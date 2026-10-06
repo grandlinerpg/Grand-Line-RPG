@@ -327,7 +327,7 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
 
             const localTexto = rotuloIlha(nomes, ilha, viagemMinha);
 
-            const resposta = `📍 *— SUA LOCALIZAÇÃO —* 📍\n\n` +
+            const resposta = `📍 *— LOCALIZAÇÃO —* 📍\n\n` +
                 `👤 ${nomeDoJogador(meuPlayer)}\n` +
                 `📌 ${localTexto}`;
 

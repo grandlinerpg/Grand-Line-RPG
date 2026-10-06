@@ -2,7 +2,7 @@ const axios = require('axios');
 const { 
     FIREBASE_URL,  
     obterEmojiFaccao 
-} = require('../index');
+} = require('../index'); 
 
 /**
  * Converte string no formato "DD/MM/YYYY HH:mm:ss" em objeto Date.

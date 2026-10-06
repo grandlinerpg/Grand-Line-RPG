@@ -696,6 +696,33 @@ async function finalizarAtividade(sock, from) {
         }
     }
 
+    // Altera character.status para false para todos os jogadores (atacantes e defensores) ao finalizar a atividade
+    try {
+        const todosJogadoresAtividade = [...(atividade.anunciantes || []), ...(atividade.defensores || [])];
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersData = playersRes.data || {};
+
+        for (const jogador of todosJogadoresAtividade) {
+            const targetLid = String(jogador.lid || '').trim();
+            const targetNum = String(jogador.numero || '').trim();
+
+            const realFirebaseKey = Object.keys(playersData).find(key => {
+                const p = playersData[key];
+                const pLid = String(p?.number?.LID || '').trim();
+                const pNum = String(p?.number?.n || '').trim();
+                return (targetLid && pLid === targetLid) || (targetNum && pNum === targetNum) || key === jogador.uid;
+            });
+
+            if (realFirebaseKey) {
+                await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
+                    status: false
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Erro ao atualizar character.status dos jogadores para false:', e.message);
+    }
+
     const resultadoTexto = faccaoVencedora ? `Facção *${faccaoVencedora}*` : 'Empate!';
 
     const msgFinal = `🎉 *ATIVIDADE CONCLUÍDA!* 🎉\n\n` +

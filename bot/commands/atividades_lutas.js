@@ -3,7 +3,7 @@ const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates'); 
 const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
  
-// Mapeamento auxiliar de emojis de facção
+// Mapeamento auxiliar de emojis de facção 
 const EMOJIS_FACCAO = {
     'Marinha': '⚓', 
     'Piratas': '🏴‍☠',

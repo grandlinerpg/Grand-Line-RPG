@@ -133,6 +133,9 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
         // Conclusão após 5 minutos: Ajusta ilha dos não-piratas, credita recompensas e notifica no GRUPO DE ORIGEM
         setTimeout(async () => {
             try {
+                // Apaga o registro da atividade do nó /ilhas/viagens ao finalizar
+                await axios.delete(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`);
+
                 // Verificação da Facção ao TERMINAR a atividade
                 const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
                 const ehPirata = faccaoLower.includes('pirata');
@@ -588,6 +591,9 @@ async function handleViagemCommands(sock, m, text, from) {
             // Agendar anúncio de chegada após 5 minutos
             setTimeout(async () => {
                 try {
+                    // Apaga o registro da viagem do nó /ilhas/viagens ao finalizar
+                    await axios.delete(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`);
+
                     // Atualiza a ilha atual dos jogadores no banco de dados
                     for (const membro of sessao.membros) {
                         await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {

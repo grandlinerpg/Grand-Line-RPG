@@ -3,7 +3,7 @@ const { FIREBASE_URL, obterJidEfetivo } = require('../index');
 
 // Grupo onde os anúncios gerais de atividades e viagens são enviados
 const GRUPO_ATIVIDADES_LISTA = '120363409325935641@g.us';
- 
+
 // Sessoes temporárias para controle de viagens e atividades tipo 1
 const sessoesViagem = {};
 const sessoesAtividadeTipo1 = {};

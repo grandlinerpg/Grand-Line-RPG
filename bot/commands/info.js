@@ -29,6 +29,7 @@ async function handleInfoCommands(sock, m, text, from) {
             `🔹 *!mapa*\n` +
             `🔹 *!coliseu*\n` +
             `🔹 *!inscrever*\n` +
+            `🔹 *!local*\n` +
             `🔹 *!viajar*\n` +
             `🔹 *!participar*\n` +
             `🔹 *!remover*\n` +

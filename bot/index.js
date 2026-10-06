@@ -4,7 +4,7 @@ const axios = require('axios');
 const cron = require('node-cron');      
  
 // CONSTANTES E CONFIGURAÇÕES
-const NUMERO_BOT = "5511918448331";
+const NUMERO_BOT = "5541988399218";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 const RECOMPENSA_ARENA_SALDO = 5000;
 const RECOMPENSA_ARENA_EXP = 500; 
@@ -77,6 +77,7 @@ const { handleAtividadesCommands } = require('./commands/atividades_lista');
 const { handleVincularCommands } = require('./commands/vincular');
 const { handleViagemCommands } = require('./commands/viagem');
 const { handleMapaCommands } = require('./commands/mapa');
+const { handleLocalizacaoCommands } = require('./commands/localizacao');
 
 // SERVIDOR WEB + AUTO-PING
 const app = express();
@@ -161,6 +162,7 @@ async function connectToWhatsApp() {
             if (await handleAtividadesCommands(sock, m, text, from)) return;
             if (await handleViagemCommands(sock, m, text, from)) return;
             if (await handleMapaCommands(sock, m, text, from)) return;
+            if (await handleLocalizacaoCommands(sock, m, text, from)) return;
             if (await handleCombatesCommands(sock, m, text, from)) return;
             if (await handleVincularCommands(sock, m, text, from)) return;
 

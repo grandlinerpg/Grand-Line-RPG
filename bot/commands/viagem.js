@@ -66,7 +66,7 @@ async function iniciarProcessoTipo1(sock, grupoOrigem, sessao, m) {
 async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDestino, m) {
     try {
         const dataInicio = new Date();
-        const dataTermino = new Date(dataInicio.getTime() + 1 * 60 * 1000); // 1 minuto de duração
+        const dataTermino = new Date(dataInicio.getTime() + 5 * 60 * 1000); // 5 minutos de duração
 
         // Mapeia os jogadores salvando exclusivamente seus UIDs
         const jogadoresObj = {};
@@ -238,7 +238,7 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
             } catch (err) {
                 console.error('Erro ao concluir atividade Tipo 1:', err);
             }
-        }, 1 * 60 * 1000);
+        }, 5 * 60 * 1000);
 
         delete sessoesAtividadeTipo1[grupoOrigem];
         return true;
@@ -538,7 +538,7 @@ async function handleViagemCommands(sock, m, text, from) {
         // Salvar Viagem no Firebase
         try {
             const dataInicio = new Date();
-            const dataTermino = new Date(dataInicio.getTime() + 1 * 60 * 1000); // 1 minuto depois
+            const dataTermino = new Date(dataInicio.getTime() + 5 * 60 * 1000); // 5 minutos depois
 
             // Mapeia os jogadores salvando seus UIDs
             const jogadoresObj = {};
@@ -600,7 +600,7 @@ async function handleViagemCommands(sock, m, text, from) {
                 } catch (err) {
                     console.error('Erro ao processar chegada da viagem:', err);
                 }
-            }, 1 * 60 * 1000);
+            }, 5 * 60 * 1000);
 
             delete sessoesViagem[from];
             return true;

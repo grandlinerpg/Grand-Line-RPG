@@ -74,6 +74,17 @@ async function iniciarProcessoTipo1(sock, grupoOrigem, sessao, m) {
 // Executa o registro, notificações e conclusão da Atividade Tipo 1
 async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDestino, m) {
     try {
+        // Validação extra se algum membro entrou em atividade/viagem no meio do processo
+        const playersCheckRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersCheckData = playersCheckRes.data || {};
+        for (const membro of sessao.anunciantes) {
+            if (playersCheckData[membro.uid]?.character?.status === true) {
+                await sock.sendMessage(grupoOrigem, { text: `❌ O jogador *${membro.nome}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                delete sessoesAtividadeTipo1[grupoOrigem];
+                return true;
+            }
+        }
+
         const dataInicio = new Date();
         const dataTermino = new Date(dataInicio.getTime() + 5 * 60 * 1000); // 5 minutos de duração
 
@@ -101,10 +112,11 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
         await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosAtividade);
 
-        // 1. Atualiza a ilha atual dos personagens para a ilha da atividade IMEDIATAMENTE AO INICIAR
+        // 1. Atualiza a ilha atual dos personagens para a ilha da atividade e marca status: true IMEDIATAMENTE AO INICIAR
         for (const membro of sessao.anunciantes) {
             await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
-                ilha: ilhaDestino
+                ilha: ilhaDestino,
+                status: true
             });
         }
 
@@ -130,7 +142,7 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
         await sock.sendMessage(GRUPO_ATIVIDADES_LISTA, { text: mensagemInicioExterna });
 
-        // Conclusão após 5 minutos: Ajusta ilha dos não-piratas, credita recompensas e notifica no GRUPO DE ORIGEM
+        // Conclusão após 5 minutos: Ajusta ilha dos não-piratas, credita recompensas e redefine status para false
         setTimeout(async () => {
             try {
                 // Apaga o registro da atividade do nó /ilhas/viagens ao finalizar
@@ -140,13 +152,13 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
                 const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
                 const ehPirata = faccaoLower.includes('pirata');
 
-                // Se NÃO for pirata, redefine a ilha de todos os participantes para 0 (Base Operacional)
-                if (!ehPirata) {
-                    for (const membro of sessao.anunciantes) {
-                        await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
-                            ilha: 0
-                        });
+                // Atualiza ilha (se não for pirata) e limpa o status (status: false)
+                for (const membro of sessao.anunciantes) {
+                    const updateData = { status: false };
+                    if (!ehPirata) {
+                        updateData.ilha = 0;
                     }
+                    await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, updateData);
                 }
 
                 // --- LÓGICA DE BUSCA E CRÉDITO DE RECOMPENSAS ---
@@ -313,6 +325,13 @@ async function handleViagemCommands(sock, m, text, from) {
             }
 
             const criadorChar = playersData[playerUid]?.character || {};
+
+            // Verifica se o criador já está ocupado em viagem ou atividade
+            if (criadorChar.status === true) {
+                await sock.sendMessage(from, { text: '❌ Você já está ocupado em uma viagem ou atividade!' }, { quoted: m });
+                return true;
+            }
+
             const faccao = criadorChar.faction;
 
             if (!faccao) {
@@ -337,6 +356,14 @@ async function handleViagemCommands(sock, m, text, from) {
                 for (const uid of Object.keys(playersData)) {
                     const pChar = playersData[uid]?.character || {};
                     if (pChar.bando && String(pChar.bando).trim().toLowerCase() === String(bandoCriador).trim().toLowerCase()) {
+                        
+                        // Verifica se algum membro do bando já está ocupado
+                        if (pChar.status === true) {
+                            const nomeOcupado = pChar.charName || playersData[uid]?.nome || 'Jogador';
+                            await sock.sendMessage(from, { text: `❌ O membro *${nomeOcupado}* do seu bando já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                            return true;
+                        }
+
                         const nomePlayer = pChar.charName || playersData[uid]?.nome || 'Jogador';
                         const ilhaJogador = Number(pChar.ilha ?? 0);
 
@@ -444,14 +471,20 @@ async function handleViagemCommands(sock, m, text, from) {
 
         for (const uid of uidsParticipantes) {
             const player = playersData[uid];
-            const nomePlayer = player?.character?.charName || player?.nome || 'Jogador';
+            const pChar = player?.character || {};
+            const nomePlayer = pChar.charName || player?.nome || 'Jogador';
 
-            if (player?.character?.faction !== sessao.faccaoCriador) {
+            if (pChar.status === true) {
+                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                return true;
+            }
+
+            if (pChar.faction !== sessao.faccaoCriador) {
                 await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* não pertence à facção *${sessao.faccaoCriador}*!` }, { quoted: m });
                 return true;
             }
 
-            const ilhaJogador = Number(player?.character?.ilha ?? 0);
+            const ilhaJogador = Number(pChar.ilha ?? 0);
 
             if (ilhaAtualGrupo === null) {
                 ilhaAtualGrupo = ilhaJogador;
@@ -501,6 +534,15 @@ async function handleViagemCommands(sock, m, text, from) {
         );
 
         if (responderUid !== sessao.criadorUid) return false;
+
+        // Validação extra de status para garantir que ninguém ficou ocupado durante a conversa
+        for (const membro of sessao.membros) {
+            if (playersData[membro.uid]?.character?.status === true) {
+                await sock.sendMessage(from, { text: `❌ O jogador *${membro.nome}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                delete sessoesViagem[from];
+                return true;
+            }
+        }
 
         const ilhaDestino = parseInt(text.trim(), 10);
         const faccaoLower = String(sessao.faccaoCriador).toLowerCase();
@@ -576,6 +618,13 @@ async function handleViagemCommands(sock, m, text, from) {
 
             await axios.patch(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`, dadosViagem);
 
+            // Marca todos os jogadores da viagem com status: true no character
+            for (const membro of sessao.membros) {
+                await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
+                    status: true
+                });
+            }
+
             const nomeIlhaDestinoFormatado = await obterNomeFormatadoIlha(ilhaDestino);
             const horarioFormatado = obterHorarioBRT(dataTermino);
 
@@ -594,10 +643,11 @@ async function handleViagemCommands(sock, m, text, from) {
                     // Apaga o registro da viagem do nó /ilhas/viagens ao finalizar
                     await axios.delete(`${FIREBASE_URL}/ilhas/viagens/${proximoId}.json`);
 
-                    // Atualiza a ilha atual dos jogadores no banco de dados
+                    // Atualiza a ilha atual dos jogadores no banco de dados e redefine status para false
                     for (const membro of sessao.membros) {
                         await axios.patch(`${FIREBASE_URL}/players/${membro.uid}/character.json`, {
-                            ilha: ilhaDestino
+                            ilha: ilhaDestino,
+                            status: false
                         });
                     }
 

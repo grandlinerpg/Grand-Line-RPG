@@ -323,13 +323,37 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
 
             const viagemMinha = obterViagemAtivaDoJogador(meuUid, viagensAtivas);
             const ilha = obterIlha(meuChar);
-            const nomes = await obterNomesIlhas([ilha, viagemMinha?.ilhaDestino]);
+            const nomes = await obterNomesIlhas([ilha, viagemMinha?.ilhaOrigem, viagemMinha?.ilhaDestino]);
 
-            const localTexto = rotuloIlha(nomes, ilha, viagemMinha);
+            let resposta = `📍 — LOCALIZAÇÃO — 📍\n\n`;
+            resposta += `👤 ${nomeDoJogador(meuPlayer)}\n`;
 
-            const resposta = `📍 *— LOCALIZAÇÃO —* 📍\n\n` +
-                `👤 *${nomeDoJogador(meuPlayer)}*\n` +
-                `📌 ${localTexto}`;
+            if (viagemMinha) {
+                const terminoDate = converterDataPtBrParaDate(viagemMinha.termino);
+                const horaMin = terminoDate
+                    ? `${String(terminoDate.getHours()).padStart(2, '0')}:${String(terminoDate.getMinutes()).padStart(2, '0')}`
+                    : '--:--';
+
+                const origemNome = nomes[viagemMinha.ilhaOrigem] || `${viagemMinha.ilhaOrigem}. Ilha ${viagemMinha.ilhaOrigem}`;
+                const destinoNome = nomes[viagemMinha.ilhaDestino] || `${viagemMinha.ilhaDestino}. Ilha ${viagemMinha.ilhaDestino}`;
+
+                resposta += `⛵️ ${origemNome} ➔ ${destinoNome}\n\n`;
+                resposta += `> Término: ${horaMin} (BRT)`;
+            } else {
+                const ilhaNome = nomes[ilha] || `${ilha}. Ilha ${ilha}`;
+                const atividade = meuChar.atividade || 'Nenhuma';
+
+                resposta += `📌 ${ilhaNome}\n`;
+                resposta += `🎯 ${atividade}`;
+
+                if (meuChar.atividadeTermino) {
+                    const terminoDate = converterDataPtBrParaDate(meuChar.atividadeTermino);
+                    const horaMin = terminoDate
+                        ? `${String(terminoDate.getHours()).padStart(2, '0')}:${String(terminoDate.getMinutes()).padStart(2, '0')}`
+                        : meuChar.atividadeTermino;
+                    resposta += `\n\n> Término: ${horaMin} (BRT)`;
+                }
+            }
 
             await responder(sock, m, from, resposta, meuPlayer, false);
             return true;

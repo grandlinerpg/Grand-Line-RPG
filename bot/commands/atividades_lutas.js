@@ -6,7 +6,7 @@ const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
     'Marinha': '⚓', 
-    'Piratas': '🏴‍☠',
+    'Piratas': '🏴‍☠', 
     'Exército Revolucionário': '⚔️',
     'Governo Mundial': '⚓',
     'Caçadores de Recompensa': '🎯'

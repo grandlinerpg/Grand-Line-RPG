@@ -287,11 +287,11 @@ async function handleInfoCommands(sock, m, text, from) {
             const emojiFaccao = obterEmojiFaccao(faccao) || '🏴‍☠️';
 
             if (chavesAtividades.length === 0) {
-                await sock.sendMessage(from, { text: `📊 *— RELATÓRIO DE ATIVIDADES —*\n\n👤 *Jogador:* ${nomeJogador}\n🏛️ *Grupo:* ${nomeExibicaoFaccao}\n\n❌ Não há atividades cadastradas para sua facção.` }, { quoted: m });
+                await sock.sendMessage(from, { text: `📊 *— RELATÓRIO —*\n\n👤 *J${nomeJogador}*\n🏛️ ${nomeExibicaoFaccao}\n\n❌ Não há atividades cadastradas para sua facção.` }, { quoted: m });
                 return true;
             }
 
-            let relatorioTexto = `📊 *— RELATÓRIO DE ATIVIDADES —* 📊\n\n👤 *Jogador:* ${nomeJogador}\n${emojiFaccao} *Grupo:* ${nomeExibicaoFaccao}\n\n`;
+            let relatorioTexto = `📊 *— RELATÓRIO —* 📊\n\n👤 *${nomeJogador}*\n${emojiFaccao} ${nomeExibicaoFaccao}\n\n`;
 
             chavesAtividades.forEach((chave) => {
                 const ativData = atividadesFaccao[chave] || {};

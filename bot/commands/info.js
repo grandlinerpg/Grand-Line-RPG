@@ -162,7 +162,7 @@ async function handleInfoCommands(sock, m, text, from) {
                 if (dominioNome.trim().toLowerCase() === 'governo mundial') {
                     emojiFaccao = '⚓';
                 } else if (dominioNome.trim().toLowerCase() === 'exército revolucionário') {
-                    emojiFaccao = '⚔️️';
+                    emojiFaccao = '⚔';
                 }
 
                 domText += `*${index + 1}. ${ilha.nome || 'Ilha Sem Nome'} ${formatEscudos}*\n`;
@@ -302,6 +302,9 @@ async function handleInfoCommands(sock, m, text, from) {
                 const textoLimite = limiteAtiv === 'Sem limite' ? 'Sem limite' : `${realizadas}/${limiteAtiv}`;
                 relatorioTexto += `• *${nomeAtiv}*: ${textoLimite}\n`;
             });
+
+            const tetoSemanal = Number(player?.atividades?.teto ?? 0).toLocaleString('pt-BR');
+            relatorioTexto += `\n> Teto Semanal: ${tetoSemanal}/1.000`;
 
             await sock.sendMessage(from, { text: relatorioTexto.trim() }, { quoted: m });
         } catch (e) {

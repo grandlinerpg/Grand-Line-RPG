@@ -25,7 +25,7 @@ const GRUPOS_BANDOS = [
 const GRUPOS_PERMITIDOS = [...GRUPOS_FACCOES, ...GRUPOS_BANDOS];
 
 // =========================================================================
-// FUNÇÕES AUXILIARES DE DATA E VIAGEM
+// FUNÇÕES AUXILIARES DE DATA, VIAGEM E ATIVIDADE
 // =========================================================================
 
 function converterDataPtBrParaDate(strData) {
@@ -321,38 +321,36 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
                 return true;
             }
 
-            const viagemMinha = obterViagemAtivaDoJogador(meuUid, viagensAtivas);
+            const registroAtivo = obterViagemAtivaDoJogador(meuUid, viagensAtivas);
             const ilha = obterIlha(meuChar);
-            const nomes = await obterNomesIlhas([ilha, viagemMinha?.ilhaOrigem, viagemMinha?.ilhaDestino]);
+            const nomes = await obterNomesIlhas([ilha, registroAtivo?.ilhaDestino]);
 
-            let resposta = `📍 — LOCALIZAÇÃO — 📍\n\n`;
-            resposta += `👤 ${nomeDoJogador(meuPlayer)}\n`;
+            let resposta = `📍 *— LOCALIZAÇÃO —* 📍\n\n` +
+                `👤 *${nomeDoJogador(meuPlayer)}*\n`;
 
-            if (viagemMinha) {
-                const terminoDate = converterDataPtBrParaDate(viagemMinha.termino);
+            if (registroAtivo) {
+                const terminoDate = converterDataPtBrParaDate(registroAtivo.termino);
                 const horaMin = terminoDate
                     ? `${String(terminoDate.getHours()).padStart(2, '0')}:${String(terminoDate.getMinutes()).padStart(2, '0')}`
-                    : '--:--';
+                    : '';
 
-                const origemNome = nomes[viagemMinha.ilhaOrigem] || `${viagemMinha.ilhaOrigem}. Ilha ${viagemMinha.ilhaOrigem}`;
-                const destinoNome = nomes[viagemMinha.ilhaDestino] || `${viagemMinha.ilhaDestino}. Ilha ${viagemMinha.ilhaDestino}`;
+                if (registroAtivo.tipo === 'atividade') {
+                    const nomeLocal = nomes[registroAtivo.ilhaDestino] || `${registroAtivo.ilhaDestino}. Ilha ${registroAtivo.ilhaDestino}`;
+                    const nomeAtiv = registroAtivo.nomeAtividade || registroAtivo.atividade || 'Atividade';
 
-                resposta += `⛵️ ${origemNome} ➔ ${destinoNome}\n\n`;
-                resposta += `> Término: ${horaMin} (BRT)`;
-            } else {
-                const ilhaNome = nomes[ilha] || `${ilha}. Ilha ${ilha}`;
-                const atividade = meuChar.atividade || 'Nenhuma';
+                    resposta += `📌 ${nomeLocal}\n` +
+                        `🎯 ${nomeAtiv}\n\n` +
+                        `> Término: ${horaMin} (BRT)`;
+                } else {
+                    const nomeOrigem = ilha !== null && ilha !== undefined ? ilha : '?';
+                    const nomeDestino = nomes[registroAtivo.ilhaDestino] || `${registroAtivo.ilhaDestino}. Ilha ${registroAtivo.ilhaDestino}`;
 
-                resposta += `📌 ${ilhaNome}\n`;
-                resposta += `🎯 ${atividade}`;
-
-                if (meuChar.atividadeTermino) {
-                    const terminoDate = converterDataPtBrParaDate(meuChar.atividadeTermino);
-                    const horaMin = terminoDate
-                        ? `${String(terminoDate.getHours()).padStart(2, '0')}:${String(terminoDate.getMinutes()).padStart(2, '0')}`
-                        : meuChar.atividadeTermino;
-                    resposta += `\n\n> Término: ${horaMin} (BRT)`;
+                    resposta += `⛵️ ${nomeOrigem}. ➔ ${nomeDestino}\n\n` +
+                        `> Término: ${horaMin} (BRT)`;
                 }
+            } else {
+                const localTexto = rotuloIlha(nomes, ilha, null);
+                resposta += `📌 ${localTexto}`;
             }
 
             await responder(sock, m, from, resposta, meuPlayer, false);

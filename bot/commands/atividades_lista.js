@@ -328,10 +328,12 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     data: dataAtualIso
                 });
 
-                // Atualiza o status do personagem para true ao criar/iniciar a lista
-                await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, {
-                    status: true
-                });
+                // Atualiza o status do personagem apenas para tipos diferentes de 1
+                if (sessao.tipoAtividade !== 1) {
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, {
+                        status: true
+                    });
+                }
             }
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao registrar o incremento de atividade dos jogadores no Firebase.' }, { quoted: m });
@@ -478,7 +480,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const jaEhDefensor = atividade.defensores.some(d => d.uid === playerUid);
 
                 if (jaEhAnunciante || jaEhDefensor) {
-                    await sock.sendMessage(from, { text: `⚠️️ *${player?.character?.charName || 'Jogador'}* já está registrado nesta atividade!` }, { quoted: m });
+                    await sock.sendMessage(from, { text: `⚠ *${player?.character?.charName || 'Jogador'}* já está registrado nesta atividade!` }, { quoted: m });
                     continue;
                 }
 

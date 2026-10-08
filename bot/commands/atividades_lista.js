@@ -168,11 +168,12 @@ async function handleAtividadesCommands(sock, m, text, from) {
             return true;
         }
 
-        // Validação de status ocupado dos atacantes
+        // Validação de status ocupado dos atacantes (devem estar com status "Parado")
         for (const uid of uidsParticipantes) {
             const player = playersData[uid];
             const nomePlayer = player?.character?.charName || player?.nome || 'Jogador';
-            if (player?.character?.status === true) {
+            const currentStatus = player?.character?.status;
+            if (currentStatus && currentStatus !== 'Parado') {
                 await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
                 return true;
             }
@@ -328,10 +329,10 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     data: dataAtualIso
                 });
 
-                // Atualiza o status do personagem apenas para tipos diferentes de 1
+                // Atualiza o status do personagem com o nome da atividade para tipos diferentes de 1
                 if (sessao.tipoAtividade !== 1) {
                     await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, {
-                        status: true
+                        status: sessao.nomeAtividade
                     });
                 }
             }
@@ -433,7 +434,9 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
                 if (!faccaoJogador) continue;
 
-                if (player?.character?.status === true) {
+                // Defensores só podem participar se estiverem com status "Parado"
+                const currentStatus = player?.character?.status;
+                if (currentStatus && currentStatus !== 'Parado') {
                     await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
                     continue;
                 }
@@ -498,9 +501,9 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     atividade.bandoDefensor = bandoJogador;
                 }
 
-                // Muda o status do defensor para true ao entrar na atividade
+                // Muda o status do defensor para o nome da atividade ao entrar na lista
                 await axios.patch(`${FIREBASE_URL}/players/${playerUid}/character.json`, {
-                    status: true
+                    status: atividade.nomeAtividade
                 });
 
                 atividade.defensores.push({
@@ -568,7 +571,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const idxAtq = atividade.anunciantes.findIndex(a => a.uid === uid);
                 if (idxAtq !== -1) {
                     atividade.anunciantes.splice(idxAtq, 1);
-                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: false });
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: 'Parado' });
                     removeuAlguem = true;
                     continue;
                 }
@@ -576,7 +579,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const idxDef = atividade.defensores.findIndex(d => d.uid === uid);
                 if (idxDef !== -1) {
                     atividade.defensores.splice(idxDef, 1);
-                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: false });
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: 'Parado' });
                     removeuAlguem = true;
                     if (atividade.defensores.length === 0) {
                         atividade.faccaoDefensora = null;

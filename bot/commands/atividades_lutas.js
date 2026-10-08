@@ -715,7 +715,7 @@ async function finalizarAtividade(sock, from) {
 
             if (realFirebaseKey) {
                 await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
-                    status: false
+                    status: "Parado"
                 });
             }
         }

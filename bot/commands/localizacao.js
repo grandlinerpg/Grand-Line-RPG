@@ -25,7 +25,7 @@ const GRUPOS_BANDOS = [
 const GRUPOS_PERMITIDOS = [...GRUPOS_FACCOES, ...GRUPOS_BANDOS];
 
 // =========================================================================
-// FUNÇÕES AUXILIARES DE DATA, VIAGEM E ATIVIDADE
+// FUNÇÕES AUXILIARES DE DATA E VIAGEM
 // =========================================================================
 
 function converterDataPtBrParaDate(strData) {
@@ -321,37 +321,15 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
                 return true;
             }
 
-            const registroAtivo = obterViagemAtivaDoJogador(meuUid, viagensAtivas);
+            const viagemMinha = obterViagemAtivaDoJogador(meuUid, viagensAtivas);
             const ilha = obterIlha(meuChar);
-            const nomes = await obterNomesIlhas([ilha, registroAtivo?.ilhaDestino]);
+            const nomes = await obterNomesIlhas([ilha, viagemMinha?.ilhaDestino]);
 
-            let resposta = `📍 *— LOCALIZAÇÃO —* 📍\n\n` +
-                `👤 *${nomeDoJogador(meuPlayer)}*\n`;
+            const localTexto = rotuloIlha(nomes, ilha, viagemMinha);
 
-            if (registroAtivo) {
-                const terminoDate = converterDataPtBrParaDate(registroAtivo.termino);
-                const horaMin = terminoDate
-                    ? `${String(terminoDate.getHours()).padStart(2, '0')}:${String(terminoDate.getMinutes()).padStart(2, '0')}`
-                    : '';
-
-                if (registroAtivo.tipo === 'atividade') {
-                    const nomeLocal = nomes[registroAtivo.ilhaDestino] || `${registroAtivo.ilhaDestino}. Ilha ${registroAtivo.ilhaDestino}`;
-                    const nomeAtiv = registroAtivo.nomeAtividade || registroAtivo.atividade || 'Atividade';
-
-                    resposta += `📌 ${nomeLocal}\n` +
-                        `🎯 ${nomeAtiv}\n\n` +
-                        `> Término: ${horaMin} (BRT)`;
-                } else {
-                    const nomeOrigem = ilha !== null && ilha !== undefined ? ilha : '?';
-                    const nomeDestino = nomes[registroAtivo.ilhaDestino] || `${registroAtivo.ilhaDestino}. Ilha ${registroAtivo.ilhaDestino}`;
-
-                    resposta += `⛵️ ${nomeOrigem}. ➔ ${nomeDestino}\n\n` +
-                        `> Término: ${horaMin} (BRT)`;
-                }
-            } else {
-                const localTexto = rotuloIlha(nomes, ilha, null);
-                resposta += `📌 ${localTexto}`;
-            }
+            const resposta = `📍 *— LOCALIZAÇÃO —* 📍\n\n` +
+                `👤 *${nomeDoJogador(meuPlayer)}*\n` +
+                `📌 ${localTexto}`;
 
             await responder(sock, m, from, resposta, meuPlayer, false);
             return true;

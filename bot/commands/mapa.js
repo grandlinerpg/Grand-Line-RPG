@@ -18,18 +18,20 @@ async function handleMapaCommands(sock, m, text, from) {
             const ilhasData = ilhasRes.data || {};
             const playersData = playersRes.data || {};
 
-            // Estrutura: { [idIlha]: { [faccaoOuBando]: forçaTotal } }
+            // Estrutura: { [idIlha]: { [chaveComposta]: { nomeGrupo, status, forca, faccaoOriginal } } }
             const ilhasPresenca = {};
 
             Object.values(playersData).forEach(player => {
                 const ilha = Number(player?.character?.ilha);
                 const faccao = player?.character?.faction;
                 const bando = player?.character?.bando;
-                const status = player?.character?.status;
+                const statusRaw = player?.character?.status;
                 const level = Number(player?.info?.level || 1);
 
+                const statusTratado = statusRaw ? statusRaw.toString().trim() : 'Parado';
+
                 // Se o status for "Viagem" (independente de maiúsculas/minúsculas), ignora o jogador
-                if (status && status.toString().trim().toLowerCase() === 'viagem') {
+                if (statusTratado.toLowerCase() === 'viagem') {
                     return;
                 }
 
@@ -40,19 +42,28 @@ async function handleMapaCommands(sock, m, text, from) {
                     }
 
                     // Se a facção for Piratas e houver bando informado, agrupa pelo nome do bando
-                    let chaveGrupo = faccao;
+                    let nomeGrupo = faccao;
                     if (faccao.trim().toLowerCase() === 'piratas') {
-                        chaveGrupo = bando ? bando.trim() : 'Piratas (Sem Bando)';
+                        nomeGrupo = bando ? bando.trim() : 'Piratas (Sem Bando)';
                     }
 
-                    if (!ilhasPresenca[ilha][chaveGrupo]) {
-                        ilhasPresenca[ilha][chaveGrupo] = {
+                    // Define o status normalizado para exibição/agrupamento
+                    const isParado = statusTratado.toLowerCase() === 'parado';
+                    const statusExibicao = isParado ? 'Parado' : statusTratado;
+
+                    // Chave para agrupar por grupo e por atividade (exceto se for "Parado", onde o agrupamento é padrão)
+                    const chaveUnica = isParado ? `${nomeGrupo}_Parado` : `${nomeGrupo}_${statusExibicao}`;
+
+                    if (!ilhasPresenca[ilha][chaveUnica]) {
+                        ilhasPresenca[ilha][chaveUnica] = {
+                            nomeGrupo: nomeGrupo,
+                            status: statusExibicao,
                             forca: 0,
                             faccaoOriginal: faccao
                         };
                     }
 
-                    ilhasPresenca[ilha][chaveGrupo].forca += level;
+                    ilhasPresenca[ilha][chaveUnica].forca += level;
                 }
             });
 
@@ -84,9 +95,14 @@ async function handleMapaCommands(sock, m, text, from) {
                 const gruposPresentes = ilhasPresenca[idIlha];
                 const linhasGrupos = [];
 
-                for (const [nomeGrupo, dados] of Object.entries(gruposPresentes)) {
+                for (const dados of Object.values(gruposPresentes)) {
                     const emoji = obterEmojiFaccao(dados.faccaoOriginal) || '🏴‍☠️';
-                    linhasGrupos.push(`➔ ${nomeGrupo} ${emoji}\n> Força: ${dados.forca}`);
+                    
+                    if (dados.status === 'Parado') {
+                        linhasGrupos.push(`➔ ${dados.nomeGrupo} ${emoji}\n> Força: ${dados.forca}`);
+                    } else {
+                        linhasGrupos.push(`➔ ${dados.nomeGrupo} ${emoji}\n> Atividade: ${dados.status}\n> Força: ${dados.forca}`);
+                    }
                 }
 
                 bloco += linhasGrupos.join('\n');

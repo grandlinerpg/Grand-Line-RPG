@@ -4,7 +4,7 @@ const {
     obterEmojiFaccao 
 } = require('../index');
 
-/**
+/** 
  * Mapeia os dados do Firebase e retorna a presença de cada facção e bando por ilha.
  */
 async function handleMapaCommands(sock, m, text, from) {

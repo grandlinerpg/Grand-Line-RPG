@@ -217,7 +217,7 @@ async function responder(sock, m, from, texto, meuPlayer, privado) {
             await sock.sendMessage(from, { text: '📩 Enviei a resposta no seu privado.' }, { quoted: m });
         } catch (e) {
             await sock.sendMessage(from, {
-                text: '❌ Não consegui enviar no privado. Mande uma mensagem para o bot no privado e tente de novo.'
+                text: '❌ Não consegui enviar n o privado. Mande uma mensagem para o bot no privado e tente de novo.'
             }, { quoted: m });
         }
         return;

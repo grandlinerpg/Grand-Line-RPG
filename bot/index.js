@@ -70,6 +70,7 @@ module.exports = {
 
 // IMPORTAÇÃO DOS MÓDULOS DE COMANDOS
 const { handleInfoCommands } = require('./commands/info');
+const { handleHabilidadesCommands } = require('./commands/habilidades');
 const { handleDesafiosCommands } = require('./commands/desafios');
 const { handleQuizCommands, dispararQuizNoGrupo } = require('./commands/quiz');
 const { handleCombatesCommands } = require('./commands/combates');
@@ -158,6 +159,7 @@ async function connectToWhatsApp() {
             if (handleLevelCommands && await handleLevelCommands(sock, m, text, from)) return;
             if (await handleQuizCommands(sock, m, text, from)) return;
             if (await handleInfoCommands(sock, m, text, from)) return;
+            if (await handleHabilidadesCommands(sock, m, text, from)) return;
             if (await handleDesafiosCommands(sock, m, text, from)) return;
             if (await handleAtividadesCommands(sock, m, text, from)) return;
             if (await handleViagemCommands(sock, m, text, from)) return;

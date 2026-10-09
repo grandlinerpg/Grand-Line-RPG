@@ -1,11 +1,11 @@
-const axios = require('axios'); 
+const axios = require('axios');
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
-const { iniciarEstruturaBatalha } = require('./combates'); 
-const { processarGanhoExp, calcularRank } = require('./level');
+const { iniciarEstruturaBatalha } = require('./combates');
+const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
-    'Marinha': '⚓', 
+    'Marinha': '⚓',
     'Piratas': '🏴‍☠',
     'Exército Revolucionário': '⚔️',
     'Governo Mundial': '⚓',
@@ -31,7 +31,7 @@ function obterEmojiFaccao(param, atividade = null) {
 
     if (!nomeFaccao && atividade) {
         const idOuNome = (typeof param === 'object' && param !== null) ? (param.lid || param.uid || param.nome) : param;
-        
+
         const atacante = atividade.anunciantes?.find(a => a.lid === idOuNome || a.uid === idOuNome || a.nome === idOuNome);
         if (atacante) {
             nomeFaccao = atacante.faccao || atividade.faccaoCriador;
@@ -88,7 +88,7 @@ async function obterBlocoArenasFormatado(atividade) {
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
-    } catch (e) {}
+    } catch (e) { }
 
     const blocos = [];
 
@@ -169,8 +169,8 @@ async function verificarEParearAutomatico(sock, from) {
                 await enviarRelatorioGrupo(sock, from);
                 return;
             } else if (atividade.bancoDefensores.length > 1) {
-                await sock.sendMessage(from, { 
-                    text: `🏆 Vez do banco da facção *${nomeDefesa}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
+                await sock.sendMessage(from, {
+                    text: `🏆 Vez do banco da facção *${nomeDefesa}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.`
                 });
                 return;
             }
@@ -185,8 +185,8 @@ async function verificarEParearAutomatico(sock, from) {
                 await enviarRelatorioGrupo(sock, from);
                 return;
             } else if (atividade.bancoAtacantes.length > 1) {
-                await sock.sendMessage(from, { 
-                    text: `🏆 Vez do banco de *${atividade.faccaoCriador}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
+                await sock.sendMessage(from, {
+                    text: `🏆 Vez do banco de *${atividade.faccaoCriador}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.`
                 });
                 return;
             }
@@ -196,7 +196,7 @@ async function verificarEParearAutomatico(sock, from) {
     if (atividade.bancoAtacantes.length === 1 && atividade.bancoDefensores.length === 1) {
         const p1 = atividade.bancoAtacantes.shift();
         const p2 = atividade.bancoDefensores.shift();
-        
+
         await sock.sendMessage(from, { text: `⚡ *Resta apenas 1 combatente de cada lado!* Pareamento automático: ${p1.nome} VS ${p2.nome}` });
         await alocarLutaNaArena(sock, from, p1, p2);
         await enviarRelatorioGrupo(sock, from);
@@ -223,8 +223,8 @@ async function verificarEParearAutomatico(sock, from) {
             let faccaoVez = atividade.vezSelecao === 'atacante' ? atividade.faccaoCriador : nomeDefesa;
             let faccaoAlvo = atividade.vezSelecao === 'atacante' ? nomeDefesa : atividade.faccaoCriador;
 
-            await sock.sendMessage(from, { 
-                text: `⚔️️ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
+            await sock.sendMessage(from, {
+                text: `⚔ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.`
             });
         }
     }
@@ -307,12 +307,12 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
-    } catch (e) {}
+    } catch (e) { }
 
     const arenaDisponivelJid = GRUPOS_ARENA.find(arenaJid => {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
-        
+
         const ocupadaNoFirebase = arenaRemote && arenaRemote.fase !== 'aguardando';
 
         return !ocupadaNoFirebase;
@@ -328,7 +328,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const arenaRemote = arenasAtivas[chaveGrupo] || {};
 
     const dadosBatalhaBase = iniciarEstruturaBatalha(arenaDisponivelJid, p1, p2, 'ATIVIDADE', sock);
-    
+
     const dadosBatalha = {
         ...arenaRemote,
         ...dadosBatalhaBase,
@@ -376,7 +376,7 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
 
     if (ehAtacante) {
         atividade.vitoriasAtacantes = (atividade.vitoriasAtacantes || 0) + 1;
-        
+
         const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
         const totalDefensoresVivos = atividade.bancoDefensores.length + defensoresEmLuta.length;
 
@@ -439,7 +439,7 @@ async function enviarRelatorioGrupo(sock, from) {
     }
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
-    
+
     // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
@@ -604,8 +604,8 @@ async function finalizarAtividade(sock, from) {
             // Busca as regras de recompensa da atividade no Firebase
             const buscaFaccao = faccaoVencedora || atividade.faccaoCriador;
             const ativsFaccao = faccoesData[buscaFaccao]?.atividades || {};
-            let chaveAtividade = Object.keys(ativsFaccao).find(k => 
-                k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
+            let chaveAtividade = Object.keys(ativsFaccao).find(k =>
+                k.toLowerCase() === atividade.nomeAtividade.toLowerCase() ||
                 (ativsFaccao[k]?.nome && ativsFaccao[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
             );
 
@@ -614,8 +614,8 @@ async function finalizarAtividade(sock, from) {
             } else {
                 for (const f of Object.keys(faccoesData)) {
                     const ativs = faccoesData[f]?.atividades || {};
-                    const kFound = Object.keys(ativs).find(k => 
-                        k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
+                    const kFound = Object.keys(ativs).find(k =>
+                        k.toLowerCase() === atividade.nomeAtividade.toLowerCase() ||
                         (ativs[k]?.nome && ativs[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
                     );
                     if (kFound && ativs[kFound]?.recompensa) {
@@ -652,9 +652,21 @@ async function finalizarAtividade(sock, from) {
                     const playerInfo = playerData.info || {};
 
                     // Processa ganho de EXP, Level e Rank
-                    const { novoExp, novoLevel, novoRank } = processarGanhoExp(playerInfo, expGanho);
+                    const { novoExp, novoLevel, novoRank, subiuLevel, levelAnterior } = processarGanhoExp(playerInfo, expGanho);
                     const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
                     const novoSaldo = saldoAtual + berriesGanho;
+
+                    // Se subiu de nível, calcula e atualiza os pontos e atributos excedentes
+                    if (subiuLevel) {
+                        const { pointsAtualizados, statsAtualizados } = aplicarRecompensasLevelUp(
+                            playerData,
+                            levelAnterior,
+                            novoLevel
+                        );
+
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/points.json`, pointsAtualizados);
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
+                    }
 
                     // Atualiza o nó info (exp, level, saldo)
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
@@ -682,6 +694,33 @@ async function finalizarAtividade(sock, from) {
         } catch (e) {
             console.error('Erro ao processar e creditar recompensas no Firebase:', e.message);
         }
+    }
+
+    // Altera character.status para false para todos os jogadores (atacantes e defensores) ao finalizar a atividade
+    try {
+        const todosJogadoresAtividade = [...(atividade.anunciantes || []), ...(atividade.defensores || [])];
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersData = playersRes.data || {};
+
+        for (const jogador of todosJogadoresAtividade) {
+            const targetLid = String(jogador.lid || '').trim();
+            const targetNum = String(jogador.numero || '').trim();
+
+            const realFirebaseKey = Object.keys(playersData).find(key => {
+                const p = playersData[key];
+                const pLid = String(p?.number?.LID || '').trim();
+                const pNum = String(p?.number?.n || '').trim();
+                return (targetLid && pLid === targetLid) || (targetNum && pNum === targetNum) || key === jogador.uid;
+            });
+
+            if (realFirebaseKey) {
+                await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
+                    status: "Parado"
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Erro ao atualizar character.status dos jogadores para false:', e.message);
     }
 
     const resultadoTexto = faccaoVencedora ? `Facção *${faccaoVencedora}*` : 'Empate!';

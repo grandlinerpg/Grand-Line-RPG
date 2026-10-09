@@ -1,12 +1,12 @@
-const axios = require('axios'); 
+const axios = require('axios');
 const { FIREBASE_URL, obterJidEfetivo } = require('../index');
-const { 
-    atividadesAtivas, 
-    sessoesCriacao, 
-    obterEmojiFaccao, 
-    obterNomeTerritorio, 
-    encerrarListaEIniciarPartida, 
-    processarEscolhaLutador 
+const {
+    atividadesAtivas,
+    sessoesCriacao,
+    obterEmojiFaccao,
+    obterNomeTerritorio,
+    encerrarListaEIniciarPartida,
+    processarEscolhaLutador
 } = require('./atividades_lutas');
 const { iniciarProcessoTipo1 } = require('./viagem');
 
@@ -22,6 +22,50 @@ function obterNomeExibicaoFaccao(faccao, bando) {
 
 async function handleAtividadesCommands(sock, m, text, from) {
     const senderId = obterJidEfetivo(m, from);
+
+    // 0. Tratamento Universal de Cancelamento para Sessões de Criação
+    if (sessoesCriacao[from] && text.trim().toLowerCase() === 'cancelar') {
+        const sessao = sessoesCriacao[from];
+
+        // Verificar se quem está tentando cancelar é o criador da sessão
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersData = playersRes.data || {};
+        const responderUid = Object.keys(playersData).find(u =>
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
+            String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
+        );
+
+        if (responderUid === sessao.criadorUid) {
+            // Se já tiver sido salvo no Firebase no Passo 2, reverte as alterações
+            if (sessao.dadosSalvosFirebase && sessao.participantesIniciados) {
+                try {
+                    for (const uid of sessao.participantesIniciados) {
+                        const player = playersData[uid];
+                        const qtdAtual = Number(player?.atividades?.[sessao.chaveAtividade] ?? 1);
+                        const novaQtd = Math.max(0, qtdAtual - 1);
+
+                        // Reverte o incremento no banco de dados
+                        await axios.patch(`${FIREBASE_URL}/players/${uid}/atividades.json`, {
+                            [sessao.chaveAtividade]: novaQtd
+                        });
+
+                        // Reverte o status para "Parado" caso não fosse do tipo 1
+                        if (sessao.tipoAtividade !== 1) {
+                            await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, {
+                                status: 'Parado'
+                            });
+                        }
+                    }
+                } catch (e) {
+                    await sock.sendMessage(from, { text: '⚠️ Houve um erro ao tentar reverter as alterações no Firebase ao cancelar.' }, { quoted: m });
+                }
+            }
+
+            delete sessoesCriacao[from];
+            await sock.sendMessage(from, { text: '🚫 *Criação de atividade cancelada com sucesso!*' }, { quoted: m });
+            return true;
+        }
+    }
 
     // 1. Comando Inicial: !iniciaratividade
     if (text === '!iniciaratividade') {
@@ -40,8 +84,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
 
-            const playerUid = Object.keys(playersData).find(u => 
-                String(playersData[u]?.number?.LID || '').trim() === senderId || 
+            const playerUid = Object.keys(playersData).find(u =>
+                String(playersData[u]?.number?.LID || '').trim() === senderId ||
                 String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
             );
 
@@ -76,6 +120,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const nomeAtiv = ativ?.nome || key;
                 listaTexto += `• *${nomeAtiv}*\n`;
             });
+            listaTexto += `\n_(Digite *"cancelar"* a qualquer momento para desistir)_`;
 
             sessoesCriacao[from] = {
                 fase: 'aguardando_nome',
@@ -97,8 +142,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
         const sessao = sessoesCriacao[from];
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
-        const responderUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+        const responderUid = Object.keys(playersData).find(u =>
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
             String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
@@ -108,8 +153,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
             const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes/${sessao.faccaoCriador}/atividades.json`);
             const atividadesFaccao = faccoesRes.data || {};
 
-            const chaveAtividade = Object.keys(atividadesFaccao).find(k => 
-                k.toLowerCase() === text.toLowerCase() || 
+            const chaveAtividade = Object.keys(atividadesFaccao).find(k =>
+                k.toLowerCase() === text.toLowerCase() ||
                 (atividadesFaccao[k]?.nome && atividadesFaccao[k].nome.toLowerCase() === text.toLowerCase())
             );
 
@@ -128,7 +173,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
             sessao.tipoAtividade = Number(ativDados?.tipo || 1);
             sessao.fase = 'aguardando_participantes';
 
-            await sock.sendMessage(from, { text: '👥 *Quais jogadores vão participar da atividade?*\n\n_(Mencione usando @ ou digite "eu" para incluir a si mesmo)_' }, { quoted: m });
+            await sock.sendMessage(from, { text: '👥 *Quais jogadores vão participar da atividade?*\n\n_(Mencione usando @ ou digite "eu" para incluir a si mesmo. Digite "cancelar" para sair)_' }, { quoted: m });
             return true;
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao consultar as atividades da facção no Firebase.' }, { quoted: m });
@@ -143,8 +188,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
 
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
-        const responderUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+        const responderUid = Object.keys(playersData).find(u =>
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
             String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
@@ -156,8 +201,8 @@ async function handleAtividadesCommands(sock, m, text, from) {
         const mentionedJids = m.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
         for (const jid of mentionedJids) {
             const targetId = jid.split('@')[0].split(':')[0].trim();
-            const targetUid = Object.keys(playersData).find(u => 
-                String(playersData[u]?.number?.LID || '').trim() === targetId || 
+            const targetUid = Object.keys(playersData).find(u =>
+                String(playersData[u]?.number?.LID || '').trim() === targetId ||
                 String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
             );
             if (targetUid) uidsParticipantes.add(targetUid);
@@ -166,6 +211,17 @@ async function handleAtividadesCommands(sock, m, text, from) {
         if (uidsParticipantes.size === 0) {
             await sock.sendMessage(from, { text: '❌ Nenhum jogador válido foi identificado. Marque alguém com @ ou digite "eu".' }, { quoted: m });
             return true;
+        }
+
+        // Validação de status ocupado dos atacantes (devem estar com status "Parado")
+        for (const uid of uidsParticipantes) {
+            const player = playersData[uid];
+            const nomePlayer = player?.character?.charName || player?.nome || 'Jogador';
+            const currentStatus = player?.character?.status;
+            if (currentStatus && currentStatus !== 'Parado') {
+                await sock.sendMessage(from, { text: `❌ O jogador *${nomePlayer}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                return true;
+            }
         }
 
         // Validação de quantidade min e max
@@ -186,7 +242,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 await sock.sendMessage(from, { text: `❌ A quantidade de jogadores escolhida (${qtd}) excede o máximo permitido (${max}) para esta atividade.` }, { quoted: m });
                 return true;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         // Validação do limite de realização da atividade por jogador (Apenas Atacantes)
         try {
@@ -317,7 +373,17 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     [sessao.chaveAtividade]: qtdAtual + 1,
                     data: dataAtualIso
                 });
+
+                // Atualiza o status do personagem com o nome da atividade para tipos diferentes de 1
+                if (sessao.tipoAtividade !== 1) {
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, {
+                        status: sessao.nomeAtividade
+                    });
+                }
             }
+            // Marca na sessão que os dados foram persistidos e quais UIDs foram registrados
+            sessao.dadosSalvosFirebase = true;
+            sessao.participantesIniciados = Array.from(uidsParticipantes);
         } catch (e) {
             await sock.sendMessage(from, { text: '❌ Erro ao registrar o incremento de atividade dos jogadores no Firebase.' }, { quoted: m });
             return true;
@@ -387,15 +453,15 @@ async function handleAtividadesCommands(sock, m, text, from) {
             if (mentionedJids.length > 0) {
                 for (const jid of mentionedJids) {
                     const targetId = jid.split('@')[0].split(':')[0].trim();
-                    const targetUid = Object.keys(playersData).find(u => 
-                        String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                    const targetUid = Object.keys(playersData).find(u =>
+                        String(playersData[u]?.number?.LID || '').trim() === targetId ||
                         String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
                     );
                     if (targetUid) targetsToRegister.push(targetUid);
                 }
             } else {
-                const playerUid = Object.keys(playersData).find(u => 
-                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                const playerUid = Object.keys(playersData).find(u =>
+                    String(playersData[u]?.number?.LID || '').trim() === senderId ||
                     String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
                 );
                 if (playerUid) targetsToRegister.push(playerUid);
@@ -415,6 +481,13 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const ilhaJogador = Number(player?.character?.ilha ?? 0);
 
                 if (!faccaoJogador) continue;
+
+                // Defensores só podem participar se estiverem com status "Parado"
+                const currentStatus = player?.character?.status;
+                if (currentStatus && currentStatus !== 'Parado') {
+                    await sock.sendMessage(from, { text: `❌ *${player?.character?.charName || 'Jogador'}* já está ocupado em uma viagem ou atividade!` }, { quoted: m });
+                    continue;
+                }
 
                 // Restrição de ilha para atividades do tipo 2 e 3
                 if (atividade.tipoAtividade === 2 || atividade.tipoAtividade === 3) {
@@ -440,7 +513,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     let mesmoBandoDefensora = false;
 
                     if (faccaoJogador === 'Piratas' || atividade.faccaoDefensora === 'Piratas') {
-                        mesmoBandoDefensora = (bandoJogador && atividade.bandoDefensor) 
+                        mesmoBandoDefensora = (bandoJogador && atividade.bandoDefensor)
                             ? (bandoJogador === atividade.bandoDefensor)
                             : (bandoJogador === atividade.faccaoDefensora || faccaoJogador === atividade.faccaoDefensora);
                     } else {
@@ -458,7 +531,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const jaEhDefensor = atividade.defensores.some(d => d.uid === playerUid);
 
                 if (jaEhAnunciante || jaEhDefensor) {
-                    await sock.sendMessage(from, { text: `⚠️ *${player?.character?.charName || 'Jogador'}* já está registrado nesta atividade!` }, { quoted: m });
+                    await sock.sendMessage(from, { text: `⚠ *${player?.character?.charName || 'Jogador'}* já está registrado nesta atividade!` }, { quoted: m });
                     continue;
                 }
 
@@ -475,6 +548,11 @@ async function handleAtividadesCommands(sock, m, text, from) {
                     atividade.faccaoDefensora = faccaoJogador;
                     atividade.bandoDefensor = bandoJogador;
                 }
+
+                // Muda o status do defensor para o nome da atividade ao entrar na lista
+                await axios.patch(`${FIREBASE_URL}/players/${playerUid}/character.json`, {
+                    status: atividade.nomeAtividade
+                });
 
                 atividade.defensores.push({
                     uid: playerUid,
@@ -516,15 +594,15 @@ async function handleAtividadesCommands(sock, m, text, from) {
             if (mentionedJids.length > 0) {
                 for (const jid of mentionedJids) {
                     const targetId = jid.split('@')[0].split(':')[0].trim();
-                    const targetUid = Object.keys(playersData).find(u => 
-                        String(playersData[u]?.number?.LID || '').trim() === targetId || 
+                    const targetUid = Object.keys(playersData).find(u =>
+                        String(playersData[u]?.number?.LID || '').trim() === targetId ||
                         String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
                     );
                     if (targetUid) targetsToRemove.push(targetUid);
                 }
             } else {
-                const playerUid = Object.keys(playersData).find(u => 
-                    String(playersData[u]?.number?.LID || '').trim() === senderId || 
+                const playerUid = Object.keys(playersData).find(u =>
+                    String(playersData[u]?.number?.LID || '').trim() === senderId ||
                     String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
                 );
                 if (playerUid) targetsToRemove.push(playerUid);
@@ -541,6 +619,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const idxAtq = atividade.anunciantes.findIndex(a => a.uid === uid);
                 if (idxAtq !== -1) {
                     atividade.anunciantes.splice(idxAtq, 1);
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: 'Parado' });
                     removeuAlguem = true;
                     continue;
                 }
@@ -548,6 +627,7 @@ async function handleAtividadesCommands(sock, m, text, from) {
                 const idxDef = atividade.defensores.findIndex(d => d.uid === uid);
                 if (idxDef !== -1) {
                     atividade.defensores.splice(idxDef, 1);
+                    await axios.patch(`${FIREBASE_URL}/players/${uid}/character.json`, { status: 'Parado' });
                     removeuAlguem = true;
                     if (atividade.defensores.length === 0) {
                         atividade.faccaoDefensora = null;
@@ -641,6 +721,6 @@ async function enviarPainelAtividade(sock, targetGroup, atividade) {
     await sock.sendMessage(targetGroup, { text: mensagemPainel });
 }
 
-module.exports = { 
-    handleAtividadesCommands 
+module.exports = {
+    handleAtividadesCommands
 };

@@ -21,6 +21,8 @@ async function handleInfoCommands(sock, m, text, from) {
         const comandosText = `📜 *— COMANDOS —* 📜\n\n` +
             `🔹 *!dado*\n` +
             `🔹 *!info*\n` +
+            `🔹 *!infohab*\n` +
+            `🔹 *!arsenal*\n` +
             `🔹 *!rank*\n` +
             `🔹 *!desafios*\n` +
             `🔹 *!desafiar*\n` +

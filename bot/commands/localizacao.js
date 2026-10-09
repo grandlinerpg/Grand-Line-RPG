@@ -11,6 +11,7 @@ const {
 // =========================================================================
 
 const PIRATAS_EXIGEM_MESMO_BANDO = true;
+const RESPONDER_NO_PRIVADO = false;
 
 const GRUPOS_FACCOES = [
     '120363408918568715@g.us', // Exército Revolucionário
@@ -141,7 +142,7 @@ function rotuloIlha(nomes, id, viagem) {
             : '';
 
         const nomeDestino = nomes[viagem.ilhaDestino] || `Ilha ${viagem.ilhaDestino}`;
-        return `🌊 Em viagem para: ${nomeDestino}${horaMin ? ` (Chegada: ${horaMin})` : ''}`;
+        return `🌊 *Em viagem para:* ${nomeDestino}${horaMin ? ` *(Chegada: ${horaMin})*` : ''}`;
     }
 
     return (id === null || id === undefined) ? '❓ Desconhecida' : nomes[id];
@@ -203,6 +204,25 @@ function formatarAgrupamento(grupos, nomes, meuUid) {
 async function responder(sock, m, from, texto, meuPlayer, privado) {
     const ehGrupo = from.endsWith('@g.us');
 
+    if (privado && RESPONDER_NO_PRIVADO && ehGrupo) {
+        const jidPv = formatarJidPv(meuPlayer?.number?.n);
+        if (!jidPv) {
+            await sock.sendMessage(from, {
+                text: '❌ Não encontrei seu número vinculado para responder no privado.'
+            }, { quoted: m });
+            return;
+        }
+        try {
+            await sock.sendMessage(jidPv, { text: texto });
+            await sock.sendMessage(from, { text: '📩 Enviei a resposta no seu privado.' }, { quoted: m });
+        } catch (e) {
+            await sock.sendMessage(from, {
+                text: '❌ Não consegui enviar no privado. Mande uma mensagem para o bot no privado e tente de novo.'
+            }, { quoted: m });
+        }
+        return;
+    }
+
     await sock.sendMessage(from, { text: texto }, { quoted: m });
 }
 
@@ -247,7 +267,7 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
         )];
 
         // -----------------------------------------------------------------
-        // MODO 1: !local → localização própria (ou navio do bando para piratas)
+        // MODO 1: !local → localização do jogador (Piratas: navio do bando)
         // -----------------------------------------------------------------
         if (mencionados.length === 0 && argumento === '') {
             if (ehPirata) {
@@ -280,7 +300,7 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
                     const rotulo = rotuloIlha(nomes, null, viagemBando);
                     const tripulantes = tripulacao.map(t => nomeDoJogador(t.player)).join(', ');
 
-                    resposta += `\n*${rotulo}*\n` +
+                    resposta += `\n${rotulo}\n` +
                         `👥 *Tripulação navegando (${tripulacao.length}):* ${tripulantes}`;
                 } else {
                     const grupos = agruparPorIlhaEViagem(tripulacao, viagensAtivas);
@@ -301,18 +321,15 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
                 return true;
             }
 
-            // Exército Revolucionário / Governo Mundial (ou facções não-piratas)
             const viagemMinha = obterViagemAtivaDoJogador(meuUid, viagensAtivas);
             const ilha = obterIlha(meuChar);
-            const idsParaBuscar = [ilha];
-            if (viagemMinha) idsParaBuscar.push(viagemMinha.ilhaDestino);
+            const nomes = await obterNomesIlhas([ilha, viagemMinha?.ilhaDestino]);
 
-            const nomes = await obterNomesIlhas(idsParaBuscar);
             const localTexto = rotuloIlha(nomes, ilha, viagemMinha);
 
             const resposta = `📍 *— LOCALIZAÇÃO —* 📍\n\n` +
                 `👤 *${nomeDoJogador(meuPlayer)}*\n` +
-                `*${localTexto}*`;
+                `📌 ${localTexto}`;
 
             await responder(sock, m, from, resposta, meuPlayer, false);
             return true;
@@ -373,7 +390,7 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
             for (const e of encontrados) {
                 const statusTexto = rotuloIlha(nomes, e.ilha, e.viagem);
                 resposta += `\n👤 *${nomeDoJogador(e.player)}*${e.uid === meuUid ? ' (você)' : ''}\n` +
-                    `*${statusTexto}*\n`;
+                    `📌 ${statusTexto}\n`;
             }
             if (foraDaFaccao > 0) {
                 resposta += `\n❌ ${foraDaFaccao} jogador(es) omitido(s) por não ser(em) da sua facção${ehPirata && PIRATAS_EXIGEM_MESMO_BANDO ? ' (mesmo bando)' : ''}.`;
@@ -411,7 +428,7 @@ async function handleLocalizacaoCommands(sock, m, text, from) {
             titulo = navioNome ? `${navioNome}` : bandoNome;
         }
 
-        const resposta = `🧭 *— ${titulo.toUpperCase()} ${emoji} —* 🧭\n` + formatarAgrupamento(grupos, nomes, meuUid);
+        const resposta = `🧭 — ${titulo.toUpperCase()} ${emoji} — 🧭\n` + formatarAgrupamento(grupos, nomes, meuUid);
 
         await responder(sock, m, from, resposta.trim(), meuPlayer, true);
         return true;

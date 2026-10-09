@@ -25,7 +25,13 @@ async function handleMapaCommands(sock, m, text, from) {
                 const ilha = Number(player?.character?.ilha);
                 const faccao = player?.character?.faction;
                 const bando = player?.character?.bando;
+                const status = player?.character?.status;
                 const level = Number(player?.info?.level || 1);
+
+                // Se o status for "Viagem" (independente de maiúsculas/minúsculas), ignora o jogador
+                if (status && status.toString().trim().toLowerCase() === 'viagem') {
+                    return;
+                }
 
                 // Processa apenas se o jogador tiver uma ilha válida (ignora Ilha 0) e facção definida
                 if (!isNaN(ilha) && ilha !== 0 && faccao) {

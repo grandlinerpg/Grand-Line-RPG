@@ -7,7 +7,7 @@ const {
 } = require('../index');
 
 // =========================================================================
-// CONFIGURAÇÕES DO COMANDO
+// CONFIGURAÇÕES DO COMANDO 
 // =========================================================================
 
 const PIRATAS_EXIGEM_MESMO_BANDO = true;

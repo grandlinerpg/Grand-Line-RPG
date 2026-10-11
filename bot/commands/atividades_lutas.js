@@ -1,12 +1,12 @@
 const axios = require('axios');
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
-const { iniciarEstruturaBatalha } = require('./combates');
+const { iniciarEstruturaBatalha } = require('./combates');  
 const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
-    'Marinha': '⚓',
-    'Piratas': '🏴‍☠',
+    'Marinha': '⚓', 
+    'Piratas': '🏴‍☠', 
     'Exército Revolucionário': '⚔️',
     'Governo Mundial': '⚓',
     'Caçadores de Recompensa': '🎯'
@@ -223,8 +223,8 @@ async function verificarEParearAutomatico(sock, from) {
             let faccaoVez = atividade.vezSelecao === 'atacante' ? atividade.faccaoCriador : nomeDefesa;
             let faccaoAlvo = atividade.vezSelecao === 'atacante' ? nomeDefesa : atividade.faccaoCriador;
 
-            await sock.sendMessage(from, {
-                text: `⚔ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.`
+            await sock.sendMessage(from, { 
+                text: `⚔ Vez da facção *${faccaoVez}* escolher o combate!\nUse *!escolher @jogador* marcando um adversário de *${faccaoAlvo}*.` 
             });
         }
     }

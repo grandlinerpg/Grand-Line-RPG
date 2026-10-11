@@ -350,7 +350,7 @@ async function handleViagemCommands(sock, m, text, from) {
                 for (const uid of Object.keys(playersData)) {
                     const pChar = playersData[uid]?.character || {};
                     if (pChar.bando && String(pChar.bando).trim().toLowerCase() === String(bandoCriador).trim().toLowerCase()) {
-
+                        
                         // Verifica se algum membro do bando já está ocupado
                         if (pChar.status && pChar.status !== 'Parado') {
                             const nomeOcupado = pChar.charName || playersData[uid]?.nome || 'Jogador';
@@ -508,10 +508,10 @@ async function handleViagemCommands(sock, m, text, from) {
             instrucaoRetornoBase = '\n💡 *Digite 0 para retornar à Base.*';
         }
 
-        await sock.sendMessage(from, {
+        await sock.sendMessage(from, { 
             text: `🏝 *Para qual ilha os jogadores desejam viajar?*\n\n` +
-                `Você está atualmente na *${nomeIlhaAtualFormatado}*.\n` +
-                `Digite o número da ilha desejada (*0 a 12*).${instrucaoRetornoBase}`
+                  `Você está atualmente na *${nomeIlhaAtualFormatado}*.\n` +
+                  `Digite o número da ilha desejada (*0 a 12*).${instrucaoRetornoBase}` 
         }, { quoted: m });
         return true;
     }
@@ -626,8 +626,8 @@ async function handleViagemCommands(sock, m, text, from) {
 
             await sock.sendMessage(from, {
                 text: `⛵ *Viagem iniciada com sucesso!*\n\n` +
-                    `📍 Destino: *${nomeIlhaDestinoFormatado}*\n` +
-                    `> Término: ${horarioFormatado} (BRT)`
+                      `📍 Destino: *${nomeIlhaDestinoFormatado}*\n` +
+                      `> Término: ${horarioFormatado} (BRT)` 
             }, { quoted: m });
 
             const forcaTotal = sessao.membros.reduce((acc, curr) => acc + (curr.level || 0), 0);

@@ -2,8 +2,19 @@ const axios = require('axios');
 const { FIREBASE_URL } = require('../index'); 
 
 /**
- * Módulo de Gerenciamento de Level, Experiência (EXP) e Rank
+ * Módulo de Gerenciamento de Level, Experiência (EXP), Rank, Points e Stats
  */
+
+/**
+ * Tabela de limites máximos por atributo para cada Rank.
+ */
+const LIMITES_STATS_POR_RANK = {
+    1: 20,
+    2: 40,
+    3: 60,
+    4: 80,
+    5: 100
+};
 
 /**
  * Calcula o rank do personagem com base no seu nível atual.
@@ -26,24 +37,25 @@ function calcularRank(level = 1) {
  * @returns {number} EXP necessário para o próximo nível.
  */
 function expParaProximoNivel(level) {
+    if (level >= 100) return 0; // Level máximo atingido
     if (level < 11) return 100;
     if (level < 21) return 200;
     if (level < 41) return 400;
     if (level < 61) return 600;
-    return 800; // Do level 61 em diante (até o 100+)
+    return 800; // Do level 61 em diante (até o level 100)
 }
 
 /**
- * Calcula o level atual baseado no EXP total acumulado.
+ * Calcula o level atual baseado no EXP total acumulado (Limitado ao nível 100).
  * 
  * @param {number} exp - Quantidade total de EXP.
- * @returns {number} O level calculado (mínimo: 1).
+ * @returns {number} O level calculado (mínimo: 1, máximo: 100).
  */
 function calcularLevel(exp = 0) {
     let expRestante = Math.max(0, Number(exp) || 0);
     let level = 1;
 
-    while (true) {
+    while (level < 100) {
         const custoProximo = expParaProximoNivel(level);
         if (expRestante >= custoProximo) {
             expRestante -= custoProximo;
@@ -63,8 +75,9 @@ function calcularLevel(exp = 0) {
  * @returns {number} EXP acumulado total necessário.
  */
 function expTotalParaLevel(targetLevel) {
+    const alvo = Math.min(100, Math.max(1, targetLevel));
     let expAcumulado = 0;
-    for (let lvl = 1; lvl < targetLevel; lvl++) {
+    for (let lvl = 1; lvl < alvo; lvl++) {
         expAcumulado += expParaProximoNivel(lvl);
     }
     return expAcumulado;
@@ -81,6 +94,18 @@ function obterProgressoLevel(expTotal = 0) {
     const levelAtual = calcularLevel(exp);
     const rankAtual = calcularRank(levelAtual);
     
+    if (levelAtual >= 100) {
+        return {
+            levelAtual: 100,
+            rankAtual: 5,
+            expTotal: exp,
+            expNoLevelAtual: 0,
+            expNecessarioProximoLevel: 0,
+            expTotalNecessarioProximoLevel: expTotalParaLevel(100),
+            porcentagemProgresso: 100
+        };
+    }
+
     const expInicioLevelAtual = expTotalParaLevel(levelAtual);
     const expNecessarioProximo = expParaProximoNivel(levelAtual);
     
@@ -131,7 +156,66 @@ function processarGanhoExp(info = {}, expGanho = 0) {
 }
 
 /**
- * Atualiza o EXP, Level e Rank de um jogador diretamente no Firebase.
+ * Aplica a recompensa de level up nos nós de points e stats do jogador para cada nível ganho.
+ * 
+ * @param {Object} playerData - Dados completos do jogador no Firebase.
+ * @param {number} levelAnterior - Nível antes da evolução.
+ * @param {number} novoLevel - Nível alcançado.
+ * @returns {Object} { pointsAtualizados, statsAtualizados }
+ */
+function aplicarRecompensasLevelUp(playerData = {}, levelAnterior = 1, novoLevel = 1) {
+    const points = playerData.points || { available: 0, 'skill-available': 0 };
+    const stats = playerData.stats || { agi: 1, dex: 1, hp: 1, res: 1, sta: 1, str: 1 };
+
+    let available = Number(points.available ?? 0);
+    let skillAvailable = Number(points['skill-available'] ?? 0);
+
+    const statsAtual = {
+        agi: Number(stats.agi ?? 1),
+        dex: Number(stats.dex ?? 1),
+        hp: Number(stats.hp ?? 1),
+        res: Number(stats.res ?? 1),
+        sta: Number(stats.sta ?? 1),
+        str: Number(stats.str ?? 1)
+    };
+
+    const listaStats = ['agi', 'dex', 'hp', 'res', 'sta', 'str'];
+
+    // Itera nível a nível subido para calcular exatamente os pontos
+    for (let lvl = levelAnterior + 1; lvl <= novoLevel; lvl++) {
+        // 1. Recompensa fixa por nível (+1 em available e +1 em skill-available)
+        available += 1;
+        skillAvailable += 1;
+
+        // 2. Recompensa de atributos em níveis pares (exceto o nível 2)
+        if (lvl > 2 && lvl % 2 === 0) {
+            const rankDoNivel = calcularRank(lvl);
+            const limiteRank = LIMITES_STATS_POR_RANK[rankDoNivel] || 20;
+
+            listaStats.forEach(stat => {
+                if (statsAtual[stat] >= limiteRank) {
+                    // Se o status atingiu/ultrapassou o limite do Rank,
+                    // o ponto ganho no nível converte para a reserva de available
+                    available += 1;
+                } else {
+                    // Caso contrário, ganha +1 ponto direto no atributo
+                    statsAtual[stat] += 1;
+                }
+            });
+        }
+    }
+
+    return {
+        pointsAtualizados: {
+            available,
+            'skill-available': skillAvailable
+        },
+        statsAtualizados: statsAtual
+    };
+}
+
+/**
+ * Atualiza o EXP, Level, Rank, Points e Stats de um jogador diretamente no Firebase.
  * 
  * @param {string} playerKey - Chave/ID do jogador no Firebase.
  * @param {number} expGanho - Quantidade de EXP a ser creditada.
@@ -146,6 +230,25 @@ async function adicionarExpJogadorFirebase(playerKey, expGanho) {
         const playerInfo = playerData.info || {};
 
         const resultado = processarGanhoExp(playerInfo, expGanho);
+
+        let patchDataPoints = playerData.points;
+        let patchDataStats = playerData.stats;
+
+        // Se o jogador subiu de nível, processa o incremento de points e stats
+        if (resultado.subiuLevel) {
+            const recompensas = aplicarRecompensasLevelUp(
+                playerData,
+                resultado.levelAnterior,
+                resultado.novoLevel
+            );
+
+            patchDataPoints = recompensas.pointsAtualizados;
+            patchDataStats = recompensas.statsAtualizados;
+
+            // Salva as atualizações dos nós points e stats no Firebase
+            await axios.patch(`${FIREBASE_URL}/players/${playerKey}/points.json`, patchDataPoints);
+            await axios.patch(`${FIREBASE_URL}/players/${playerKey}/stats.json`, patchDataStats);
+        }
 
         // Atualização no nó info (exp e level)
         await axios.patch(`${FIREBASE_URL}/players/${playerKey}/info.json`, {
@@ -169,7 +272,9 @@ async function adicionarExpJogadorFirebase(playerKey, expGanho) {
         return {
             sucesso: true,
             playerKey,
-            ...resultado
+            ...resultado,
+            points: patchDataPoints,
+            stats: patchDataStats
         };
     } catch (error) {
         console.error(`Erro ao atualizar EXP/Level/Rank do jogador (${playerKey}):`, error.message);
@@ -187,5 +292,6 @@ module.exports = {
     expTotalParaLevel,
     obterProgressoLevel,
     processarGanhoExp,
+    aplicarRecompensasLevelUp,
     adicionarExpJogadorFirebase
 };

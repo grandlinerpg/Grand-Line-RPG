@@ -52,15 +52,14 @@ console.log("FICHA-EDIT JS CARREGOU");
 
 
 async function carregarFichaEditHTML() {
+    let container = document.getElementById("ficha-edit-container");
 
-
-    const container =
-        document.getElementById("ficha-edit-container");
-
-
-    if (!container) return;
-
-
+    // Se o container não existir na página, cria dinamicamente no body para evitar falhas
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "ficha-edit-container";
+        document.body.appendChild(container);
+    }
 
     const res = await fetch(
         location.pathname.includes("/guia/")
@@ -291,7 +290,12 @@ window.abrirFichaEdit = async function () {
         document.getElementById("ficha-edit");
 
 
-    modal.style.display = "flex";
+    if (modal) {
+        modal.style.display = "flex";
+    } else {
+        console.error("ERRO: O elemento #ficha-edit não foi encontrado após o carregamento do HTML.");
+        return;
+    }
 
 
     if (skill.img) {

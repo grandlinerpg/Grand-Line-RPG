@@ -110,7 +110,8 @@ function initSkills() {
         alcance: data.alcance,
         alvos: data.alvos,
         degradation: data.degradation,
-        antidodging: data.antidodging
+        antidodging: data.antidodging,
+        precisao: data.precisao
       });
     }
 

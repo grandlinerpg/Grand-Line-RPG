@@ -14,9 +14,9 @@ const NOMES_RANK = {
 
 // Mesmos valores padrão usados na ficha do site (perfil/ficha.js)
 const ATRIBUTOS_RANK = {
-    1: { stm: 100,  atk: 100,  def: 100 },
-    2: { stm: 250,  atk: 250,  def: 250 },
-    3: { stm: 500,  atk: 500,  def: 500 },
+    1: { stm: 100, atk: 100, def: 100 },
+    2: { stm: 250, atk: 250, def: 250 },
+    3: { stm: 500, atk: 500, def: 500 },
     4: { stm: 1000, atk: 1000, def: 1000 },
     5: { stm: 2000, atk: 2000, def: 2000 }
 };
@@ -67,6 +67,9 @@ function formatarNumero(valor) {
     const n = Number(valor);
     return isNaN(n) ? String(valor) : n.toLocaleString('pt-BR');
 }
+
+// Precisão base de cada rank de habilidade ofensiva (%)
+const PRECISAO_BASE_RANK = { 1: 90, 2: 85, 3: 80, 4: 75, 5: 70 };
 
 function temValor(v) {
     return v !== undefined && v !== null && v !== '';
@@ -181,6 +184,12 @@ function montarDetalhe(item, efeitosDb) {
     if (temValor(skill.alvos)) texto += `🎯 *Alvos:* ${skill.alvos}\n`;
     if (temValor(skill.alcance)) texto += `📏 *Alcance:* ${skill.alcance}\n`;
     if (temValor(skill.propriedade)) texto += `🧬 *Propriedade:* ${skill.propriedade}\n`;
+    // Precisão: valor próprio; no padrão, só ofensivas usam a base do rank
+    let precisao = temValor(skill.precisao) ? skill.precisao : undefined;
+    if (precisao === undefined && skill.categoria === 'Ofensivo') {
+        precisao = PRECISAO_BASE_RANK[Number(skill.rank)];
+    }
+    if (temValor(precisao)) texto += `🎲 *Precisão:* ${precisao}%\n`;
 
     const efeitos = listarIdsEfeitos(skill)
         .map(id => efeitosDb?.[id])

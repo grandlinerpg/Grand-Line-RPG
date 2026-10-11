@@ -1,21 +1,21 @@
-import {
-    initializeApp
+import { 
+  initializeApp 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-    getDatabase,
-    ref,
-    get
+  getDatabase,
+  ref,
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
-    authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
-    projectId: "grand-line-rpg-dcda9",
-    storageBucket: "grand-line-rpg-dcda9.appspot.com",
-    messagingSenderId: "172042779786",
-    appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
-    databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+  authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+  projectId: "grand-line-rpg-dcda9",
+  storageBucket: "grand-line-rpg-dcda9.appspot.com",
+  messagingSenderId: "172042779786",
+  appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+  databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -24,88 +24,88 @@ const db = getDatabase(app);
 
 console.log("FIREBASE DB:", db);
 
-async function carregarHabilidadesHTML() {
+async function carregarHabilidadesHTML(){
 
-    const container =
-        document.getElementById("habilidades-container");
+  const container =
+  document.getElementById("habilidades-container");
 
-    if (!container) return;
+  if(!container) return;
 
-    const res =
-        await fetch("habilidades.html");
+  const res =
+  await fetch("habilidades.html");
 
-    container.innerHTML =
-        await res.text();
+  container.innerHTML =
+  await res.text();
 
-    const btn =
-        document.getElementById("close-habilidades");
+  const btn =
+  document.getElementById("close-habilidades");
 
-    if (btn) {
-        btn.onclick = fecharHabilidades;
-    }
+  if(btn){
+    btn.onclick = fecharHabilidades;
+  }
 
 }
 
 carregarHabilidadesHTML();
 
 
-async function getEstilo(key) {
+async function getEstilo(key){
 
-    let snap =
-        await get(
-            ref(
-                db,
-                `habilidades/Estilo de Luta/${key}`
-            )
-        );
-
-
-    let tipo = "Estilo de Luta";
+  let snap =
+  await get(
+    ref(
+      db,
+      `habilidades/Estilo de Luta/${key}`
+    )
+  );
 
 
-    if (!snap.exists()) {
-
-        snap =
-            await get(
-                ref(
-                    db,
-                    `habilidades/Raças/${key}`
-                )
-            );
-
-        tipo = "Raças";
-
-    }
+  let tipo="Estilo de Luta";
 
 
-    if (!snap.exists())
-        return null;
+  if(!snap.exists()){
+
+    snap =
+    await get(
+      ref(
+        db,
+        `habilidades/Raças/${key}`
+      )
+    );
+
+    tipo="Raças";
+
+  }
 
 
-    const data = snap.val();
+  if(!snap.exists())
+    return null;
+
+
+  const data = snap.val();
 
     const skills = Object.entries(data)
-        .filter(([id, v]) =>
-            v &&
-            typeof v === "object" &&
-            v.nome
-        )
-        .map(([id, v]) => ({
-            ...v,
-            id,
-            categoria: v.categoria || null,
-            bancoCategoria: tipo,
-            estilo: key
-        }));
+    .filter(([id, v]) =>
+        v &&
+        typeof v === "object" &&
+        v.nome
+    )
+    .map(([id, v]) => ({
+        ...v,
+        id,
+        categoria: v.categoria || null,
+        bancoCategoria: tipo,
+        estilo: key
+    }));
 
     return {
 
         skills,
 
-        heranca: {
-            heranca: data.heranca || null,
-            heranca2: data.heranca2 || null,
-            heranca3: data.heranca3 || null
+        heranca:{
+            heranca:data.heranca || null,
+            heranca2:data.heranca2 || null,
+            heranca3:data.heranca3 || null
         }
 
     };
@@ -114,222 +114,222 @@ async function getEstilo(key) {
 
 
 
-window.abrirHabilidades = async function (estiloNome) {
+window.abrirHabilidades = async function(estiloNome){
 
-    const modal =
-        document.getElementById("habilidades-modal");
+  const modal =
+  document.getElementById("habilidades-modal");
 
-    const container =
-        document.getElementById("habilidades-list");
+  const container =
+  document.getElementById("habilidades-list");
 
-    const title =
-        document.getElementById("habilidades-title");
+  const title =
+  document.getElementById("habilidades-title");
 
 
-    if (!modal || !container) {
+  if(!modal || !container){
 
-        await carregarHabilidadesHTML();
+    await carregarHabilidadesHTML();
 
-        return window.abrirHabilidades(estiloNome);
+    return window.abrirHabilidades(estiloNome);
+
+  }
+
+
+  modal.style.display="flex";
+
+  const addBtn =
+  document.getElementById("add-skill-btn");
+
+
+  if(addBtn){
+
+    const podeAdicionar =
+    await verificarPermissao(3);
+
+
+    if(!podeAdicionar){
+
+        addBtn.style.display="none";
+
+    }else{
+
+        addBtn.style.display="block";
+
+
+        addBtn.onclick = ()=>{
+
+            window.skillAtual = {
+
+              nome:"",
+              description:"",
+              img:"",
+              rank:1,
+              categoria:"",
+              propriedade:"",
+              alcance:"",
+              alvos:"",
+              cooldown:"",
+
+              atributos:{
+                  stm:0
+              }
+
+          };
+
+
+          window.skillCategoria =
+          "Estilo de Luta";
+
+
+          window.skillSub =
+          estiloNome;
+
+
+          window.skillUid =
+          null;
+
+
+          abrirFichaEdit();
+
+        };
+
+      }
+  
+    }
+
+  if(title){
+
+    title.innerText =
+    "HABILIDADES";
+
+  }
+
+
+  container.innerHTML =
+  "Carregando...";
+
+
+  try{
+
+    const key =
+    estiloNome;
+
+    let todasSkills=[];
+
+    let visitados =
+    new Set();
+
+    let fila=[
+      key
+    ];
+
+
+    while(fila.length){
+
+      const atual =
+      fila.shift();
+
+
+      if(!atual || visitados.has(atual))
+        continue;
+
+
+      visitados.add(atual);
+
+
+      const estilo =
+      await getEstilo(atual);
+
+
+      if(!estilo)
+        continue;
+
+
+      todasSkills =
+      todasSkills.concat(
+        estilo.skills
+      );
+
+
+      if(estilo.heranca.heranca)
+        fila.push(estilo.heranca.heranca);
+
+      if(estilo.heranca.heranca2)
+        fila.push(estilo.heranca.heranca2);
+
+      if(estilo.heranca.heranca3)
+        fila.push(estilo.heranca.heranca3);
 
     }
 
 
-    modal.style.display = "flex";
+    if(!todasSkills.length){
 
-    const addBtn =
-        document.getElementById("add-skill-btn");
-
-
-    if (addBtn) {
-
-        const podeAdicionar =
-            await verificarPermissao(3);
-
-
-        if (!podeAdicionar) {
-
-            addBtn.style.display = "none";
-
-        } else {
-
-            addBtn.style.display = "block";
-
-
-            addBtn.onclick = () => {
-
-                window.skillAtual = {
-
-                    nome: "",
-                    description: "",
-                    img: "",
-                    rank: 1,
-                    categoria: "",
-                    propriedade: "",
-                    alcance: "",
-                    alvos: "",
-                    cooldown: "",
-
-                    atributos: {
-                        stm: 0
-                    }
-
-                };
-
-
-                window.skillCategoria =
-                    "Estilo de Luta";
-
-
-                window.skillSub =
-                    estiloNome;
-
-
-                window.skillUid =
-                    null;
-
-
-                abrirFichaEdit();
-
-            };
-
-        }
-
-    }
-
-    if (title) {
-
-        title.innerText =
-            "HABILIDADES";
-
-    }
-
-
-    container.innerHTML =
-        "Carregando...";
-
-
-    try {
-
-        const key =
-            estiloNome;
-
-        let todasSkills = [];
-
-        let visitados =
-            new Set();
-
-        let fila = [
-            key
-        ];
-
-
-        while (fila.length) {
-
-            const atual =
-                fila.shift();
-
-
-            if (!atual || visitados.has(atual))
-                continue;
-
-
-            visitados.add(atual);
-
-
-            const estilo =
-                await getEstilo(atual);
-
-
-            if (!estilo)
-                continue;
-
-
-            todasSkills =
-                todasSkills.concat(
-                    estilo.skills
-                );
-
-
-            if (estilo.heranca.heranca)
-                fila.push(estilo.heranca.heranca);
-
-            if (estilo.heranca.heranca2)
-                fila.push(estilo.heranca.heranca2);
-
-            if (estilo.heranca.heranca3)
-                fila.push(estilo.heranca.heranca3);
-
-        }
-
-
-        if (!todasSkills.length) {
-
-            container.innerHTML =
-                `
+      container.innerHTML=
+      `
       <div class="skill-item">
       Nenhuma habilidade encontrada
       </div>
       `;
 
-            return;
+      return;
 
-        }
-
-
-        container.innerHTML = "";
+    }
 
 
-        const nomesRank = {
-            1: "INICIANTE",
-            2: "APRENDIZ",
-            3: "NOVATO",
-            4: "INTERMEDIÁRIO",
-            5: "VETERANO"
-        };
+    container.innerHTML="";
 
 
-        for (let tier = 1; tier <= 5; tier++) {
-
-            const group =
-                todasSkills.filter(
-                    h =>
-                        Number(h.rank) === tier
-                );
-
-
-            if (!group.length)
-                continue;
+    const nomesRank = {
+      1:"INICIANTE",
+      2:"APRENDIZ",
+      3:"NOVATO",
+      4:"INTERMEDIÁRIO",
+      5:"VETERANO"
+    };
 
 
-            const sep =
-                document.createElement("div");
+    for(let tier=1;tier<=5;tier++){
+
+      const group =
+      todasSkills.filter(
+        h =>
+        Number(h.rank)===tier
+      );
 
 
-            sep.className =
-                "skill-rank";
+      if(!group.length)
+        continue;
 
 
-            sep.innerText =
-                nomesRank[tier];
+      const sep =
+      document.createElement("div");
 
 
-            container.appendChild(sep);
+      sep.className =
+      "skill-rank";
+
+
+      sep.innerText =
+      nomesRank[tier];
+
+
+      container.appendChild(sep);
 
 
 
-            group.forEach(skill => {
+      group.forEach(skill=>{
 
-                const item =
-                    document.createElement("div");
-
-
-                item.className =
-                    "skill-item";
+        const item =
+        document.createElement("div");
 
 
-                item.innerHTML =
-                    `
+        item.className =
+        "skill-item";
+
+
+        item.innerHTML =
+        `
         <img
         class="skill-icon"
         src="https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg"
@@ -341,63 +341,63 @@ window.abrirHabilidades = async function (estiloNome) {
         `;
 
 
-                item.onclick = () => {
+        item.onclick=()=>{
 
-                    console.log("Skill:", skill);
+          console.log("Skill:",skill);
 
-                    abrirFicha(
-                        skill,
-                        true,
-                        false,
-                        true,
-                        skill.id,
-                        skill.bancoCategoria,
-                        skill.estilo
-                    );
-
-                };
-
-                container.appendChild(item);
-
-            });
-
-
-        }
-
-
-    } catch (err) {
-
-        console.error(
-            err
+          abrirFicha(
+            skill,
+            true,
+            false,
+            true,
+            skill.id,
+            skill.bancoCategoria,
+            skill.estilo
         );
 
-        container.innerHTML =
-            `
+      };
+
+        container.appendChild(item);
+
+      });
+
+
+    }
+
+
+  }catch(err){
+
+    console.error(
+      err
+    );
+
+    container.innerHTML=
+    `
     <div class="skill-item">
     Erro ao carregar habilidades
     </div>
     `;
 
-    }
+  }
 
 }
 
 
 
-window.fecharHabilidades = function () {
+window.fecharHabilidades = function(){
 
-    const modal =
-        document.getElementById("habilidades-modal");
+  const modal =
+  document.getElementById("habilidades-modal");
 
-    const container =
-        document.getElementById("habilidades-list");
-
-
-    if (modal)
-        modal.style.display = "none";
+  const container =
+  document.getElementById("habilidades-list");
 
 
-    if (container)
-        container.innerHTML = "";
+  if(modal)
+    modal.style.display="none";
+
+
+  if(container)
+    container.innerHTML="";
 
 }

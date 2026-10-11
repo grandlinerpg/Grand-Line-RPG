@@ -59,10 +59,10 @@ async function iniciarProcessoTipo1(sock, grupoOrigem, sessao, m) {
             anunciantes: sessao.anunciantes
         };
 
-        await sock.sendMessage(grupoOrigem, { 
+        await sock.sendMessage(grupoOrigem, {
             text: `🏝️ *Em qual ilha será iniciada a atividade?*\n\n` +
-                  `Você está na *Base Operacional (Ilha 0)*.\n` +
-                  `Digite o número da ilha desejada (*1 a 12*).` 
+                `Você está na *Base Operacional (Ilha 0)*.\n` +
+                `Digite o número da ilha desejada (*1 a 12*).`
         }, { quoted: m });
         return true;
     } else {
@@ -126,16 +126,16 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
         const forcaTotal = sessao.anunciantes.reduce((acc, curr) => acc + (curr.level || 0), 0);
 
         // Mensagem de Confirmação no GRUPO DE ORIGEM
-        await sock.sendMessage(grupoOrigem, { 
+        await sock.sendMessage(grupoOrigem, {
             text: `🎯 *Atividade Iniciada com Sucesso!*\n\n` +
-                  `📌 Atividade: *${sessao.nomeAtividade}*\n` +
-                  `📍 Local: *${nomeIlhaFormatado}*\n` +
-                  `⚡ Força Total: *${forcaTotal}*\n` +
-                  `> Término: ${horarioFormatado} (BRT)` 
+                `📌 Atividade: *${sessao.nomeAtividade}*\n` +
+                `📍 Local: *${nomeIlhaFormatado}*\n` +
+                `⚡ Força Total: *${forcaTotal}*\n` +
+                `> Término: ${horarioFormatado} (BRT)`
         }, { quoted: m });
 
         // Anúncio de INÍCIO no GRUPO DE ATIVIDADES GERAL
-        const mensagemInicioExterna = 
+        const mensagemInicioExterna =
             `📢 *ATIVIDADE INICIADA NA ${nomeIlhaFormatado.toUpperCase()}*\n\n` +
             `A atividade *${sessao.nomeAtividade}* foi iniciada por membros da facção *${sessao.faccaoCriador}*!\n\n` +
             `> Força Total: ${forcaTotal}\n` +
@@ -174,8 +174,8 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
                     // Busca as regras de recompensa da atividade no Firebase
                     const ativsFaccao = faccoesData[sessao.faccaoCriador]?.atividades || {};
-                    let chaveAtividade = Object.keys(ativsFaccao).find(k => 
-                        k.toLowerCase() === sessao.nomeAtividade.toLowerCase() || 
+                    let chaveAtividade = Object.keys(ativsFaccao).find(k =>
+                        k.toLowerCase() === sessao.nomeAtividade.toLowerCase() ||
                         (ativsFaccao[k]?.nome && ativsFaccao[k].nome.toLowerCase() === sessao.nomeAtividade.toLowerCase()) ||
                         k === sessao.chaveAtividade
                     );
@@ -185,8 +185,8 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
                     } else {
                         for (const f of Object.keys(faccoesData)) {
                             const ativs = faccoesData[f]?.atividades || {};
-                            const kFound = Object.keys(ativs).find(k => 
-                                k.toLowerCase() === sessao.nomeAtividade.toLowerCase() || 
+                            const kFound = Object.keys(ativs).find(k =>
+                                k.toLowerCase() === sessao.nomeAtividade.toLowerCase() ||
                                 (ativs[k]?.nome && ativs[k].nome.toLowerCase() === sessao.nomeAtividade.toLowerCase()) ||
                                 k === sessao.chaveAtividade
                             );
@@ -249,7 +249,7 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
 
                 const nomesFormatados = sessao.anunciantes.map(a => a.nome).join(', ');
 
-                const mensagemConclusao = 
+                const mensagemConclusao =
                     `🎉 *ATIVIDADE CONCLUÍDA!*\n\n` +
                     `A atividade *${sessao.nomeAtividade}* em *${nomeIlhaFormatado}* foi finalizada com sucesso!\n\n` +
                     `👥 *Participantes:* ${nomesFormatados}\n\n` +
@@ -282,8 +282,8 @@ async function handleViagemCommands(sock, m, text, from) {
 
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
-        const responderUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+        const responderUid = Object.keys(playersData).find(u =>
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
             String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
@@ -315,8 +315,8 @@ async function handleViagemCommands(sock, m, text, from) {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
 
-            const playerUid = Object.keys(playersData).find(u => 
-                String(playersData[u]?.number?.LID || '').trim() === senderId || 
+            const playerUid = Object.keys(playersData).find(u =>
+                String(playersData[u]?.number?.LID || '').trim() === senderId ||
                 String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
             );
 
@@ -401,12 +401,12 @@ async function handleViagemCommands(sock, m, text, from) {
                 const nomeIlhaAtualFormatado = await obterNomeFormatadoIlha(ilhaAtualGrupo);
                 const nomesIntegrantes = membrosBando.map(m => m.nome).join(', ');
 
-                await sock.sendMessage(from, { 
+                await sock.sendMessage(from, {
                     text: `🏴‍☠️ *Bando:* ${bandoCriador}\n` +
-                          `👥 *Integrantes:* ${nomesIntegrantes}\n\n` +
-                          `🏝️ *Para qual ilha os Piratas desejam viajar?*\n` +
-                          `Atualmente na *${nomeIlhaAtualFormatado}*.\n` +
-                          `Digite o número da ilha desejada (*1 a 12*).` 
+                        `👥 *Integrantes:* ${nomesIntegrantes}\n\n` +
+                        `🏝️ *Para qual ilha os Piratas desejam viajar?*\n` +
+                        `Atualmente na *${nomeIlhaAtualFormatado}*.\n` +
+                        `Digite o número da ilha desejada (*1 a 12*).`
                 }, { quoted: m });
                 return true;
 
@@ -435,8 +435,8 @@ async function handleViagemCommands(sock, m, text, from) {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
-        const responderUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+        const responderUid = Object.keys(playersData).find(u =>
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
             String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
@@ -448,8 +448,8 @@ async function handleViagemCommands(sock, m, text, from) {
         const mentionedJids = m.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
         for (const jid of mentionedJids) {
             const targetId = jid.split('@')[0].split(':')[0].trim();
-            const targetUid = Object.keys(playersData).find(u => 
-                String(playersData[u]?.number?.LID || '').trim() === targetId || 
+            const targetUid = Object.keys(playersData).find(u =>
+                String(playersData[u]?.number?.LID || '').trim() === targetId ||
                 String(playersData[u]?.number?.n || '').trim() === targetId || u === targetId
             );
             if (targetUid) uidsParticipantes.add(targetUid);
@@ -523,8 +523,8 @@ async function handleViagemCommands(sock, m, text, from) {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
-        const responderUid = Object.keys(playersData).find(u => 
-            String(playersData[u]?.number?.LID || '').trim() === senderId || 
+        const responderUid = Object.keys(playersData).find(u =>
+            String(playersData[u]?.number?.LID || '').trim() === senderId ||
             String(playersData[u]?.number?.n || '').trim() === senderId || u === senderId
         );
 
@@ -572,8 +572,8 @@ async function handleViagemCommands(sock, m, text, from) {
                     const nomeAvanco = await obterNomeFormatadoIlha(avanco);
                     const opcaoZero = ehPirata ? '' : '*0 (Retornar à Base)*, ';
 
-                    await sock.sendMessage(from, { 
-                        text: `❌ Movimento inválido! Estando na *Ilha ${ilhaAtual}*, você só pode ir para ${opcaoZero}*${nomeRecuo}* ou *${nomeAvanco}*.` 
+                    await sock.sendMessage(from, {
+                        text: `❌ Movimento inválido! Estando na *Ilha ${ilhaAtual}*, você só pode ir para ${opcaoZero}*${nomeRecuo}* ou *${nomeAvanco}*.`
                     }, { quoted: m });
                     return true;
                 }
@@ -624,7 +624,7 @@ async function handleViagemCommands(sock, m, text, from) {
             const nomeIlhaDestinoFormatado = await obterNomeFormatadoIlha(ilhaDestino);
             const horarioFormatado = obterHorarioBRT(dataTermino);
 
-            await sock.sendMessage(from, { 
+            await sock.sendMessage(from, {
                 text: `⛵ *Viagem iniciada com sucesso!*\n\n` +
                       `📍 Destino: *${nomeIlhaDestinoFormatado}*\n` +
                       `> Término: ${horarioFormatado} (BRT)` 
@@ -647,7 +647,7 @@ async function handleViagemCommands(sock, m, text, from) {
                         });
                     }
 
-                    const mensagemChegada = 
+                    const mensagemChegada =
                         `⚓ *CHEGADA NA ${nomeIlhaDestinoFormatado.toUpperCase()}*\n\n` +
                         `Membros da facção *${faccaoNome}* ${sessao.bando ? `(*${sessao.bando}*) ` : ''}acabaram de chegar em *${nomeIlhaDestinoFormatado}*!\n\n` +
                         `> Força: ${forcaTotal}`;

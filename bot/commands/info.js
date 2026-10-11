@@ -29,6 +29,8 @@ async function handleInfoCommands(sock, m, text, from) {
         const comandosText = `📜 *— COMANDOS —* 📜\n\n` +
             `🔹 *!dado*\n` +
             `🔹 *!info*\n` +
+            `🔹 *!infohab*\n` +
+            `🔹 *!arsenal*\n` +
             `🔹 *!rank*\n` +
             `🔹 *!desafios*\n` +
             `🔹 *!desafiar*\n` +
@@ -37,6 +39,7 @@ async function handleInfoCommands(sock, m, text, from) {
             `🔹 *!mapa*\n` +
             `🔹 *!coliseu*\n` +
             `🔹 *!inscrever*\n` +
+            `🔹 *!local*\n` +
             `🔹 *!viajar*\n` +
             `🔹 *!participar*\n` +
             `🔹 *!remover*\n` +

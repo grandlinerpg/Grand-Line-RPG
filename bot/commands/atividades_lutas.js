@@ -1,4 +1,4 @@
-const axios = require('axios'); 
+const axios = require('axios');
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
 const { iniciarEstruturaBatalha } = require('./combates');  
 const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
@@ -31,7 +31,7 @@ function obterEmojiFaccao(param, atividade = null) {
 
     if (!nomeFaccao && atividade) {
         const idOuNome = (typeof param === 'object' && param !== null) ? (param.lid || param.uid || param.nome) : param;
-        
+
         const atacante = atividade.anunciantes?.find(a => a.lid === idOuNome || a.uid === idOuNome || a.nome === idOuNome);
         if (atacante) {
             nomeFaccao = atacante.faccao || atividade.faccaoCriador;
@@ -88,7 +88,7 @@ async function obterBlocoArenasFormatado(atividade) {
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
-    } catch (e) {}
+    } catch (e) { }
 
     const blocos = [];
 
@@ -169,8 +169,8 @@ async function verificarEParearAutomatico(sock, from) {
                 await enviarRelatorioGrupo(sock, from);
                 return;
             } else if (atividade.bancoDefensores.length > 1) {
-                await sock.sendMessage(from, { 
-                    text: `🏆 Vez do banco da facção *${nomeDefesa}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
+                await sock.sendMessage(from, {
+                    text: `🏆 Vez do banco da facção *${nomeDefesa}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.`
                 });
                 return;
             }
@@ -185,8 +185,8 @@ async function verificarEParearAutomatico(sock, from) {
                 await enviarRelatorioGrupo(sock, from);
                 return;
             } else if (atividade.bancoAtacantes.length > 1) {
-                await sock.sendMessage(from, { 
-                    text: `🏆 Vez do banco de *${atividade.faccaoCriador}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.` 
+                await sock.sendMessage(from, {
+                    text: `🏆 Vez do banco de *${atividade.faccaoCriador}* escolher quem enfrentará *${atividade.proximoDesafiante.nome}* usando *!escolher @jogador*.`
                 });
                 return;
             }
@@ -196,7 +196,7 @@ async function verificarEParearAutomatico(sock, from) {
     if (atividade.bancoAtacantes.length === 1 && atividade.bancoDefensores.length === 1) {
         const p1 = atividade.bancoAtacantes.shift();
         const p2 = atividade.bancoDefensores.shift();
-        
+
         await sock.sendMessage(from, { text: `⚡ *Resta apenas 1 combatente de cada lado!* Pareamento automático: ${p1.nome} VS ${p2.nome}` });
         await alocarLutaNaArena(sock, from, p1, p2);
         await enviarRelatorioGrupo(sock, from);
@@ -307,12 +307,12 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     try {
         const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
-    } catch (e) {}
+    } catch (e) { }
 
     const arenaDisponivelJid = GRUPOS_ARENA.find(arenaJid => {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
-        
+
         const ocupadaNoFirebase = arenaRemote && arenaRemote.fase !== 'aguardando';
 
         return !ocupadaNoFirebase;
@@ -328,7 +328,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
     const arenaRemote = arenasAtivas[chaveGrupo] || {};
 
     const dadosBatalhaBase = iniciarEstruturaBatalha(arenaDisponivelJid, p1, p2, 'ATIVIDADE', sock);
-    
+
     const dadosBatalha = {
         ...arenaRemote,
         ...dadosBatalhaBase,
@@ -376,7 +376,7 @@ async function registrarResultadoLutaAtividade(sock, grupoOrigem, vencedorObj, p
 
     if (ehAtacante) {
         atividade.vitoriasAtacantes = (atividade.vitoriasAtacantes || 0) + 1;
-        
+
         const defensoresEmLuta = atividade.lutadoresAtivos.map(l => l.p2);
         const totalDefensoresVivos = atividade.bancoDefensores.length + defensoresEmLuta.length;
 
@@ -439,7 +439,7 @@ async function enviarRelatorioGrupo(sock, from) {
     }
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
-    
+
     // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
@@ -604,8 +604,8 @@ async function finalizarAtividade(sock, from) {
             // Busca as regras de recompensa da atividade no Firebase
             const buscaFaccao = faccaoVencedora || atividade.faccaoCriador;
             const ativsFaccao = faccoesData[buscaFaccao]?.atividades || {};
-            let chaveAtividade = Object.keys(ativsFaccao).find(k => 
-                k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
+            let chaveAtividade = Object.keys(ativsFaccao).find(k =>
+                k.toLowerCase() === atividade.nomeAtividade.toLowerCase() ||
                 (ativsFaccao[k]?.nome && ativsFaccao[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
             );
 
@@ -614,8 +614,8 @@ async function finalizarAtividade(sock, from) {
             } else {
                 for (const f of Object.keys(faccoesData)) {
                     const ativs = faccoesData[f]?.atividades || {};
-                    const kFound = Object.keys(ativs).find(k => 
-                        k.toLowerCase() === atividade.nomeAtividade.toLowerCase() || 
+                    const kFound = Object.keys(ativs).find(k =>
+                        k.toLowerCase() === atividade.nomeAtividade.toLowerCase() ||
                         (ativs[k]?.nome && ativs[k].nome.toLowerCase() === atividade.nomeAtividade.toLowerCase())
                     );
                     if (kFound && ativs[kFound]?.recompensa) {

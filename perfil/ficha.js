@@ -19,9 +19,9 @@ const PRECISAO_BASE_RANK = { 1: 90, 2: 85, 3: 80, 4: 75, 5: 70 };
 
 
 
-async function carregarFichaHTML(){
+async function carregarFichaHTML() {
 
-    if(!fichaContainer){
+    if (!fichaContainer) {
 
         console.log("ERRO: ficha-container não encontrado");
 
@@ -31,9 +31,9 @@ async function carregarFichaHTML(){
 
 
     const res = await fetch(
-      location.pathname.includes("/guia/")
-      ? "../perfil/ficha.html"
-      : "perfil/ficha.html"
+        location.pathname.includes("/guia/")
+            ? "../perfil/ficha.html"
+            : "perfil/ficha.html"
     );
 
     const html = await res.text();
@@ -46,16 +46,16 @@ async function carregarFichaHTML(){
 
 
     const closeBtn =
-    document.getElementById("close-ficha");
+        document.getElementById("close-ficha");
 
 
-    closeBtn?.addEventListener("click",()=>{
+    closeBtn?.addEventListener("click", () => {
 
         const modal =
-        document.getElementById("ficha-modal");
+            document.getElementById("ficha-modal");
 
 
-        if(modal){
+        if (modal) {
 
             modal.style.display = "none";
 
@@ -66,25 +66,25 @@ async function carregarFichaHTML(){
     const img =
         document.getElementById("ficha-img");
 
-        img?.addEventListener("click", () => {
+    img?.addEventListener("click", () => {
 
-            if(window.abrirCard && skillAtual){
+        if (window.abrirCard && skillAtual) {
 
-                window.abrirCard(skillAtual);
+            window.abrirCard(skillAtual);
 
-            }
+        }
 
-        });
+    });
 
 }
 
-async function carregarEfeitos(skill){
+async function carregarEfeitos(skill) {
 
     const efeitoBox =
-    document.getElementById("ficha-efeitoss");
+        document.getElementById("ficha-efeitoss");
 
 
-    if(!efeitoBox){
+    if (!efeitoBox) {
         console.log("ERRO: ficha-efeitoss não existe");
         return;
     }
@@ -93,7 +93,7 @@ async function carregarEfeitos(skill){
     efeitoBox.innerHTML = "";
 
 
-    if(!skill.efeito || skill.efeito.length === 0){
+    if (!skill.efeito || skill.efeito.length === 0) {
 
         efeitoBox.style.display = "none";
         return;
@@ -105,18 +105,18 @@ async function carregarEfeitos(skill){
 
 
     // NOVO FORMATO ARRAY
-    if(Array.isArray(skill.efeito)){
+    if (Array.isArray(skill.efeito)) {
 
         listaEfeitos = skill.efeito;
 
     }
     // COMPATIBILIDADE COM ANTIGO
-    else if(typeof skill.efeito === "object"){
+    else if (typeof skill.efeito === "object") {
 
         listaEfeitos = Object.keys(skill.efeito);
 
     }
-    else{
+    else {
 
         listaEfeitos = [skill.efeito];
 
@@ -124,30 +124,30 @@ async function carregarEfeitos(skill){
 
 
 
-    for(const id of listaEfeitos){
+    for (const id of listaEfeitos) {
 
 
         const efeitoRef =
-        ref(db,"efeitos/"+id);
+            ref(db, "efeitos/" + id);
 
 
 
         const snap =
-        await get(efeitoRef);
+            await get(efeitoRef);
 
 
 
-        if(snap.exists()){
+        if (snap.exists()) {
 
 
             const efeito = snap.val();
 
 
             const span =
-            document.createElement("span");
+                document.createElement("span");
 
 
-            if(efeito.figure){
+            if (efeito.figure) {
 
                 span.innerHTML = `
                     <img 
@@ -155,28 +155,28 @@ async function carregarEfeitos(skill){
                     class="efeito-icon">
                 `;
 
-            }else{
+            } else {
 
                 span.innerHTML =
-                efeito.emoji || "❔";
+                    efeito.emoji || "❔";
 
             }
 
 
             span.title =
-            efeito.nome || "";
+                efeito.nome || "";
 
 
             // ABRIR FICHA DO EFEITO AO CLICAR
             span.style.cursor = "pointer";
 
-            span.onclick = ()=>{
+            span.onclick = () => {
 
-                if(window.abrirEfeito){
+                if (window.abrirEfeito) {
 
                     window.abrirEfeito(id);
 
-                }else{
+                } else {
 
                     console.log("efeito.js não carregou");
 
@@ -188,47 +188,47 @@ async function carregarEfeitos(skill){
             efeitoBox.appendChild(span);
 
 
-                    }
+        }
 
-                }
-
-
-
-                if(efeitoBox.children.length > 0){
-
-                    efeitoBox.style.display = "flex";
-
-                }else{
-
-                    efeitoBox.style.display = "none";
-
-                }
-
-            }
+    }
 
 
-function atualizarLinha(idLinha, idTexto, valor){
+
+    if (efeitoBox.children.length > 0) {
+
+        efeitoBox.style.display = "flex";
+
+    } else {
+
+        efeitoBox.style.display = "none";
+
+    }
+
+}
+
+
+function atualizarLinha(idLinha, idTexto, valor) {
 
     const linha =
-    document.getElementById(idLinha);
+        document.getElementById(idLinha);
 
 
     const texto =
-    document.getElementById(idTexto);
+        document.getElementById(idTexto);
 
 
 
-    if(!linha || !texto) return;
+    if (!linha || !texto) return;
 
 
 
-    if(valor !== undefined && valor !== null && valor !== ""){
+    if (valor !== undefined && valor !== null && valor !== "") {
 
         texto.innerText = valor;
 
         linha.style.display = "";
 
-    }else{
+    } else {
 
         linha.style.display = "none";
 
@@ -241,7 +241,7 @@ function atualizarLinha(idLinha, idTexto, valor){
 
 
 
-window.abrirFicha = async function(
+window.abrirFicha = async function (
     skill,
     mostrarCusto = true,
     mostrarComprar = true,
@@ -249,10 +249,10 @@ window.abrirFicha = async function(
     skillUid = null,
     bancoCategoria = "",
     sub = ""
-){
+) {
 
 
-    if(!document.getElementById("ficha-modal")){
+    if (!document.getElementById("ficha-modal")) {
 
         await carregarFichaHTML();
 
@@ -266,11 +266,11 @@ window.abrirFicha = async function(
     window.skillSub = sub;
 
     const modal =
-    document.getElementById("ficha-modal");
+        document.getElementById("ficha-modal");
 
 
 
-    if(!modal){
+    if (!modal) {
 
         console.log("ERRO: ficha-modal não encontrado");
 
@@ -287,31 +287,31 @@ window.abrirFicha = async function(
     // reseta linhas escondidas de outra skill
 
     document
-    .querySelectorAll(".ficha-table tr")
-    .forEach(linha=>{
+        .querySelectorAll(".ficha-table tr")
+        .forEach(linha => {
 
-        linha.style.display = "";
+            linha.style.display = "";
 
-    });
+        });
 
     document
-    .querySelectorAll(".ficha-atributo")
-    .forEach(attr=>{
-        attr.style.display = "";
-    });
+        .querySelectorAll(".ficha-atributo")
+        .forEach(attr => {
+            attr.style.display = "";
+        });
 
 
 
 
 
     const img =
-    document.getElementById("ficha-img");
+        document.getElementById("ficha-img");
 
 
-    if(img){
+    if (img) {
 
         img.src =
-        `https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
+            `https://res.cloudinary.com/djh45admn/image/upload/v1781908673/${skill.img}.jpg`;
 
     }
 
@@ -320,12 +320,12 @@ window.abrirFicha = async function(
 
 
     document.getElementById("ficha-nome").innerText =
-    skill.nome || "-";
+        skill.nome || "-";
 
 
 
     document.getElementById("ficha-description").innerText =
-    skill.description || "-";
+        skill.description || "-";
 
     // =====================
     // EFEITO DA SKILL
@@ -338,12 +338,12 @@ window.abrirFicha = async function(
     // =====================
 
     const cost =
-    document.getElementById("ficha-cost");
+        document.getElementById("ficha-cost");
 
-    if(cost){
+    if (cost) {
 
         cost.innerText =
-        `${skill.custo || 0} PTS`;
+            `${skill.custo || 0} PTS`;
 
     }
 
@@ -364,14 +364,14 @@ window.abrirFicha = async function(
     };
 
 
-    if(skill.rank){
+    if (skill.rank) {
 
         rankValor.innerText =
-        nomesRank[skill.rank] || skill.rank;
+            nomesRank[skill.rank] || skill.rank;
 
         rankEl.style.display = "";
 
-    }else{
+    } else {
 
         rankEl.style.display = "none";
 
@@ -381,20 +381,20 @@ window.abrirFicha = async function(
     // ATRIBUTOS DA SKILL
     // =====================
 
-    function atualizarAtributo(idBloco, idTexto, valor){
+    function atualizarAtributo(idBloco, idTexto, valor) {
 
         const bloco = document.getElementById(idBloco);
         const texto = document.getElementById(idTexto);
 
-        if(!bloco || !texto) return;
+        if (!bloco || !texto) return;
 
 
-        if(valor !== undefined && valor !== null && valor !== ""){
+        if (valor !== undefined && valor !== null && valor !== "") {
 
             texto.innerText = Number(valor).toLocaleString("pt-BR");
             bloco.style.display = "";
 
-        }else{
+        } else {
 
             texto.innerText = "";
             bloco.style.display = "none";
@@ -410,34 +410,34 @@ window.abrirFicha = async function(
 
     const atributosRank = {
 
-        1:{
-            stm:100,
-            atk:100,
-            def:100
+        1: {
+            stm: 100,
+            atk: 100,
+            def: 100
         },
 
-        2:{
-            stm:250,
-            atk:250,
-            def:250
+        2: {
+            stm: 250,
+            atk: 250,
+            def: 250
         },
 
-        3:{
-            stm:500,
-            atk:500,
-            def:500
+        3: {
+            stm: 500,
+            atk: 500,
+            def: 500
         },
 
-        4:{
-            stm:1000,
-            atk:1000,
-            def:1000
+        4: {
+            stm: 1000,
+            atk: 1000,
+            def: 1000
         },
 
-        5:{
-            stm:2000,
-            atk:2000,
-            def:2000
+        5: {
+            stm: 2000,
+            atk: 2000,
+            def: 2000
         }
 
     };
@@ -461,12 +461,12 @@ window.abrirFicha = async function(
         "atributo-atk",
         "ficha-atk",
         skill.categoria === "Ofensivo"
-        ? (
-            skill.atributos?.atk !== ""
-                ? (skill.atributos?.atk ?? base.atk)
-                : base.atk
-        )
-        : null
+            ? (
+                skill.atributos?.atk !== ""
+                    ? (skill.atributos?.atk ?? base.atk)
+                    : base.atk
+            )
+            : null
     );
 
 
@@ -475,12 +475,12 @@ window.abrirFicha = async function(
         "atributo-def",
         "ficha-def",
         skill.categoria === "Defensivo"
-        ? (
-            skill.atributos?.def !== ""
-                ? (skill.atributos?.def ?? base.def)
-                : base.def
-        )        
-        : null
+            ? (
+                skill.atributos?.def !== ""
+                    ? (skill.atributos?.def ?? base.def)
+                    : base.def
+            )
+            : null
     );
 
 
@@ -510,11 +510,11 @@ window.abrirFicha = async function(
 
         // Equipamentos não usam cooldown padrão
         cooldownValor = skill.cooldown || "";
-    
+
     } else {
 
         const cooldownBase = cooldownRank[skill.rank] ?? "-";
-    
+
         cooldownValor =
             skill.cooldown !== ""
                 ? (skill.cooldown ?? cooldownBase)
@@ -560,16 +560,20 @@ window.abrirFicha = async function(
     );
 
 
-    // Precisão somente ofensivo (valor próprio ou base do rank)
-    const precisaoValor =
-    (skill.precisao !== undefined && skill.precisao !== null && skill.precisao !== "")
-        ? skill.precisao
-        : PRECISAO_BASE_RANK[Number(skill.rank)];
+    // Precisão: valor próprio; no padrão, só ofensivas usam a base do rank
+    let precisaoValor =
+        (skill.precisao !== undefined && skill.precisao !== null && skill.precisao !== "")
+            ? skill.precisao
+            : undefined;
+
+    if (precisaoValor === undefined && skill.categoria === "Ofensivo") {
+        precisaoValor = PRECISAO_BASE_RANK[Number(skill.rank)];
+    }
 
     atualizarLinha(
         "linha-precisao",
         "ficha-precisao",
-        (skill.categoria === "Ofensivo" && precisaoValor !== undefined)
+        precisaoValor !== undefined
             ? `${precisaoValor}%`
             : null
     );
@@ -590,73 +594,73 @@ window.abrirFicha = async function(
         skill.antidodging
     );
 
-   const priceBox =
-   document.querySelector("#ficha-modal .price-box");
+    const priceBox =
+        document.querySelector("#ficha-modal .price-box");
 
-   const fichaBottom =
-   document.querySelector("#ficha-modal .ficha-bottom");
+    const fichaBottom =
+        document.querySelector("#ficha-modal .ficha-bottom");
 
-   const buyBtn =
-   document.querySelector("#ficha-modal #ficha-buy-btn");
+    const buyBtn =
+        document.querySelector("#ficha-modal #ficha-buy-btn");
 
-   const editBtn =
-   document.querySelector("#ficha-modal #ficha-edit-btn");
-
-
-   if(priceBox){
-
-       if(mostrarCusto){
-           priceBox.style.display = "flex";
-       }else{
-           priceBox.style.display = "none";
-       }
-
-   }
+    const editBtn =
+        document.querySelector("#ficha-modal #ficha-edit-btn");
 
 
-   if(buyBtn){
+    if (priceBox) {
 
-    if(mostrarComprar){
-
-        buyBtn.style.display = "block";
-
-        buyBtn.onclick = () => {
-
-            document
-                .getElementById("confirm-skill-modal")
-                .style.display = "flex";
-
-        };
-
-    }else{
-
-        buyBtn.style.display = "none";
-        buyBtn.onclick = null;
+        if (mostrarCusto) {
+            priceBox.style.display = "flex";
+        } else {
+            priceBox.style.display = "none";
+        }
 
     }
 
-}
 
-    if(editBtn){
+    if (buyBtn) {
+
+        if (mostrarComprar) {
+
+            buyBtn.style.display = "block";
+
+            buyBtn.onclick = () => {
+
+                document
+                    .getElementById("confirm-skill-modal")
+                    .style.display = "flex";
+
+            };
+
+        } else {
+
+            buyBtn.style.display = "none";
+            buyBtn.onclick = null;
+
+        }
+
+    }
+
+    if (editBtn) {
 
         const podeEditar =
-        await verificarPermissao(3);
+            await verificarPermissao(3);
 
         console.log("mostrarEditar:", mostrarEditar);
         console.log("podeEditar:", podeEditar);
-        
-        if(mostrarEditar && podeEditar){
+
+        if (mostrarEditar && podeEditar) {
 
             editBtn.style.display = "block";
 
 
             editBtn.onclick = () => {
 
-                if(window.abrirFichaEdit){
+                if (window.abrirFichaEdit) {
 
                     window.abrirFichaEdit();
 
-                }else{
+                } else {
 
                     console.log("ficha-edit.js não carregou");
 
@@ -665,7 +669,7 @@ window.abrirFicha = async function(
             };
 
 
-        }else{
+        } else {
 
             editBtn.style.display = "none";
             editBtn.onclick = null;
@@ -673,19 +677,19 @@ window.abrirFicha = async function(
         }
 
     }
-    
-    if(fichaBottom){
 
-        if(!mostrarCusto && !mostrarComprar && !mostrarEditar){
+    if (fichaBottom) {
+
+        if (!mostrarCusto && !mostrarComprar && !mostrarEditar) {
 
             fichaBottom.style.display = "none";
 
-        }else{
+        } else {
 
             fichaBottom.style.display = "flex";
 
         }
 
     }
-    
+
 };

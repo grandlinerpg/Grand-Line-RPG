@@ -36,7 +36,6 @@ function atualizarCampoPrecisao() {
 
     wrap.style.display = CATEGORIAS_COM_PRECISAO.includes(categoria) ? "" : "none";
 
-    // só ajusta o texto se o campo for o <select> (HTML atualizado)
     if (select.options && select.options.length) {
 
         select.options[0].text = categoria === "Ofensivo"
@@ -49,12 +48,9 @@ function atualizarCampoPrecisao() {
 
 console.log("FICHA-EDIT JS CARREGOU");
 
-
-
 async function carregarFichaEditHTML() {
     let container = document.getElementById("ficha-edit-container");
 
-    // Se o container não existir na página, cria dinamicamente no body para evitar falhas
     if (!container) {
         container = document.createElement("div");
         container.id = "ficha-edit-container";
@@ -67,46 +63,31 @@ async function carregarFichaEditHTML() {
             : "perfil/ficha-edit.html"
     );
 
+    container.innerHTML = await res.text();
 
-    container.innerHTML =
-        await res.text();
+    const closeBtn = document.getElementById("close-ficha-edit");
+    if (closeBtn) closeBtn.onclick = fecharFichaEdit;
 
+    const salvarBtn = document.getElementById("salvar-ficha-edit");
+    if (salvarBtn) salvarBtn.onclick = salvarFichaEdit;
 
-
-    document
-        .getElementById("close-ficha-edit")
-        .onclick = fecharFichaEdit;
-
-
-
-    document
-        .getElementById("salvar-ficha-edit")
-        .onclick = salvarFichaEdit;
-
-    document
-        .getElementById("upload-img-btn")
-        .onclick = () => {
-
-            document
-                .getElementById("upload-img-input")
-                .click();
-
+    const uploadBtn = document.getElementById("upload-img-btn");
+    if (uploadBtn) {
+        uploadBtn.onclick = () => {
+            const input = document.getElementById("upload-img-input");
+            if (input) input.click();
         };
+    }
 
+    const uploadInput = document.getElementById("upload-img-input");
+    if (uploadInput) uploadInput.onchange = uploadImagem;
 
-    document
-        .getElementById("upload-img-input")
-        .onchange = uploadImagem;
-
-    document
-        .getElementById("add-efeito-edit")
-        .onclick = () => {
-
+    const addEfeitoBtn = document.getElementById("add-efeito-edit");
+    if (addEfeitoBtn) {
+        addEfeitoBtn.onclick = () => {
             criarSelectEfeito();
-
         };
-
-
+    }
 }
 
 async function carregarListaEfeitos() {
@@ -126,11 +107,6 @@ async function carregarListaEfeitos() {
 
 
     listaEfeitosFirebase = snap.val();
-
-    console.log(
-        "Efeitos carregados:",
-        listaEfeitosFirebase
-    );
 
 }
 
@@ -240,7 +216,6 @@ class="remove-efeito-edit">
         row.querySelector("select");
 
 
-    // mantém o UID salvo
     select.value = valor;
 
 
@@ -324,7 +299,7 @@ window.abrirFichaEdit = async function () {
 
 
     document.getElementById("edit-categoria").value =
-        skill.categoria || "";
+        skill.categoria || "Ofensivo";
 
 
     document.getElementById("edit-propriedade").value =
@@ -342,21 +317,24 @@ window.abrirFichaEdit = async function () {
     document.getElementById("edit-cooldown").value =
         skill.cooldown || "";
 
-    // ----- precisão ("" = Padrão do rank) -----
     const selectPrecisao = document.getElementById("edit-precisao");
 
-    selectPrecisao.value =
-        (skill.precisao !== undefined && skill.precisao !== null)
-            ? String(skill.precisao)
-            : "";
+    if (selectPrecisao) {
+        selectPrecisao.value =
+            (skill.precisao !== undefined && skill.precisao !== null)
+                ? String(skill.precisao)
+                : "";
 
-    // valor salvo fora da lista (ex.: 0 ou decimal) volta para Padrão
-    if (selectPrecisao.selectedIndex === -1) {
-        selectPrecisao.value = "";
+        if (selectPrecisao.selectedIndex === -1) {
+            selectPrecisao.value = "";
+        }
     }
 
-    document.getElementById("edit-rank").onchange = atualizarCampoPrecisao;
-    document.getElementById("edit-categoria").onchange = atualizarCampoPrecisao;
+    const editRankEl = document.getElementById("edit-rank");
+    const editCatEl = document.getElementById("edit-categoria");
+
+    if (editRankEl) editRankEl.onchange = atualizarCampoPrecisao;
+    if (editCatEl) editCatEl.onchange = atualizarCampoPrecisao;
 
     atualizarCampoPrecisao();
 
@@ -422,15 +400,6 @@ async function uploadImagem(e) {
         const data = await res.json();
 
 
-        console.log("STATUS:", res.status);
-
-        console.log(
-            "ERRO CLOUDINARY:",
-            data.error?.message
-        );
-
-
-
         if (!data.secure_url) {
 
             console.error("Upload falhou:", data);
@@ -449,12 +418,6 @@ async function uploadImagem(e) {
             .getElementById("edit-img")
             .src =
             data.secure_url;
-
-
-
-        console.log("Imagem salva:", data.public_id);
-
-
 
     } catch (err) {
 
@@ -518,7 +481,6 @@ async function salvarFichaEdit() {
     skill.cooldown =
         document.getElementById("edit-cooldown").value;
 
-    // Precisão: "" = Padrão (base do rank nas ofensivas; nenhuma nas demais)
     if (CATEGORIAS_COM_PRECISAO.includes(skill.categoria)) {
 
         const valorPrecisao = document.getElementById("edit-precisao").value;
@@ -549,11 +511,6 @@ async function salvarFichaEdit() {
 
     skill.efeito = efeitos;
 
-    console.log(
-        "SKILL EDITADA:",
-        skill
-    );
-
     if (!window.skillCategoria || !window.skillSub) {
 
         console.error("Categoria ou estilo faltando:", {
@@ -566,7 +523,6 @@ async function salvarFichaEdit() {
     }
 
 
-    // se for uma skill nova cria o UID pelo nome
     if (!window.skillUid) {
 
         window.skillUid =
@@ -576,7 +532,6 @@ async function salvarFichaEdit() {
 
     const skillSalvar = { ...skill };
 
-    // null remove a chave no Firebase (ex.: categoria sem precisão)
     if (!CATEGORIAS_COM_PRECISAO.includes(skill.categoria)) {
         skillSalvar.precisao = null;
     }
@@ -597,6 +552,7 @@ async function salvarFichaEdit() {
 
     fecharFichaEdit();
 
-
-
+    if (window.abrirHabilidades && window.skillSub) {
+        window.abrirHabilidades(window.skillSub);
+    }
 }

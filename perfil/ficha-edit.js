@@ -57,12 +57,13 @@ async function carregarFichaEditHTML() {
         document.body.appendChild(container);
     }
 
-    // Tenta múltiplos caminhos possíveis para evitar erro 404/Network ao buscar o HTML
-    const caminhos = [
-        "perfil/ficha-edit.html",
-        "../perfil/ficha-edit.html",
-        "ficha-edit.html"
-    ];
+    // Se já existir o modal no DOM, não precisa baixar de novo
+    if (document.getElementById("ficha-edit")) return;
+
+    const inGuia = location.pathname.includes("/guia/");
+    const caminhos = inGuia 
+        ? ["../perfil/ficha-edit.html", "perfil/ficha-edit.html", "/Grand-Line-RPG/perfil/ficha-edit.html", "ficha-edit.html"]
+        : ["perfil/ficha-edit.html", "./perfil/ficha-edit.html", "/Grand-Line-RPG/perfil/ficha-edit.html", "ficha-edit.html"];
 
     let htmlCarregado = false;
     for (const caminho of caminhos) {
@@ -74,11 +75,11 @@ async function carregarFichaEditHTML() {
                 break;
             }
         } catch (e) {
-            // Continua testando o próximo caminho
+            // Tenta o próximo caminho
         }
     }
 
-    // Fallback absoluto caso nenhum fetch funcione (evita que o botão quebre)
+    // Fallback absoluto caso o fetch falhe (garante que o modal sempre abra)
     if (!htmlCarregado || !document.getElementById("ficha-edit")) {
         container.innerHTML = `
         <div id="ficha-edit" class="ficha-edit-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
@@ -86,51 +87,64 @@ async function carregarFichaEditHTML() {
                 <button id="close-ficha-edit" class="close-ficha-edit" style="float:right; background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">×</button>
                 <h2>EDITAR FICHA</h2>
                 <div class="ficha-edit-scroll">
+                    <div class="img-upload-area" style="text-align:center; margin-bottom:10px;">
+                        <img id="edit-img" class="edit-img" style="max-height:100px; display:block; margin:0 auto 5px;">
+                        <button id="upload-img-btn" class="upload-img-btn" type="button">📤 Enviar Imagem</button>
+                        <input type="file" id="upload-img-input" accept="image/*" hidden>
+                    </div>
                     <label>Nome</label>
-                    <input id="edit-nome" style="width:100%; margin-bottom:10px; padding:5px;">
+                    <input id="edit-nome" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
                     <label>Descrição</label>
-                    <textarea id="edit-description" style="width:100%; margin-bottom:10px; padding:5px;"></textarea>
+                    <textarea id="edit-description" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;"></textarea>
                     <label>Rank</label>
-                    <select id="edit-rank" style="width:100%; margin-bottom:10px; padding:5px;">
+                    <select id="edit-rank" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
                         <option value="1">Iniciante</option>
                         <option value="2">Aprendiz</option>
                         <option value="3">Novato</option>
                         <option value="4">Intermediário</option>
                         <option value="5">Veterano</option>
                     </select>
+                    <label>Cooldown</label>
+                    <select id="edit-cooldown" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
+                        <option value="">Padrão</option>
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
                     <label>Categoria</label>
-                    <select id="edit-categoria" style="width:100%; margin-bottom:10px; padding:5px;">
+                    <select id="edit-categoria" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
                         <option value="Ofensivo">Ofensivo</option>
                         <option value="Defensivo">Defensivo</option>
                         <option value="Suplementar">Suplementar</option>
                         <option value="Equipamento">Equipamento</option>
                     </select>
                     <label>Propriedade</label>
-                    <select id="edit-propriedade" style="width:100%; margin-bottom:10px; padding:5px;">
+                    <select id="edit-propriedade" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
                         <option value="Contundente">Contundente</option>
                         <option value="Cortante">Cortante</option>
                         <option value="Perfurante">Perfurante</option>
                         <option value="Sobrenatural">Sobrenatural</option>
                     </select>
                     <label>Alcance</label>
-                    <select id="edit-alcance" style="width:100%; margin-bottom:10px; padding:5px;">
+                    <select id="edit-alcance" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
                         <option value="Pessoal">Pessoal</option>
                         <option value="Curto">Curto</option>
                         <option value="Médio">Médio</option>
                         <option value="Longo">Longo</option>
                     </select>
                     <label>Alvos</label>
-                    <input id="edit-alvos" value="1" style="width:100%; margin-bottom:10px; padding:5px;">
-                    <label>Cooldown</label>
-                    <input id="edit-cooldown" style="width:100%; margin-bottom:10px; padding:5px;">
+                    <select id="edit-alvos" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
                     <div id="edit-precisao-wrap">
                         <label>Precisão</label>
-                        <select id="edit-precisao" style="width:100%; margin-bottom:10px; padding:5px;">
+                        <select id="edit-precisao" style="width:100%; margin-bottom:10px; padding:5px; box-sizing:border-box;">
                             <option value="">Padrão</option>
                         </select>
                     </div>
+                    <label>Efeitos</label>
+                    <div id="efeitos-edit-area" class="efeitos-edit-area" style="margin-bottom:10px;"></div>
+                    <button id="add-efeito-edit" class="add-efeito-edit" type="button" style="width:100%; margin-bottom:10px; padding:5px;">+</button>
                 </div>
-                <button id="salvar-ficha-edit" style="width:100%; padding:10px; background:#4CAF50; color:#fff; border:none; cursor:pointer; margin-top:10px;">SALVAR</button>
+                <button id="salvar-ficha-edit" style="width:100%; padding:10px; background:#4CAF50; color:#fff; border:none; cursor:pointer;">SALVAR</button>
             </div>
         </div>`;
     }
@@ -197,6 +211,9 @@ function criarSelectEfeito(valor = "") {
 
     const row = document.createElement("div");
     row.className = "efeito-edit-row";
+    row.style.display = "flex";
+    row.style.gap = "5px";
+    row.style.marginBottom = "5px";
 
     let options = `<option value="">Escolher efeito</option>`;
     Object.entries(listaEfeitosFirebase).forEach(([uid, efeito]) => {
@@ -204,8 +221,8 @@ function criarSelectEfeito(valor = "") {
     });
 
     row.innerHTML = `
-        <select class="efeito-select" style="margin-bottom:5px; padding:5px;">${options}</select>
-        <button class="remove-efeito-edit" style="background:red; color:#fff; border:none; padding:2px 6px; cursor:pointer;">×</button>
+        <select class="efeito-select" style="flex:1; padding:5px;">${options}</select>
+        <button class="remove-efeito-edit" type="button" style="background:red; color:#fff; border:none; padding:2px 8px; cursor:pointer;">×</button>
     `;
 
     const select = row.querySelector("select");

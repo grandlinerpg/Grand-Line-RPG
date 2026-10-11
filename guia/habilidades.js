@@ -156,7 +156,7 @@ window.abrirHabilidades = async function (estiloNome) {
       addBtn.style.display = "block";
 
 
-      addBtn.onclick = () => {
+      addBtn.onclick = async () => {
 
         window.skillAtual = {
 
@@ -164,10 +164,10 @@ window.abrirHabilidades = async function (estiloNome) {
           description: "",
           img: "",
           rank: 1,
-          categoria: "",
-          propriedade: "",
-          alcance: "",
-          alvos: "",
+          categoria: "Ofensivo",
+          propriedade: "Contundente",
+          alcance: "Pessoal",
+          alvos: "1",
           cooldown: "",
 
           atributos: {
@@ -188,8 +188,9 @@ window.abrirHabilidades = async function (estiloNome) {
         window.skillUid =
           null;
 
-
-        abrirFichaEdit();
+        if (window.abrirFichaEdit) {
+          await window.abrirFichaEdit();
+        }
 
       };
 

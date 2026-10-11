@@ -12,6 +12,37 @@ const db = getDatabase(app);
 
 let listaEfeitosFirebase = {};
 
+// Precisão base de cada rank de habilidade ofensiva (%)
+const PRECISAO_BASE_RANK = { 1: 90, 2: 85, 3: 80, 4: 75, 5: 70 };
+
+// true quando a pessoa digitou um valor próprio de precisão
+let precisaoEditadaManualmente = false;
+
+function precisaoBase(rank){
+    return PRECISAO_BASE_RANK[Number(rank)] ?? 90;
+}
+
+// Mostra o campo só para habilidades ofensivas e
+// acompanha o rank enquanto não houver valor próprio
+function atualizarCampoPrecisao(){
+
+    const wrap = document.getElementById("edit-precisao-wrap");
+    const input = document.getElementById("edit-precisao");
+
+    if(!wrap || !input) return;
+
+    const categoria = document.getElementById("edit-categoria").value;
+    const rank = document.getElementById("edit-rank").value;
+
+    wrap.style.display = categoria === "Ofensivo" ? "" : "none";
+    input.placeholder = `Padrão do rank: ${precisaoBase(rank)}%`;
+
+    if(!precisaoEditadaManualmente){
+        input.value = precisaoBase(rank);
+    }
+
+}
+
 console.log("FICHA-EDIT JS CARREGOU");
 
 
@@ -303,6 +334,28 @@ skill.alvos || "";
 document.getElementById("edit-cooldown").value =
 skill.cooldown || "";
 
+// ----- precisão -----
+const temPrecisaoPropria =
+skill.precisao !== undefined &&
+skill.precisao !== null &&
+skill.precisao !== "" &&
+Number(skill.precisao) !== precisaoBase(skill.rank || 1);
+
+precisaoEditadaManualmente = temPrecisaoPropria;
+
+document.getElementById("edit-precisao").value =
+temPrecisaoPropria ? skill.precisao : precisaoBase(skill.rank || 1);
+
+document.getElementById("edit-rank").onchange = atualizarCampoPrecisao;
+document.getElementById("edit-categoria").onchange = atualizarCampoPrecisao;
+
+document.getElementById("edit-precisao").oninput = ()=>{
+    precisaoEditadaManualmente =
+    document.getElementById("edit-precisao").value !== "";
+};
+
+atualizarCampoPrecisao();
+
 carregarEfeitosEdit(skill);
 
 }
@@ -461,6 +514,27 @@ document.getElementById("edit-alvos").value;
 skill.cooldown =
 document.getElementById("edit-cooldown").value;
 
+// Precisão: só habilidades ofensivas. Vazio = padrão do rank.
+if(skill.categoria === "Ofensivo"){
+
+    const bruto = document.getElementById("edit-precisao").value;
+
+    let precisao = bruto === ""
+        ? precisaoBase(skill.rank)
+        : Number(bruto);
+
+    if(Number.isNaN(precisao)){
+        precisao = precisaoBase(skill.rank);
+    }
+
+    skill.precisao = Math.min(100, Math.max(0, precisao));
+
+}else{
+
+    delete skill.precisao;
+
+}
+
 const efeitos = [];
 
 document
@@ -504,6 +578,11 @@ if(!window.skillUid){
 }
 
 const skillSalvar = { ...skill };
+
+// null remove a chave no Firebase (ex.: skill deixou de ser ofensiva)
+if(skill.categoria !== "Ofensivo"){
+    skillSalvar.precisao = null;
+}
 
 delete skillSalvar.id;
 delete skillSalvar.bancoCategoria;

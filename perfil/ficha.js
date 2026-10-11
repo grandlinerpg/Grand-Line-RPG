@@ -14,6 +14,9 @@ const db = getDatabase(app);
 const fichaContainer = document.getElementById("ficha-container");
 let skillAtual = null;
 
+// Precisão base de cada rank de habilidade ofensiva (%)
+const PRECISAO_BASE_RANK = { 1: 90, 2: 85, 3: 80, 4: 75, 5: 70 };
+
 
 
 async function carregarFichaHTML(){
@@ -554,6 +557,21 @@ window.abrirFicha = async function(
         "linha-alvos",
         "ficha-alvos",
         skill.alvos
+    );
+
+
+    // Precisão somente ofensivo (valor próprio ou base do rank)
+    const precisaoValor =
+    (skill.precisao !== undefined && skill.precisao !== null && skill.precisao !== "")
+        ? skill.precisao
+        : PRECISAO_BASE_RANK[Number(skill.rank)];
+
+    atualizarLinha(
+        "linha-precisao",
+        "ficha-precisao",
+        (skill.categoria === "Ofensivo" && precisaoValor !== undefined)
+            ? `${precisaoValor}%`
+            : null
     );
 
 

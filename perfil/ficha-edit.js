@@ -36,9 +36,14 @@ function atualizarCampoPrecisao() {
 
     wrap.style.display = CATEGORIAS_COM_PRECISAO.includes(categoria) ? "" : "none";
 
-    select.options[0].text = categoria === "Ofensivo"
-        ? `Padrão (${precisaoBase(rank)}%)`
-        : "Padrão (sem precisão)";
+    // só ajusta o texto se o campo for o <select> (HTML atualizado)
+    if (select.options && select.options.length) {
+
+        select.options[0].text = categoria === "Ofensivo"
+            ? `Padrão (${precisaoBase(rank)}%)`
+            : "Padrão (sem precisão)";
+
+    }
 
 }
 

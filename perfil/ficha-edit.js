@@ -39,7 +39,7 @@ function atualizarCampoPrecisao(){
     // só ajusta o texto se o campo for o <select> (HTML atualizado)
     if(select.options && select.options.length){
 
-        select.options[0].text = categoria === "Ofensivo"
+        select.options[0].text = (categoria === "Ofensivo" || categoria === "Suplementar")
             ? `Padrão (${precisaoBase(rank)}%)`
             : "Padrão (sem precisão)";
 

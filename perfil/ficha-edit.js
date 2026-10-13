@@ -20,7 +20,7 @@ function precisaoBase(rank){
 }
 
 // Categorias que possuem precisão
-const CATEGORIAS_COM_PRECISAO = ["Ofensivo", "Defensivo", "Suplementar"];
+const CATEGORIAS_COM_PRECISAO = ["Ofensivo", "Suplementar"];
 
 // Mostra o campo só nas categorias com precisão e atualiza o
 // texto da opção "Padrão": base do rank (ofensivas) ou sem precisão

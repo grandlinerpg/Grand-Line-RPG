@@ -14,7 +14,7 @@ const db = getDatabase(app);
 const fichaContainer = document.getElementById("ficha-container");
 let skillAtual = null;
 
-// Precisão base de cada rank de habilidade ofensiva (%)
+// Precisão base de cada rank de habilidade ofensiva/suplementar (%)
 const PRECISAO_BASE_RANK = { 1: 90, 2: 85, 3: 80, 4: 75, 5: 70 };
 
 
@@ -560,13 +560,13 @@ window.abrirFicha = async function(
     );
 
 
-    // Precisão: valor próprio; no padrão, só ofensivas usam a base do rank
+    // Precisão: valor próprio; no padrão, ofensivas e suplementares usam a base do rank
     let precisaoValor =
     (skill.precisao !== undefined && skill.precisao !== null && skill.precisao !== "")
         ? skill.precisao
         : undefined;
 
-    if(precisaoValor === undefined && skill.categoria === "Ofensivo"){
+    if(precisaoValor === undefined && (skill.categoria === "Ofensivo" || skill.categoria === "Suplementar")){
         precisaoValor = PRECISAO_BASE_RANK[Number(skill.rank)];
     }
 
@@ -584,14 +584,6 @@ window.abrirFicha = async function(
         "linha-degradation",
         "ficha-degradation",
         skill.degradation
-    );
-
-
-
-    atualizarLinha(
-        "linha-antidodging",
-        "ficha-antidodging",
-        skill.antidodging
     );
 
    const priceBox =

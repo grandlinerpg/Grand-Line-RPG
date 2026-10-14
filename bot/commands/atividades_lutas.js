@@ -111,7 +111,7 @@ async function encerrarListaEIniciarPartida(sock, from) {
 
     if (atividade.defensores.length === 0) {
         await sock.sendMessage(from, { text: `⚠️ A atividade *${atividade.nomeAtividade}* foi encerrada sem defensores.` });
-        delete atividadesAtivas[from];
+        await finalizarAtividade(sock, from);
         return;
     }
 

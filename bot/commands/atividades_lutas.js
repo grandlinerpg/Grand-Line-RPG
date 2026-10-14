@@ -138,10 +138,10 @@ async function encerrarListaEIniciarPartida(sock, from) {
         cabecalho += `${textoTerritorio}\n`;
     }
 
-    const msgInicioConfrontos = `${cabecalho}\n` +
+    const msgInicioConfrontos = `${cabecalho}` +
         `──────────────────\n` +
         `*${atividade.faccaoCriador}:*\n\n${atacantesTexto}\n\n` +
-        `> Força: ${forcaAtacantes}\n\n` +
+        `> Força: ${forcaAtacantes}\n` +
         `──────────────────\n` +
         `*${nomeDefesa}:*\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}`;

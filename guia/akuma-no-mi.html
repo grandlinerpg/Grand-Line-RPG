@@ -206,7 +206,9 @@
 
       if (!snap.exists()) return;
 
-      const data = Object.values(snap.val());
+      // guarda a chave do nó (chave) para abrir as habilidades da fruta correta
+      const data = Object.entries(snap.val())
+        .map(([chave, fruta]) => ({ ...fruta, chave }));
 
       for (let t = 1; t <= 6; t++) {
     
@@ -280,10 +282,9 @@
       document.getElementById("m-img")
       .src = CLOUD + a.img + ".png";
 
-      // 🔥 SÓ ISSO FOI CORRIGIDO
       document.getElementById("m-btn").onclick = () => {
 
-        abrirHabilidades(a.n);
+        abrirHabilidades(a.chave);
 
       };
     }

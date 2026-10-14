@@ -206,7 +206,15 @@
 
       if (!snap.exists()) return;
 
-      const data = Object.values(snap.val());
+      // chave das habilidades da fruta = nome sem prefixo (mesmo cálculo de character.fruit em perfil/item.js)
+      const limparNome = nome =>
+        nome.includes(":") ? nome.split(":")[1].trim() : nome.trim();
+
+      const data = Object.entries(snap.val())
+        .map(([id, fruta]) => ({
+          ...fruta,
+          chave: limparNome(fruta.nome || id)
+        }));
 
       for (let t = 1; t <= 6; t++) {
     
@@ -280,10 +288,9 @@
       document.getElementById("m-img")
       .src = CLOUD + a.img + ".png";
 
-      // 🔥 SÓ ISSO FOI CORRIGIDO
       document.getElementById("m-btn").onclick = () => {
 
-        abrirHabilidades(a.n);
+        abrirHabilidades(a.chave, "Akuma no Mi");
 
       };
     }

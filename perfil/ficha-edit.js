@@ -485,6 +485,15 @@ window.skillAtual;
 skill.nome =
 document.getElementById("edit-nome").value;
 
+// sem nome o UID fica vazio e a skill seria gravada em cima do próprio estilo/raça
+if(!skill.nome.trim()){
+
+    alert("Informe o nome da habilidade antes de salvar.");
+
+    return;
+
+}
+
 
 skill.description =
 document.getElementById("edit-description").value;
@@ -563,7 +572,9 @@ if(!window.skillCategoria || !window.skillSub){
 
 
 // se for uma skill nova cria o UID pelo nome
-if(!window.skillUid){
+const skillNova = !window.skillUid;
+
+if(skillNova){
 
     window.skillUid =
     limparUID(skill.nome);
@@ -581,17 +592,49 @@ delete skillSalvar.id;
 delete skillSalvar.bancoCategoria;
 delete skillSalvar.estilo;
 
-await update(
-    ref(
-        db,
-        `habilidades/${window.skillCategoria}/${window.skillSub}/${window.skillUid}`
-    ),
-    skillSalvar
-);
+try{
+
+    await update(
+        ref(
+            db,
+            `habilidades/${window.skillCategoria}/${window.skillSub}/${window.skillUid}`
+        ),
+        skillSalvar
+    );
+
+}catch(err){
+
+    console.error("Erro ao salvar skill:", err);
+
+    // skill nova: libera o UID para ser recalculado se o nome mudar na próxima tentativa
+    if(skillNova) window.skillUid = null;
+
+    alert("Não foi possível salvar a habilidade: " + err.message);
+
+    return;
+
+}
 
 console.log("Skill salva no Firebase!");
 
 fecharFichaEdit();
+
+// se a lista de habilidades está aberta (guia), atualiza para mostrar a skill salva
+const listaAberta = document.getElementById("habilidades-modal");
+
+if(
+    listaAberta &&
+    listaAberta.style.display === "flex" &&
+    window.abrirHabilidades &&
+    window.habilidadesEstiloAtual
+){
+
+    window.abrirHabilidades(
+        window.habilidadesEstiloAtual,
+        window.habilidadesCategoriaAtual
+    );
+
+}
 
 
 

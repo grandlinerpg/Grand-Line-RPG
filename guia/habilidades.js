@@ -49,36 +49,50 @@ async function carregarHabilidadesHTML() {
 carregarHabilidadesHTML();
 
 
-async function getEstilo(key) {
+// Categorias do banco: habilidades/<categoria>/<estilo, raça, fruta ou grupo>/<habilidade>
+const CATEGORIAS_BANCO = ["Estilo de Luta", "Raças", "Akuma no Mi", "Disponíveis"];
 
-    let snap =
-        await get(
-            ref(
-                db,
-                `habilidades/Estilo de Luta/${key}`
-            )
-        );
+// categoriaBanco = categoria da página que abriu a lista (vem sempre primeiro).
+// somenteCategoria = true para o nó da própria página: não procura em outras categorias,
+// para nunca mostrar (ou gravar) skills de um nó que só tem o mesmo nome em outra categoria.
+// Heranças podem apontar para outras categorias, então nelas a busca continua nas demais.
+async function getEstilo(key, categoriaBanco, somenteCategoria) {
 
+    let ordem = CATEGORIAS_BANCO;
 
-    let tipo = "Estilo de Luta";
+    if (categoriaBanco) {
 
+        ordem = somenteCategoria
+            ? [categoriaBanco]
+            : [categoriaBanco, ...CATEGORIAS_BANCO.filter(c => c !== categoriaBanco)];
 
-    if (!snap.exists()) {
+    }
 
-        snap =
+    let snap = null;
+    let tipo = null;
+
+    for (const categoria of ordem) {
+
+        const tentativa =
             await get(
                 ref(
                     db,
-                    `habilidades/Raças/${key}`
+                    `habilidades/${categoria}/${key}`
                 )
             );
 
-        tipo = "Raças";
+        if (tentativa.exists()) {
+
+            snap = tentativa;
+            tipo = categoria;
+            break;
+
+        }
 
     }
 
 
-    if (!snap.exists())
+    if (!snap)
         return null;
 
 
@@ -114,7 +128,35 @@ async function getEstilo(key) {
 
 
 
-window.abrirHabilidades = async function (estiloNome) {
+// Só é usada se a página não informar a categoria: procura o nó nas categorias do banco
+async function descobrirCategoriaBanco(nome) {
+
+    try {
+
+        for (const categoria of CATEGORIAS_BANCO) {
+
+            const snap = await get(ref(db, `habilidades/${categoria}/${nome}`));
+
+            if (snap.exists()) return categoria;
+
+        }
+
+    } catch (err) {
+
+        console.error("Erro ao descobrir categoria do banco:", err);
+
+    }
+
+    return "Estilo de Luta";
+
+}
+
+
+window.abrirHabilidades = async function (estiloNome, categoriaBanco) {
+
+    // guarda qual lista está aberta, para atualizá-la depois de salvar uma skill
+    window.habilidadesEstiloAtual = estiloNome;
+    window.habilidadesCategoriaAtual = categoriaBanco || null;
 
     const modal =
         document.getElementById("habilidades-modal");
@@ -130,7 +172,7 @@ window.abrirHabilidades = async function (estiloNome) {
 
         await carregarHabilidadesHTML();
 
-        return window.abrirHabilidades(estiloNome);
+        return window.abrirHabilidades(estiloNome, categoriaBanco);
 
     }
 
@@ -156,7 +198,7 @@ window.abrirHabilidades = async function (estiloNome) {
             addBtn.style.display = "block";
 
 
-            addBtn.onclick = () => {
+            addBtn.onclick = async () => {
 
                 window.skillAtual = {
 
@@ -170,15 +212,14 @@ window.abrirHabilidades = async function (estiloNome) {
                     alvos: "",
                     cooldown: "",
 
-                    atributos: {
-                        stm: 0
-                    }
+                    // sem valores próprios: ATK/DEF/STM usam o padrão do rank
+                    atributos: {}
 
                 };
 
 
                 window.skillCategoria =
-                    "Estilo de Luta";
+                    categoriaBanco || await descobrirCategoriaBanco(estiloNome);
 
 
                 window.skillSub =
@@ -238,7 +279,7 @@ window.abrirHabilidades = async function (estiloNome) {
 
 
             const estilo =
-                await getEstilo(atual);
+                await getEstilo(atual, categoriaBanco, atual === key);
 
 
             if (!estilo)

@@ -16,37 +16,6 @@ function limparId(id) {
     return String(id).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
 }
 
-function formatarJidParticipante(p) {
-    if (!p) return null;
-    const raw = p.lid || p.numero;
-    if (!raw) return null;
-    const limpo = limparId(raw);
-    if (!limpo) return null;
-    return raw.includes('@') ? raw : `${limpo}@s.whatsapp.net`;
-}
-
-async function concederAdminJogadores(sock, grupoJid, p1, p2) {
-    if (!sock) return;
-    const jids = [formatarJidParticipante(p1), formatarJidParticipante(p2)].filter(Boolean);
-    if (jids.length === 0) return;
-    try {
-        await sock.groupParticipantsUpdate(grupoJid, jids, 'promote');
-    } catch (e) {
-        console.error('Erro ao promover jogadores a admin:', e.message);
-    }
-}
-
-async function removerAdminJogadores(sock, grupoJid, p1, p2) {
-    if (!sock) return;
-    const jids = [formatarJidParticipante(p1), formatarJidParticipante(p2)].filter(Boolean);
-    if (jids.length === 0) return;
-    try {
-        await sock.groupParticipantsUpdate(grupoJid, jids, 'demote');
-    } catch (e) {
-        console.error('Erro ao rebaixar jogadores de admin:', e.message);
-    }
-}
-
 function buscarUidPlayer(playersData, idBuscado) {
     if (!playersData || !idBuscado) return null;
     
@@ -117,11 +86,6 @@ async function comecarCombateDeFato(grupoJid, sock) {
     bat.jogadorVez = 1;
     bat.turnoAtual = 1;
 
-    const socketParaEnviar = sock || bat.sock;
-
-    // Concede admin aos dois combatentes
-    await concederAdminJogadores(socketParaEnviar, grupoJid, bat.p1, bat.p2);
-
     const horarioFim = obterHorarioTermino(30);
     const p1Nome = bat.p1?.nome || 'Jogador 1';
     const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
@@ -129,6 +93,7 @@ async function comecarCombateDeFato(grupoJid, sock) {
                 `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
                 `> Término: ${horarioFim} (UTC-3)`;
 
+    const socketParaEnviar = sock || bat.sock;
     if (socketParaEnviar) {
         await socketParaEnviar.sendMessage(grupoJid, { text: msg });
     }
@@ -157,7 +122,6 @@ function iniciarTimerTurnoMaximo(grupoJid, sock) {
             }
 
             limparTimersBatalha(b);
-            await removerAdminJogadores(socketParaEnviar, grupoJid, b.p1, b.p2);
             await resetarArenaAguardando(grupoJid, b);
         }
     }, 30 * 60 * 1000);
@@ -328,7 +292,6 @@ async function handleCombatesCommands(sock, m, text, from) {
             await sock.sendMessage(from, { text: msgWin });
 
             limparTimersBatalha(bat);
-            await removerAdminJogadores(sock, from, bat.p1, bat.p2);
             await resetarArenaAguardando(from, bat);
             return true;
         }
@@ -437,7 +400,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         await sock.sendMessage(from, { text: msgWin });
 
         limparTimersBatalha(bat);
-        await removerAdminJogadores(sock, from, bat.p1, bat.p2);
         await resetarArenaAguardando(from, bat);
         return true;
     }
@@ -455,7 +417,6 @@ async function handleCombatesCommands(sock, m, text, from) {
         await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
 
         limparTimersBatalha(bat);
-        await removerAdminJogadores(sock, from, bat.p1, bat.p2);
         await resetarArenaAguardando(from, bat);
         await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
         return true;

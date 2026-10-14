@@ -139,9 +139,11 @@ async function encerrarListaEIniciarPartida(sock, from) {
     }
 
     const msgInicioConfrontos = `${cabecalho}\n` +
-        `${atividade.faccaoCriador}:\n\n${atacantesTexto}\n\n` +
+        `──────────────────\n` +
+        `*${atividade.faccaoCriador}:*\n\n${atacantesTexto}\n\n` +
         `> Força: ${forcaAtacantes}\n\n` +
-        `${nomeDefesa}:\n\n${defensoresTexto}\n\n` +
+        `──────────────────\n` +
+        `*${nomeDefesa}:*\n\n${defensoresTexto}\n\n` +
         `> Força: ${forcaDefensores}`;
 
     await sock.sendMessage(from, { text: msgInicioConfrontos });

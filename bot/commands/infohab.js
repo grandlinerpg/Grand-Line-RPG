@@ -21,6 +21,10 @@ const ATRIBUTOS_RANK = {
     5: { stm: 2000, atk: 2000, def: 2000 }
 };
 
+// Imagens das habilidades (Cloudinary) - mesmo padrão do site (perfil/card.js): <base>/<skill.img>.jpg
+const CLOUDINARY_HABILIDADES = 'https://res.cloudinary.com/djh45admn/image/upload/v1781908673';
+const LIMITE_LEGENDA = 1024; // acima disso o texto vai em mensagem separada
+
 const SESSAO_TTL_MS = 5 * 60 * 1000; // 5 minutos para escolher uma habilidade da lista
 const MAX_RESULTADOS_BUSCA = 15;     // limite de resultados quando a busca por nome é ambígua
 
@@ -68,7 +72,7 @@ function formatarNumero(valor) {
     return isNaN(n) ? String(valor) : n.toLocaleString('pt-BR');
 }
 
-// Precisão base de cada rank de habilidade ofensiva (%)
+// Precisão base de cada rank (%) - mesma regra da ficha do site (perfil/ficha.js)
 const PRECISAO_BASE_RANK = { 1: 90, 2: 85, 3: 80, 4: 75, 5: 70 };
 
 function temValor(v) {
@@ -179,14 +183,15 @@ function montarDetalhe(item, efeitosDb) {
     if (skill.rank && NOMES_RANK[Number(skill.rank)]) {
         texto += `🏅 *Rank:* ${NOMES_RANK[Number(skill.rank)]}\n`;
     }
+    if (temValor(skill.categoria)) texto += `🗂️ *Categoria:* ${skill.categoria}\n`;
     if (atributos.length) texto += `⚔️ *Atributos:* ${atributos.join(' | ')}\n`;
     if (consumidos.length) texto += `💠 *Atributos Consumidos:* ${consumidos.join(' | ')}\n`;
     if (temValor(skill.alvos)) texto += `🎯 *Alvos:* ${skill.alvos}\n`;
     if (temValor(skill.alcance)) texto += `📏 *Alcance:* ${skill.alcance}\n`;
     if (temValor(skill.propriedade)) texto += `🧬 *Propriedade:* ${skill.propriedade}\n`;
-    // Precisão: valor próprio; no padrão, só ofensivas usam a base do rank
+    // Precisão: valor próprio; no padrão, ofensivas e suplementares usam a base do rank
     let precisao = temValor(skill.precisao) ? skill.precisao : undefined;
-    if (precisao === undefined && skill.categoria === 'Ofensivo') {
+    if (precisao === undefined && (skill.categoria === 'Ofensivo' || skill.categoria === 'Suplementar')) {
         precisao = PRECISAO_BASE_RANK[Number(skill.rank)];
     }
     if (temValor(precisao)) texto += `🎲 *Precisão:* ${precisao}%\n`;
@@ -207,6 +212,26 @@ function montarDetalhe(item, efeitosDb) {
     return texto.trimEnd();
 }
 
+function obterUrlImagemHabilidade(skill) {
+    const img = String(skill?.img || '').trim();
+    if (!img) return null;
+    if (/^https?:\/\//i.test(img)) return img;
+    return `${CLOUDINARY_HABILIDADES}/${img}${/\.[a-z0-9]{3,4}$/i.test(img) ? '' : '.jpg'}`;
+}
+
+// Retorna o buffer da imagem ou null (sem imagem cadastrada / falha no download)
+async function baixarImagemHabilidade(skill) {
+    const url = obterUrlImagemHabilidade(skill);
+    if (!url) return null;
+    try {
+        const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
+        return Buffer.from(res.data);
+    } catch (e) {
+        console.error(`[infohab] Erro ao baixar imagem da habilidade "${skill.nome}":`, e.message);
+        return null;
+    }
+}
+
 async function enviarDetalhe(sock, from, m, item) {
     let efeitosDb = {};
     if (listarIdsEfeitos(item.skill).length) {
@@ -214,10 +239,22 @@ async function enviarDetalhe(sock, from, m, item) {
             const res = await axios.get(`${FIREBASE_URL}/efeitos.json`);
             efeitosDb = res.data || {};
         } catch (e) {
-            console.error('[habilidades] Erro ao buscar efeitos:', e.message);
+            console.error('[infohab] Erro ao buscar efeitos:', e.message);
         }
     }
-    await sock.sendMessage(from, { text: montarDetalhe(item, efeitosDb) }, { quoted: m });
+
+    const texto = montarDetalhe(item, efeitosDb);
+    const imagem = await baixarImagemHabilidade(item.skill);
+
+    if (!imagem) {
+        await sock.sendMessage(from, { text: texto }, { quoted: m });
+    } else if (texto.length <= LIMITE_LEGENDA) {
+        await sock.sendMessage(from, { image: imagem, caption: texto }, { quoted: m });
+    } else {
+        // Texto longo demais para a legenda: imagem primeiro, informações logo depois
+        await sock.sendMessage(from, { image: imagem }, { quoted: m });
+        await sock.sendMessage(from, { text: texto }, { quoted: m });
+    }
 }
 
 /**
@@ -411,7 +448,7 @@ async function comandoArsenal(sock, m, from, chave, senderId, termoOriginal) {
 // ─────────────────────────────────────────────
 // HANDLER PRINCIPAL
 // ─────────────────────────────────────────────
-async function handleHabilidadesCommands(sock, m, text, from) {
+async function handleInfohabCommands(sock, m, text, from) {
     const senderId = obterJidEfetivo(m, from);
     const chave = `${from}|${senderId}`;
 
@@ -460,4 +497,4 @@ async function handleHabilidadesCommands(sock, m, text, from) {
     return false;
 }
 
-module.exports = { handleHabilidadesCommands };
+module.exports = { handleInfohabCommands };

@@ -78,6 +78,21 @@ async function getEstilo(key) {
     }
 
 
+    if (!snap.exists()) {
+
+        snap =
+            await get(
+                ref(
+                    db,
+                    `habilidades/Akuma no Mi/${key}`
+                )
+            );
+
+        tipo = "Akuma no Mi";
+
+    }
+
+
     if (!snap.exists())
         return null;
 
@@ -114,7 +129,39 @@ async function getEstilo(key) {
 
 
 
+// Descobre em qual categoria do banco o estilo/raça está (mesma ordem de busca do getEstilo),
+// para que a skill nova seja salva no mesmo lugar de onde a lista é lida
+async function descobrirCategoriaBanco(nome) {
+
+    try {
+
+        const estilo = await get(ref(db, `habilidades/Estilo de Luta/${nome}`));
+
+        if (estilo.exists()) return "Estilo de Luta";
+
+        const raca = await get(ref(db, `habilidades/Raças/${nome}`));
+
+        if (raca.exists()) return "Raças";
+
+        const akuma = await get(ref(db, `habilidades/Akuma no Mi/${nome}`));
+
+        if (akuma.exists()) return "Akuma no Mi";
+
+    } catch (err) {
+
+        console.error("Erro ao descobrir categoria do banco:", err);
+
+    }
+
+    return "Estilo de Luta";
+
+}
+
+
 window.abrirHabilidades = async function (estiloNome) {
+
+    // guarda qual lista está aberta, para atualizá-la depois de salvar uma skill
+    window.habilidadesEstiloAtual = estiloNome;
 
     const modal =
         document.getElementById("habilidades-modal");
@@ -156,7 +203,7 @@ window.abrirHabilidades = async function (estiloNome) {
             addBtn.style.display = "block";
 
 
-            addBtn.onclick = () => {
+            addBtn.onclick = async () => {
 
                 window.skillAtual = {
 
@@ -170,15 +217,14 @@ window.abrirHabilidades = async function (estiloNome) {
                     alvos: "",
                     cooldown: "",
 
-                    atributos: {
-                        stm: 0
-                    }
+                    // sem valores próprios: ATK/DEF/STM usam o padrão do rank
+                    atributos: {}
 
                 };
 
 
                 window.skillCategoria =
-                    "Estilo de Luta";
+                    await descobrirCategoriaBanco(estiloNome);
 
 
                 window.skillSub =

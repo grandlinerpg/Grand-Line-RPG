@@ -206,9 +206,15 @@
 
       if (!snap.exists()) return;
 
-      // guarda a chave do nó (chave) para abrir as habilidades da fruta correta
+      // chave das habilidades da fruta = nome sem prefixo (mesmo cálculo de character.fruit em perfil/item.js)
+      const limparNome = nome =>
+        nome.includes(":") ? nome.split(":")[1].trim() : nome.trim();
+
       const data = Object.entries(snap.val())
-        .map(([chave, fruta]) => ({ ...fruta, chave }));
+        .map(([id, fruta]) => ({
+          ...fruta,
+          chave: limparNome(fruta.nome || id)
+        }));
 
       for (let t = 1; t <= 6; t++) {
     

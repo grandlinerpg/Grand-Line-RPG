@@ -1,10 +1,10 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const express = require('express');  
-const axios = require('axios');   
+const axios = require('axios');  
 const cron = require('node-cron');      
  
 // CONSTANTES E CONFIGURAÇÕES
-const NUMERO_BOT = "5511918448331";
+const NUMERO_BOT = "5541988399218";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 const RECOMPENSA_ARENA_SALDO = 5000;
 const RECOMPENSA_ARENA_EXP = 500; 
@@ -70,7 +70,7 @@ module.exports = {
 
 // IMPORTAÇÃO DOS MÓDULOS DE COMANDOS
 const { handleInfoCommands } = require('./commands/info');
-const { handleHabilidadesCommands } = require('./commands/habilidades');
+const { handleInfohabCommands } = require('./commands/infohab');
 const { handleDesafiosCommands } = require('./commands/desafios');
 const { handleQuizCommands, dispararQuizNoGrupo } = require('./commands/quiz');
 const { handleCombatesCommands } = require('./commands/combates');
@@ -159,7 +159,7 @@ async function connectToWhatsApp() {
             if (handleLevelCommands && await handleLevelCommands(sock, m, text, from)) return;
             if (await handleQuizCommands(sock, m, text, from)) return;
             if (await handleInfoCommands(sock, m, text, from)) return;
-            if (await handleHabilidadesCommands(sock, m, text, from)) return;
+            if (await handleInfohabCommands(sock, m, text, from)) return;
             if (await handleDesafiosCommands(sock, m, text, from)) return;
             if (await handleAtividadesCommands(sock, m, text, from)) return;
             if (await handleViagemCommands(sock, m, text, from)) return;

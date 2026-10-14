@@ -488,7 +488,7 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     if (textoTerritorio) {
         cabecalho += `${textoTerritorio}\n`;
     }
-    cabecalho += `> Início: ${horaInicioStr} BRT\n`;
+    cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
 
     let msgStatusFinal = cabecalho;
 

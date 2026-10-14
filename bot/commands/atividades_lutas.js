@@ -488,7 +488,7 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     if (textoTerritorio) {
         cabecalho += `${textoTerritorio}\n`;
     }
-    cabecalho += `> Início: ${horaInicioStr} (BRT)\n`;
+    cabecalho += `> Início: ${horaInicioStr} BRT\n`;
 
     let msgStatusFinal = cabecalho;
 
@@ -641,11 +641,27 @@ async function finalizarAtividade(sock, from) {
 
                     if (!realFirebaseKey) continue;
 
-                    const berriesGanho = baseBerries;
-                    const expGanho = baseExp;
-
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
+
+                    // Lógica de Teto de EXP (Atividades)
+                    const tetoAtual = Number(playerData.atividades?.teto ?? 0);
+                    let expGanho = baseExp;
+
+                    if (tetoAtual >= 1000) {
+                        expGanho = 0;
+                    } else if (tetoAtual + expGanho > 1000) {
+                        expGanho = 1000 - tetoAtual;
+                    }
+
+                    const novoTeto = Math.min(1000, tetoAtual + expGanho);
+
+                    // Atualiza o teto em /atividades
+                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/atividades.json`, {
+                        teto: novoTeto
+                    });
+
+                    const berriesGanho = baseBerries;
 
                     // Processa ganho de EXP, Level e Rank
                     const { novoExp, novoLevel, novoRank, subiuLevel, levelAnterior } = processarGanhoExp(playerInfo, expGanho);

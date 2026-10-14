@@ -3,7 +3,7 @@ const express = require('express');
 const axios = require('axios');  
 const cron = require('node-cron');       
  
-// CONSTANTES E CONFIGURAÇÕES
+// CONSTANTES E CONFIGURAÇÕES 
 const NUMERO_BOT = "5511918448331";
 const FIREBASE_URL = "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 const RECOMPENSA_ARENA_SALDO = 5000;

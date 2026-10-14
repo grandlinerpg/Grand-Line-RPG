@@ -110,7 +110,6 @@ async function encerrarListaEIniciarPartida(sock, from) {
     if (!atividade) return;
 
     if (atividade.defensores.length === 0) {
-        await sock.sendMessage(from, { text: `⚠️ A atividade *${atividade.nomeAtividade}* foi encerrada sem defensores.` });
         await finalizarAtividade(sock, from);
         return;
     }
@@ -537,13 +536,10 @@ async function finalizarAtividade(sock, from) {
         }
     }
 
-    let faccaoVencedora = null;
-    let jogadoresVencedores = [];
+    let faccaoVencedora = atividade.faccaoCriador;
+    let jogadoresVencedores = [...atividade.anunciantes];
 
-    if (atacantesVivos.length > 0 && defensoresVivos.length === 0) {
-        faccaoVencedora = atividade.faccaoCriador;
-        jogadoresVencedores = [...atividade.anunciantes];
-    } else if (defensoresVivos.length > 0 && atacantesVivos.length === 0) {
+    if (defensoresVivos.length > 0 && atacantesVivos.length === 0) {
         faccaoVencedora = nomeDefesa;
         jogadoresVencedores = [...atividade.defensores];
     }
@@ -723,7 +719,7 @@ async function finalizarAtividade(sock, from) {
         console.error('Erro ao atualizar character.status dos jogadores para false:', e.message);
     }
 
-    const resultadoTexto = faccaoVencedora ? `Facção *${faccaoVencedora}*` : 'Empate!';
+    const resultadoTexto = `Facção *${faccaoVencedora}*`;
 
     const msgFinal = `🎉 *ATIVIDADE CONCLUÍDA!* 🎉\n\n` +
         `Atividade: *${atividade.nomeAtividade}*\n` +

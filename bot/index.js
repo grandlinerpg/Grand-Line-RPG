@@ -79,7 +79,7 @@ const { handleVincularCommands } = require('./commands/vincular');
 const { handleViagemCommands } = require('./commands/viagem');
 const { handleMapaCommands } = require('./commands/mapa');
 const { handleLocalizacaoCommands } = require('./commands/localizacao');
-const { handleResetCommand } = require('./commands/reset');
+const { handleResetCommand, executarResetAtividades } = require('./commands/reset');
 
 // SERVIDOR WEB + AUTO-PING
 const app = express();
@@ -133,6 +133,14 @@ async function connectToWhatsApp() {
             cron.schedule('0 21 * * *', () => {
                 console.log('⏰ [CRON] Iniciando Quiz Automático das 21:00 (Horário de Brasília)...');
                 dispararQuizNoGrupo(GRUPO_QUIZ_JID, sock);
+            }, {
+                scheduled: true,
+                timezone: "America/Sao_Paulo"
+            });
+
+            cron.schedule('0 2 * * 1', () => {
+                console.log('⏰ [CRON] Executando reset semanal das atividades (Segunda-feira 02:00)...');
+                executarResetAtividades(sock);
             }, {
                 scheduled: true,
                 timezone: "America/Sao_Paulo"

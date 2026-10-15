@@ -90,6 +90,7 @@ window.register = async function () {
       character: {
         faction: "Governo Mundial",
         ilha: "0",
+        status: "Parado",
         charName: "Sem Personagem",
         style: "—",
         race: "Humano",

@@ -180,21 +180,26 @@ function montarDetalhe(item, efeitosDb) {
 
     let texto = `📖 *— ${String(skill.nome).toUpperCase()} —* 📖\n\n`;
 
-    if (skill.rank && NOMES_RANK[Number(skill.rank)]) {
-        texto += `🏅 *Rank:* ${NOMES_RANK[Number(skill.rank)]}\n`;
+    if (temValor(skill.description) && String(skill.description).trim()) {
+        const descricao = String(skill.description).trim().split('\n').map(l => `${l}`).join('\n');
+        texto += `_${descricao}_`;
     }
-    if (temValor(skill.categoria)) texto += `🗂️ *Categoria:* ${skill.categoria}\n`;
-    if (atributos.length) texto += `⚔️ *Atributos:* ${atributos.join(' | ')}\n`;
-    if (consumidos.length) texto += `💠 *Atributos Consumidos:* ${consumidos.join(' | ')}\n`;
-    if (temValor(skill.alvos)) texto += `🎯 *Alvos:* ${skill.alvos}\n`;
-    if (temValor(skill.alcance)) texto += `📏 *Alcance:* ${skill.alcance}\n`;
-    if (temValor(skill.propriedade)) texto += `🧬 *Propriedade:* ${skill.propriedade}\n`;
+
+    if (skill.rank && NOMES_RANK[Number(skill.rank)]) {
+        texto += `\n\n> ${NOMES_RANK[Number(skill.rank)].toUpperCase()}\n`;
+    }
+    if (atributos.length) texto += `> ${atributos.join(' | ')} `;
+    if (consumidos.length) texto += `${consumidos.join(' | ')}\n\n`;
+    if (temValor(skill.categoria)) texto += `* *Categoria:* ${skill.categoria}\n`;
+    if (temValor(skill.alvos)) texto += `* *Alvos:* ${skill.alvos}\n`;
+    if (temValor(skill.alcance)) texto += `* *Alcance:* ${skill.alcance}\n`;
+    if (temValor(skill.propriedade)) texto += `* *Propriedade:* ${skill.propriedade}\n`;
     // Precisão: valor próprio; no padrão, ofensivas e suplementares usam a base do rank
     let precisao = temValor(skill.precisao) ? skill.precisao : undefined;
     if (precisao === undefined && (skill.categoria === 'Ofensivo' || skill.categoria === 'Suplementar')) {
         precisao = PRECISAO_BASE_RANK[Number(skill.rank)];
     }
-    if (temValor(precisao)) texto += `🎲 *Precisão:* ${precisao}%\n`;
+    if (temValor(precisao)) texto += `* *Precisão:* ${precisao}%\n`;
 
     const efeitos = listarIdsEfeitos(skill)
         .map(id => efeitosDb?.[id])
@@ -204,8 +209,6 @@ function montarDetalhe(item, efeitosDb) {
         texto += `\n✨ *Efeitos:*\n`;
         efeitos.forEach(ef => {
             texto += `➔ ${ef.emoji || '❔'} *${ef.nome || 'Efeito'}*\n`;
-            const detalhe = ef.funcionamento || ef.description;
-            if (detalhe) texto += `> ${detalhe}\n`;
         });
     }
 

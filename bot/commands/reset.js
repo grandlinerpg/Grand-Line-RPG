@@ -3,13 +3,11 @@ const { FIREBASE_URL } = require('../index');
 
 const GRUPO_NOTIFICACAO = '120363429956961386@g.us';
 
-async function handleResetCommand(sock, m, text, from) {
-    // Verifica se o comando acionado foi exatamente !reset
-    if (text.trim().toLowerCase() !== '!reset') {
-        return false;
-    }
-
+// Função responsável por fazer a limpeza/reset no Firebase
+async function executarResetAtividades(sock) {
     try {
+        console.log('⏰ [Reset] Iniciando o reset semanal de atividades...');
+
         // 1. Busca todos os jogadores cadastrados no Firebase
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
@@ -17,8 +15,8 @@ async function handleResetCommand(sock, m, text, from) {
         const playerUids = Object.keys(playersData);
 
         if (playerUids.length === 0) {
-            await sock.sendMessage(from, { text: '⚠️ Nenhum jogador encontrado para realizar o reset.' }, { quoted: m });
-            return true;
+            console.log('⚠️ [Reset] Nenhum jogador encontrado no banco de dados.');
+            return false;
         }
 
         // 2. Percorre cada jogador e atualiza o nó de atividades
@@ -37,28 +35,43 @@ async function handleResetCommand(sock, m, text, from) {
                 }
             });
 
-            // Aplica as alterações no nó 'atividades' do jogador atual
+            // Aplica as alterações no nó 'atividades' do jogador
             await axios.put(`${FIREBASE_URL}/players/${uid}/atividades.json`, atividadesAtualizadas);
         }
 
-        // 3. Notifica no grupo solicitado que o reset foi concluído
-        await sock.sendMessage(GRUPO_NOTIFICACAO, {
-            text: '✅ *O reset de atividades foi concluído com sucesso para todos os jogadores!*'
-        });
-
-        // Opcional: Feedback no chat/grupo onde o comando foi digitado (caso seja diferente do grupo alvo)
-        if (from !== GRUPO_NOTIFICACAO) {
-            await sock.sendMessage(from, { text: '✅ Comando de reset executado com sucesso!' }, { quoted: m });
+        // 3. Notifica no grupo no término do reset
+        if (sock) {
+            await sock.sendMessage(GRUPO_NOTIFICACAO, {
+                text: '✅ *O reset semanal de atividades foi concluído com sucesso para todos os jogadores!*'
+            });
         }
 
+        console.log('✅ [Reset] Reset concluído com sucesso!');
         return true;
     } catch (e) {
-        console.error('Erro ao executar o comando !reset:', e);
-        await sock.sendMessage(from, { text: '❌ Ocorreu um erro ao tentar resetar as atividades dos jogadores.' }, { quoted: m });
-        return true;
+        console.error('❌ Erro ao executar o reset de atividades:', e);
+        return false;
     }
 }
 
+// Handler para ser acionado manualmente via chat (!reset)
+async function handleResetCommand(sock, m, text, from) {
+    if (text.trim().toLowerCase() !== '!reset') {
+        return false;
+    }
+
+    const sucesso = await executarResetAtividades(sock);
+
+    if (sucesso && from !== GRUPO_NOTIFICACAO) {
+        await sock.sendMessage(from, { text: '✅ Comando de reset executado com sucesso!' }, { quoted: m });
+    } else if (!sucesso) {
+        await sock.sendMessage(from, { text: '❌ Ocorreu um erro ao tentar resetar as atividades dos jogadores.' }, { quoted: m });
+    }
+
+    return true;
+}
+
 module.exports = {
-    handleResetCommand
+    handleResetCommand,
+    executarResetAtividades
 };

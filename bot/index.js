@@ -138,7 +138,7 @@ async function connectToWhatsApp() {
                 timezone: "America/Sao_Paulo"
             });
 
-            cron.schedule('0 2 * * 1', () => {
+            cron.schedule('0 2 * * 0', () => {
                 console.log('⏰ [CRON] Executando reset semanal das atividades (Segunda-feira 02:00)...');
                 executarResetAtividades(sock);
             }, {

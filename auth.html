@@ -38,7 +38,7 @@
       <h1>GRAND LINE RPG</h1>
 
       <p>
-        Entre com seu número de celular para continuar sua jornada.
+        Entre na sua conta para continuar sua jornada.
       </p>
 
       <form>
@@ -50,39 +50,28 @@
           <input
             type="tel"
             id="login-phone"
-            placeholder="+5511999998888"
+            placeholder="Ex: 16999998888"
           >
 
         </div>
 
-        <!-- CAMPO PARA O CÓDIGO SMS (INICIALMENTE OCULTO) -->
-        <div class="input-group hidden" id="login-code-group">
+        <div class="input-group">
 
-          <label>Código SMS (6 dígitos)</label>
+          <label>Senha</label>
 
           <input
-            type="text"
-            id="login-code"
-            placeholder="123456"
+            type="password"
+            id="login-password"
+            placeholder="Digite sua senha"
           >
 
         </div>
 
         <button
           type="button"
-          id="btn-send-login-code"
-          onclick="sendLoginCode()"
+          onclick="login()"
         >
-          ENVIAR CÓDIGO SMS
-        </button>
-
-        <button
-          type="button"
-          id="btn-verify-login-code"
-          class="hidden"
-          onclick="verifyLoginCode()"
-        >
-          CONFIRMAR E ENTRAR
+          ENTRAR
         </button>
 
       </form>
@@ -116,14 +105,14 @@
       <h1>CRIAR CONTA</h1>
 
       <p>
-        Registre seu celular para começar sua aventura.
+        Verifique seu celular via SMS para criar sua conta.
       </p>
 
       <form>
 
         <div class="input-group">
 
-          <label>Nome do Jogador</label>
+          <label>Nome</label>
 
           <input
             type="text"
@@ -140,39 +129,65 @@
           <input
             type="tel"
             id="register-phone"
-            placeholder="+5511999998888"
+            placeholder="Ex: 16999998888"
           >
 
         </div>
 
-        <!-- CAMPO PARA O CÓDIGO SMS (INICIALMENTE OCULTO) -->
-        <div class="input-group hidden" id="register-code-group">
+        <!-- CAMPO DE SMS DO CADASTRO (INICIALMENTE OCULTO) -->
+        <div class="input-group hidden" id="sms-group">
 
           <label>Código SMS (6 dígitos)</label>
 
           <input
             type="text"
-            id="register-code"
-            placeholder="123456"
+            id="register-sms-code"
+            placeholder="Digite o código enviado por SMS"
           >
 
         </div>
 
+        <div class="input-group">
+
+          <label>Senha</label>
+
+          <input
+            type="password"
+            id="register-password"
+            placeholder="Digite sua senha"
+          >
+
+        </div>
+
+        <div class="input-group">
+
+          <label>Confirmar Senha</label>
+
+          <input
+            type="password"
+            id="register-confirm"
+            placeholder="Confirme sua senha"
+          >
+
+        </div>
+
+        <!-- BOTAO DE ENVIAR SMS -->
         <button
           type="button"
-          id="btn-send-reg-code"
-          onclick="sendRegisterCode()"
+          id="btn-send-sms"
+          onclick="sendRegisterSMS()"
         >
           ENVIAR CÓDIGO SMS
         </button>
 
+        <!-- BOTAO FINAL DE REGISTRO (APÓS SMS) -->
         <button
           type="button"
-          id="btn-verify-reg-code"
+          id="btn-confirm-register"
           class="hidden"
-          onclick="verifyRegisterCode()"
+          onclick="register()"
         >
-          CONFIRMAR E CRIAR CONTA
+          VALIDAR CÓDIGO E CRIAR CONTA
         </button>
 
       </form>

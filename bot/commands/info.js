@@ -3,7 +3,8 @@ const {
     FIREBASE_URL,
     obterTemporadaAtual,
     obterEmojiFaccao,
-    obterJidEfetivo
+    obterJidEfetivo,
+    GRUPOS_PERMITIDOS
 } = require('../index');
 
 // Função auxiliar para determinar o nome de exibição da facção/bando
@@ -318,19 +319,30 @@ async function handleInfoCommands(sock, m, text, from) {
     }
 
     if (text === '!relatorio' || text.startsWith('!relatorio ')) {
-        const senderId = obterJidEfetivo(m, from);
+        if (!GRUPOS_PERMITIDOS.includes(from)) {
+            await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos permitidos!' }, { quoted: m });
+            return true;
+        }
 
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
 
+            const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
+            const targetId = mentionedJid
+                ? mentionedJid.split('@')[0].split(':')[0].trim()
+                : obterJidEfetivo(m, from);
+
             const playerUid = Object.keys(playersData).find(uid =>
-                String(playersData[uid]?.number?.LID || '').trim() === senderId ||
-                String(playersData[uid]?.number?.n || '').trim() === senderId || uid === senderId
+                String(playersData[uid]?.number?.LID || '').trim() === targetId ||
+                String(playersData[uid]?.number?.n || '').trim() === targetId || uid === targetId
             );
 
             if (!playerUid) {
-                await sock.sendMessage(from, { text: '❌ Você precisa ter um personagem cadastrado para ver o relatório!' }, { quoted: m });
+                const mensagemErro = mentionedJid
+                    ? '❌ *O jogador mencionado não está cadastrado!*'
+                    : '❌ Você precisa ter um personagem cadastrado para ver o relatório!';
+                await sock.sendMessage(from, { text: mensagemErro }, { quoted: m });
                 return true;
             }
 
@@ -340,7 +352,7 @@ async function handleInfoCommands(sock, m, text, from) {
             const nomeJogador = player?.character?.charName || player?.nome || 'Lutador';
 
             if (!faccao) {
-                await sock.sendMessage(from, { text: '❌ Seu personagem não possui uma facção registrada no banco de dados!' }, { quoted: m });
+                await sock.sendMessage(from, { text: `❌ O personagem *${nomeJogador}* não possui uma facção registrada no banco de dados!` }, { quoted: m });
                 return true;
             }
 
@@ -352,7 +364,7 @@ async function handleInfoCommands(sock, m, text, from) {
             const emojiFaccao = obterEmojiFaccao(faccao) || '🏴‍☠️';
 
             if (chavesAtividades.length === 0) {
-                await sock.sendMessage(from, { text: `📊 *— RELATÓRIO —*\n\n👤 *J${nomeJogador}*\n🏛️ ${nomeExibicaoFaccao}\n\n❌ Não há atividades cadastradas para sua facção.` }, { quoted: m });
+                await sock.sendMessage(from, { text: `📊 *— RELATÓRIO —*\n\n👤 *${nomeJogador}*\n🏛️ ${nomeExibicaoFaccao}\n\n❌ Não há atividades cadastradas para esta facção.` }, { quoted: m });
                 return true;
             }
 
@@ -377,7 +389,7 @@ async function handleInfoCommands(sock, m, text, from) {
         }
         return true;
     }
-
+    
     return false;
 }
 

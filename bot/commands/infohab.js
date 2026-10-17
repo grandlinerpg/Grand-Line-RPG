@@ -60,6 +60,12 @@ function obterSessao(chave) {
 
 function salvarSessao(chave, itens) {
     sessoes.set(chave, { itens, expira: Date.now() + SESSAO_TTL_MS });
+
+    // Só uma lista aberta por jogador: fecha a do !efeitos para que
+    // um "1" digitado agora não seja respondido pela lista errada.
+    try {
+        require('./efeitos').limparSessaoEfeitos(chave);
+    } catch (e) { /* efeitos ainda não carregado: ignora */ }
 }
 
 function renovarSessao(chave) {
@@ -500,4 +506,7 @@ async function handleInfohabCommands(sock, m, text, from) {
     return false;
 }
 
-module.exports = { handleInfohabCommands };
+module.exports = {
+    handleInfohabCommands,
+    limparSessaoHabilidades: (chave) => sessoes.delete(chave)
+};

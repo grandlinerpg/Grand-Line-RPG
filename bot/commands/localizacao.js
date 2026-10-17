@@ -3,7 +3,8 @@ const {
     FIREBASE_URL,
     obterEmojiFaccao,
     obterJidEfetivo,
-    formatarJidPv
+    formatarJidPv,
+    GRUPOS_PERMITIDOS
 } = require('../index');
 
 // =========================================================================
@@ -12,17 +13,6 @@ const {
 
 const PIRATAS_EXIGEM_MESMO_BANDO = true;
 const RESPONDER_NO_PRIVADO = false;
-
-const GRUPOS_FACCOES = [
-    '120363408918568715@g.us', // Exército Revolucionário
-    '120363408644122202@g.us'  // Governo Mundial
-];
-
-const GRUPOS_BANDOS = [
-    '120363411388017464@g.us'  // Piratas das Feras
-];
-
-const GRUPOS_PERMITIDOS = [...GRUPOS_FACCOES, ...GRUPOS_BANDOS];
 
 // =========================================================================
 // FUNÇÕES AUXILIARES DE DATA E VIAGEM

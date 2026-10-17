@@ -57,19 +57,27 @@ async function iniciarFirebase(){
 
 iniciarFirebase();
 
-// Auxiliar para formatar número para padrão internacional (+55...)
+/**
+ * Função para formatar qualquer entrada de número para o padrão internacional com DDI (Ex: +5516999998888)
+ */
 function formatPhoneNumber(phone) {
-  let cleaned = phone.replace(/\D/g, '');
-  if (!cleaned.startsWith('55')) {
+  let cleaned = phone.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+  // Se o número tiver 10 ou 11 dígitos, assume que é do Brasil e o usuário não digitou o DDI (55)
+  if (cleaned.length === 10 || cleaned.length === 11) {
     cleaned = '55' + cleaned;
   }
+
   return '+' + cleaned;
 }
 
-// Auxiliar para converter o celular em identificador interno de Auth
+/**
+ * Converte o número formatado para o e-mail de autenticação interna do Firebase
+ */
 function phoneToAuthEmail(phone) {
-  const cleaned = phone.replace(/\D/g, '');
-  return `${cleaned}@grandlinerpg.com`;
+  const formatted = formatPhoneNumber(phone);
+  const cleanDigits = formatted.replace(/\D/g, '');
+  return `${cleanDigits}@grandlinerpg.com`;
 }
 
 // ======================
@@ -126,18 +134,20 @@ window.register = async function () {
   }
 
   try {
-    // 1. Confirma que o número de telefone é real e pertence ao usuário
+    // 1. Confirma que o SMS foi recebido no número do celular
     await confirmationResultGlobal.confirm(smsCode);
 
-    // 2. Cria a conta permanente com celular + senha
+    // 2. Cria a conta com o número (convertido para e-mail interno) + senha
     const authEmail = phoneToAuthEmail(phone);
+    const formattedPhone = formatPhoneNumber(phone);
+
     const userCredential = await createUserWithEmailAndPassword(auth, authEmail, senha);
     const user = userCredential.user;
 
     const playerData = {
       uid: user.uid,
       nome: nome,
-      celular: formatPhoneNumber(phone),
+      celular: formattedPhone,
 
       info: {
         level: 1,
@@ -196,7 +206,7 @@ window.register = async function () {
 };
 
 // ======================
-// LOGIN (CELULAR + SENHA)
+// LOGIN (CELULAR COM DDI + SENHA)
 // ======================
 window.login = async function () {
   const phone = document.getElementById("login-phone").value;

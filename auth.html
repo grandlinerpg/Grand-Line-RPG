@@ -21,6 +21,9 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
+  <!-- CONTAINER PARA RECAPTCHA INVISÍVEL DO FIREBASE -->
+  <div id="recaptcha-container"></div>
+
   <!-- CONTAINER -->
   <main class="auth-container">
 
@@ -35,40 +38,51 @@
       <h1>GRAND LINE RPG</h1>
 
       <p>
-        Entre na sua conta para continuar sua jornada.
+        Entre com seu número de celular para continuar sua jornada.
       </p>
 
       <form>
 
         <div class="input-group">
 
-          <label>Email</label>
+          <label>Celular (com DDD)</label>
 
           <input
-            type="email"
-            id="login-email"
-            placeholder="Digite seu email"
+            type="tel"
+            id="login-phone"
+            placeholder="+5511999998888"
           >
 
         </div>
 
-        <div class="input-group">
+        <!-- CAMPO PARA O CÓDIGO SMS (INICIALMENTE OCULTO) -->
+        <div class="input-group hidden" id="login-code-group">
 
-          <label>Senha</label>
+          <label>Código SMS (6 dígitos)</label>
 
           <input
-            type="password"
-            id="login-password"
-            placeholder="Digite sua senha"
+            type="text"
+            id="login-code"
+            placeholder="123456"
           >
 
         </div>
 
         <button
           type="button"
-          onclick="login()"
+          id="btn-send-login-code"
+          onclick="sendLoginCode()"
         >
-          ENTRAR
+          ENVIAR CÓDIGO SMS
+        </button>
+
+        <button
+          type="button"
+          id="btn-verify-login-code"
+          class="hidden"
+          onclick="verifyLoginCode()"
+        >
+          CONFIRMAR E ENTRAR
         </button>
 
       </form>
@@ -102,14 +116,14 @@
       <h1>CRIAR CONTA</h1>
 
       <p>
-        Registre-se para começar sua aventura.
+        Registre seu celular para começar sua aventura.
       </p>
 
       <form>
 
         <div class="input-group">
 
-          <label>Nome</label>
+          <label>Nome do Jogador</label>
 
           <input
             type="text"
@@ -121,45 +135,44 @@
 
         <div class="input-group">
 
-          <label>Email</label>
+          <label>Celular (com DDD)</label>
 
           <input
-            type="email"
-            id="register-email"
-            placeholder="Digite seu email"
+            type="tel"
+            id="register-phone"
+            placeholder="+5511999998888"
           >
 
         </div>
 
-        <div class="input-group">
+        <!-- CAMPO PARA O CÓDIGO SMS (INICIALMENTE OCULTO) -->
+        <div class="input-group hidden" id="register-code-group">
 
-          <label>Senha</label>
-
-          <input
-            type="password"
-            id="register-password"
-            placeholder="Digite sua senha"
-          >
-
-        </div>
-
-        <div class="input-group">
-
-          <label>Confirmar Senha</label>
+          <label>Código SMS (6 dígitos)</label>
 
           <input
-            type="password"
-            id="register-confirm"
-            placeholder="Confirme sua senha"
+            type="text"
+            id="register-code"
+            placeholder="123456"
           >
 
         </div>
 
         <button
           type="button"
-          onclick="register()"
+          id="btn-send-reg-code"
+          onclick="sendRegisterCode()"
         >
-          REGISTRAR
+          ENVIAR CÓDIGO SMS
+        </button>
+
+        <button
+          type="button"
+          id="btn-verify-reg-code"
+          class="hidden"
+          onclick="verifyRegisterCode()"
+        >
+          CONFIRMAR E CRIAR CONTA
         </button>
 
       </form>

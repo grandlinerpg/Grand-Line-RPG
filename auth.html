@@ -21,9 +21,6 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- CONTAINER PARA RECAPTCHA INVISÍVEL DO FIREBASE -->
-  <div id="recaptcha-container"></div>
-
   <!-- CONTAINER -->
   <main class="auth-container">
 
@@ -45,12 +42,12 @@
 
         <div class="input-group">
 
-          <label>Celular (com DDI e DDD)</label>
+          <label>Email</label>
 
           <input
-            type="tel"
-            id="login-phone"
-            placeholder="Ex: 5516999998888 ou +5516999998888"
+            type="email"
+            id="login-email"
+            placeholder="Digite seu email"
           >
 
         </div>
@@ -105,7 +102,7 @@
       <h1>CRIAR CONTA</h1>
 
       <p>
-        Verifique seu celular via SMS para criar sua conta.
+        Registre-se para começar sua aventura.
       </p>
 
       <form>
@@ -124,25 +121,12 @@
 
         <div class="input-group">
 
-          <label>Celular (com DDI e DDD)</label>
+          <label>Email</label>
 
           <input
-            type="tel"
-            id="register-phone"
-            placeholder="Ex: 5516999998888 ou +5516999998888"
-          >
-
-        </div>
-
-        <!-- CAMPO DE SMS DO CADASTRO (INICIALMENTE OCULTO) -->
-        <div class="input-group hidden" id="sms-group">
-
-          <label>Código SMS (6 dígitos)</label>
-
-          <input
-            type="text"
-            id="register-sms-code"
-            placeholder="Digite o código enviado por SMS"
+            type="email"
+            id="register-email"
+            placeholder="Digite seu email"
           >
 
         </div>
@@ -171,23 +155,11 @@
 
         </div>
 
-        <!-- BOTAO DE ENVIAR SMS -->
         <button
           type="button"
-          id="btn-send-sms"
-          onclick="sendRegisterSMS()"
-        >
-          ENVIAR CÓDIGO SMS
-        </button>
-
-        <!-- BOTAO FINAL DE REGISTRO (APÓS SMS) -->
-        <button
-          type="button"
-          id="btn-confirm-register"
-          class="hidden"
           onclick="register()"
         >
-          VALIDAR CÓDIGO E CRIAR CONTA
+          REGISTRAR
         </button>
 
       </form>

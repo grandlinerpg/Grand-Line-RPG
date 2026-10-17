@@ -74,11 +74,6 @@ async function handleAtividadesCommands(sock, m, text, from) {
             return true;
         }
 
-        if (!gruposPermitidos.includes(from)) {
-            await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos permitidos!' }, { quoted: m });
-            return true;
-        }
-
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};

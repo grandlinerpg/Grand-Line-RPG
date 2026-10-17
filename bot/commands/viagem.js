@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { FIREBASE_URL, obterJidEfetivo } = require('../index');
+const { processarGanhoExp, aplicarRecompensasLevelUp } = require('./level');
 
 // Grupo onde os anúncios gerais de atividades e viagens são enviados
 const GRUPO_ATIVIDADES_LISTA = '120363409325935641@g.us';
@@ -225,20 +226,58 @@ async function finalizarEGravarAtividadeTipo1(sock, grupoOrigem, sessao, ilhaDes
                         const playerData = playersAllData[realFirebaseKey] || {};
                         const playerInfo = playerData.info || {};
 
-                        const expAtual = Number(playerInfo.exp ?? playerData.exp ?? 0);
+                        // Lógica de Teto de EXP (Atividades)
+                        const tetoAtual = Number(playerData.atividades?.teto ?? 0);
+                        let expGanho = baseExp;
+
+                        if (tetoAtual >= 1000) {
+                            expGanho = 0;
+                        } else if (tetoAtual + expGanho > 1000) {
+                            expGanho = 1000 - tetoAtual;
+                        }
+
+                        const novoTeto = Math.min(1000, tetoAtual + expGanho);
+
+                        // Atualiza o teto em /atividades
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/atividades.json`, {
+                            teto: novoTeto
+                        });
+
+                        const berriesGanho = baseBerries;
+
+                        // Processa ganho de EXP, Level e Rank via level.js
+                        const { novoExp, novoLevel, novoRank, subiuLevel, levelAnterior } = processarGanhoExp(playerInfo, expGanho);
                         const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
+                        const novoSaldo = saldoAtual + berriesGanho;
 
-                        const novoExp = expAtual + baseExp;
-                        const novoSaldo = saldoAtual + baseBerries;
+                        // Se subiu de nível, calcula e atualiza os pontos e atributos excedentes
+                        if (subiuLevel) {
+                            const { pointsAtualizados, statsAtualizados } = aplicarRecompensasLevelUp(
+                                playerData,
+                                levelAnterior,
+                                novoLevel
+                            );
 
+                            await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/points.json`, pointsAtualizados);
+                            await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
+                        }
+
+                        // Atualiza o nó info (exp, level, saldo)
                         await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                             exp: novoExp,
+                            level: novoLevel,
                             saldo: novoSaldo
                         });
 
-                        if (playerData.exp !== undefined || playerData.saldo !== undefined) {
+                        // Atualiza o nó character (rank)
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
+                            rank: novoRank
+                        });
+
+                        if (playerData.exp !== undefined || playerData.saldo !== undefined || playerData.level !== undefined) {
                             await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                                 exp: novoExp,
+                                level: novoLevel,
                                 saldo: novoSaldo
                             });
                         }

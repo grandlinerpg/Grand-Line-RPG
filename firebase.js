@@ -5,6 +5,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
 import {
   getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   setPersistence,
   browserLocalPersistence,
   RecaptchaVerifier,
@@ -40,21 +42,22 @@ const db = getDatabase(app);
 
 let confirmationResultGlobal = null;
 
-async function iniciarFirebase() {
-  await setPersistence(auth, browserLocalPersistence);
-  
-  // Configuração do ReCAPTCHA invisível do Firebase
+async function iniciarFirebase(){
+  await setPersistence(
+    auth,
+    browserLocalPersistence
+  );
+
+  // Inicializa ReCAPTCHA invisível do Firebase
   window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
     'size': 'invisible',
-    'callback': () => {
-      // reCAPTCHA resolvido
-    }
+    'callback': () => {}
   });
 }
 
 iniciarFirebase();
 
-// Helper para formatar o número no padrão E.164 (+55DDDNÚMERO)
+// Auxiliar para formatar número para padrão internacional (+55...)
 function formatPhoneNumber(phone) {
   let cleaned = phone.replace(/\D/g, '');
   if (!cleaned.startsWith('55')) {
@@ -63,19 +66,32 @@ function formatPhoneNumber(phone) {
   return '+' + cleaned;
 }
 
+// Auxiliar para converter o celular em identificador interno de Auth
+function phoneToAuthEmail(phone) {
+  const cleaned = phone.replace(/\D/g, '');
+  return `${cleaned}@grandlinerpg.com`;
+}
+
 // ======================
 // REGISTRO - ETAPA 1: ENVIAR SMS
 // ======================
-window.sendRegisterCode = async function () {
-  const phoneInput = document.getElementById("register-phone").value;
+window.sendRegisterSMS = async function () {
+  const phone = document.getElementById("register-phone").value;
   const nome = document.getElementById("register-name").value;
+  const senha = document.getElementById("register-password").value;
+  const confirmar = document.getElementById("register-confirm").value;
 
-  if (!phoneInput || !nome) {
-    alert("Preencha o nome e o celular!");
+  if (!phone || !nome || !senha || !confirmar) {
+    alert("Preencha todos os campos antes de enviar o SMS!");
     return;
   }
 
-  const formattedPhone = formatPhoneNumber(phoneInput);
+  if (senha !== confirmar) {
+    alert("As senhas não coincidem!");
+    return;
+  }
+
+  const formattedPhone = formatPhoneNumber(phone);
   const appVerifier = window.recaptchaVerifier;
 
   try {
@@ -84,10 +100,10 @@ window.sendRegisterCode = async function () {
 
     alert("Código SMS enviado para " + formattedPhone);
 
-    // Exibe o campo de digitação do código SMS
-    document.getElementById("register-code-group").classList.remove("hidden");
-    document.getElementById("btn-verify-reg-code").classList.remove("hidden");
-    document.getElementById("btn-send-reg-code").classList.add("hidden");
+    // Exibe o campo para inserir o código do SMS
+    document.getElementById("sms-group").classList.remove("hidden");
+    document.getElementById("btn-confirm-register").classList.remove("hidden");
+    document.getElementById("btn-send-sms").classList.add("hidden");
 
   } catch (error) {
     console.error("Erro ao enviar SMS:", error);
@@ -96,26 +112,32 @@ window.sendRegisterCode = async function () {
 };
 
 // ======================
-// REGISTRO - ETAPA 2: VALIDAR CÓDIGO E SALVAR NO BANCO
+// REGISTRO - ETAPA 2: VALIDAR SMS E REGISTRAR CONTA/SENHA
 // ======================
-window.verifyRegisterCode = async function () {
-  const code = document.getElementById("register-code").value;
+window.register = async function () {
+  const smsCode = document.getElementById("register-sms-code").value;
+  const phone = document.getElementById("register-phone").value;
+  const senha = document.getElementById("register-password").value;
   const nome = document.getElementById("register-name").value;
-  const phoneInput = document.getElementById("register-phone").value;
 
-  if (!code) {
-    alert("Digite o código recebido por SMS!");
+  if (!smsCode) {
+    alert("Digite o código SMS recebido!");
     return;
   }
 
   try {
-    const result = await confirmationResultGlobal.confirm(code);
-    const user = result.user;
+    // 1. Confirma que o número de telefone é real e pertence ao usuário
+    await confirmationResultGlobal.confirm(smsCode);
+
+    // 2. Cria a conta permanente com celular + senha
+    const authEmail = phoneToAuthEmail(phone);
+    const userCredential = await createUserWithEmailAndPassword(auth, authEmail, senha);
+    const user = userCredential.user;
 
     const playerData = {
       uid: user.uid,
       nome: nome,
-      celular: formatPhoneNumber(phoneInput),
+      celular: formatPhoneNumber(phone),
 
       info: {
         level: 1,
@@ -164,68 +186,40 @@ window.verifyRegisterCode = async function () {
 
     await set(ref(db, `players/${user.uid}`), playerData);
 
-    alert("Conta criada com sucesso!");
+    alert("Celular verificado e conta criada com sucesso!");
     window.location.href = "auth.html";
 
   } catch (error) {
-    console.error("Erro na verificação do código:", error);
-    alert("Código inválido ou expirado!");
+    console.error("Erro no cadastro:", error);
+    alert("Erro na verificação do código ou no cadastro: " + error.message);
   }
 };
 
 // ======================
-// LOGIN - ETAPA 1: ENVIAR SMS
+// LOGIN (CELULAR + SENHA)
 // ======================
-window.sendLoginCode = async function () {
-  const phoneInput = document.getElementById("login-phone").value;
+window.login = async function () {
+  const phone = document.getElementById("login-phone").value;
+  const senha = document.getElementById("login-password").value;
 
-  if (!phoneInput) {
-    alert("Informe o número de celular!");
+  if (!phone || !senha) {
+    alert("Preencha todos os campos!");
     return;
   }
 
-  const formattedPhone = formatPhoneNumber(phoneInput);
-  const appVerifier = window.recaptchaVerifier;
+  const authEmail = phoneToAuthEmail(phone);
 
   try {
-    const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
-    confirmationResultGlobal = confirmationResult;
-
-    alert("Código SMS enviado para " + formattedPhone);
-
-    // Exibe o campo de digitação do código SMS
-    document.getElementById("login-code-group").classList.remove("hidden");
-    document.getElementById("btn-verify-login-code").classList.remove("hidden");
-    document.getElementById("btn-send-login-code").classList.add("hidden");
-
-  } catch (error) {
-    console.error("Erro ao enviar SMS:", error);
-    alert("Falha ao enviar SMS: " + error.message);
-  }
-};
-
-// ======================
-// LOGIN - ETAPA 2: VALIDAR CÓDIGO E REDIRECIONAR
-// ======================
-window.verifyLoginCode = async function () {
-  const code = document.getElementById("login-code").value;
-
-  if (!code) {
-    alert("Digite o código recebido por SMS!");
-    return;
-  }
-
-  try {
-    const result = await confirmationResultGlobal.confirm(code);
-    const user = result.user;
+    const userCredential = await signInWithEmailAndPassword(auth, authEmail, senha);
+    const user = userCredential.user;
 
     localStorage.setItem("uid", user.uid);
 
-    // BUSCA DADOS DO PLAYER NO BANCO
+    // BUSCA DADOS DO PLAYER
     const snap = await get(ref(db, `players/${user.uid}`));
 
     if (!snap.exists()) {
-      alert("Jogador não encontrado na base de dados!");
+      alert("Jogador não encontrado!");
       return;
     }
 
@@ -244,7 +238,6 @@ window.verifyLoginCode = async function () {
     }
 
   } catch (error) {
-    console.error("Erro na verificação do código:", error);
-    alert("Código inválido ou expirado!");
+    alert("Erro ao realizar login: " + error.message);
   }
 };

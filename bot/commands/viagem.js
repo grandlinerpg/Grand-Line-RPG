@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { FIREBASE_URL, obterJidEfetivo } = require('../index');
+const { FIREBASE_URL, obterJidEfetivo, GRUPOS_PERMITIDOS } = require('../index');
 const { processarGanhoExp, aplicarRecompensasLevelUp } = require('./level');
 
 // Grupo onde os anúncios gerais de atividades e viagens são enviados
@@ -339,13 +339,8 @@ async function handleViagemCommands(sock, m, text, from) {
 
     // 1. Comando Inicial: !viajar
     if (text === '!viajar') {
-        const gruposPermitidos = [
-            '120363408918568715@g.us',
-            '120363408644122202@g.us',
-            '120363411388017464@g.us'
-        ];
-
-        if (!gruposPermitidos.includes(from)) {
+        
+        if (!GRUPOS_PERMITIDOS.includes(from)) {
             await sock.sendMessage(from, { text: '❌ Este comando só pode ser utilizado nos grupos permitidos!' }, { quoted: m });
             return true;
         }

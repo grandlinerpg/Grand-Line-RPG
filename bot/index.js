@@ -67,7 +67,7 @@ module.exports = {
     GRUPO_COLISEU,
     GRUPO_QUIZ_JID,
     GRUPOS_ARENA,
-    GRUPOS_PERMITIDOS_ATIVIDADES,
+    GRUPOS_PERMITIDOS,
     obterTemporadaAtual,
     obterEmojiFaccao,
     formatarJidPv,

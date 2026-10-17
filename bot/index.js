@@ -20,6 +20,12 @@ const GRUPOS_ARENA = [
     "120363429534972500@g.us"
 ];
 
+const GRUPOS_PERMITIDOS_ATIVIDADES = [
+    '120363408918568715@g.us',
+    '120363408644122202@g.us',
+    '120363411388017464@g.us'
+];
+
 // IMPORTAÇÃO DO MÓDULO DE LEVEL (Ajuste o caminho se estiver em ./level ou ./commands/level)
 const { processarGanhoExp, handleLevelCommands } = require('./commands/level');
 
@@ -61,6 +67,7 @@ module.exports = {
     GRUPO_COLISEU,
     GRUPO_QUIZ_JID,
     GRUPOS_ARENA,
+    GRUPOS_PERMITIDOS_ATIVIDADES,
     obterTemporadaAtual,
     obterEmojiFaccao,
     formatarJidPv,

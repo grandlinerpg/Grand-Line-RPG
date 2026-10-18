@@ -77,6 +77,8 @@ module.exports = {
 
 // IMPORTAÇÃO DOS MÓDULOS DE COMANDOS
 const { handleInfoCommands } = require('./commands/info');
+const { handleEfeitosCommands } = require('./commands/efeitos');
+const { handleInventarioCommands } = require('./commands/inventario');
 const { handleInfohabCommands } = require('./commands/infohab');
 const { handleDesafiosCommands } = require('./commands/desafios');
 const { handleQuizCommands, dispararQuizNoGrupo } = require('./commands/quiz');

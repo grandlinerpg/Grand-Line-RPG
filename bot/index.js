@@ -179,6 +179,7 @@ async function connectToWhatsApp() {
             if (await handleQuizCommands(sock, m, text, from)) return;
             if (await handleInfoCommands(sock, m, text, from)) return;
             if (await handleInfohabCommands(sock, m, text, from)) return;
+            if (await handleEfeitosCommands(sock, m, text, from)) return;
             if (await handleDesafiosCommands(sock, m, text, from)) return;
             if (await handleAtividadesCommands(sock, m, text, from)) return;
             if (await handleViagemCommands(sock, m, text, from)) return;

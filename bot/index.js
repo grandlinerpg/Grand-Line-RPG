@@ -88,6 +88,7 @@ const { handleVincularCommands } = require('./commands/vincular');
 const { handleViagemCommands } = require('./commands/viagem');
 const { handleMapaCommands } = require('./commands/mapa');
 const { handleLocalizacaoCommands } = require('./commands/localizacao');
+const { handleAtividadesInfoCommands } = require('./commands/atividades_info');
 const { handleResetCommand, executarResetAtividades } = require('./commands/reset');
 
 // SERVIDOR WEB + AUTO-PING

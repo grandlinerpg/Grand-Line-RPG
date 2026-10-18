@@ -1,21 +1,5 @@
 const axios = require('axios');
-const { FIREBASE_URL, obterJidEfetivo } = require('../index');
-
-// =========================================================================
-// CONFIGURAÇÕES DO COMANDO
-// =========================================================================
-// Mesmos grupos do !local (localizacao.js): grupos de facção + grupos de bando.
-// Ao criar um grupo novo, lembre de adicioná-lo nos dois arquivos.
-const GRUPOS_FACCOES = [
-    '120363408918568715@g.us', // Exército Revolucionário
-    '120363408644122202@g.us'  // Governo Mundial
-];
-
-const GRUPOS_BANDOS = [
-    '120363411388017464@g.us'  // Piratas das Feras
-];
-
-const GRUPOS_PERMITIDOS = [...GRUPOS_FACCOES, ...GRUPOS_BANDOS];
+const { FIREBASE_URL, obterJidEfetivo, GRUPOS_PERMITIDOS } = require('../index');
 
 // Emoji de cada categoria (a ordem desta lista também é a ordem de exibição no inventário).
 // As regras olham o nome da categoria sem acento/maiúscula; se a categoria não casar com nenhuma,

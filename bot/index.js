@@ -187,6 +187,8 @@ async function connectToWhatsApp() {
             if (await handleCombatesCommands(sock, m, text, from)) return;
             if (await handleVincularCommands(sock, m, text, from)) return;
             if (await handleResetCommand(sock, m, text, from)) return;
+            if (await handleInventarioCommands(sock, m, text, from)) return;
+            if (await handleAtividadesInfoCommands(sock, m, text, from)) return;
 
         } catch (err) {
             console.error('❌ Erro no processamento:', err);

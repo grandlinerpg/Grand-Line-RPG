@@ -450,7 +450,7 @@ async function comandoArsenal(sock, m, from, chave, senderId, termoOriginal) {
     }
 
     salvarSessao(chave, ordenados);
-    const titulo = `⚔️ *— ARSENAL DE ${nomePersonagem.toUpperCase()} —* ⚔️`;
+    const titulo = `⚔️ *— ARSENAL —* ⚔️\n👤 *${nomePersonagem.toUpperCase()}*`;
     await sock.sendMessage(from, { text: montarLista(titulo, ordenados) + RODAPE_LISTA }, { quoted: m });
 }
 

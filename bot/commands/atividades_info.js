@@ -180,23 +180,24 @@ function montarDetalhe(item) {
     const berries = rec.dinheiro ?? rec.saldo ?? rec.berries;
     const quemRecebe = tipo === 1 ? 'cada participante' : 'cada jogador da facção vencedora';
 
-    texto += `> ${tipo === 1 ? 'PASSIVA' : 'COMBATE'}\n`;
-    texto += `* *Facção:* ${item.faccaoNome}\n`;
-    texto += `* *Tipo:* ${descreverTipo(tipo)}\n`;
+    texto += `> Facção: ${item.faccaoNome}\n`;
+    if (tipo === 1) texto += `> Duração: ${DURACAO_PASSIVA_MIN} minutos\n`;
+    if (temValor(ativ.jogadores?.min) || temValor(ativ.jogadores?.max)) {
+        const min = temValor(ativ.jogadores?.min) ? ativ.jogadores.min : '?';
+        const max = temValor(ativ.jogadores?.max) ? ativ.jogadores.max : '?';
+        texto += `* *Jogadores:* (${min}) ~ (${max})\n`;
+    }
+    if (temValor(ativ.limite)) texto += `> Limite: ${ativ.limite} por jogador\n`;
+    if (temValor(ativ.nivel)) texto += `* *Nível:* ${ativ.nivel}\n`;
     if (temValor(berries)) texto += `* *Berries:* ฿ ${formatarNumero(berries)} _(${quemRecebe})_\n`;
     if (temValor(rec.exp)) texto += `* *EXP:* ${formatarNumero(rec.exp)} _(${quemRecebe})_\n`;
-    if (tipo === 1) texto += `* *Tempo de conclusão:* ${DURACAO_PASSIVA_MIN} minutos\n`;
-    if (temValor(ativ.jogadores?.min)) texto += `* *Mínimo de jogadores:* ${ativ.jogadores.min}\n`;
-    if (temValor(ativ.jogadores?.max)) texto += `* *Máximo de jogadores:* ${ativ.jogadores.max}\n`;
-    if (temValor(ativ.limite)) texto += `* *Limite semanal:* ${ativ.limite} por jogador\n`;
-    if (temValor(ativ.nivel)) texto += `* *Nível:* ${ativ.nivel}\n`;
 
     const extras = Array.isArray(ativ.extras)
         ? ativ.extras
         : (ativ.extras && typeof ativ.extras === 'object' ? Object.values(ativ.extras) : (ativ.extras ? [ativ.extras] : []));
     const extrasLimpos = extras.map(e => String(e || '').trim()).filter(Boolean);
     if (extrasLimpos.length) {
-        texto += `\n✨ *Extras:*\n`;
+        texto += `\n📜 *INFORMAÇÕES* 📜\n\n`;
         extrasLimpos.forEach(extra => { texto += `➔ ${extra}\n`; });
     }
 

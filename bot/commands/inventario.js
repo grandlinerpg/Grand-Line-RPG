@@ -90,7 +90,7 @@ function listarInventario(inventario, bancoItens) {
 }
 
 function montarInventario(nomePersonagem, lista) {
-    let texto = `🎒 *— INVENTÁRIO DE ${nomePersonagem.toUpperCase()} —* 🎒\n\n`;
+    let texto = `🎒 *— INVENTÁRIO —* 🎒\n👤 *${nomePersonagem.toUpperCase()}*\n\n`;
 
     lista.forEach(it => {
         texto += `${it.emoji} ${it.nome} — x${formatarNumero(it.quantidade)}\n`;

@@ -185,12 +185,12 @@ function montarDetalhe(item) {
     if (temValor(ativ.jogadores?.min) || temValor(ativ.jogadores?.max)) {
         const min = temValor(ativ.jogadores?.min) ? ativ.jogadores.min : '?';
         const max = temValor(ativ.jogadores?.max) ? ativ.jogadores.max : '?';
-        texto += `> Jogadores: ${min} ~ ${max}\n\n`;
+        texto += `> Jogadores: ${min} ~ ${max}\n`;
     }
-    if (temValor(ativ.limite)) texto += `> Limite: ${ativ.limite} por jogador\n`;
+    if (temValor(ativ.limite)) texto += `> Limite: ${ativ.limite}\n\n`;
     if (temValor(ativ.nivel)) texto += `* *Nível:* ${ativ.nivel}\n`;
-    if (temValor(berries)) texto += `* *Berries:* ฿ ${formatarNumero(berries)} _(${quemRecebe})_\n`;
-    if (temValor(rec.exp)) texto += `* *EXP:* ${formatarNumero(rec.exp)} _(${quemRecebe})_\n`;
+    if (temValor(berries)) texto += `* *Berries:* ฿ ${formatarNumero(berries)}\n`;
+    if (temValor(rec.exp)) texto += `* *EXP:* ${formatarNumero(rec.exp)}\n`;
 
     const extras = Array.isArray(ativ.extras)
         ? ativ.extras

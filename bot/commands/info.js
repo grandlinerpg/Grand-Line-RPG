@@ -368,7 +368,7 @@ async function handleInfoCommands(sock, m, text, from) {
                 return true;
             }
 
-            let relatorioTexto = `📊 *— RELATÓRIO —* 📊\n\n👤 *${nomeJogador}*\n${emojiFaccao} ${nomeExibicaoFaccao}\n\n`;
+            let relatorioTexto = `📊 *— RELATÓRIO —* 📊\n\n👤 *${nomeJogador}*\n\n`;
 
             chavesAtividades.forEach((chave) => {
                 const ativData = atividadesFaccao[chave] || {};

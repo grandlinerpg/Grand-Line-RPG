@@ -90,6 +90,7 @@ const { handleMapaCommands } = require('./commands/mapa');
 const { handleLocalizacaoCommands } = require('./commands/localizacao');
 const { handleAtividadesInfoCommands } = require('./commands/atividades_info');
 const { handleResetCommand, executarResetAtividades } = require('./commands/reset');
+const { handleAlterarCommands } = require('./commands/alterar');
 
 // SERVIDOR WEB + AUTO-PING
 const app = express();
@@ -190,6 +191,7 @@ async function connectToWhatsApp() {
             if (await handleResetCommand(sock, m, text, from)) return;
             if (await handleInventarioCommands(sock, m, text, from)) return;
             if (await handleAtividadesInfoCommands(sock, m, text, from)) return;
+            if (await handleAlterarCommands(sock, m, text, from)) return;
 
         } catch (err) {
             console.error('❌ Erro no processamento:', err);

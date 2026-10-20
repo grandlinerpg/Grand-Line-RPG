@@ -13,9 +13,15 @@ function normalizar(str) {
         .trim();
 }
 
+// Garante o formato clássico @s.whatsapp.net exigido pelo groupParticipantsUpdate ('add')
+function formatarJidParaAdicao(numeroOuJid) {
+    if (!numeroOuJid) return null;
+    const numLimpo = String(numeroOuJid).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
+    return numLimpo ? `${numLimpo}@s.whatsapp.net` : null;
+}
+
 async function handleAlterarCommands(sock, m, text, from) {
     if (text.startsWith('!alterar ') || text === '!alterar') {
-        // Validação de segurança por grupo se necessário
         if (GRUPOS_PERMITIDOS && !GRUPOS_PERMITIDOS.includes(from)) {
             await sock.sendMessage(from, { text: '❌ Este comando não pode ser utilizado neste grupo!' }, { quoted: m });
             return true;
@@ -29,9 +35,7 @@ async function handleAlterarCommands(sock, m, text, from) {
                 return true;
             }
 
-            // Extrai a facção digitada após a menção (!alterar @Jogador Facção)
             const partes = text.trim().split(/\s+/);
-            // Remove o !alterar e a menção para capturar o nome da nova facção
             const novaFaccaoNome = partes.slice(2).join(' ').trim();
 
             if (!novaFaccaoNome) {
@@ -39,7 +43,7 @@ async function handleAlterarCommands(sock, m, text, from) {
                 return true;
             }
 
-            // 2. Buscar dados das Facções e dos Jogadores
+            // 2. Buscar dados no Firebase
             const [faccoesRes, playersRes] = await Promise.all([
                 axios.get(`${FIREBASE_URL}/faccoes.json`),
                 axios.get(`${FIREBASE_URL}/players.json`)
@@ -48,7 +52,7 @@ async function handleAlterarCommands(sock, m, text, from) {
             const faccoesData = faccoesRes.data || {};
             const playersData = playersRes.data || {};
 
-            // 3. Validar se a facção de destino existe no Firebase
+            // 3. Validar Facção de Destino
             const faccaoEncontradaKey = Object.keys(faccoesData).find(key => {
                 const fac = faccoesData[key];
                 return normalizar(key) === normalizar(novaFaccaoNome) || normalizar(fac?.nome) === normalizar(novaFaccaoNome);
@@ -62,7 +66,7 @@ async function handleAlterarCommands(sock, m, text, from) {
             const novaFaccao = faccoesData[faccaoEncontradaKey];
             const nomeNovaFaccaoFormatado = novaFaccao?.nome || faccaoEncontradaKey;
 
-            // 4. Localizar o jogador mencionado no Firebase
+            // 4. Localizar jogador na base de dados
             const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
             const playerUid = Object.keys(playersData).find(uid =>
                 String(playersData[uid]?.number?.LID || '').trim() === targetId ||
@@ -84,39 +88,46 @@ async function handleAlterarCommands(sock, m, text, from) {
                 return true;
             }
 
-            // 5. Atualizar a facção no Firebase
+            // 5. Atualizar no Firebase
             await axios.patch(`${FIREBASE_URL}/players/${playerUid}/character.json`, {
                 faction: faccaoEncontradaKey
             });
 
-            // Formatando o JID do usuário para remoção e adição nos grupos do WhatsApp
-            const userGroupJid = mentionedJid.includes('@') ? mentionedJid : `${mentionedJid}@s.whatsapp.net`;
+            // 6. Preparar os JIDs para o WhatsApp (Resolve problema de LID vs Número Real)
+            const numeroTelefone = player?.number?.n || targetId;
+            const userAddJid = formatarJidParaAdicao(numeroTelefone);
+            const userRemoveJid = mentionedJid.includes('@') ? mentionedJid : `${mentionedJid}@s.whatsapp.net`;
 
-            // 6. Remover do grupo da facção antiga (se existir)
+            // 7. Remover do grupo antigo
             let removidoComSucesso = false;
             if (faccaoAtual && faccoesData[faccaoAtual]?.grupo) {
                 const grupoAntigoJid = faccoesData[faccaoAtual].grupo;
                 try {
-                    await sock.groupParticipantsUpdate(grupoAntigoJid, [userGroupJid], 'remove');
+                    await sock.groupParticipantsUpdate(grupoAntigoJid, [userRemoveJid], 'remove');
                     removidoComSucesso = true;
                 } catch (errRemover) {
                     console.error(`[alterar] Falha ao remover de ${grupoAntigoJid}:`, errRemover.message);
                 }
             }
 
-            // 7. Adicionar ao grupo da nova facção (se existir)
+            // 8. Adicionar ao novo grupo
             let adicionadoComSucesso = false;
-            if (novaFaccao?.grupo) {
+            if (novaFaccao?.grupo && userAddJid) {
                 const grupoNovoJid = novaFaccao.grupo;
                 try {
-                    await sock.groupParticipantsUpdate(grupoNovoJid, [userGroupJid], 'add');
-                    adicionadoComSucesso = true;
+                    const res = await sock.groupParticipantsUpdate(grupoNovoJid, [userAddJid], 'add');
+                    // Verifica se o WhatsApp respondeu com erro de privacidade do usuário
+                    if (res && res[0] && res[0].status === '408') {
+                        console.log(`[alterar] Jogador restrito por privacidade para adição automática.`);
+                    } else {
+                        adicionadoComSucesso = true;
+                    }
                 } catch (errAdicionar) {
                     console.error(`[alterar] Falha ao adicionar em ${grupoNovoJid}:`, errAdicionar.message);
                 }
             }
 
-            // 8. Mensagem de confirmação
+            // 9. Mensagem de Confirmação
             let resposta = `✅ *FACÇÃO ALTERADA COM SUCESSO!*\n\n` +
                 `👤 *Jogador:* ${nomePersonagem}\n` +
                 `🏛️ *Nova Facção:* ${nomeNovaFaccaoFormatado}\n\n`;
@@ -124,7 +135,7 @@ async function handleAlterarCommands(sock, m, text, from) {
             if (novaFaccao?.grupo) {
                 resposta += adicionadoComSucesso
                     ? `➕ Adicionado ao grupo da nova facção.\n`
-                    : `⚠️ Não foi possível adicionar ao grupo novo (verifique as permissões do bot).\n`;
+                    : `⚠️ Não foi possível adicionar diretamente ao novo grupo (o bot precisa ser admin no grupo de destino ou o usuário tem restrição de privacidade).\n`;
             }
 
             if (faccaoAtual && faccoesData[faccaoAtual]?.grupo) {

@@ -3,7 +3,7 @@ const { FIREBASE_URL, obterJidEfetivo } = require('../index');
 
 // ─────────────────────────────────────────────
 // CONFIGURAÇÕES
-// ─────────────────────────────────────────────
+// ───────────────────────────────────────────── 
 const NOMES_RANK = {
     1: 'Iniciante',
     2: 'Aprendiz',

@@ -197,7 +197,7 @@ function montarDetalhe(item) {
         : (ativ.extras && typeof ativ.extras === 'object' ? Object.values(ativ.extras) : (ativ.extras ? [ativ.extras] : []));
     const extrasLimpos = extras.map(e => String(e || '').trim()).filter(Boolean);
     if (extrasLimpos.length) {
-        texto += `\n📜 *INFORMAÇÕES* 📜\n\n`;
+        texto += `\n📜 *FUNCIONAMENTO* 📜\n\n`;
         extrasLimpos.forEach(extra => { texto += `➔ ${extra}\n`; });
     }
 

@@ -185,7 +185,7 @@ function montarDetalhe(item) {
     if (temValor(ativ.jogadores?.min) || temValor(ativ.jogadores?.max)) {
         const min = temValor(ativ.jogadores?.min) ? ativ.jogadores.min : '?';
         const max = temValor(ativ.jogadores?.max) ? ativ.jogadores.max : '?';
-        texto += `* *Jogadores:* (${min}) ~ (${max})\n`;
+        texto += `> Jogadores: ${min} ~ ${max}\n\n`;
     }
     if (temValor(ativ.limite)) texto += `> Limite: ${ativ.limite} por jogador\n`;
     if (temValor(ativ.nivel)) texto += `* *Nível:* ${ativ.nivel}\n`;

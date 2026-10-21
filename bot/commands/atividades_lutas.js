@@ -1,6 +1,5 @@
 const axios = require('axios');
 const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
-const { iniciarCombateAposAceitar } = require('./combates');  
 const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
 
 // Mapeamento auxiliar de emojis de facção
@@ -331,6 +330,8 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         grupoOrigemAtividade: grupoOrigem
     };
 
+    // Importação dinâmica para evitar dependência circular no startup
+    const { iniciarCombateAposAceitar } = require('./combates');
     await iniciarCombateAposAceitar(sock, arenaDisponivelJid, desafioAtividade, 'ATIVIDADE');
 
     atividade.lutadoresAtivos.push({ p1, p2, arena: arenaDisponivelJid });

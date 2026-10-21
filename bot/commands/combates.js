@@ -1,13 +1,28 @@
 const axios = require('axios');
-const { 
-    FIREBASE_URL, 
-    RECOMPENSA_ARENA_SALDO, 
-    RECOMPENSA_ARENA_EXP, 
-    GRUPO_COLISEU, 
-    GRUPOS_ARENA, 
-    obterTemporadaAtual, 
-    obterJidEfetivo 
-} = require('../index');
+
+// Função auxiliar para obter os valores exportados do index de forma segura no runtime
+function obterIndex() {
+    try {
+        return require('../index');
+    } catch (e) {
+        return {};
+    }
+}
+
+function obterFirebaseUrl() {
+    return obterIndex().FIREBASE_URL || process.env.FIREBASE_URL || "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
+}
+
+function obterGruposArena() {
+    return obterIndex().GRUPOS_ARENA || [
+        "120363413442959158@g.us",
+        "120363432609327730@g.us",
+        "120363427539819874@g.us",
+        "120363430639159195@g.us",
+        "120363412001808092@g.us",
+        "120363429534972500@g.us"
+    ];
+}
 
 const CLOUDINARY_BASE = 'https://res.cloudinary.com/djh45admn/image/upload/v1778334616';
 const IMAGEM_PADRAO = 'https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png';
@@ -169,7 +184,7 @@ function iniciarTimerTurnoMaximo(grupoJid, sock) {
 async function obterArenaAtiva(grupoJid) {
     const chaveGrupo = grupoJid.replace('@g.us', '');
     try {
-        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`);
+        const res = await axios.get(`${obterFirebaseUrl()}/arenas_ativas/${chaveGrupo}.json`);
         if (res.data) {
             batalhas[grupoJid] = { ...(batalhas[grupoJid] || {}), ...res.data };
             return batalhas[grupoJid];
@@ -190,14 +205,15 @@ async function salvarArenaAtiva(grupoJid, dadosBatalha) {
     delete dadosParaSalvar.timerTurno;
 
     try {
-        await axios.put(`${FIREBASE_URL}/arenas_ativas/${chaveGrupo}.json`, dadosParaSalvar);
+        await axios.put(`${obterFirebaseUrl()}/arenas_ativas/${chaveGrupo}.json`, dadosParaSalvar);
     } catch (e) {
         console.error('Erro ao salvar arena no Firebase:', e.message);
     }
 }
 
 async function resetarArenaAguardando(grupoJid, batAtual) {
-    const indexArena = GRUPOS_ARENA.indexOf(grupoJid) + 1;
+    const gruposArena = obterGruposArena();
+    const indexArena = gruposArena.indexOf(grupoJid) + 1;
     const arenaReset = {
         numeroArena: batAtual?.numeroArena || (indexArena > 0 ? indexArena : 1),
         nomeArena: batAtual?.nomeArena || `Arena ${indexArena > 0 ? indexArena : 1}`,
@@ -245,6 +261,7 @@ async function enviarCardApresentacao(sock, from, playerInfo) {
 
 async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
     const arenaAtiva = await obterArenaAtiva(from);
+    const gruposArena = obterGruposArena();
 
     const p1 = { 
         lid: desafio.desafianteLid || desafio.p1Lid || desafio.p1?.lid, 
@@ -259,7 +276,7 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
         uid: desafio.desafiadoUid || desafio.p2Uid || desafio.p2?.uid 
     };
 
-    const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
+    const indexArena = gruposArena.indexOf(from) + 1;
     const nomeArena = tipo === 'COLISEU' 
         ? 'COLISEU' 
         : (arenaAtiva?.nomeArena || (indexArena > 0 ? `ARENA ${indexArena}` : 'ARENA'));
@@ -285,7 +302,7 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
     await sock.sendMessage(from, { text: msgInicio });
 
     try {
-        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersRes = await axios.get(`${obterFirebaseUrl()}/players.json`);
         const playersData = playersRes.data || {};
 
         const uidP1 = p1.uid || buscarUidPlayer(playersData, p1.numero || p1.lid);
@@ -305,6 +322,10 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
 }
 
 async function handleCombatesCommands(sock, m, text, from) {
+    const idx = obterIndex();
+    const recompensaSaldo = idx.RECOMPENSA_ARENA_SALDO || 5000;
+    const recompensaExp = idx.RECOMPENSA_ARENA_EXP || 500;
+
     if (text === '!iniciar') {
         const bat = await obterArenaAtiva(from);
         if (!bat) {
@@ -354,7 +375,8 @@ async function handleCombatesCommands(sock, m, text, from) {
             return await sock.sendMessage(from, { text: '❌ Não há combate ativo neste grupo!' }, { quoted: m });
         }
 
-        const senderId = obterJidEfetivo(m, from);
+        const obterJidEfetivoFn = idx.obterJidEfetivo || ((msg, group) => (msg.key.participant || msg.key.remoteJid || group).split('@')[0].split(':')[0].trim());
+        const senderId = obterJidEfetivoFn(m, from);
         const senderIdLimpo = limparId(senderId);
         const mentionedJid = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0];
         const targetId = mentionedJid ? limparId(mentionedJid) : null;
@@ -404,10 +426,11 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         if (bat.tipo === 'COLISEU') {
             try {
-                const tempAtual = await obterTemporadaAtual();
+                const obterTempFn = idx.obterTemporadaAtual || (async () => 1);
+                const tempAtual = await obterTempFn();
                 const [playersRes, coliseuRes] = await Promise.all([
-                    axios.get(`${FIREBASE_URL}/players.json`),
-                    axios.get(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
+                    axios.get(`${obterFirebaseUrl()}/players.json`),
+                    axios.get(`${obterFirebaseUrl()}/coliseu/temporadas/temporada_${tempAtual}/jogadores.json`)
                 ]);
 
                 const playersData = playersRes.data || {};
@@ -417,14 +440,14 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const uidPerdedor = bat.p1?.uid && perdedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && perdedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid));
 
                 if (uidVencedor && coliseuData[uidVencedor]) {
-                    await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidVencedor}.json`, {
+                    await axios.patch(`${obterFirebaseUrl()}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidVencedor}.json`, {
                         vitorias: (coliseuData[uidVencedor].vitorias || 0) + 1,
                         pontos: (coliseuData[uidVencedor].pontos || 0) + 2
                     });
                 }
 
                 if (uidPerdedor && coliseuData[uidPerdedor]) {
-                    await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidPerdedor}.json`, {
+                    await axios.patch(`${obterFirebaseUrl()}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidPerdedor}.json`, {
                         derrotas: (coliseuData[uidPerdedor].derrotas || 0) + 1,
                         pontos: (coliseuData[uidPerdedor].pontos || 0) + 1
                     });
@@ -435,14 +458,14 @@ async function handleCombatesCommands(sock, m, text, from) {
 
             const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
             const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
-            await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey1}.json`).catch(() => {});
-            await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
+            await axios.delete(`${obterFirebaseUrl()}/desafios_coliseu/${desafioKey1}.json`).catch(() => {});
+            await axios.delete(`${obterFirebaseUrl()}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
         } 
         else {
             try {
                 const [rankRes, playersRes] = await Promise.all([
-                    axios.get(`${FIREBASE_URL}/ranking.json`),
-                    axios.get(`${FIREBASE_URL}/players.json`)
+                    axios.get(`${obterFirebaseUrl()}/ranking.json`),
+                    axios.get(`${obterFirebaseUrl()}/players.json`)
                 ]);
 
                 const rankingObj = rankRes.data || {};
@@ -455,9 +478,9 @@ async function handleCombatesCommands(sock, m, text, from) {
                     const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
                     const expAtual = playersData[uidVencedor]?.info?.exp || 0;
 
-                    await axios.patch(`${FIREBASE_URL}/players/${uidVencedor}/info.json`, {
-                        saldo: saldoAtual + RECOMPENSA_ARENA_SALDO,
-                        exp: expAtual + RECOMPENSA_ARENA_EXP
+                    await axios.patch(`${obterFirebaseUrl()}/players/${uidVencedor}/info.json`, {
+                        saldo: saldoAtual + recompensaSaldo,
+                        exp: expAtual + recompensaExp
                     });
 
                     const posVencedorStr = Object.keys(rankingObj).find(pos => rankingObj[pos] === uidVencedor);
@@ -477,7 +500,7 @@ async function handleCombatesCommands(sock, m, text, from) {
                                 if (uidQuemEstavaAcima) {
                                     updates[String(posVencedor)] = uidQuemEstavaAcima;
                                 }
-                                await axios.patch(`${FIREBASE_URL}/ranking.json`, updates);
+                                await axios.patch(`${obterFirebaseUrl()}/ranking.json`, updates);
                                 alterouRanking = true;
                             }
                         }
@@ -489,16 +512,16 @@ async function handleCombatesCommands(sock, m, text, from) {
 
             const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
             const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
-            await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey1}.json`).catch(() => {});
-            await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey2}.json`).catch(() => {});
+            await axios.delete(`${obterFirebaseUrl()}/desafios/${desafioKey1}.json`).catch(() => {});
+            await axios.delete(`${obterFirebaseUrl()}/desafios/${desafioKey2}.json`).catch(() => {});
         }
 
         const msgSubiuRank = alterouRanking ? ' e subiu 1 posição no ranking!' : '!';
         const msgWin = `🏆 *VITÓRIA DECLARADA!* 🏆\n\n` +
                        `O jogador *${nomeVencedor}* venceu o combate após ${bat.turnoAtual || 1} rodada${(bat.turnoAtual || 1) > 1 ? 's' : ''}${msgSubiuRank}\n\n` +
                        `RECOMPENSAS DO COMBATE:\n` +
-                       `💰 +฿ ${RECOMPENSA_ARENA_SALDO.toLocaleString('pt-BR')}\n` +
-                       `✨ +${RECOMPENSA_ARENA_EXP} EXP`;
+                       `💰 +฿ ${recompensaSaldo.toLocaleString('pt-BR')}\n` +
+                       `✨ +${recompensaExp} EXP`;
 
         await sock.sendMessage(from, { text: msgWin });
 
@@ -514,10 +537,10 @@ async function handleCombatesCommands(sock, m, text, from) {
         const desafioKey1 = `${bat.p1?.numero}_VS_${bat.p2?.numero}`;
         const desafioKey2 = `${bat.p1?.lid}_VS_${bat.p2?.lid}`;
 
-        await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey1}.json`).catch(() => {});
-        await axios.delete(`${FIREBASE_URL}/desafios/${desafioKey2}.json`).catch(() => {});
-        await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey1}.json`).catch(() => {});
-        await axios.delete(`${FIREBASE_URL}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
+        await axios.delete(`${obterFirebaseUrl()}/desafios/${desafioKey1}.json`).catch(() => {});
+        await axios.delete(`${obterFirebaseUrl()}/desafios/${desafioKey2}.json`).catch(() => {});
+        await axios.delete(`${obterFirebaseUrl()}/desafios_coliseu/${desafioKey1}.json`).catch(() => {});
+        await axios.delete(`${obterFirebaseUrl()}/desafios_coliseu/${desafioKey2}.json`).catch(() => {});
 
         limparTimersBatalha(bat);
         await resetarArenaAguardando(from, bat);

@@ -1,7 +1,7 @@
 const axios = require('axios');
 const {
     FIREBASE_URL,
-    obterJidEfetivo,
+    obterJidEfetivo, 
     GRUPOS_PERMITIDOS  
 } = require('../index');
 

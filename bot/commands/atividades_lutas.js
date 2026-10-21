@@ -1,6 +1,22 @@
 const axios = require('axios');
-const { FIREBASE_URL, GRUPOS_ARENA } = require('../index');
 const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
+
+// Acessa as variáveis exportadas pelo index de forma segura
+function obterIndex() {
+    try {
+        return require('../index');
+    } catch (e) {
+        return {};
+    }
+}
+
+function obterFirebaseUrl() {
+    return obterIndex().FIREBASE_URL || process.env.FIREBASE_URL;
+}
+
+function obterGruposArena() {
+    return obterIndex().GRUPOS_ARENA || [];
+}
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
@@ -60,7 +76,7 @@ async function obterNomeTerritorio(idIlha) {
     }
 
     try {
-        const ilhasRes = await axios.get(`${FIREBASE_URL}/ilhas.json`);
+        const ilhasRes = await axios.get(`${obterFirebaseUrl()}/ilhas.json`);
         const ilhasData = ilhasRes.data || {};
         const ilhaObj = ilhasData[idIlha] || ilhasData[String(idIlha)];
 
@@ -74,10 +90,6 @@ async function obterNomeTerritorio(idIlha) {
     }
 }
 
-// ==========================================
-// FUNÇÕES AUXILIARES E LÓGICA DE MATCHMAKING
-// ==========================================
-
 async function obterBlocoArenasFormatado(atividade) {
     if (!atividade || !atividade.lutadoresAtivos || atividade.lutadoresAtivos.length === 0) {
         return 'Nenhum combate em andamento no momento.';
@@ -85,15 +97,16 @@ async function obterBlocoArenasFormatado(atividade) {
 
     let arenasAtivas = {};
     try {
-        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
+        const res = await axios.get(`${obterFirebaseUrl()}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
     } catch (e) { }
 
     const blocos = [];
+    const gruposArena = obterGruposArena();
 
     atividade.lutadoresAtivos.forEach(luta => {
         const arenaJid = luta.arena;
-        const indexArena = GRUPOS_ARENA.indexOf(arenaJid) + 1;
+        const indexArena = gruposArena.indexOf(arenaJid) + 1;
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaData = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
 
@@ -127,7 +140,6 @@ async function encerrarListaEIniciarPartida(sock, from) {
     let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
     let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n');
 
-    // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
@@ -305,11 +317,12 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
 
     let arenasAtivas = {};
     try {
-        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
+        const res = await axios.get(`${obterFirebaseUrl()}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
     } catch (e) { }
 
-    const arenaDisponivelJid = GRUPOS_ARENA.find(arenaJid => {
+    const gruposArena = obterGruposArena();
+    const arenaDisponivelJid = gruposArena.find(arenaJid => {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
 
@@ -335,7 +348,6 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         grupoOrigemAtividade: grupoOrigem
     };
 
-    // Importação dinâmica executada apenas em tempo de execução para quebrar a dependência circular no boot
     const { iniciarCombateAposAceitar } = require('./combates');
     await iniciarCombateAposAceitar(sock, arenaDisponivelJid, desafioAtividade, 'ATIVIDADE');
 
@@ -427,7 +439,6 @@ async function enviarRelatorioGrupo(sock, from) {
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
 
-    // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
@@ -467,7 +478,6 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     atividade.derrotados = atividade.derrotados || [];
     const horaInicioStr = atividade.horaInicio || '16:30';
 
-    // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
@@ -532,38 +542,33 @@ async function finalizarAtividade(sock, from) {
         jogadoresVencedores = [...atividade.defensores];
     }
 
-    // Processamento de escudo e domínio da ilha para atividades tipo 2 e 3
     if (atividade.idIlha && Number(atividade.idIlha) !== 0) {
         try {
-            const ilhaRes = await axios.get(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`);
+            const ilhaRes = await axios.get(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`);
             const ilhaDados = ilhaRes.data || {};
             let escudoAtual = Number(ilhaDados.escudo ?? 0);
 
             if (atividade.tipoAtividade === 2) {
                 if (faccaoVencedora === atividade.faccaoCriador) {
-                    // Atacante venceu: reduz escudo em 1 (mínimo 0)
                     const novoEscudo = Math.max(0, escudoAtual - 1);
-                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 } else if (faccaoVencedora === nomeDefesa) {
-                    // Defensores venceram: aumenta escudo em 1 (máximo 3)
                     const novoEscudo = Math.min(3, escudoAtual + 1);
-                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 }
             } else if (atividade.tipoAtividade === 3) {
                 if (faccaoVencedora === atividade.faccaoCriador) {
-                    // Atacantes venceram: domínio passa a ser a facção vencedora (ou bando) e escudo fica em 1
                     const novoDominio = (atividade.faccaoCriador === 'Piratas' && atividade.bandoCriador)
                         ? atividade.bandoCriador
                         : atividade.faccaoCriador;
 
-                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, {
+                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, {
                         dominio: novoDominio,
                         escudo: 1
                     });
                 } else if (faccaoVencedora === nomeDefesa) {
-                    // Defensores venceram: ganham 1 ponto de escudo
                     const novoEscudo = Math.min(3, escudoAtual + 1);
-                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 }
             }
         } catch (e) {
@@ -571,7 +576,6 @@ async function finalizarAtividade(sock, from) {
         }
     }
 
-    // Unifica todos os sobreviventes de ambas as facções para o relatório final
     const sobreviventesTodos = [...atacantesVivos, ...defensoresVivos];
 
     await enviarRelatorioFinalSobreviventes(sock, from, sobreviventesTodos);
@@ -580,12 +584,11 @@ async function finalizarAtividade(sock, from) {
 
     if (jogadoresVencedores.length > 0) {
         try {
-            const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes.json`);
+            const faccoesRes = await axios.get(`${obterFirebaseUrl()}/faccoes.json`);
             const faccoesData = faccoesRes.data || {};
 
             let recompensaBase = null;
 
-            // Busca as regras de recompensa da atividade no Firebase
             const buscaFaccao = faccaoVencedora || atividade.faccaoCriador;
             const ativsFaccao = faccoesData[buscaFaccao]?.atividades || {};
             let chaveAtividade = Object.keys(ativsFaccao).find(k =>
@@ -613,7 +616,7 @@ async function finalizarAtividade(sock, from) {
                 const baseBerries = Number(recompensaBase.dinheiro || recompensaBase.saldo || recompensaBase.berries || 0);
                 const baseExp = Number(recompensaBase.exp || 0);
 
-                const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
+                const playersAllRes = await axios.get(`${obterFirebaseUrl()}/players.json`);
                 const playersAllData = playersAllRes.data || {};
 
                 for (const jogador of jogadoresVencedores) {
@@ -632,7 +635,6 @@ async function finalizarAtividade(sock, from) {
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
 
-                    // Lógica de Teto de EXP (Atividades)
                     const tetoAtual = Number(playerData.atividades?.teto ?? 0);
                     let expGanho = baseExp;
 
@@ -644,19 +646,16 @@ async function finalizarAtividade(sock, from) {
 
                     const novoTeto = Math.min(1000, tetoAtual + expGanho);
 
-                    // Atualiza o teto em /atividades
-                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/atividades.json`, {
+                    await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/atividades.json`, {
                         teto: novoTeto
                     });
 
                     const berriesGanho = baseBerries;
 
-                    // Processa ganho de EXP, Level e Rank
                     const { novoExp, novoLevel, novoRank, subiuLevel, levelAnterior } = processarGanhoExp(playerInfo, expGanho);
                     const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
                     const novoSaldo = saldoAtual + berriesGanho;
 
-                    // Se subiu de nível, calcula e atualiza os pontos e atributos excedentes
                     if (subiuLevel) {
                         const { pointsAtualizados, statsAtualizados } = aplicarRecompensasLevelUp(
                             playerData,
@@ -664,24 +663,22 @@ async function finalizarAtividade(sock, from) {
                             novoLevel
                         );
 
-                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/points.json`, pointsAtualizados);
-                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
+                        await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/points.json`, pointsAtualizados);
+                        await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
                     }
 
-                    // Atualiza o nó info (exp, level, saldo)
-                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
+                    await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
                         level: novoLevel,
                         saldo: novoSaldo
                     });
 
-                    // Atualiza o nó character (rank)
-                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
+                    await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/character.json`, {
                         rank: novoRank
                     });
 
                     if (playerData.exp !== undefined || playerData.saldo !== undefined || playerData.level !== undefined) {
-                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
+                        await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,
                             level: novoLevel,
                             saldo: novoSaldo
@@ -696,10 +693,9 @@ async function finalizarAtividade(sock, from) {
         }
     }
 
-    // Altera character.status para false para todos os jogadores (atacantes e defensores) ao finalizar a atividade
     try {
         const todosJogadoresAtividade = [...(atividade.anunciantes || []), ...(atividade.defensores || [])];
-        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersRes = await axios.get(`${obterFirebaseUrl()}/players.json`);
         const playersData = playersRes.data || {};
 
         for (const jogador of todosJogadoresAtividade) {
@@ -714,7 +710,7 @@ async function finalizarAtividade(sock, from) {
             });
 
             if (realFirebaseKey) {
-                await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
+                await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/character.json`, {
                     status: "Parado"
                 });
             }

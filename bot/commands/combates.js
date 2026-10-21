@@ -9,6 +9,9 @@ const {
     obterJidEfetivo 
 } = require('../index');
 
+// Importa a função auxiliar para buscar imagem do personagem (se estiver exportada no info.js ou definida aqui)
+const { obterBufferImagemPersonagem } = require('./info'); 
+
 const batalhas = {};
 
 function limparId(id) {
@@ -171,6 +174,42 @@ async function resetarArenaAguardando(grupoJid, batAtual) {
     await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
+async function enviarCardApresentacao(sock, from, playerInfo) {
+    try {
+        if (!playerInfo) return;
+
+        const character = playerInfo.character || {};
+        const stats = playerInfo.stats || {};
+
+        const charName = (character.charName || playerInfo.nome || 'Lutador').toUpperCase();
+
+        const str = stats.str ?? 0;
+        const res = stats.res ?? 0;
+        const dex = stats.dex ?? 0;
+        const agi = stats.agi ?? 0;
+        const sta = stats.sta ?? 0;
+        const hp = stats.hp ?? 0;
+
+        const caption = `*${charName}*\n\n` +
+                        `> For: ${str} | Res: ${res}\n` +
+                        `> Dex: ${dex} | Agi: ${agi}\n` +
+                        `> Stm: ${sta} | HP: ${hp}`;
+
+        let imagemBuffer = null;
+        if (typeof obterBufferImagemPersonagem === 'function') {
+            imagemBuffer = await obterBufferImagemPersonagem(character);
+        }
+
+        if (imagemBuffer) {
+            await sock.sendMessage(from, { image: imagemBuffer, caption: caption });
+        } else {
+            await sock.sendMessage(from, { text: caption });
+        }
+    } catch (e) {
+        console.error('Erro ao enviar card de apresentação:', e.message);
+    }
+}
+
 async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
     const arenaAtiva = await obterArenaAtiva(from);
 
@@ -196,7 +235,27 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
         ? `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em 5 minutos ou digitem !iniciar.`
         : `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em *5 minutos* ou digitem *!iniciar*.`;
 
-    return await sock.sendMessage(from, { text: msgInicio });
+    await sock.sendMessage(from, { text: msgInicio });
+
+    // Busca os dados completos dos jogadores no Firebase para obter character e stats
+    try {
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        const playersData = playersRes.data || {};
+
+        const uidP1 = buscarUidPlayer(playersData, p1.numero || p1.lid);
+        const uidP2 = buscarUidPlayer(playersData, p2.numero || p2.lid);
+
+        if (uidP1 && playersData[uidP1]) {
+            await enviarCardApresentacao(sock, from, playersData[uidP1]);
+        }
+        if (uidP2 && playersData[uidP2]) {
+            await enviarCardApresentacao(sock, from, playersData[uidP2]);
+        }
+    } catch (e) {
+        console.error('Erro ao buscar stats para cards de apresentação:', e.message);
+    }
+
+    return true;
 }
 
 async function handleCombatesCommands(sock, m, text, from) {
@@ -281,7 +340,6 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         if (bat.tipo === 'ATIVIDADE' && bat.grupoOrigemAtividade) {
             try {
-                // Importação dinâmica atualizada para o novo arquivo 'atividades_lutas'
                 const { registrarResultadoLutaAtividade } = require('./atividades_lutas');
                 await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
             } catch (e) {
@@ -363,9 +421,8 @@ async function handleCombatesCommands(sock, m, text, from) {
                         const posVencedor = parseInt(posVencedorStr, 10);
                         const posPerdedor = posPerdedorStr ? parseInt(posPerdedorStr, 10) : null;
 
-                        // Só sobe se o vencedor for quem desafiou (estava abaixo do perdedor)
                         if (posPerdedor && posVencedor > posPerdedor) {
-                            const posNova = posVencedor - 1; // Sobe exatamente 1 posição
+                            const posNova = posVencedor - 1;
                             if (posNova >= 1) {
                                 const uidQuemEstavaAcima = rankingObj[String(posNova)];
 

@@ -57,7 +57,6 @@ async function obterBufferImagemPersonagem(character) {
 function buscarUidPlayer(playersData, idBuscado) {
     if (!playersData || !idBuscado) return null;
     
-    // Se idBuscado já for um UID de chave direta no Firebase
     if (playersData[idBuscado]) return idBuscado;
 
     const idLimpo = limparId(idBuscado);
@@ -248,16 +247,16 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
     const arenaAtiva = await obterArenaAtiva(from);
 
     const p1 = { 
-        lid: desafio.desafianteLid || desafio.p1Lid, 
-        numero: desafio.desafianteNum || desafio.p1Num, 
-        nome: desafio.desafianteNome || desafio.p1Nome,
-        uid: desafio.desafianteUid || desafio.p1Uid 
+        lid: desafio.desafianteLid || desafio.p1Lid || desafio.p1?.lid, 
+        numero: desafio.desafianteNum || desafio.p1Num || desafio.p1?.numero, 
+        nome: desafio.desafianteNome || desafio.p1Nome || desafio.p1?.nome,
+        uid: desafio.desafianteUid || desafio.p1Uid || desafio.p1?.uid 
     };
     const p2 = { 
-        lid: desafio.desafiadoLid || desafio.p2Lid, 
-        numero: desafio.desafiadoNum || desafio.p2Num, 
-        nome: desafio.desafiadoNome || desafio.p2Nome,
-        uid: desafio.desafiadoUid || desafio.p2Uid 
+        lid: desafio.desafiadoLid || desafio.p2Lid || desafio.p2?.lid, 
+        numero: desafio.desafiadoNum || desafio.p2Num || desafio.p2?.numero, 
+        nome: desafio.desafiadoNome || desafio.p2Nome || desafio.p2?.nome,
+        uid: desafio.desafiadoUid || desafio.p2Uid || desafio.p2?.uid 
     };
 
     const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
@@ -273,6 +272,10 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
         nomeArena: nomeArena
     };
 
+    if (desafio.grupoOrigemAtividade) {
+        dadosBatalha.grupoOrigemAtividade = desafio.grupoOrigemAtividade;
+    }
+
     await salvarArenaAtiva(from, dadosBatalha);
 
     const msgInicio = tipo === 'COLISEU'
@@ -281,7 +284,6 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
 
     await sock.sendMessage(from, { text: msgInicio });
 
-    // Busca no Firebase garantindo suporte a partidas normais e de Atividade
     try {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};

@@ -2,7 +2,7 @@ const axios = require('axios');
 const {
     FIREBASE_URL,
     obterJidEfetivo,
-    GRUPOS_PERMITIDOS 
+    GRUPOS_PERMITIDOS  
 } = require('../index');
 
 function normalizar(str) {

@@ -1,22 +1,17 @@
 const axios = require('axios');
 const { processarGanhoExp, calcularRank, aplicarRecompensasLevelUp } = require('./level');
 
-// Acesso seguro e dinâmico às constantes do index para evitar o crash por dependência circular no boot
-function obterConfigIndex() {
-    try {
-        return require('../index');
-    } catch (e) {
-        return {};
-    }
-}
+// Configurações e constantes lidas diretamente (sem importar o index.js)
+const FIREBASE_URL = process.env.FIREBASE_URL || "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
 
-function obterFirebaseUrl() {
-    return obterConfigIndex().FIREBASE_URL || process.env.FIREBASE_URL || "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com";
-}
-
-function obterGruposArena() {
-    return obterConfigIndex().GRUPOS_ARENA || [];
-}
+const GRUPOS_ARENA = [
+    "120363413442959158@g.us",
+    "120363432609327730@g.us",
+    "120363427539819874@g.us",
+    "120363430639159195@g.us",
+    "120363412001808092@g.us",
+    "120363429534972500@g.us"
+];
 
 // Mapeamento auxiliar de emojis de facção
 const EMOJIS_FACCAO = {
@@ -76,7 +71,7 @@ async function obterNomeTerritorio(idIlha) {
     }
 
     try {
-        const ilhasRes = await axios.get(`${obterFirebaseUrl()}/ilhas.json`);
+        const ilhasRes = await axios.get(`${FIREBASE_URL}/ilhas.json`);
         const ilhasData = ilhasRes.data || {};
         const ilhaObj = ilhasData[idIlha] || ilhasData[String(idIlha)];
 
@@ -101,16 +96,15 @@ async function obterBlocoArenasFormatado(atividade) {
 
     let arenasAtivas = {};
     try {
-        const res = await axios.get(`${obterFirebaseUrl()}/arenas_ativas.json`);
+        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
     } catch (e) { }
 
     const blocos = [];
-    const gruposArena = obterGruposArena();
 
     atividade.lutadoresAtivos.forEach(luta => {
         const arenaJid = luta.arena;
-        const indexArena = gruposArena.indexOf(arenaJid) + 1;
+        const indexArena = GRUPOS_ARENA.indexOf(arenaJid) + 1;
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaData = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
 
@@ -321,13 +315,11 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
 
     let arenasAtivas = {};
     try {
-        const res = await axios.get(`${obterFirebaseUrl()}/arenas_ativas.json`);
+        const res = await axios.get(`${FIREBASE_URL}/arenas_ativas.json`);
         arenasAtivas = res.data || {};
     } catch (e) { }
 
-    const gruposArena = obterGruposArena();
-
-    const arenaDisponivelJid = gruposArena.find(arenaJid => {
+    const arenaDisponivelJid = GRUPOS_ARENA.find(arenaJid => {
         const chaveSemGus = arenaJid.replace('@g.us', '');
         const arenaRemote = arenasAtivas[chaveSemGus] || arenasAtivas[arenaJid];
 
@@ -353,6 +345,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         grupoOrigemAtividade: grupoOrigem
     };
 
+    // Importação sob demanda (lazy load) para evitar circularidade com combates.js
     const { iniciarCombateAposAceitar } = require('./combates');
     await iniciarCombateAposAceitar(sock, arenaDisponivelJid, desafioAtividade, 'ATIVIDADE');
 
@@ -549,17 +542,17 @@ async function finalizarAtividade(sock, from) {
 
     if (atividade.idIlha && Number(atividade.idIlha) !== 0) {
         try {
-            const ilhaRes = await axios.get(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`);
+            const ilhaRes = await axios.get(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`);
             const ilhaDados = ilhaRes.data || {};
             let escudoAtual = Number(ilhaDados.escudo ?? 0);
 
             if (atividade.tipoAtividade === 2) {
                 if (faccaoVencedora === atividade.faccaoCriador) {
                     const novoEscudo = Math.max(0, escudoAtual - 1);
-                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 } else if (faccaoVencedora === nomeDefesa) {
                     const novoEscudo = Math.min(3, escudoAtual + 1);
-                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 }
             } else if (atividade.tipoAtividade === 3) {
                 if (faccaoVencedora === atividade.faccaoCriador) {
@@ -567,13 +560,13 @@ async function finalizarAtividade(sock, from) {
                         ? atividade.bandoCriador
                         : atividade.faccaoCriador;
 
-                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, {
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, {
                         dominio: novoDominio,
                         escudo: 1
                     });
                 } else if (faccaoVencedora === nomeDefesa) {
                     const novoEscudo = Math.min(3, escudoAtual + 1);
-                    await axios.patch(`${obterFirebaseUrl()}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
+                    await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 }
             }
         } catch (e) {
@@ -589,7 +582,7 @@ async function finalizarAtividade(sock, from) {
 
     if (jogadoresVencedores.length > 0) {
         try {
-            const faccoesRes = await axios.get(`${obterFirebaseUrl()}/faccoes.json`);
+            const faccoesRes = await axios.get(`${FIREBASE_URL}/faccoes.json`);
             const faccoesData = faccoesRes.data || {};
 
             let recompensaBase = null;
@@ -621,7 +614,7 @@ async function finalizarAtividade(sock, from) {
                 const baseBerries = Number(recompensaBase.dinheiro || recompensaBase.saldo || recompensaBase.berries || 0);
                 const baseExp = Number(recompensaBase.exp || 0);
 
-                const playersAllRes = await axios.get(`${obterFirebaseUrl()}/players.json`);
+                const playersAllRes = await axios.get(`${FIREBASE_URL}/players.json`);
                 const playersAllData = playersAllRes.data || {};
 
                 for (const jogador of jogadoresVencedores) {
@@ -651,7 +644,7 @@ async function finalizarAtividade(sock, from) {
 
                     const novoTeto = Math.min(1000, tetoAtual + expGanho);
 
-                    await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/atividades.json`, {
+                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/atividades.json`, {
                         teto: novoTeto
                     });
 
@@ -668,22 +661,22 @@ async function finalizarAtividade(sock, from) {
                             novoLevel
                         );
 
-                        await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/points.json`, pointsAtualizados);
-                        await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/points.json`, pointsAtualizados);
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
                     }
 
-                    await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/info.json`, {
+                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
                         level: novoLevel,
                         saldo: novoSaldo
                     });
 
-                    await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/character.json`, {
+                    await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
                         rank: novoRank
                     });
 
                     if (playerData.exp !== undefined || playerData.saldo !== undefined || playerData.level !== undefined) {
-                        await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}.json`, {
+                        await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}.json`, {
                             exp: novoExp,
                             level: novoLevel,
                             saldo: novoSaldo
@@ -700,7 +693,7 @@ async function finalizarAtividade(sock, from) {
 
     try {
         const todosJogadoresAtividade = [...(atividade.anunciantes || []), ...(atividade.defensores || [])];
-        const playersRes = await axios.get(`${obterFirebaseUrl()}/players.json`);
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
         for (const jogador of todosJogadoresAtividade) {
@@ -715,7 +708,7 @@ async function finalizarAtividade(sock, from) {
             });
 
             if (realFirebaseKey) {
-                await axios.patch(`${obterFirebaseUrl()}/players/${realFirebaseKey}/character.json`, {
+                await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
                     status: "Parado"
                 });
             }

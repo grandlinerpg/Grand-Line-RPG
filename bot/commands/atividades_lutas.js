@@ -74,6 +74,10 @@ async function obterNomeTerritorio(idIlha) {
     }
 }
 
+// ==========================================
+// FUNÇÕES AUXILIARES E LÓGICA DE MATCHMAKING
+// ==========================================
+
 async function obterBlocoArenasFormatado(atividade) {
     if (!atividade || !atividade.lutadoresAtivos || atividade.lutadoresAtivos.length === 0) {
         return 'Nenhum combate em andamento no momento.';
@@ -123,6 +127,7 @@ async function encerrarListaEIniciarPartida(sock, from) {
     let atacantesTexto = atividade.bancoAtacantes.map(a => `➔ ${a.nome} (${a.level})`).join('\n');
     let defensoresTexto = atividade.bancoDefensores.map(d => `➔ ${d.nome} (${d.level})`).join('\n');
 
+    // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
@@ -330,7 +335,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         grupoOrigemAtividade: grupoOrigem
     };
 
-    // Importação dinâmica para evitar dependência circular no startup
+    // Importação dinâmica para evitar o erro de Circular Dependency durante o startup no Render
     const { iniciarCombateAposAceitar } = require('./combates');
     await iniciarCombateAposAceitar(sock, arenaDisponivelJid, desafioAtividade, 'ATIVIDADE');
 
@@ -422,6 +427,7 @@ async function enviarRelatorioGrupo(sock, from) {
 
     const blocoArenas = await obterBlocoArenasFormatado(atividade);
 
+    // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
@@ -461,6 +467,7 @@ async function enviarRelatorioFinalSobreviventes(sock, from, sobreviventesLista)
     atividade.derrotados = atividade.derrotados || [];
     const horaInicioStr = atividade.horaInicio || '16:30';
 
+    // Título idêntico ao painel da lista de atividades
     const emojiAtq = obterEmojiFaccao(atividade.faccaoCriador, atividade);
     const nomeAtividadeMaiusculo = `${emojiAtq} ${atividade.nomeAtividade.toUpperCase()} ${emojiAtq}`;
     const textoTerritorio = await obterNomeTerritorio(atividade.idIlha);
@@ -525,6 +532,7 @@ async function finalizarAtividade(sock, from) {
         jogadoresVencedores = [...atividade.defensores];
     }
 
+    // Processamento de escudo e domínio da ilha para atividades tipo 2 e 3
     if (atividade.idIlha && Number(atividade.idIlha) !== 0) {
         try {
             const ilhaRes = await axios.get(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`);
@@ -533,14 +541,17 @@ async function finalizarAtividade(sock, from) {
 
             if (atividade.tipoAtividade === 2) {
                 if (faccaoVencedora === atividade.faccaoCriador) {
+                    // Atacante venceu: reduz escudo em 1 (mínimo 0)
                     const novoEscudo = Math.max(0, escudoAtual - 1);
                     await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 } else if (faccaoVencedora === nomeDefesa) {
+                    // Defensores venceram: aumenta escudo em 1 (máximo 3)
                     const novoEscudo = Math.min(3, escudoAtual + 1);
                     await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 }
             } else if (atividade.tipoAtividade === 3) {
                 if (faccaoVencedora === atividade.faccaoCriador) {
+                    // Atacantes venceram: domínio passa a ser a facção vencedora (ou bando) e escudo fica em 1
                     const novoDominio = (atividade.faccaoCriador === 'Piratas' && atividade.bandoCriador)
                         ? atividade.bandoCriador
                         : atividade.faccaoCriador;
@@ -550,6 +561,7 @@ async function finalizarAtividade(sock, from) {
                         escudo: 1
                     });
                 } else if (faccaoVencedora === nomeDefesa) {
+                    // Defensores venceram: ganham 1 ponto de escudo
                     const novoEscudo = Math.min(3, escudoAtual + 1);
                     await axios.patch(`${FIREBASE_URL}/ilhas/${atividade.idIlha}.json`, { escudo: novoEscudo });
                 }
@@ -559,6 +571,7 @@ async function finalizarAtividade(sock, from) {
         }
     }
 
+    // Unifica todos os sobreviventes de ambas as facções para o relatório final
     const sobreviventesTodos = [...atacantesVivos, ...defensoresVivos];
 
     await enviarRelatorioFinalSobreviventes(sock, from, sobreviventesTodos);
@@ -572,6 +585,7 @@ async function finalizarAtividade(sock, from) {
 
             let recompensaBase = null;
 
+            // Busca as regras de recompensa da atividade no Firebase
             const buscaFaccao = faccaoVencedora || atividade.faccaoCriador;
             const ativsFaccao = faccoesData[buscaFaccao]?.atividades || {};
             let chaveAtividade = Object.keys(ativsFaccao).find(k =>
@@ -618,6 +632,7 @@ async function finalizarAtividade(sock, from) {
                     const playerData = playersAllData[realFirebaseKey] || {};
                     const playerInfo = playerData.info || {};
 
+                    // Lógica de Teto de EXP (Atividades)
                     const tetoAtual = Number(playerData.atividades?.teto ?? 0);
                     let expGanho = baseExp;
 
@@ -629,16 +644,19 @@ async function finalizarAtividade(sock, from) {
 
                     const novoTeto = Math.min(1000, tetoAtual + expGanho);
 
+                    // Atualiza o teto em /atividades
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/atividades.json`, {
                         teto: novoTeto
                     });
 
                     const berriesGanho = baseBerries;
 
+                    // Processa ganho de EXP, Level e Rank
                     const { novoExp, novoLevel, novoRank, subiuLevel, levelAnterior } = processarGanhoExp(playerInfo, expGanho);
                     const saldoAtual = Number(playerInfo.saldo ?? playerData.saldo ?? 0);
                     const novoSaldo = saldoAtual + berriesGanho;
 
+                    // Se subiu de nível, calcula e atualiza os pontos e atributos excedentes
                     if (subiuLevel) {
                         const { pointsAtualizados, statsAtualizados } = aplicarRecompensasLevelUp(
                             playerData,
@@ -650,12 +668,14 @@ async function finalizarAtividade(sock, from) {
                         await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/stats.json`, statsAtualizados);
                     }
 
+                    // Atualiza o nó info (exp, level, saldo)
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/info.json`, {
                         exp: novoExp,
                         level: novoLevel,
                         saldo: novoSaldo
                     });
 
+                    // Atualiza o nó character (rank)
                     await axios.patch(`${FIREBASE_URL}/players/${realFirebaseKey}/character.json`, {
                         rank: novoRank
                     });
@@ -676,6 +696,7 @@ async function finalizarAtividade(sock, from) {
         }
     }
 
+    // Altera character.status para false para todos os jogadores (atacantes e defensores) ao finalizar a atividade
     try {
         const todosJogadoresAtividade = [...(atividade.anunciantes || []), ...(atividade.defensores || [])];
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);

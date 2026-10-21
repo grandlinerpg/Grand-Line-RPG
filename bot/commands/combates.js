@@ -9,9 +9,6 @@ const {
     obterJidEfetivo 
 } = require('../index');
 
-const CLOUDINARY_BASE = 'https://res.cloudinary.com/djh45admn/image/upload/v1778334616';
-const IMAGEM_PADRAO = 'https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png';
-
 const batalhas = {};
 
 function limparId(id) {
@@ -19,47 +16,9 @@ function limparId(id) {
     return String(id).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
 }
 
-function gerarSlugPersonagem(charName) {
-    return (charName || 'default')
-        .toLowerCase()
-        .replaceAll(' ', '-')
-        .replaceAll('.', '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
-}
-
-function obterUrlImagemPersonagem(character) {
-    const imagem = String(character?.imagem || '').trim();
-    if (imagem) {
-        if (/^https?:\/\//i.test(imagem)) return imagem;
-        return `${CLOUDINARY_BASE}/${imagem}${/\.[a-z0-9]{3,4}$/i.test(imagem) ? '' : '.png'}`;
-    }
-    return `${CLOUDINARY_BASE}/${gerarSlugPersonagem(character?.charName)}.png`;
-}
-
-async function baixarImagemBuffer(url) {
-    const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
-    return Buffer.from(res.data);
-}
-
-async function obterBufferImagemPersonagem(character) {
-    try {
-        return await baixarImagemBuffer(obterUrlImagemPersonagem(character));
-    } catch (e) {
-        try {
-            return await baixarImagemBuffer(IMAGEM_PADRAO);
-        } catch (e2) {
-            return null;
-        }
-    }
-}
-
 function buscarUidPlayer(playersData, idBuscado) {
     if (!playersData || !idBuscado) return null;
     
-    // Se idBuscado já for um UID de chave direta no Firebase
-    if (playersData[idBuscado]) return idBuscado;
-
     const idLimpo = limparId(idBuscado);
 
     return Object.keys(playersData).find(uid => {
@@ -85,6 +44,7 @@ function limparTimersBatalha(bat) {
 
 function obterHorarioTermino(minutosAdicionais = 30) {
     const agora = new Date();
+    // Ajusta o horário considerando o fuso horário UTC-3 (Horário de Brasília)
     const horarioTermino = new Date(agora.getTime() + (minutosAdicionais * 60 * 1000) - (3 * 60 * 60 * 1000));
     const horas = String(horarioTermino.getUTCHours()).padStart(2, '0');
     const minutos = String(horarioTermino.getUTCMinutes()).padStart(2, '0');
@@ -97,8 +57,8 @@ function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
     const novaBatalha = {
         grupoJid,
         tipo,
-        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome, uid: p1.uid },
-        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome, uid: p2.uid },
+        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome },
+        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome },
         fase: 'apresentacao',
         jogadorVez: 1,
         turnoAtual: 1,
@@ -211,54 +171,11 @@ async function resetarArenaAguardando(grupoJid, batAtual) {
     await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
-async function enviarCardApresentacao(sock, from, playerInfo) {
-    try {
-        if (!playerInfo) return;
-
-        const character = playerInfo.character || {};
-        const stats = playerInfo.stats || {};
-
-        const charName = (character.charName || playerInfo.nome || 'Lutador').toUpperCase();
-
-        const str = stats.str ?? 0;
-        const res = stats.res ?? 0;
-        const dex = stats.dex ?? 0;
-        const agi = stats.agi ?? 0;
-        const sta = stats.sta ?? 0;
-        const hp = stats.hp ?? 0;
-
-        const caption = `*${charName}*\n\n` +
-                        `> For: ${str} | Res: ${res}\n` +
-                        `> Dex: ${dex} | Agi: ${agi}\n` +
-                        `> Stm: ${sta} | HP: ${hp}`;
-
-        const imagemBuffer = await obterBufferImagemPersonagem(character);
-
-        if (imagemBuffer) {
-            await sock.sendMessage(from, { image: imagemBuffer, caption: caption });
-        } else {
-            await sock.sendMessage(from, { text: caption });
-        }
-    } catch (e) {
-        console.error('Erro ao enviar card de apresentação:', e.message);
-    }
-}
-
 async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
     const arenaAtiva = await obterArenaAtiva(from);
 
-    const p1 = { 
-        lid: desafio.desafianteLid || desafio.p1Lid, 
-        numero: desafio.desafianteNum || desafio.p1Num, 
-        nome: desafio.desafianteNome || desafio.p1Nome,
-        uid: desafio.desafianteUid || desafio.p1Uid 
-    };
-    const p2 = { 
-        lid: desafio.desafiadoLid || desafio.p2Lid, 
-        numero: desafio.desafiadoNum || desafio.p2Num, 
-        nome: desafio.desafiadoNome || desafio.p2Nome,
-        uid: desafio.desafiadoUid || desafio.p2Uid 
-    };
+    const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
+    const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
 
     const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
     const nomeArena = tipo === 'COLISEU' 
@@ -279,27 +196,7 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
         ? `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em 5 minutos ou digitem !iniciar.`
         : `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em *5 minutos* ou digitem *!iniciar*.`;
 
-    await sock.sendMessage(from, { text: msgInicio });
-
-    // Busca no Firebase garantindo suporte a partidas normais e de Atividade
-    try {
-        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
-        const playersData = playersRes.data || {};
-
-        const uidP1 = p1.uid || buscarUidPlayer(playersData, p1.numero || p1.lid);
-        const uidP2 = p2.uid || buscarUidPlayer(playersData, p2.numero || p2.lid);
-
-        if (uidP1 && playersData[uidP1]) {
-            await enviarCardApresentacao(sock, from, playersData[uidP1]);
-        }
-        if (uidP2 && playersData[uidP2]) {
-            await enviarCardApresentacao(sock, from, playersData[uidP2]);
-        }
-    } catch (e) {
-        console.error('Erro ao buscar stats para cards de apresentação:', e.message);
-    }
-
-    return true;
+    return await sock.sendMessage(from, { text: msgInicio });
 }
 
 async function handleCombatesCommands(sock, m, text, from) {
@@ -384,6 +281,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         if (bat.tipo === 'ATIVIDADE' && bat.grupoOrigemAtividade) {
             try {
+                // Importação dinâmica atualizada para o novo arquivo 'atividades_lutas'
                 const { registrarResultadoLutaAtividade } = require('./atividades_lutas');
                 await registrarResultadoLutaAtividade(sock, bat.grupoOrigemAtividade, vencedorObj, perdedorObj);
             } catch (e) {
@@ -411,8 +309,8 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const playersData = playersRes.data || {};
                 const coliseuData = coliseuRes.data || {};
 
-                const uidVencedor = bat.p1?.uid && vencedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && vencedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid));
-                const uidPerdedor = bat.p1?.uid && perdedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && perdedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid));
+                const uidVencedor = buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid);
+                const uidPerdedor = buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid);
 
                 if (uidVencedor && coliseuData[uidVencedor]) {
                     await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidVencedor}.json`, {
@@ -446,8 +344,8 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const rankingObj = rankRes.data || {};
                 const playersData = playersRes.data || {};
 
-                const uidVencedor = bat.p1?.uid && vencedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && vencedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid));
-                const uidPerdedor = bat.p1?.uid && perdedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && perdedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid));
+                const uidVencedor = buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid);
+                const uidPerdedor = buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid);
 
                 if (uidVencedor) {
                     const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;
@@ -465,8 +363,9 @@ async function handleCombatesCommands(sock, m, text, from) {
                         const posVencedor = parseInt(posVencedorStr, 10);
                         const posPerdedor = posPerdedorStr ? parseInt(posPerdedorStr, 10) : null;
 
+                        // Só sobe se o vencedor for quem desafiou (estava abaixo do perdedor)
                         if (posPerdedor && posVencedor > posPerdedor) {
-                            const posNova = posVencedor - 1;
+                            const posNova = posVencedor - 1; // Sobe exatamente 1 posição
                             if (posNova >= 1) {
                                 const uidQuemEstavaAcima = rankingObj[String(posNova)];
 

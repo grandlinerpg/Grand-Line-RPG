@@ -9,8 +9,8 @@ const {
     obterJidEfetivo 
 } = require('../index');
 
-// Importa a função auxiliar para buscar imagem do personagem (se estiver exportada no info.js ou definida aqui)
-const { obterBufferImagemPersonagem } = require('./info'); 
+const CLOUDINARY_BASE = 'https://res.cloudinary.com/djh45admn/image/upload/v1778334616';
+const IMAGEM_PADRAO = 'https://res.cloudinary.com/djh45admn/image/upload/v1778336777/Picsart_26-05-07_12-17-03-057_nkedrn.png';
 
 const batalhas = {};
 
@@ -19,9 +19,47 @@ function limparId(id) {
     return String(id).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
 }
 
+function gerarSlugPersonagem(charName) {
+    return (charName || 'default')
+        .toLowerCase()
+        .replaceAll(' ', '-')
+        .replaceAll('.', '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
+function obterUrlImagemPersonagem(character) {
+    const imagem = String(character?.imagem || '').trim();
+    if (imagem) {
+        if (/^https?:\/\//i.test(imagem)) return imagem;
+        return `${CLOUDINARY_BASE}/${imagem}${/\.[a-z0-9]{3,4}$/i.test(imagem) ? '' : '.png'}`;
+    }
+    return `${CLOUDINARY_BASE}/${gerarSlugPersonagem(character?.charName)}.png`;
+}
+
+async function baixarImagemBuffer(url) {
+    const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 10000 });
+    return Buffer.from(res.data);
+}
+
+async function obterBufferImagemPersonagem(character) {
+    try {
+        return await baixarImagemBuffer(obterUrlImagemPersonagem(character));
+    } catch (e) {
+        try {
+            return await baixarImagemBuffer(IMAGEM_PADRAO);
+        } catch (e2) {
+            return null;
+        }
+    }
+}
+
 function buscarUidPlayer(playersData, idBuscado) {
     if (!playersData || !idBuscado) return null;
     
+    // Se idBuscado já for um UID de chave direta no Firebase
+    if (playersData[idBuscado]) return idBuscado;
+
     const idLimpo = limparId(idBuscado);
 
     return Object.keys(playersData).find(uid => {
@@ -47,7 +85,6 @@ function limparTimersBatalha(bat) {
 
 function obterHorarioTermino(minutosAdicionais = 30) {
     const agora = new Date();
-    // Ajusta o horário considerando o fuso horário UTC-3 (Horário de Brasília)
     const horarioTermino = new Date(agora.getTime() + (minutosAdicionais * 60 * 1000) - (3 * 60 * 60 * 1000));
     const horas = String(horarioTermino.getUTCHours()).padStart(2, '0');
     const minutos = String(horarioTermino.getUTCMinutes()).padStart(2, '0');
@@ -60,8 +97,8 @@ function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
     const novaBatalha = {
         grupoJid,
         tipo,
-        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome },
-        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome },
+        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome, uid: p1.uid },
+        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome, uid: p2.uid },
         fase: 'apresentacao',
         jogadorVez: 1,
         turnoAtual: 1,
@@ -195,10 +232,7 @@ async function enviarCardApresentacao(sock, from, playerInfo) {
                         `> Dex: ${dex} | Agi: ${agi}\n` +
                         `> Stm: ${sta} | HP: ${hp}`;
 
-        let imagemBuffer = null;
-        if (typeof obterBufferImagemPersonagem === 'function') {
-            imagemBuffer = await obterBufferImagemPersonagem(character);
-        }
+        const imagemBuffer = await obterBufferImagemPersonagem(character);
 
         if (imagemBuffer) {
             await sock.sendMessage(from, { image: imagemBuffer, caption: caption });
@@ -213,8 +247,18 @@ async function enviarCardApresentacao(sock, from, playerInfo) {
 async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
     const arenaAtiva = await obterArenaAtiva(from);
 
-    const p1 = { lid: desafio.desafianteLid, numero: desafio.desafianteNum, nome: desafio.desafianteNome };
-    const p2 = { lid: desafio.desafiadoLid, numero: desafio.desafiadoNum, nome: desafio.desafiadoNome };
+    const p1 = { 
+        lid: desafio.desafianteLid || desafio.p1Lid, 
+        numero: desafio.desafianteNum || desafio.p1Num, 
+        nome: desafio.desafianteNome || desafio.p1Nome,
+        uid: desafio.desafianteUid || desafio.p1Uid 
+    };
+    const p2 = { 
+        lid: desafio.desafiadoLid || desafio.p2Lid, 
+        numero: desafio.desafiadoNum || desafio.p2Num, 
+        nome: desafio.desafiadoNome || desafio.p2Nome,
+        uid: desafio.desafiadoUid || desafio.p2Uid 
+    };
 
     const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
     const nomeArena = tipo === 'COLISEU' 
@@ -237,13 +281,13 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
 
     await sock.sendMessage(from, { text: msgInicio });
 
-    // Busca os dados completos dos jogadores no Firebase para obter character e stats
+    // Busca no Firebase garantindo suporte a partidas normais e de Atividade
     try {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
 
-        const uidP1 = buscarUidPlayer(playersData, p1.numero || p1.lid);
-        const uidP2 = buscarUidPlayer(playersData, p2.numero || p2.lid);
+        const uidP1 = p1.uid || buscarUidPlayer(playersData, p1.numero || p1.lid);
+        const uidP2 = p2.uid || buscarUidPlayer(playersData, p2.numero || p2.lid);
 
         if (uidP1 && playersData[uidP1]) {
             await enviarCardApresentacao(sock, from, playersData[uidP1]);
@@ -367,8 +411,8 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const playersData = playersRes.data || {};
                 const coliseuData = coliseuRes.data || {};
 
-                const uidVencedor = buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid);
-                const uidPerdedor = buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid);
+                const uidVencedor = bat.p1?.uid && vencedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && vencedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid));
+                const uidPerdedor = bat.p1?.uid && perdedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && perdedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid));
 
                 if (uidVencedor && coliseuData[uidVencedor]) {
                     await axios.patch(`${FIREBASE_URL}/coliseu/temporadas/temporada_${tempAtual}/jogadores/${uidVencedor}.json`, {
@@ -402,8 +446,8 @@ async function handleCombatesCommands(sock, m, text, from) {
                 const rankingObj = rankRes.data || {};
                 const playersData = playersRes.data || {};
 
-                const uidVencedor = buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid);
-                const uidPerdedor = buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid);
+                const uidVencedor = bat.p1?.uid && vencedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && vencedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, vencedorObj?.numero || vencedorObj?.lid));
+                const uidPerdedor = bat.p1?.uid && perdedorObj === bat.p1 ? bat.p1.uid : (bat.p2?.uid && perdedorObj === bat.p2 ? bat.p2.uid : buscarUidPlayer(playersData, perdedorObj?.numero || perdedorObj?.lid));
 
                 if (uidVencedor) {
                     const saldoAtual = playersData[uidVencedor]?.info?.saldo || 0;

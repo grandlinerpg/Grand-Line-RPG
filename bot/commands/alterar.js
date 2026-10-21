@@ -13,7 +13,7 @@ function normalizar(str) {
         .trim();
 }
 
-// Garante o formato clássico @s.whatsapp.net exigido pelo groupParticipantsUpdate ('add')
+// Garante o formato clássico @s.whatsapp.net exigido pelo groupParticipantsUpdate
 function formatarJidParaAdicao(numeroOuJid) {
     if (!numeroOuJid) return null;
     const numLimpo = String(numeroOuJid).split('@')[0].split(':')[0].replace(/\D/g, '').trim();
@@ -36,10 +36,10 @@ async function handleAlterarCommands(sock, m, text, from) {
             }
 
             const partes = text.trim().split(/\s+/);
-            const novaFaccaoNome = partes.slice(2).join(' ').trim();
+            const entradaFaccaoOuBando = partes.slice(2).join(' ').trim();
 
-            if (!novaFaccaoNome) {
-                await sock.sendMessage(from, { text: '❌ Informe o nome da nova facção! Exemplo: `!alterar @Jogador Marinha`' }, { quoted: m });
+            if (!entradaFaccaoOuBando) {
+                await sock.sendMessage(from, { text: '❌ Informe a facção ou bando! Exemplo: `!alterar @Jogador Ninered Scabbards`' }, { quoted: m });
                 return true;
             }
 
@@ -52,22 +52,55 @@ async function handleAlterarCommands(sock, m, text, from) {
             const faccoesData = faccoesRes.data || {};
             const playersData = playersRes.data || {};
 
-            // 3. Validar Facção de Destino
-            const faccaoEncontradaKey = Object.keys(faccoesData).find(key => {
-                const fac = faccoesData[key];
-                return normalizar(key) === normalizar(novaFaccaoNome) || normalizar(fac?.nome) === normalizar(novaFaccaoNome);
-            });
+            // 3. Verificar se é uma das facções principais ou um Bando de Piratas
+            const entNorm = normalizar(entradaFaccaoOuBando);
+            const ehGovMundial = entNorm === normalizar('Governo Mundial');
+            const ehExercitoRev = entNorm === normalizar('Exército Revolucionário');
 
-            if (!faccaoEncontradaKey) {
-                await sock.sendMessage(from, { text: `❌ A facção *"${novaFaccaoNome}"* não existe no banco de dados!` }, { quoted: m });
-                return true;
+            let novaFaccaoKey = '';
+            let nomeExibicaoFaccao = '';
+            let bandoNome = null;
+            let grupoDestinoJid = null;
+
+            if (ehGovMundial || ehExercitoRev) {
+                // Caso seja Governo Mundial ou Exército Revolucionário
+                novaFaccaoKey = ehGovMundial ? 'Governo Mundial' : 'Exército Revolucionário';
+                
+                // Tenta achar a chave exata no Firebase
+                const facEncontradaKey = Object.keys(faccoesData).find(k => normalizar(k) === normalizar(novaFaccaoKey));
+                if (facEncontradaKey) {
+                    novaFaccaoKey = facEncontradaKey;
+                    grupoDestinoJid = faccoesData[facEncontradaKey]?.grupo || null;
+                }
+                nomeExibicaoFaccao = novaFaccaoKey;
+                bandoNome = null; // Remove o bando
+            } else {
+                // Caso seja qualquer outro nome -> Torna-se PIRATAS com nó BANDO
+                novaFaccaoKey = 'Piratas';
+                nomeExibicaoFaccao = `Piratas (${entradaFaccaoOuBando})`;
+
+                // Procura em faccoes/Piratas/bandos
+                const piratasData = faccoesData['Piratas'] || faccoesData['piratas'] || {};
+                const bandosData = piratasData.bandos || {};
+
+                // Procura o bando dentro do nó
+                const bandoEncontradoKey = Object.keys(bandosData).find(key => {
+                    const bandoObj = bandosData[key];
+                    return normalizar(key) === entNorm || normalizar(bandoObj?.nome) === entNorm;
+                });
+
+                if (!bandoEncontradoKey) {
+                    await sock.sendMessage(from, { text: `❌ O bando/facção *"${entradaFaccaoOuBando}"* não foi encontrado em faccoes/Piratas/bandos!` }, { quoted: m });
+                    return true;
+                }
+
+                const bandoObj = bandosData[bandoEncontradoKey];
+                bandoNome = bandoObj?.nome || bandoEncontradoKey;
+                grupoDestinoJid = bandoObj?.grupo || bandoObj?.grupoJid || null;
             }
 
-            const novaFaccao = faccoesData[faccaoEncontradaKey];
-            const nomeNovaFaccaoFormatado = novaFaccao?.nome || faccaoEncontradaKey;
-
             // 4. Localizar jogador na base de dados
-            const targetId = mentionedJid.split('@')[0].split(':')[0].trim();
+            const targetId = mentionedJid.split('@')[0].split(':')[0].replace(/\D/g, '').trim();
             const playerUid = Object.keys(playersData).find(uid =>
                 String(playersData[uid]?.number?.LID || '').trim() === targetId ||
                 String(playersData[uid]?.number?.n || '').trim() === targetId ||
@@ -81,66 +114,87 @@ async function handleAlterarCommands(sock, m, text, from) {
 
             const player = playersData[playerUid];
             const faccaoAtual = player?.character?.faction;
+            const bandoAtual = player?.character?.bando;
             const nomePersonagem = player?.character?.charName || player?.nome || 'Lutador';
 
-            if (normalizar(faccaoAtual) === normalizar(faccaoEncontradaKey)) {
-                await sock.sendMessage(from, { text: `⚠️ O personagem *${nomePersonagem}* já pertence à facção *${nomeNovaFaccaoFormatado}*!` }, { quoted: m });
-                return true;
+            // Descobrir o grupo antigo para remoção
+            let grupoAntigoJid = null;
+            if (faccaoAtual) {
+                if (normalizar(faccaoAtual) === normalizar('Piratas') && bandoAtual) {
+                    const piratasData = faccoesData['Piratas'] || faccoesData['piratas'] || {};
+                    const bandosData = piratasData.bandos || {};
+                    const bandoKey = Object.keys(bandosData).find(k => normalizar(k) === normalizar(bandoAtual) || normalizar(bandosData[k]?.nome) === normalizar(bandoAtual));
+                    if (bandoKey) {
+                        grupoAntigoJid = bandosData[bandoKey]?.grupo || bandosData[bandoKey]?.grupoJid;
+                    }
+                } else {
+                    const facObj = faccoesData[faccaoAtual];
+                    if (facObj) grupoAntigoJid = facObj.grupo;
+                }
             }
 
             // 5. Atualizar no Firebase
-            await axios.patch(`${FIREBASE_URL}/players/${playerUid}/character.json`, {
-                faction: faccaoEncontradaKey
-            });
+            const updatePayload = {
+                faction: novaFaccaoKey,
+                bando: bandoNome ? bandoNome : null // Se for Governo/Exército, bando é apagado (null)
+            };
 
-            // 6. Preparar os JIDs para o WhatsApp (Resolve problema de LID vs Número Real)
+            await axios.patch(`${FIREBASE_URL}/players/${playerUid}/character.json`, updatePayload);
+
+            // 6. Preparar JIDs para atualização nos grupos
             const numeroTelefone = player?.number?.n || targetId;
             const userAddJid = formatarJidParaAdicao(numeroTelefone);
-            const userRemoveJid = mentionedJid.includes('@') ? mentionedJid : `${mentionedJid}@s.whatsapp.net`;
+            const userRemoveJid = formatarJidParaAdicao(targetId) || userAddJid;
 
-            // 7. Remover do grupo antigo
+            // 7. Remover do grupo antigo (Tratado com try-catch para evitar queda do bot)
             let removidoComSucesso = false;
-            if (faccaoAtual && faccoesData[faccaoAtual]?.grupo) {
-                const grupoAntigoJid = faccoesData[faccaoAtual].grupo;
+            if (grupoAntigoJid && grupoAntigoJid !== grupoDestinoJid) {
                 try {
                     await sock.groupParticipantsUpdate(grupoAntigoJid, [userRemoveJid], 'remove');
                     removidoComSucesso = true;
                 } catch (errRemover) {
-                    console.error(`[alterar] Falha ao remover de ${grupoAntigoJid}:`, errRemover.message);
+                    console.error(`[alterar] Erro seguro ao remover de ${grupoAntigoJid}:`, errRemover.message);
                 }
             }
 
-            // 8. Adicionar ao novo grupo
+            // 8. Adicionar ao novo grupo (Tratado com try-catch e atraso mínimo para estabilidade do socket)
             let adicionadoComSucesso = false;
-            if (novaFaccao?.grupo && userAddJid) {
-                const grupoNovoJid = novaFaccao.grupo;
+            if (grupoDestinoJid && userAddJid) {
                 try {
-                    const res = await sock.groupParticipantsUpdate(grupoNovoJid, [userAddJid], 'add');
-                    // Verifica se o WhatsApp respondeu com erro de privacidade do usuário
-                    if (res && res[0] && res[0].status === '408') {
-                        console.log(`[alterar] Jogador restrito por privacidade para adição automática.`);
+                    // Pequena pausa para garantir estabilidade da conexão do socket
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const res = await sock.groupParticipantsUpdate(grupoDestinoJid, [userAddJid], 'add');
+                    if (res && res[0] && (res[0].status === '408' || res[0].status === 408)) {
+                        console.log(`[alterar] Jogador com restrição de privacidade.`);
                     } else {
                         adicionadoComSucesso = true;
                     }
                 } catch (errAdicionar) {
-                    console.error(`[alterar] Falha ao adicionar em ${grupoNovoJid}:`, errAdicionar.message);
+                    console.error(`[alterar] Erro seguro ao adicionar em ${grupoDestinoJid}:`, errAdicionar.message);
                 }
             }
 
             // 9. Mensagem de Confirmação
-            let resposta = `✅ *FACÇÃO ALTERADA COM SUCESSO!*\n\n` +
+            let resposta = `✅ *ALTERAÇÃO REALIZADA COM SUCESSO!*\n\n` +
                 `👤 *Jogador:* ${nomePersonagem}\n` +
-                `🏛️ *Nova Facção:* ${nomeNovaFaccaoFormatado}\n\n`;
+                `🏛️ *Nova Facção:* ${novaFaccaoKey}\n`;
 
-            if (novaFaccao?.grupo) {
-                resposta += adicionadoComSucesso
-                    ? `➕ Adicionado ao grupo da nova facção.\n`
-                    : `⚠️ Não foi possível adicionar diretamente ao novo grupo (o bot precisa ser admin no grupo de destino ou o usuário tem restrição de privacidade).\n`;
+            if (bandoNome) {
+                resposta += `🏴‍☠️ *Bando:* ${bandoNome}\n`;
             }
 
-            if (faccaoAtual && faccoesData[faccaoAtual]?.grupo) {
+            resposta += `\n`;
+
+            if (grupoDestinoJid) {
+                resposta += adicionadoComSucesso
+                    ? `➕ Adicionado ao grupo correspondente.\n`
+                    : `⚠️ Não foi possível adicionar ao grupo (verifique as permissões de admin do bot ou privacidade do usuário).\n`;
+            }
+
+            if (grupoAntigoJid && grupoAntigoJid !== grupoDestinoJid) {
                 resposta += removidoComSucesso
-                    ? `➖ Removido do grupo da facção antiga.`
+                    ? `➖ Removido do grupo antigo.`
                     : `⚠️ Não foi possível remover do grupo antigo.`;
             }
 
@@ -148,7 +202,7 @@ async function handleAlterarCommands(sock, m, text, from) {
 
         } catch (e) {
             console.error('Erro no comando !alterar:', e);
-            await sock.sendMessage(from, { text: '❌ Erro ao alterar a facção do jogador.' }, { quoted: m });
+            await sock.sendMessage(from, { text: '❌ Erro ao alterar a facção/bando do jogador.' }, { quoted: m });
         }
         return true;
     }

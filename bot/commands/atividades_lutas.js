@@ -335,7 +335,7 @@ async function alocarLutaNaArena(sock, grupoOrigem, p1, p2) {
         grupoOrigemAtividade: grupoOrigem
     };
 
-    // Importação dinâmica para evitar o erro de Circular Dependency durante o startup no Render
+    // Importação dinâmica executada apenas em tempo de execução para quebrar a dependência circular no boot
     const { iniciarCombateAposAceitar } = require('./combates');
     await iniciarCombateAposAceitar(sock, arenaDisponivelJid, desafioAtividade, 'ATIVIDADE');
 

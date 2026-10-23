@@ -171,7 +171,7 @@ async function handleComboCommands(sock, m, text, from) {
         const uidAtual = jogadorAtual.uid;
         const statsAtual = jogadorAtual.stats || {};
         const forAtual = Number(statsAtual.str) || 0;
-        const stmConsumo = Number(obterAtributoBaseSkill(skill, 'stm')) || 10;
+        const stmConsumo = Number(obterAtributoBaseSkill(skill, 'stm')) || 2;
 
         // Deduz Stamina do usuário
         let stmAtual = Math.max(0, (Number(statsAtual.sta ?? statsAtual.stm) || 100) - stmConsumo);

@@ -90,7 +90,7 @@ const { handleMapaCommands } = require('./commands/mapa');
 const { handleLocalizacaoCommands } = require('./commands/localizacao');
 const { handleAtividadesInfoCommands } = require('./commands/atividades_info');
 const { handleResetCommand, executarResetAtividades } = require('./commands/reset');
-const { handleComboCommands } = require('./combo'); 
+const { handleComboCommands } = require('./commands/combo'); 
 
 
 // SERVIDOR WEB + AUTO-PING

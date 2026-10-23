@@ -370,7 +370,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const jogadorQueCombouObj = bat[`p${bat.jogadorVez}`];
 
-        // Alterna a vez para o próximo jogador
+        // Alterna para o próximo jogador
         if (bat.jogadorVez === 1) {
             bat.jogadorVez = 2;
         } else {
@@ -378,7 +378,7 @@ async function handleCombatesCommands(sock, m, text, from) {
             bat.turnoAtual = (bat.turnoAtual || 1) + 1;
         }
 
-        // Reduz o cooldown apenas do jogador que vai jogar agora
+        // Decrementa cooldowns do jogador QUE VAI JOGAR AGORA
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         if (proximoJogadorObj && proximoJogadorObj.cooldowns) {
             for (const skillNomeId of Object.keys(proximoJogadorObj.cooldowns)) {

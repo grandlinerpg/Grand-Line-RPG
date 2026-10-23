@@ -98,7 +98,7 @@ async function checarDerrotaPorStatus(sock, m, from, jogadorPerdedorObj) {
     const stm = Number(jogadorPerdedorObj.sta) ?? 100;
 
     if (hp <= 0 || stm <= 0) {
-        // Dispara o fluxo oficial de vitória chamando !win internamente
+        // Dispara o fluxo oficial do !win declarando o vencedor
         await handleCombatesCommands(sock, m, '!win', from);
         return true;
     }
@@ -177,7 +177,7 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
-        // Aplica Cooldown para o jogador
+        // Aplica o Cooldown para QUEM usou a habilidade
         jogadorArena.cooldowns[skill.nome] = skillRank;
 
         const jogadorInfo = buscarJogadorPorSender(playersData, senderId);
@@ -201,7 +201,7 @@ async function handleComboCommands(sock, m, text, from) {
         jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
         await salvarArenaAtiva(from, arenaAtiva);
 
-        // Se o próprio jogador zerar a stamina, verifica derrota ao fim
+        // Se o próprio jogador zerou a stamina, verifica derrota
         const morreuStm = await checarDerrotaPorStatus(sock, m, from, jogadorArena);
         if (morreuStm) return true;
 
@@ -219,9 +219,26 @@ async function handleComboCommands(sock, m, text, from) {
             arenaAtiva.ataquePendenteAlvo = oponenteArena.uid;
             await salvarArenaAtiva(from, arenaAtiva);
 
+            // Simula como ficaria o oponente caso levasse o golpe sem defesa
+            let simDanoHp = 0;
+            let simUltrapassouRes = false;
+            if (ataqueTotal > oponenteArena.res) {
+                simUltrapassouRes = true;
+                simDanoHp = ataqueTotal - oponenteArena.res;
+            }
+            const simReducaoRes = Math.floor(ataqueTotal * 0.10);
+            const simResRestante = Math.max(0, Number(oponenteArena.res) - simReducaoRes);
+            const simHpRestante = Math.max(0, Number(oponenteArena.hp) - simDanoHp);
+
+            const textoResumoSimulado = simUltrapassouRes
+                ? `O ataque passou a Res do adversário e tirou ${simDanoHp} pontos de HP.`
+                : `O ataque não superou a Res do adversário e não causou dano ao HP.`;
+
             const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
-                               `Aguardando a defesa do adversário.`;
+                               `${textoResumoSimulado}\n\n` +
+                               `> Res Restante: ${simResRestante}\n` +
+                               `> HP Restante: ${simHpRestante}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
@@ -254,7 +271,7 @@ async function handleComboCommands(sock, m, text, from) {
                 passouDefensa = true;
                 const danoRestante = ataqueRecebido - defTotal;
 
-                // Res absorve o que puder
+                // O dano que passou pela defesa entra na Resistência
                 if (danoRestante > jogadorArena.res) {
                     danoHp = danoRestante - jogadorArena.res;
                 }

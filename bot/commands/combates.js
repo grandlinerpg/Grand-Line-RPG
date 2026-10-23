@@ -123,7 +123,6 @@ async function comecarCombateDeFato(grupoJid, sock) {
 
     const socketParaEnviar = sock || bat.sock;
 
-    // Buscar dados dos players no Firebase para os cards e cálculo de Agi + Dex
     let playersData = {};
     try {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
@@ -163,12 +162,10 @@ async function comecarCombateDeFato(grupoJid, sock) {
     bat.jogadorVez = primeiroEscolhido;
     bat.turnoAtual = 1;
 
-    // Envia os cards de apresentação de cada personagem antes do turno 1
     if (socketParaEnviar) {
         if (p1Info) await enviarCardApresentacao(socketParaEnviar, grupoJid, p1Info);
         if (p2Info) await enviarCardApresentacao(socketParaEnviar, grupoJid, p2Info);
 
-        // Mensagem antes do turno 1 falando sobre a iniciativa
         await socketParaEnviar.sendMessage(grupoJid, { text: textoDetalheIniciativa });
     }
 
@@ -270,7 +267,7 @@ async function enviarCardApresentacao(sock, from, playerInfo) {
         const res = stats.res ?? 0;
         const dex = stats.dex ?? 0;
         const agi = stats.agi ?? 0;
-        const sta = stats.sta ?? 0;
+        const sta = stats.sta ?? stats.stm ?? 0;
         const hp = stats.hp ?? 0;
 
         const caption = `*${charName}*\n\n` +
@@ -364,6 +361,19 @@ async function handleCombatesCommands(sock, m, text, from) {
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
         const horarioFim = obterHorarioTermino(30);
+
+        // Re-busca os dados atualizados do jogador no Firebase para mandar o Card com os atributos atuais
+        try {
+            const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+            const playersData = playersRes.data || {};
+            const uidProximo = proximoJogadorObj?.uid || buscarUidPlayer(playersData, proximoJogadorObj?.numero || proximoJogadorObj?.lid);
+
+            if (uidProximo && playersData[uidProximo]) {
+                await enviarCardApresentacao(sock, from, playersData[uidProximo]);
+            }
+        } catch (e) {
+            console.error('Erro ao buscar dados do jogador para enviar card no !prox:', e.message);
+        }
 
         const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Término: ${horarioFim} (UTC-3)`;
         await sock.sendMessage(from, { text: msgNovoTurno });
@@ -557,6 +567,9 @@ module.exports = {
     iniciarEstruturaBatalha,
     iniciarCombateAposAceitar,
     obterArenaAtiva,
+    salvarArenaAtiva,
+    resetarArenaAguardando,
+    limparTimersBatalha,
     limparId,
     buscarUidPlayer
 };

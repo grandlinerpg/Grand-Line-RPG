@@ -1,6 +1,6 @@
 const axios = require('axios');
 const { FIREBASE_URL, obterJidEfetivo } = require('../index');
-const { obterArenaAtiva, buscarUidPlayer, limparId, salvarArenaAtiva, resetarArenaAguardando, limparTimersBatalha } = require('./combates');
+const { obterArenaAtiva, buscarUidPlayer, limparId, salvarArenaAtiva, handleCombatesCommands } = require('./combates');
 
 const CLOUDINARY_HABILIDADES = 'https://res.cloudinary.com/djh45admn/image/upload/v1781908673';
 
@@ -93,17 +93,13 @@ function buscarJogadorPorSender(playersData, senderId) {
     return uid ? { uid, ...playersData[uid] } : null;
 }
 
-async function checarDerrotaPorStatus(sock, from, arenaAtiva, jogadorObj, oponenteObj) {
-    const hp = Number(jogadorObj.hp) ?? 100;
-    const stm = Number(jogadorObj.sta) ?? 100;
+async function checarDerrotaPorStatus(sock, m, from, jogadorPerdedorObj) {
+    const hp = Number(jogadorPerdedorObj.hp) ?? 100;
+    const stm = Number(jogadorPerdedorObj.sta) ?? 100;
 
     if (hp <= 0 || stm <= 0) {
-        const motivo = hp <= 0 ? 'Ficou sem HP' : 'Ficou sem Stamina (STM)';
-        const msgWin = `💀 *COMBATE ENCERRADO!* 💀\n\nO jogador *${jogadorObj.nome}* foi derrotado! (${motivo})\n\n🏆 Vitória concedida a *${oponenteObj.nome}*!`;
-        await sock.sendMessage(from, { text: msgWin });
-
-        limparTimersBatalha(arenaAtiva);
-        await resetarArenaAguardando(from, arenaAtiva);
+        // Dispara o fluxo oficial de vitória chamando !win internamente
+        await handleCombatesCommands(sock, m, '!win', from);
         return true;
     }
     return false;
@@ -165,7 +161,7 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
-        // Identifica se é P1 ou P2 na arena
+        // Identifica P1 ou P2 na arena
         const p1Num = limparId(arenaAtiva.p1?.numero);
         const p1Lid = limparId(arenaAtiva.p1?.lid);
         const senderLimpo = limparId(senderId);
@@ -174,23 +170,21 @@ async function handleComboCommands(sock, m, text, from) {
         const jogadorArena = ehP1 ? arenaAtiva.p1 : arenaAtiva.p2;
         const oponenteArena = ehP1 ? arenaAtiva.p2 : arenaAtiva.p1;
 
-        // Verifica Cooldown
+        // Verifica Cooldown (1 por jogador)
         if (!jogadorArena.cooldowns) jogadorArena.cooldowns = {};
         if (jogadorArena.cooldowns[skill.nome] && jogadorArena.cooldowns[skill.nome] > 0) {
             await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[skill.nome]} turno(s)!` }, { quoted: m });
             return true;
         }
 
-        // Aplica o Cooldown (igual ao rank)
+        // Aplica Cooldown para o jogador
         jogadorArena.cooldowns[skill.nome] = skillRank;
 
-        // Busca Status do Jogador no Firebase para pegar Força (str) e consumíveis
         const jogadorInfo = buscarJogadorPorSender(playersData, senderId);
         const statsBase = jogadorInfo?.player?.stats || jogadorInfo?.stats || {};
         const forAtual = Number(statsBase.str) || 0;
         const stmConsumo = Number(obterAtributoBaseSkill(skill, 'stm')) || 2;
 
-        // Inicializa ou garante stats na arena se faltarem
         if (jogadorArena.hp === undefined) jogadorArena.hp = Number(statsBase.hp) || 100;
         if (jogadorArena.sta === undefined) jogadorArena.sta = Number(statsBase.sta ?? statsBase.stm) || 100;
         if (jogadorArena.res === undefined) jogadorArena.res = Number(statsBase.res) || 0;
@@ -203,12 +197,12 @@ async function handleComboCommands(sock, m, text, from) {
             oponenteArena.sta = Number(opStats.sta ?? opStats.stm) || 100;
         }
 
-        // Deduz Stamina do usuário na Arena
+        // Consome Stamina na Arena
         jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
         await salvarArenaAtiva(from, arenaAtiva);
 
-        // Checa se o usuário morreu por falta de Stamina
-        const morreuStm = await checarDerrotaPorStatus(sock, from, arenaAtiva, jogadorArena, oponenteArena);
+        // Se o próprio jogador zerar a stamina, verifica derrota ao fim
+        const morreuStm = await checarDerrotaPorStatus(sock, m, from, jogadorArena);
         if (morreuStm) return true;
 
         const imagemBuffer = await baixarImagemHabilidade(skill);
@@ -218,38 +212,16 @@ async function handleComboCommands(sock, m, text, from) {
         // ─────────────────────────────────────────────
         if (ehAtk) {
             const atkSkill = obterAtributoBaseSkill(skill, 'atk');
-            let ataqueTotal = atkSkill + forAtual;
+            const ataqueTotal = atkSkill + forAtual;
 
-            // Se houver defesa acumulada pelo oponente nesta rodada
-            if (arenaAtiva.defesaPendente && arenaAtiva.defesaPendenteAlvo === oponenteArena.uid) {
-                ataqueTotal = Math.max(0, ataqueTotal - arenaAtiva.defesaPendente);
-                delete arenaAtiva.defesaPendente;
-                delete arenaAtiva.defesaPendenteAlvo;
-            }
-
-            let danoHp = 0;
-            let ultrapassouRes = false;
-
-            if (ataqueTotal > oponenteArena.res) {
-                ultrapassouRes = true;
-                danoHp = ataqueTotal - oponenteArena.res;
-            }
-
-            const reducaoRes = Math.floor(ataqueTotal * 0.10);
-            oponenteArena.res = Math.max(0, Number(oponenteArena.res) - reducaoRes);
-            oponenteArena.hp = Math.max(0, Number(oponenteArena.hp) - danoHp);
-
+            // Salva o ataque pendente para o oponente responder no turno dele
+            arenaAtiva.ataquePendente = ataqueTotal;
+            arenaAtiva.ataquePendenteAlvo = oponenteArena.uid;
             await salvarArenaAtiva(from, arenaAtiva);
-
-            const textoResumo = ultrapassouRes
-                ? `O ataque passou a Res do adversário e tirou ${danoHp} pontos de HP.`
-                : `O ataque não superou a Res do adversário e não causou dano ao HP.`;
 
             const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
-                               `${textoResumo}\n\n` +
-                               `> Res Restante: ${oponenteArena.res}\n` +
-                               `> HP Restante: ${oponenteArena.hp}`;
+                               `Aguardando a defesa do adversário.`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
@@ -257,8 +229,6 @@ async function handleComboCommands(sock, m, text, from) {
                 await sock.sendMessage(from, { text: legendaAtk }, { quoted: m });
             }
 
-            // Checa se o oponente foi derrotado
-            await checarDerrotaPorStatus(sock, from, arenaAtiva, oponenteArena, jogadorArena);
             return true;
         }
 
@@ -270,16 +240,40 @@ async function handleComboCommands(sock, m, text, from) {
             const metadeFor = Math.floor(forAtual * 0.5);
             const defTotal = defSkill + metadeFor;
 
-            // Registra a defesa na arena para amortecer o próximo ataque recebido
-            arenaAtiva.defesaPendente = defTotal;
-            arenaAtiva.defesaPendenteAlvo = jogadorArena.uid;
+            let ataqueRecebido = 0;
+            if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === jogadorArena.uid) {
+                ataqueRecebido = arenaAtiva.ataquePendente;
+                delete arenaAtiva.ataquePendente;
+                delete arenaAtiva.ataquePendenteAlvo;
+            }
+
+            let danoHp = 0;
+            let passouDefensa = false;
+
+            if (ataqueRecebido > defTotal) {
+                passouDefensa = true;
+                const danoRestante = ataqueRecebido - defTotal;
+
+                // Res absorve o que puder
+                if (danoRestante > jogadorArena.res) {
+                    danoHp = danoRestante - jogadorArena.res;
+                }
+
+                // Resiste toma 10% do dano que passou pela Defesa
+                const reducaoRes = Math.floor(danoRestante * 0.10);
+                jogadorArena.res = Math.max(0, Number(jogadorArena.res) - reducaoRes);
+                jogadorArena.hp = Math.max(0, Number(jogadorArena.hp) - danoHp);
+            }
+
             await salvarArenaAtiva(from, arenaAtiva);
 
-            const danoDefensivoHp = 0; // Defesa protege contra o dano direto no HP na rodada
+            const textoResumoDef = passouDefensa
+                ? `Seu ataque passou minha Def e me tirou ${danoHp} pontos de HP!`
+                : `Sua Defesa bloqueou totalmente o ataque!`;
 
             const legendaDef = `*${skillNomeFormatado}*\n\n` +
                                `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
-                               `Sua Defesa bloqueou totalmente o ataque!\n\n` +
+                               `${textoResumoDef}\n\n` +
                                `> Res Restante: ${jogadorArena.res}\n` +
                                `> HP Restante: ${jogadorArena.hp}`;
 
@@ -289,6 +283,8 @@ async function handleComboCommands(sock, m, text, from) {
                 await sock.sendMessage(from, { text: legendaDef }, { quoted: m });
             }
 
+            // Checa se o defensor morreu após receber o golpe
+            await checarDerrotaPorStatus(sock, m, from, jogadorArena);
             return true;
         }
 

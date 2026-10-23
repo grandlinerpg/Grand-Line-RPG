@@ -27,7 +27,7 @@ function entradasObjeto(obj) {
 }
 
 /**
- * Busca uma habilidade pelo nome dentro da estrutura do banco.
+ * Busca uma habilidade pelo nome dentro do banco de dados.
  */
 function buscarHabilidadePorNome(banco, nomeBusca) {
     const termo = normalizar(nomeBusca);
@@ -49,17 +49,17 @@ function buscarHabilidadePorNome(banco, nomeBusca) {
 }
 
 /**
- * Obtém o valor base de ATK da skill respeitando a lógica do infohab.js
+ * Obtém o valor base de ATK/DEF da skill
  */
-function obterAtkBaseSkill(skill) {
+function obterAtributoBaseSkill(skill, tipo = 'atk') {
     const rank = Number(skill.rank) || 1;
     const baseRank = ATRIBUTOS_RANK[rank] || {};
     const attrs = skill.atributos || {};
 
-    if (attrs.atk !== undefined && attrs.atk !== null && attrs.atk !== '') {
-        return Number(attrs.atk) || 0;
+    if (attrs[tipo] !== undefined && attrs[tipo] !== null && attrs[tipo] !== '') {
+        return Number(attrs[tipo]) || 0;
     }
-    return Number(baseRank.atk) || 0;
+    return Number(baseRank[tipo]) || 0;
 }
 
 function obterUrlImagemHabilidade(skill) {
@@ -81,9 +81,6 @@ async function baixarImagemHabilidade(skill) {
     }
 }
 
-/**
- * Localiza jogador nos dados do Firebase pelo senderId (LID ou número)
- */
 function buscarJogadorPorSender(playersData, senderId) {
     if (!playersData || !senderId) return null;
     const senderLimpo = limparId(senderId);
@@ -103,21 +100,25 @@ function buscarJogadorPorSender(playersData, senderId) {
 }
 
 // ─────────────────────────────────────────────
-// HANDLER PRINCIPAL DO COMBO
+// HANDLER PRINCIPAL DO COMBO (!atk E !def)
 // ─────────────────────────────────────────────
 async function handleComboCommands(sock, m, text, from) {
-    if (!text.startsWith('!atk')) return false;
+    const ehAtk = text.startsWith('!atk');
+    const ehDef = text.startsWith('!def');
 
-    const nomeAtaque = text.slice('!atk'.length).trim();
-    if (!nomeAtaque) {
-        await sock.sendMessage(from, { text: '⚠️ Uso correto: `!atk <Nome da Habilidade>`' }, { quoted: m });
+    if (!ehAtk && !ehDef) return false;
+
+    const prefixo = ehAtk ? '!atk' : '!def';
+    const nomeHabilidade = text.slice(prefixo.length).trim();
+
+    if (!nomeHabilidade) {
+        await sock.sendMessage(from, { text: `⚠️ Uso correto: \`${prefixo} <Nome da Habilidade>\`` }, { quoted: m });
         return true;
     }
 
     try {
         const senderId = obterJidEfetivo(m, from);
 
-        // Busca banco de habilidades e players simultaneamente
         const [habilidadesRes, playersRes] = await Promise.all([
             axios.get(`${FIREBASE_URL}/habilidades.json`),
             axios.get(`${FIREBASE_URL}/players.json`)
@@ -127,30 +128,40 @@ async function handleComboCommands(sock, m, text, from) {
         const playersData = playersRes.data || {};
 
         // 1. Busca a Habilidade
-        const habResult = buscarHabilidadePorNome(bancoHabilidades, nomeAtaque);
+        const habResult = buscarHabilidadePorNome(bancoHabilidades, nomeHabilidade);
         if (!habResult) {
-            await sock.sendMessage(from, { text: `❌ Habilidade "*${nomeAtaque}*" não encontrada!` }, { quoted: m });
+            await sock.sendMessage(from, { text: `❌ Habilidade "*${nomeHabilidade}*" não encontrada!` }, { quoted: m });
             return true;
         }
 
         const skill = habResult.skill;
-        const atkSkill = obterAtkBaseSkill(skill);
+        const categoriaSkill = String(skill.categoria || '').trim().toLowerCase();
 
-        // 2. Busca o Jogador Atacante
-        const atacante = buscarJogadorPorSender(playersData, senderId);
-        if (!atacante) {
+        // Verificação estrita de categoria
+        if (ehAtk && categoriaSkill !== 'ofensivo') {
+            await sock.sendMessage(from, { text: `❌ A habilidade "*${skill.nome}*" não é do tipo *Ofensivo*!` }, { quoted: m });
+            return true;
+        }
+
+        if (ehDef && categoriaSkill !== 'defensivo') {
+            await sock.sendMessage(from, { text: `❌ A habilidade "*${skill.nome}*" não é do tipo *Defensivo*!` }, { quoted: m });
+            return true;
+        }
+
+        // 2. Busca o Jogador Atual
+        const jogador = buscarJogadorPorSender(playersData, senderId);
+        if (!jogador) {
             await sock.sendMessage(from, { text: '❌ Você não está cadastrado no jogo.' }, { quoted: m });
             return true;
         }
 
-        const statsAtacante = atacante.stats || {};
-        const forAtacante = Number(statsAtacante.str) || 0;
-        const ataqueTotal = atkSkill + forAtacante;
+        const statsJogador = jogador.stats || {};
+        const forJogador = Number(statsJogador.str) || 0;
 
-        // 3. Tenta identificar se há um combate em andamento e quem é o defensor
-        let resDefensor = 0;
-        let hpAtualDefensor = 100;
-        let uidDefensor = null;
+        // 3. Tenta identificar se há um combate em andamento
+        let resAlvo = 0;
+        let hpAlvo = 100;
+        let uidAlvo = null;
 
         const arenaAtiva = await obterArenaAtiva(from);
 
@@ -160,49 +171,90 @@ async function handleComboCommands(sock, m, text, from) {
             const senderLimpo = limparId(senderId);
 
             const ehP1 = senderLimpo === p1LimpoNum || senderLimpo === p1LimpoLid;
-            const defensorObj = ehP1 ? arenaAtiva.p2 : arenaAtiva.p1;
+            const oponenteObj = ehP1 ? arenaAtiva.p2 : arenaAtiva.p1;
 
-            if (defensorObj) {
-                uidDefensor = defensorObj.uid || buscarUidPlayer(playersData, defensorObj.numero || defensorObj.lid);
-                if (uidDefensor && playersData[uidDefensor]) {
-                    const statsDefensor = playersData[uidDefensor].stats || {};
-                    resDefensor = Number(statsDefensor.res) || 0;
-                    hpAtualDefensor = Number(statsDefensor.hp) || 0;
+            if (oponenteObj) {
+                uidAlvo = oponenteObj.uid || buscarUidPlayer(playersData, oponenteObj.numero || oponenteObj.lid);
+                if (uidAlvo && playersData[uidAlvo]) {
+                    const statsAlvo = playersData[uidAlvo].stats || {};
+                    resAlvo = Number(statsAlvo.res) || 0;
+                    hpAlvo = Number(statsAlvo.hp) || 0;
                 }
             }
         }
 
-        // 4. Cálculo de Dano
-        const danoReal = Math.max(0, ataqueTotal - resDefensor);
-        const hpRestante = Math.max(0, hpAtualDefensor - danoReal);
-
-        // 5. Atualiza HP do defensor no Firebase se estiver em combate ativo
-        if (uidDefensor) {
-            await axios.patch(`${FIREBASE_URL}/players/${uidDefensor}/stats.json`, {
-                hp: hpRestante
-            }).catch(e => console.error('[combo] Erro ao atualizar HP no Firebase:', e.message));
-        }
-
-        // 6. Montagem da Mensagem e Envio da Imagem
-        const nomeAtaqueFormatado = String(skill.nome).toUpperCase();
-
-        const legenda = `*${nomeAtaqueFormatado}*\n\n` +
-                        `> Atk: ${atkSkill} + ${forAtacante} (For) = ${ataqueTotal}\n\n` +
-                        `O ataque passou a Res do adversário e tirou ${danoReal} pontos de HP.\n\n` +
-                        `> HP Restante: ${hpRestante}`;
-
+        const nomeSkillFormatado = String(skill.nome).toUpperCase();
         const imagemBuffer = await baixarImagemHabilidade(skill);
 
-        if (imagemBuffer) {
-            await sock.sendMessage(from, { image: imagemBuffer, caption: legenda }, { quoted: m });
-        } else {
-            await sock.sendMessage(from, { text: legenda }, { quoted: m });
+        // ─────────────────────────────────────────────
+        // PROCESSAMENTO DE ATAQUE (!atk)
+        // ─────────────────────────────────────────────
+        if (ehAtk) {
+            const atkSkill = obterAtributoBaseSkill(skill, 'atk');
+            const ataqueTotal = atkSkill + forJogador;
+
+            // Dano reduzido da Res primeiro; o que sobrar tira do HP
+            let danoAosHp = 0;
+            let resRestante = resAlvo;
+
+            if (ataqueTotal > resAlvo) {
+                danoAosHp = ataqueTotal - resAlvo;
+                resRestante = 0;
+            } else {
+                resRestante = resAlvo - ataqueTotal;
+            }
+
+            const hpRestante = Math.max(0, hpAlvo - danoAosHp);
+
+            if (uidAlvo) {
+                await axios.patch(`${FIREBASE_URL}/players/${uidAlvo}/stats.json`, {
+                    res: resRestante,
+                    hp: hpRestante
+                }).catch(e => console.error('[combo] Erro ao atualizar stats no Firebase:', e.message));
+            }
+
+            const legendaAtk = `*${nomeSkillFormatado}*\n\n` +
+                               `> Atk: ${atkSkill} + ${forJogador} (For) = ${ataqueTotal}\n\n` +
+                               `O ataque passou a Res do adversário e tirou ${danoAosHp} pontos de HP.\n\n` +
+                               `> Res Restante: ${resRestante}\n` +
+                               `> HP Restante: ${hpRestante}`;
+
+            if (imagemBuffer) {
+                await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
+            } else {
+                await sock.sendMessage(from, { text: legendaAtk }, { quoted: m });
+            }
+
+            return true;
+        }
+
+        // ─────────────────────────────────────────────
+        // PROCESSAMENTO DE DEFESA (!def)
+        // ─────────────────────────────────────────────
+        if (ehDef) {
+            const defSkill = obterAtributoBaseSkill(skill, 'def');
+            const metadeFor = Math.floor(forJogador * 0.5);
+            const defTotal = defSkill + metadeFor;
+
+            const legendaDef = `*${nomeSkillFormatado}*\n\n` +
+                               `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
+                               `Seu ataque ultrapassa minha Def e me atinge.\n\n` +
+                               `> Res Restante: ${resAlvo}\n` +
+                               `> HP Restante: ${hpAlvo}`;
+
+            if (imagemBuffer) {
+                await sock.sendMessage(from, { image: imagemBuffer, caption: legendaDef }, { quoted: m });
+            } else {
+                await sock.sendMessage(from, { text: legendaDef }, { quoted: m });
+            }
+
+            return true;
         }
 
         return true;
     } catch (e) {
-        console.error('Erro ao executar comando !atk no combo.js:', e);
-        await sock.sendMessage(from, { text: '❌ Ocorreu um erro ao processar o ataque.' }, { quoted: m });
+        console.error('Erro ao executar comandos no combo.js:', e);
+        await sock.sendMessage(from, { text: '❌ Ocorreu um erro ao processar o comando.' }, { quoted: m });
         return true;
     }
 }

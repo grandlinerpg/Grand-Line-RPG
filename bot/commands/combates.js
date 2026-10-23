@@ -142,7 +142,6 @@ async function comecarCombateDeFato(grupoJid, sock) {
     const p1Info = uidP1 ? playersData[uidP1] : null;
     const p2Info = uidP2 ? playersData[uidP2] : null;
 
-    // Inicializa HP e Res na Arena baseados nos stats do player
     if (p1Info?.stats) {
         bat.p1.hp = Number(bat.p1.hp ?? p1Info.stats.hp ?? 100);
         bat.p1.res = Number(bat.p1.res ?? p1Info.stats.res ?? 0);
@@ -371,7 +370,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const jogadorQueCombouObj = bat[`p${bat.jogadorVez}`];
 
-        // Decrementa cooldowns do jogador que vai iniciar o turno agora
+        // Alterna a vez para o próximo jogador
         if (bat.jogadorVez === 1) {
             bat.jogadorVez = 2;
         } else {
@@ -379,6 +378,7 @@ async function handleCombatesCommands(sock, m, text, from) {
             bat.turnoAtual = (bat.turnoAtual || 1) + 1;
         }
 
+        // Reduz o cooldown apenas do jogador que vai jogar agora
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         if (proximoJogadorObj && proximoJogadorObj.cooldowns) {
             for (const skillNomeId of Object.keys(proximoJogadorObj.cooldowns)) {
@@ -391,7 +391,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         await salvarArenaAtiva(from, bat);
 
-        // 1. Envia o Card do jogador que combou com seus status da arena atualizados
+        // 1. Envia Card do jogador que combou
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
@@ -404,7 +404,15 @@ async function handleCombatesCommands(sock, m, text, from) {
             console.error('Erro ao buscar dados do jogador que combou no !prox:', e.message);
         }
 
-        // 2. Envia a Cooldown Lista do próximo jogador
+        // 2. Envia a mensagem do novo turno
+        const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
+        const horarioFim = obterHorarioTermino(30);
+        const essencias = calcularEssencias(bat.turnoAtual);
+
+        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Essências: ${essencias}\n> Término: ${horarioFim} (UTC-3)`;
+        await sock.sendMessage(from, { text: msgNovoTurno });
+
+        // 3. Envia a Cooldown List do jogador que VAI JOGAR AGORA (por último)
         let cdTexto = '⏳ *COOLDOWN LIST* ⏳\n\n';
         const cdsProximo = proximoJogadorObj?.cooldowns || {};
         const skillsComCd = Object.entries(cdsProximo);
@@ -415,14 +423,6 @@ async function handleCombatesCommands(sock, m, text, from) {
             cdTexto += skillsComCd.map(([nome, turnos]) => `➔ *${nome}*: ${turnos} turno(s) restante(s)`).join('\n');
         }
         await sock.sendMessage(from, { text: cdTexto });
-
-        // 3. Envia a mensagem do novo turno
-        const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
-        const horarioFim = obterHorarioTermino(30);
-        const essencias = calcularEssencias(bat.turnoAtual);
-
-        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Essências: ${essencias}\n> Término: ${horarioFim} (UTC-3)`;
-        await sock.sendMessage(from, { text: msgNovoTurno });
 
         iniciarTimerTurnoMaximo(from, sock);
         return true;

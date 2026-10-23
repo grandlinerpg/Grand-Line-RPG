@@ -101,8 +101,8 @@ function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
     const novaBatalha = {
         grupoJid,
         tipo,
-        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome, uid: p1.uid },
-        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome, uid: p2.uid },
+        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome, uid: p1.uid, cooldowns: {} },
+        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome, uid: p2.uid, cooldowns: {} },
         fase: 'apresentacao',
         jogadorVez: 1,
         turnoAtual: 1,
@@ -142,6 +142,18 @@ async function comecarCombateDeFato(grupoJid, sock) {
     const p1Info = uidP1 ? playersData[uidP1] : null;
     const p2Info = uidP2 ? playersData[uidP2] : null;
 
+    // Inicializa HP e Res na Arena baseados nos stats do player
+    if (p1Info?.stats) {
+        bat.p1.hp = Number(bat.p1.hp ?? p1Info.stats.hp ?? 100);
+        bat.p1.res = Number(bat.p1.res ?? p1Info.stats.res ?? 0);
+        bat.p1.sta = Number(bat.p1.sta ?? p1Info.stats.sta ?? p1Info.stats.stm ?? 100);
+    }
+    if (p2Info?.stats) {
+        bat.p2.hp = Number(bat.p2.hp ?? p2Info.stats.hp ?? 100);
+        bat.p2.res = Number(bat.p2.res ?? p2Info.stats.res ?? 0);
+        bat.p2.sta = Number(bat.p2.sta ?? p2Info.stats.sta ?? p2Info.stats.stm ?? 100);
+    }
+
     const statsP1 = p1Info?.stats || {};
     const statsP2 = p2Info?.stats || {};
 
@@ -168,8 +180,8 @@ async function comecarCombateDeFato(grupoJid, sock) {
     bat.turnoAtual = 1;
 
     if (socketParaEnviar) {
-        if (p1Info) await enviarCardApresentacao(socketParaEnviar, grupoJid, p1Info);
-        if (p2Info) await enviarCardApresentacao(socketParaEnviar, grupoJid, p2Info);
+        if (p1Info) await enviarCardApresentacaoArena(socketParaEnviar, grupoJid, p1Info, bat.p1);
+        if (p2Info) await enviarCardApresentacaoArena(socketParaEnviar, grupoJid, p2Info, bat.p2);
 
         await socketParaEnviar.sendMessage(grupoJid, { text: textoDetalheIniciativa });
     }
@@ -260,7 +272,7 @@ async function resetarArenaAguardando(grupoJid, batAtual) {
     await salvarArenaAtiva(grupoJid, arenaReset);
 }
 
-async function enviarCardApresentacao(sock, from, playerInfo) {
+async function enviarCardApresentacaoArena(sock, from, playerInfo, arenaPlayer) {
     try {
         if (!playerInfo) return;
 
@@ -270,11 +282,11 @@ async function enviarCardApresentacao(sock, from, playerInfo) {
         const charName = (character.charName || playerInfo.nome || 'Lutador').toUpperCase();
 
         const str = stats.str ?? 0;
-        const res = stats.res ?? 0;
+        const res = arenaPlayer?.res ?? stats.res ?? 0;
         const dex = stats.dex ?? 0;
         const agi = stats.agi ?? 0;
-        const sta = stats.sta ?? stats.stm ?? 0;
-        const hp = stats.hp ?? 0;
+        const sta = arenaPlayer?.sta ?? stats.sta ?? stats.stm ?? 0;
+        const hp = arenaPlayer?.hp ?? stats.hp ?? 0;
 
         const caption = `*${charName}*\n\n` +
                         `> For: ${str} | Res: ${res}\n` +
@@ -300,13 +312,15 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
         lid: desafio.desafianteLid || desafio.p1Lid, 
         numero: desafio.desafianteNum || desafio.p1Num, 
         nome: desafio.desafianteNome || desafio.p1Nome,
-        uid: desafio.desafianteUid || desafio.p1Uid 
+        uid: desafio.desafianteUid || desafio.p1Uid,
+        cooldowns: {}
     };
     const p2 = { 
         lid: desafio.desafiadoLid || desafio.p2Lid, 
         numero: desafio.desafiadoNum || desafio.p2Num, 
         nome: desafio.desafiadoNome || desafio.p2Nome,
-        uid: desafio.desafiadoUid || desafio.p2Uid 
+        uid: desafio.desafiadoUid || desafio.p2Uid,
+        cooldowns: {}
     };
 
     const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
@@ -355,10 +369,9 @@ async function handleCombatesCommands(sock, m, text, from) {
         const bat = await obterArenaAtiva(from);
         if (!bat || bat.fase !== 'em_combate') return true;
 
-        // O jogador que está combando/encerrando o seu turno é o jogadorVez atual
         const jogadorQueCombouObj = bat[`p${bat.jogadorVez}`];
 
-        // Alterna para o próximo jogador
+        // Decrementa cooldowns do jogador que vai iniciar o turno agora
         if (bat.jogadorVez === 1) {
             bat.jogadorVez = 2;
         } else {
@@ -366,22 +379,44 @@ async function handleCombatesCommands(sock, m, text, from) {
             bat.turnoAtual = (bat.turnoAtual || 1) + 1;
         }
 
+        const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
+        if (proximoJogadorObj && proximoJogadorObj.cooldowns) {
+            for (const skillNomeId of Object.keys(proximoJogadorObj.cooldowns)) {
+                proximoJogadorObj.cooldowns[skillNomeId] -= 1;
+                if (proximoJogadorObj.cooldowns[skillNomeId] <= 0) {
+                    delete proximoJogadorObj.cooldowns[skillNomeId];
+                }
+            }
+        }
+
         await salvarArenaAtiva(from, bat);
 
-        // Re-busca os dados atualizados do jogador que COMBOU/encerrou a vez para mandar o seu Card atualizado
+        // 1. Envia o Card do jogador que combou com seus status da arena atualizados
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
             const uidCombou = jogadorQueCombouObj?.uid || buscarUidPlayer(playersData, jogadorQueCombouObj?.numero || jogadorQueCombouObj?.lid);
 
             if (uidCombou && playersData[uidCombou]) {
-                await enviarCardApresentacao(sock, from, playersData[uidCombou]);
+                await enviarCardApresentacaoArena(sock, from, playersData[uidCombou], jogadorQueCombouObj);
             }
         } catch (e) {
             console.error('Erro ao buscar dados do jogador que combou no !prox:', e.message);
         }
 
-        const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
+        // 2. Envia a Cooldown Lista do próximo jogador
+        let cdTexto = '⏳ *COOLDOWN LIST* ⏳\n\n';
+        const cdsProximo = proximoJogadorObj?.cooldowns || {};
+        const skillsComCd = Object.entries(cdsProximo);
+
+        if (skillsComCd.length === 0) {
+            cdTexto += 'Nenhuma habilidade em recarga.';
+        } else {
+            cdTexto += skillsComCd.map(([nome, turnos]) => `➔ *${nome}*: ${turnos} turno(s) restante(s)`).join('\n');
+        }
+        await sock.sendMessage(from, { text: cdTexto });
+
+        // 3. Envia a mensagem do novo turno
         const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
         const horarioFim = obterHorarioTermino(30);
         const essencias = calcularEssencias(bat.turnoAtual);

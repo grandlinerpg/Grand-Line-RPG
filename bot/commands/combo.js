@@ -98,7 +98,6 @@ async function checarDerrotaPorStatus(sock, m, from, jogadorPerdedorObj) {
     const stm = Number(jogadorPerdedorObj.sta) ?? 100;
 
     if (hp <= 0 || stm <= 0) {
-        // Dispara o fluxo oficial do !win declarando o vencedor
         await handleCombatesCommands(sock, m, '!win', from);
         return true;
     }
@@ -170,7 +169,7 @@ async function handleComboCommands(sock, m, text, from) {
         const jogadorArena = ehP1 ? arenaAtiva.p1 : arenaAtiva.p2;
         const oponenteArena = ehP1 ? arenaAtiva.p2 : arenaAtiva.p1;
 
-        // Verifica Cooldown (1 por jogador)
+        // Verifica Cooldown (Apenas para o jogador atual)
         if (!jogadorArena.cooldowns) jogadorArena.cooldowns = {};
         if (jogadorArena.cooldowns[skill.nome] && jogadorArena.cooldowns[skill.nome] > 0) {
             await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[skill.nome]} turno(s)!` }, { quoted: m });
@@ -201,7 +200,7 @@ async function handleComboCommands(sock, m, text, from) {
         jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
         await salvarArenaAtiva(from, arenaAtiva);
 
-        // Se o próprio jogador zerou a stamina, verifica derrota
+        // Se o próprio jogador zerou a stamina ao usar o golpe
         const morreuStm = await checarDerrotaPorStatus(sock, m, from, jogadorArena);
         if (morreuStm) return true;
 
@@ -219,7 +218,7 @@ async function handleComboCommands(sock, m, text, from) {
             arenaAtiva.ataquePendenteAlvo = oponenteArena.uid;
             await salvarArenaAtiva(from, arenaAtiva);
 
-            // Simula como ficaria o oponente caso levasse o golpe sem defesa
+            // Simula a legenda do ataque como se o alvo recebesse direto
             let simDanoHp = 0;
             let simUltrapassouRes = false;
             if (ataqueTotal > oponenteArena.res) {
@@ -271,12 +270,11 @@ async function handleComboCommands(sock, m, text, from) {
                 passouDefensa = true;
                 const danoRestante = ataqueRecebido - defTotal;
 
-                // O dano que passou pela defesa entra na Resistência
                 if (danoRestante > jogadorArena.res) {
                     danoHp = danoRestante - jogadorArena.res;
                 }
 
-                // Resiste toma 10% do dano que passou pela Defesa
+                // 10% do dano que passou pela Defesa reduz a Resistência
                 const reducaoRes = Math.floor(danoRestante * 0.10);
                 jogadorArena.res = Math.max(0, Number(jogadorArena.res) - reducaoRes);
                 jogadorArena.hp = Math.max(0, Number(jogadorArena.hp) - danoHp);
@@ -300,7 +298,7 @@ async function handleComboCommands(sock, m, text, from) {
                 await sock.sendMessage(from, { text: legendaDef }, { quoted: m });
             }
 
-            // Checa se o defensor morreu após receber o golpe
+            // Checa se o defensor zera o HP após receber o golpe
             await checarDerrotaPorStatus(sock, m, from, jogadorArena);
             return true;
         }

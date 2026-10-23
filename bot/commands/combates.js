@@ -176,6 +176,7 @@ async function comecarCombateDeFato(grupoJid, sock) {
 
     bat.fase = 'em_combate';
     bat.jogadorVez = primeiroEscolhido;
+    bat.primeiroDoCombate = primeiroEscolhido; // Guarda quem iniciou a rodada
     bat.turnoAtual = 1;
 
     if (socketParaEnviar) {
@@ -370,15 +371,19 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         const jogadorQueCombouObj = bat[`p${bat.jogadorVez}`];
 
-        // Alterna para o próximo jogador
+        // Troca de jogador
         if (bat.jogadorVez === 1) {
             bat.jogadorVez = 2;
         } else {
             bat.jogadorVez = 1;
+        }
+
+        // Se a vez voltar para quem abriu o combate, avança 1 Turno completo
+        if (bat.jogadorVez === (bat.primeiroDoCombate || 1)) {
             bat.turnoAtual = (bat.turnoAtual || 1) + 1;
         }
 
-        // Decrementa cooldowns do jogador QUE VAI JOGAR AGORA
+        // Decrementa cooldowns do jogador que VAI JOGAR AGORA
         const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
         if (proximoJogadorObj && proximoJogadorObj.cooldowns) {
             for (const skillNomeId of Object.keys(proximoJogadorObj.cooldowns)) {
@@ -391,7 +396,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         await salvarArenaAtiva(from, bat);
 
-        // 1. Envia Card do jogador que combou
+        // 1. Envia Card do jogador que combou (com status da ARENA atualizados)
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
@@ -412,7 +417,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Essências: ${essencias}\n> Término: ${horarioFim} (UTC-3)`;
         await sock.sendMessage(from, { text: msgNovoTurno });
 
-        // 3. Envia a Cooldown List do jogador que VAI JOGAR AGORA (por último)
+        // 3. Envia a Cooldown List do jogador que VAI JOGAR AGORA por último
         let cdTexto = '⏳ *COOLDOWN LIST* ⏳\n\n';
         const cdsProximo = proximoJogadorObj?.cooldowns || {};
         const skillsComCd = Object.entries(cdsProximo);

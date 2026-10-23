@@ -57,7 +57,6 @@ async function obterBufferImagemPersonagem(character) {
 function buscarUidPlayer(playersData, idBuscado) {
     if (!playersData || !idBuscado) return null;
     
-    // Se idBuscado já for um UID de chave direta no Firebase
     if (playersData[idBuscado]) return idBuscado;
 
     const idLimpo = limparId(idBuscado);
@@ -277,11 +276,13 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
 
     const msgInicio = tipo === 'COLISEU'
         ? `⚔️ COMBATE INICIADO NO COLISEU! ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em 5 minutos ou digitem !iniciar.`
-        : `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em *5 minutos* ou digitem *!iniciar*.`;
+        : tipo === 'ATIVIDADE'
+            ? `⚔️ *COMBATE DE ATIVIDADE NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome} (${p1.faccao || ''})\n———VS———\n${p2.nome} (${p2.faccao || ''})\n\nApresentem seus cards em *5 minutos* ou digitem *!iniciar*.`
+            : `⚔️ *COMBATE INICIADO NA ${nomeArena.toUpperCase()}!* ⚔️\n\n${p1.nome}\n———VS———\n${p2.nome}\n\nApresentem os vossos cards em *5 minutos* ou digitem *!iniciar*.`;
 
     await sock.sendMessage(from, { text: msgInicio });
 
-    // Busca no Firebase garantindo suporte a partidas normais e de Atividade
+    // Busca no Firebase garantindo suporte a partidas normais, coliseu e atividades
     try {
         const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
         const playersData = playersRes.data || {};
@@ -519,7 +520,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         limparTimersBatalha(bat);
         await resetarArenaAguardando(from, bat);
-        await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!*' }, { quoted: m });
+        await sock.sendMessage(from, { text: '🏳️ *Combate encerrado com sucesso!* ' }, { quoted: m });
         return true;
     }
 

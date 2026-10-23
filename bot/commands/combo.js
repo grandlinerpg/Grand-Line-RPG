@@ -93,13 +93,9 @@ function buscarJogadorPorSender(playersData, senderId) {
     return uid ? { uid, ...playersData[uid] } : null;
 }
 
-async function checarDerrotaPorStatus(sock, from, arenaAtiva, jogadorObj, oponenteObj, playersData) {
-    const uidJogador = jogadorObj?.uid || buscarUidPlayer(playersData, jogadorObj?.numero || jogadorObj?.lid);
-    if (!uidJogador || !playersData[uidJogador]) return false;
-
-    const stats = playersData[uidJogador].stats || {};
-    const hp = Number(stats.hp) ?? 100;
-    const stm = Number(stats.sta ?? stats.stm) ?? 100;
+async function checarDerrotaPorStatus(sock, from, arenaAtiva, jogadorObj, oponenteObj) {
+    const hp = Number(jogadorObj.hp) ?? 100;
+    const stm = Number(jogadorObj.sta) ?? 100;
 
     if (hp <= 0 || stm <= 0) {
         const motivo = hp <= 0 ? 'Ficou sem HP' : 'Ficou sem Stamina (STM)';
@@ -132,6 +128,12 @@ async function handleComboCommands(sock, m, text, from) {
 
     try {
         const senderId = obterJidEfetivo(m, from);
+        const arenaAtiva = await obterArenaAtiva(from);
+
+        if (!arenaAtiva || arenaAtiva.fase !== 'em_combate') {
+            await sock.sendMessage(from, { text: '❌ Não há combate em andamento neste grupo!' }, { quoted: m });
+            return true;
+        }
 
         const [habilidadesRes, playersRes] = await Promise.all([
             axios.get(`${FIREBASE_URL}/habilidades.json`),
@@ -150,6 +152,8 @@ async function handleComboCommands(sock, m, text, from) {
 
         const skill = habResult.skill;
         const categoriaSkill = String(skill.categoria || '').trim().toLowerCase();
+        const skillRank = Number(skill.rank) || 1;
+        const skillNomeFormatado = String(skill.nome).toUpperCase();
 
         if (ehAtk && categoriaSkill !== 'ofensivo') {
             await sock.sendMessage(from, { text: `❌ A habilidade "*${skill.nome}*" não é do tipo *Ofensivo*!` }, { quoted: m });
@@ -161,60 +165,52 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
-        // 2. Busca o Atacante / Defensor Atual
-        const jogadorAtual = buscarJogadorPorSender(playersData, senderId);
-        if (!jogadorAtual) {
-            await sock.sendMessage(from, { text: '❌ Você não está cadastrado no jogo.' }, { quoted: m });
+        // Identifica se é P1 ou P2 na arena
+        const p1Num = limparId(arenaAtiva.p1?.numero);
+        const p1Lid = limparId(arenaAtiva.p1?.lid);
+        const senderLimpo = limparId(senderId);
+
+        const ehP1 = senderLimpo === p1Num || senderLimpo === p1Lid;
+        const jogadorArena = ehP1 ? arenaAtiva.p1 : arenaAtiva.p2;
+        const oponenteArena = ehP1 ? arenaAtiva.p2 : arenaAtiva.p1;
+
+        // Verifica Cooldown
+        if (!jogadorArena.cooldowns) jogadorArena.cooldowns = {};
+        if (jogadorArena.cooldowns[skill.nome] && jogadorArena.cooldowns[skill.nome] > 0) {
+            await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[skill.nome]} turno(s)!` }, { quoted: m });
             return true;
         }
 
-        const uidAtual = jogadorAtual.uid;
-        const statsAtual = jogadorAtual.stats || {};
-        const forAtual = Number(statsAtual.str) || 0;
+        // Aplica o Cooldown (igual ao rank)
+        jogadorArena.cooldowns[skill.nome] = skillRank;
+
+        // Busca Status do Jogador no Firebase para pegar Força (str) e consumíveis
+        const jogadorInfo = buscarJogadorPorSender(playersData, senderId);
+        const statsBase = jogadorInfo?.player?.stats || jogadorInfo?.stats || {};
+        const forAtual = Number(statsBase.str) || 0;
         const stmConsumo = Number(obterAtributoBaseSkill(skill, 'stm')) || 2;
 
-        // Deduz Stamina do usuário
-        let stmAtual = Math.max(0, (Number(statsAtual.sta ?? statsAtual.stm) || 100) - stmConsumo);
-        await axios.patch(`${FIREBASE_URL}/players/${uidAtual}/stats.json`, {
-            sta: stmAtual,
-            stm: stmAtual
-        });
-        if (playersData[uidAtual]?.stats) {
-            playersData[uidAtual].stats.sta = stmAtual;
-            playersData[uidAtual].stats.stm = stmAtual;
+        // Inicializa ou garante stats na arena se faltarem
+        if (jogadorArena.hp === undefined) jogadorArena.hp = Number(statsBase.hp) || 100;
+        if (jogadorArena.sta === undefined) jogadorArena.sta = Number(statsBase.sta ?? statsBase.stm) || 100;
+        if (jogadorArena.res === undefined) jogadorArena.res = Number(statsBase.res) || 0;
+
+        if (oponenteArena.hp === undefined) {
+            const uidOponente = oponenteArena.uid || buscarUidPlayer(playersData, oponenteArena.numero || oponenteArena.lid);
+            const opStats = uidOponente && playersData[uidOponente] ? (playersData[uidOponente].stats || {}) : {};
+            oponenteArena.hp = Number(opStats.hp) || 100;
+            oponenteArena.res = Number(opStats.res) || 0;
+            oponenteArena.sta = Number(opStats.sta ?? opStats.stm) || 100;
         }
 
-        // 3. Verifica Arena Ativa
-        const arenaAtiva = await obterArenaAtiva(from);
-        let oponenteObj = null;
-        let jogadorObj = null;
-        let uidAlvo = null;
+        // Deduz Stamina do usuário na Arena
+        jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
+        await salvarArenaAtiva(from, arenaAtiva);
 
-        if (arenaAtiva && arenaAtiva.fase === 'em_combate') {
-            const p1LimpoNum = limparId(arenaAtiva.p1?.numero);
-            const p1LimpoLid = limparId(arenaAtiva.p1?.lid);
-            const senderLimpo = limparId(senderId);
+        // Checa se o usuário morreu por falta de Stamina
+        const morreuStm = await checarDerrotaPorStatus(sock, from, arenaAtiva, jogadorArena, oponenteArena);
+        if (morreuStm) return true;
 
-            const ehP1 = senderLimpo === p1LimpoNum || senderLimpo === p1LimpoLid;
-            jogadorObj = ehP1 ? arenaAtiva.p1 : arenaAtiva.p2;
-            oponenteObj = ehP1 ? arenaAtiva.p2 : arenaAtiva.p1;
-
-            if (oponenteObj) {
-                uidAlvo = oponenteObj.uid || buscarUidPlayer(playersData, oponenteObj.numero || oponenteObj.lid);
-            }
-        }
-
-        // Checa se o próprio jogador morreu por falta de Stamina
-        if (arenaAtiva && jogadorObj && oponenteObj) {
-            const encerrou = await checarDerrotaPorStatus(sock, from, arenaAtiva, jogadorObj, oponenteObj, playersData);
-            if (encerrou) return true;
-        }
-
-        const statsAlvo = uidAlvo && playersData[uidAlvo] ? (playersData[uidAlvo].stats || {}) : {};
-        let resAlvo = Number(statsAlvo.res) || 0;
-        let hpAlvo = Number(statsAlvo.hp) || 100;
-
-        const nomeSkillFormatado = String(skill.nome).toUpperCase();
         const imagemBuffer = await baixarImagemHabilidade(skill);
 
         // ─────────────────────────────────────────────
@@ -224,47 +220,36 @@ async function handleComboCommands(sock, m, text, from) {
             const atkSkill = obterAtributoBaseSkill(skill, 'atk');
             let ataqueTotal = atkSkill + forAtual;
 
-            // Se houver defesa acumulada na arena nesta rodada, abate do ataque
-            if (arenaAtiva && arenaAtiva.defesaPendente && arenaAtiva.defesaPendenteAlvo === uidAtual) {
+            // Se houver defesa acumulada pelo oponente nesta rodada
+            if (arenaAtiva.defesaPendente && arenaAtiva.defesaPendenteAlvo === oponenteArena.uid) {
                 ataqueTotal = Math.max(0, ataqueTotal - arenaAtiva.defesaPendente);
                 delete arenaAtiva.defesaPendente;
                 delete arenaAtiva.defesaPendenteAlvo;
-                await salvarArenaAtiva(from, arenaAtiva);
             }
 
             let danoHp = 0;
             let ultrapassouRes = false;
 
-            if (ataqueTotal > resAlvo) {
+            if (ataqueTotal > oponenteArena.res) {
                 ultrapassouRes = true;
-                danoHp = ataqueTotal - resAlvo;
+                danoHp = ataqueTotal - oponenteArena.res;
             }
 
-            // Res reduz 10% do valor do Atk recebido
             const reducaoRes = Math.floor(ataqueTotal * 0.10);
-            const resRestante = Math.max(0, resAlvo - reducaoRes);
-            const hpRestante = Math.max(0, hpAlvo - danoHp);
+            oponenteArena.res = Math.max(0, Number(oponenteArena.res) - reducaoRes);
+            oponenteArena.hp = Math.max(0, Number(oponenteArena.hp) - danoHp);
 
-            if (uidAlvo) {
-                await axios.patch(`${FIREBASE_URL}/players/${uidAlvo}/stats.json`, {
-                    res: resRestante,
-                    hp: hpRestante
-                });
-                if (playersData[uidAlvo]?.stats) {
-                    playersData[uidAlvo].stats.res = resRestante;
-                    playersData[uidAlvo].stats.hp = hpRestante;
-                }
-            }
+            await salvarArenaAtiva(from, arenaAtiva);
 
-            const textoResumen = ultrapassouRes
+            const textoResumo = ultrapassouRes
                 ? `O ataque passou a Res do adversário e tirou ${danoHp} pontos de HP.`
                 : `O ataque não superou a Res do adversário e não causou dano ao HP.`;
 
-            const legendaAtk = `*${nomeSkillFormatado}*\n\n` +
+            const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
-                               `${textoResumen}\n\n` +
-                               `> Res Restante: ${resRestante}\n` +
-                               `> HP Restante: ${hpRestante}`;
+                               `${textoResumo}\n\n` +
+                               `> Res Restante: ${oponenteArena.res}\n` +
+                               `> HP Restante: ${oponenteArena.hp}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
@@ -272,11 +257,8 @@ async function handleComboCommands(sock, m, text, from) {
                 await sock.sendMessage(from, { text: legendaAtk }, { quoted: m });
             }
 
-            // Verifica se o alvo morreu após o ataque
-            if (arenaAtiva && oponenteObj && jogadorObj) {
-                await checarDerrotaPorStatus(sock, from, arenaAtiva, oponenteObj, jogadorObj, playersData);
-            }
-
+            // Checa se o oponente foi derrotado
+            await checarDerrotaPorStatus(sock, from, arenaAtiva, oponenteArena, jogadorArena);
             return true;
         }
 
@@ -288,18 +270,18 @@ async function handleComboCommands(sock, m, text, from) {
             const metadeFor = Math.floor(forAtual * 0.5);
             const defTotal = defSkill + metadeFor;
 
-            // Registra defesa na arena para abater no próximo ataque
-            if (arenaAtiva && oponenteObj) {
-                arenaAtiva.defesaPendente = defTotal;
-                arenaAtiva.defesaPendenteAlvo = uidAlvo;
-                await salvarArenaAtiva(from, arenaAtiva);
-            }
+            // Registra a defesa na arena para amortecer o próximo ataque recebido
+            arenaAtiva.defesaPendente = defTotal;
+            arenaAtiva.defesaPendenteAlvo = jogadorArena.uid;
+            await salvarArenaAtiva(from, arenaAtiva);
 
-            const legendaDef = `*${nomeSkillFormatado}*\n\n` +
+            const danoDefensivoHp = 0; // Defesa protege contra o dano direto no HP na rodada
+
+            const legendaDef = `*${skillNomeFormatado}*\n\n` +
                                `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
-                               `Seu ataque ultrapassa minha Def e me atinge.\n\n` +
-                               `> Res Restante: ${resAlvo}\n` +
-                               `> HP Restante: ${hpAlvo}`;
+                               `Sua Defesa bloqueou totalmente o ataque!\n\n` +
+                               `> Res Restante: ${jogadorArena.res}\n` +
+                               `> HP Restante: ${jogadorArena.hp}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaDef }, { quoted: m });

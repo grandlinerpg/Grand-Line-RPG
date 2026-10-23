@@ -90,6 +90,11 @@ function obterHorarioTermino(minutosAdicionais = 30) {
     return `${horas}:${minutos}`;
 }
 
+function calcularEssencias(turno) {
+    const ess = (Number(turno) || 1) + 3;
+    return Math.min(10, ess);
+}
+
 function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
     limparTimersBatalha(batalhas[grupoJid]);
 
@@ -171,10 +176,11 @@ async function comecarCombateDeFato(grupoJid, sock) {
 
     const horarioFim = obterHorarioTermino(30);
     const jogadorVezNome = bat.jogadorVez === 1 ? (bat.p1?.nome || 'Jogador 1') : (bat.p2?.nome || 'Jogador 2');
-    
-    const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
-                `🔄 *TURNO 1* 🔄\n` +
-                `VEZ DE: *${jogadorVezNome.toUpperCase()}*\n\n` +
+    const essencias = calcularEssencias(bat.turnoAtual);
+
+    const msg = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\n` +
+                `VEZ DE *${jogadorVezNome.toUpperCase()}*\n\n` +
+                `> Essências: ${essencias}\n` +
                 `> Término: ${horarioFim} (UTC-3)`;
 
     if (socketParaEnviar) {
@@ -349,6 +355,10 @@ async function handleCombatesCommands(sock, m, text, from) {
         const bat = await obterArenaAtiva(from);
         if (!bat || bat.fase !== 'em_combate') return true;
 
+        // O jogador que está combando/encerrando o seu turno é o jogadorVez atual
+        const jogadorQueCombouObj = bat[`p${bat.jogadorVez}`];
+
+        // Alterna para o próximo jogador
         if (bat.jogadorVez === 1) {
             bat.jogadorVez = 2;
         } else {
@@ -358,24 +368,25 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         await salvarArenaAtiva(from, bat);
 
-        const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
-        const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
-        const horarioFim = obterHorarioTermino(30);
-
-        // Re-busca os dados atualizados do jogador no Firebase para mandar o Card com os atributos atuais
+        // Re-busca os dados atualizados do jogador que COMBOU/encerrou a vez para mandar o seu Card atualizado
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
-            const uidProximo = proximoJogadorObj?.uid || buscarUidPlayer(playersData, proximoJogadorObj?.numero || proximoJogadorObj?.lid);
+            const uidCombou = jogadorQueCombouObj?.uid || buscarUidPlayer(playersData, jogadorQueCombouObj?.numero || jogadorQueCombouObj?.lid);
 
-            if (uidProximo && playersData[uidProximo]) {
-                await enviarCardApresentacao(sock, from, playersData[uidProximo]);
+            if (uidCombou && playersData[uidCombou]) {
+                await enviarCardApresentacao(sock, from, playersData[uidCombou]);
             }
         } catch (e) {
-            console.error('Erro ao buscar dados do jogador para enviar card no !prox:', e.message);
+            console.error('Erro ao buscar dados do jogador que combou no !prox:', e.message);
         }
 
-        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Término: ${horarioFim} (UTC-3)`;
+        const proximoJogadorObj = bat[`p${bat.jogadorVez}`];
+        const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
+        const horarioFim = obterHorarioTermino(30);
+        const essencias = calcularEssencias(bat.turnoAtual);
+
+        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Essências: ${essencias}\n> Término: ${horarioFim} (UTC-3)`;
         await sock.sendMessage(from, { text: msgNovoTurno });
 
         iniciarTimerTurnoMaximo(from, sock);

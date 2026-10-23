@@ -121,18 +121,65 @@ async function comecarCombateDeFato(grupoJid, sock) {
     if (bat.timerApresentacao) clearTimeout(bat.timerApresentacao);
     bat.timerApresentacao = null;
 
+    const socketParaEnviar = sock || bat.sock;
+
+    // Buscar dados dos players no Firebase para os cards e cálculo de Agi + Dex
+    let playersData = {};
+    try {
+        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
+        playersData = playersRes.data || {};
+    } catch (e) {
+        console.error('Erro ao buscar dados dos players para inicio do combate:', e.message);
+    }
+
+    const uidP1 = bat.p1.uid || buscarUidPlayer(playersData, bat.p1.numero || bat.p1.lid);
+    const uidP2 = bat.p2.uid || buscarUidPlayer(playersData, bat.p2.numero || bat.p2.lid);
+
+    const p1Info = uidP1 ? playersData[uidP1] : null;
+    const p2Info = uidP2 ? playersData[uidP2] : null;
+
+    const statsP1 = p1Info?.stats || {};
+    const statsP2 = p2Info?.stats || {};
+
+    const agiDexP1 = (Number(statsP1.agi) || 0) + (Number(statsP1.dex) || 0);
+    const agiDexP2 = (Number(statsP2.agi) || 0) + (Number(statsP2.dex) || 0);
+
+    let primeiroEscolhido = 1;
+    let textoDetalheIniciativa = '';
+
+    if (agiDexP1 > agiDexP2) {
+        primeiroEscolhido = 1;
+        textoDetalheIniciativa = `⚡ *${bat.p1.nome}* possui a maior soma de Agi + Dex (${agiDexP1} contra ${agiDexP2}) e começa atacando!`;
+    } else if (agiDexP2 > agiDexP1) {
+        primeiroEscolhido = 2;
+        textoDetalheIniciativa = `⚡ *${bat.p2.nome}* possui a maior soma de Agi + Dex (${agiDexP2} contra ${agiDexP1}) e começa atacando!`;
+    } else {
+        primeiroEscolhido = Math.random() < 0.5 ? 1 : 2;
+        const nomeSorteado = primeiroEscolhido === 1 ? bat.p1.nome : bat.p2.nome;
+        textoDetalheIniciativa = `⚖️ Houve um empate na soma de Agi + Dex (${agiDexP1} x ${agiDexP2}). No sorteio, *${nomeSorteado}* tirou a sorte e começa!`;
+    }
+
     bat.fase = 'em_combate';
-    bat.jogadorVez = 1;
+    bat.jogadorVez = primeiroEscolhido;
     bat.turnoAtual = 1;
 
+    // Envia os cards de apresentação de cada personagem antes do turno 1
+    if (socketParaEnviar) {
+        if (p1Info) await enviarCardApresentacao(socketParaEnviar, grupoJid, p1Info);
+        if (p2Info) await enviarCardApresentacao(socketParaEnviar, grupoJid, p2Info);
+
+        // Mensagem antes do turno 1 falando sobre a iniciativa
+        await socketParaEnviar.sendMessage(grupoJid, { text: textoDetalheIniciativa });
+    }
+
     const horarioFim = obterHorarioTermino(30);
-    const p1Nome = bat.p1?.nome || 'Jogador 1';
+    const jogadorVezNome = bat.jogadorVez === 1 ? (bat.p1?.nome || 'Jogador 1') : (bat.p2?.nome || 'Jogador 2');
+    
     const msg = `⚔️ *O COMBATE COMEÇOU!* ⚔️\n\n` +
                 `🔄 *TURNO 1* 🔄\n` +
-                `VEZ DE: *${p1Nome.toUpperCase()}*\n\n` +
+                `VEZ DE: *${jogadorVezNome.toUpperCase()}*\n\n` +
                 `> Término: ${horarioFim} (UTC-3)`;
 
-    const socketParaEnviar = sock || bat.sock;
     if (socketParaEnviar) {
         await socketParaEnviar.sendMessage(grupoJid, { text: msg });
     }
@@ -282,24 +329,6 @@ async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
 
     await sock.sendMessage(from, { text: msgInicio });
 
-    // Busca no Firebase garantindo suporte a partidas normais, coliseu e atividades
-    try {
-        const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
-        const playersData = playersRes.data || {};
-
-        const uidP1 = p1.uid || buscarUidPlayer(playersData, p1.numero || p1.lid);
-        const uidP2 = p2.uid || buscarUidPlayer(playersData, p2.numero || p2.lid);
-
-        if (uidP1 && playersData[uidP1]) {
-            await enviarCardApresentacao(sock, from, playersData[uidP1]);
-        }
-        if (uidP2 && playersData[uidP2]) {
-            await enviarCardApresentacao(sock, from, playersData[uidP2]);
-        }
-    } catch (e) {
-        console.error('Erro ao buscar stats para cards de apresentação:', e.message);
-    }
-
     return true;
 }
 
@@ -312,10 +341,6 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         if (bat.fase === 'apresentacao' || bat.fase === 'aguardando' || !bat.fase) {
             await comecarCombateDeFato(from, sock);
-            bat.fase = 'em_combate';
-            bat.jogadorVez = bat.jogadorVez || 1;
-            bat.turnoAtual = bat.turnoAtual || 1;
-            await salvarArenaAtiva(from, bat);
             return true;
         } else if (bat.fase === 'em_combate') {
             return await sock.sendMessage(from, { text: '⚠️ O combate já está em andamento!' }, { quoted: m });

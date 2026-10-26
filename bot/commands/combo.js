@@ -160,14 +160,10 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
-        // Identifica com segurança se quem enviou é o P1 ou o P2
-        const p1Num = limparId(arenaAtiva.p1?.numero);
-        const p1Lid = limparId(arenaAtiva.p1?.lid);
-        const senderLimpo = limparId(senderId);
-
-        const ehP1 = senderLimpo === p1Num || senderLimpo === p1Lid;
-        const jogadorArena = ehP1 ? arenaAtiva.p1 : arenaAtiva.p2;
-        const oponenteArena = ehP1 ? arenaAtiva.p2 : arenaAtiva.p1;
+        // Identificação segura baseada estritamente na vez do jogador na arena
+        const numVez = arenaAtiva.jogadorVez || 1;
+        const jogadorArena = numVez === 1 ? arenaAtiva.p1 : arenaAtiva.p2;
+        const oponenteArena = numVez === 1 ? arenaAtiva.p2 : arenaAtiva.p1;
 
         // Garante UIDs para busca correta no banco de players
         if (!jogadorArena.uid) jogadorArena.uid = buscarUidPlayer(playersData, jogadorArena.numero || jogadorArena.lid);
@@ -193,7 +189,7 @@ async function handleComboCommands(sock, m, text, from) {
         if (oponenteArena.sta === undefined) oponenteArena.sta = Number(opStats.sta ?? opStats.stm ?? opStats.sta) || 100;
         if (!oponenteArena.cooldowns) oponenteArena.cooldowns = {};
 
-        // Verifica Cooldown individual do jogador
+        // Verifica Cooldown individual do jogador atual
         if (jogadorArena.cooldowns[skill.nome] && jogadorArena.cooldowns[skill.nome] > 0) {
             await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[skill.nome]} turno(s)!` }, { quoted: m });
             return true;
@@ -238,7 +234,7 @@ async function handleComboCommands(sock, m, text, from) {
             arenaAtiva.ataquePendenteAlvo = oponenteArena.uid;
             await salvarArenaAtiva(from, arenaAtiva);
 
-            // REFERENCIA SEMPRE A RES E HP DO OPONENTE
+            // REFERENCIA EXCLUSIVAMENTE A RES E O HP DO OPONENTE
             const resAtualOp = Number(oponenteArena.res);
             const hpAtualOp = Number(oponenteArena.hp);
 
@@ -292,7 +288,7 @@ async function handleComboCommands(sock, m, text, from) {
                 delete arenaAtiva.ataquePendenteAlvo;
             }
 
-            // REFERENCIA SEMPRE A RES E HP DO PRÓPRIO DEFESSOR (JOGADOR DA VEZ)
+            // REFERENCIA EXCLUSIVAMENTE A RES E O HP DO PRÓPRIO DEFESSOR (JOGADOR DA VEZ)
             const resAtual = Number(jogadorArena.res);
             const hpAtual = Number(jogadorArena.hp);
 

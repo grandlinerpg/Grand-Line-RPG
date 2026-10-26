@@ -189,15 +189,16 @@ async function handleComboCommands(sock, m, text, from) {
         if (oponenteArena.sta === undefined) oponenteArena.sta = Number(opStats.sta ?? opStats.stm ?? opStats.sta) || 100;
         if (!oponenteArena.cooldowns || typeof oponenteArena.cooldowns !== 'object') oponenteArena.cooldowns = {};
 
-        // Verifica Cooldown individual do jogador atual (usando a chave exata ou normalizada do nome)
-        const chaveCd = normalizar(skill.nome);
+        // Verifica Cooldown individual do jogador atual usando o ID ou Nome da habilidade gravado no objeto cooldowns
+        const chaveCd = habResult.id || normalizar(skill.nome);
         if (jogadorArena.cooldowns[chaveCd] && Number(jogadorArena.cooldowns[chaveCd]) > 0) {
             await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[chaveCd]} turno(s)!` }, { quoted: m });
             return true;
         }
 
-        // Aplica o Cooldown individualmente para quem usou
+        // Aplica o Cooldown individualmente para quem usou (salvando tanto pelo ID quanto pelo nome normalizado para segurança)
         jogadorArena.cooldowns[chaveCd] = skillRank;
+        jogadorArena.cooldowns[normalizar(skill.nome)] = skillRank;
 
         // Consome Stamina do Jogador
         jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
@@ -262,8 +263,8 @@ async function handleComboCommands(sock, m, text, from) {
             const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
                                `${textoResumoSimulado}\n\n` +
-                               `> Res: ${resAtualOp}-${reducaoRes}(10%)= ${resRestante}\n` +
-                               `> HP: ${hpAtualOp}-${danoHp}= ${hpRestante}`;
+                               `> Res: ${resAtualOp} - ${reducaoRes} ( 10% ) = ${resRestante}\n` +
+                               `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
@@ -303,7 +304,7 @@ async function handleComboCommands(sock, m, text, from) {
                 if (ataqueRecebido > defTotal) {
                     const danoRestante = ataqueRecebido - defTotal;
                     
-                    // Retira os 10% da Resistência se o ataque ultrapassar a defesa
+                    // Retira os 10% do dano excedente da Resistência
                     reducaoRes = Math.floor(danoRestante * 0.10);
                     resRestante = Math.max(0, resAtual - reducaoRes);
 
@@ -327,10 +328,10 @@ async function handleComboCommands(sock, m, text, from) {
             await salvarArenaAtiva(from, arenaAtiva);
 
             const legendaDef = `*${skillNomeFormatado}*\n\n` +
-                               `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
+                               `> Def: ${defSkill} + ${metadeFor} ( 50% For ) = ${defTotal}\n\n` +
                                `${textoResumoDef}\n\n` +
-                               `> Res: ${resAtual}-${reducaoRes}(10%)= ${resRestante}\n` +
-                               `> HP: ${hpAtual}-${danoHp}= ${hpRestante}`;
+                               `> Res: ${resAtual} - ${reducaoRes} ( 10% ) = ${resRestante}\n` +
+                               `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaDef }, { quoted: m });

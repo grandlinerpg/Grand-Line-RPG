@@ -189,23 +189,14 @@ async function handleComboCommands(sock, m, text, from) {
         if (oponenteArena.sta === undefined) oponenteArena.sta = Number(opStats.sta ?? opStats.stm ?? opStats.sta) || 100;
         if (!oponenteArena.cooldowns || typeof oponenteArena.cooldowns !== 'object') oponenteArena.cooldowns = {};
 
-        // Verifica Cooldown individual do jogador atual usando o ID ou Nome da habilidade gravado no objeto cooldowns
+        // Verificação de Cooldown (busca rigorosa por ID ou Nome normalizado)
         const chaveCd = habResult.id || normalizar(skill.nome);
-        if (jogadorArena.cooldowns[chaveCd] && Number(jogadorArena.cooldowns[chaveCd]) > 0) {
-            await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[chaveCd]} turno(s)!` }, { quoted: m });
+        const cdAtual = Number(jogadorArena.cooldowns[chaveCd] ?? jogadorArena.cooldowns[normalizar(skill.nome)] ?? 0);
+
+        if (cdAtual > 0) {
+            await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${cdAtual} turno(s)!` }, { quoted: m });
             return true;
         }
-
-        // Aplica o Cooldown individualmente para quem usou (salvando tanto pelo ID quanto pelo nome normalizado para segurança)
-        jogadorArena.cooldowns[chaveCd] = skillRank;
-        jogadorArena.cooldowns[normalizar(skill.nome)] = skillRank;
-
-        // Consome Stamina do Jogador
-        jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
-        await salvarArenaAtiva(from, arenaAtiva);
-
-        const morreuStm = await checarDerrotaPorStatus(sock, m, from, jogadorArena);
-        if (morreuStm) return true;
 
         const imagemBuffer = await baixarImagemHabilidade(skill);
 
@@ -234,7 +225,6 @@ async function handleComboCommands(sock, m, text, from) {
             // Salva o novo ataque pendente apontando para o UID do oponente
             arenaAtiva.ataquePendente = ataqueTotal;
             arenaAtiva.ataquePendenteAlvo = oponenteArena.uid;
-            await salvarArenaAtiva(from, arenaAtiva);
 
             // REFERENCIA EXCLUSIVAMENTE A RES E O HP DO OPONENTE
             const resAtualOp = Number(oponenteArena.res);
@@ -254,6 +244,12 @@ async function handleComboCommands(sock, m, text, from) {
             // Atualiza os valores direto no oponente na arena
             oponenteArena.res = resRestante;
             oponenteArena.hp = hpRestante;
+
+            // Aplica o Cooldown e Consome Stamina apenas após validar o uso com sucesso
+            jogadorArena.cooldowns[chaveCd] = skillRank;
+            jogadorArena.cooldowns[normalizar(skill.nome)] = skillRank;
+            jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
+
             await salvarArenaAtiva(from, arenaAtiva);
 
             const textoResumoSimulado = passouRes
@@ -263,7 +259,7 @@ async function handleComboCommands(sock, m, text, from) {
             const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
                                `${textoResumoSimulado}\n\n` +
-                               `> Res: ${resAtualOp} - ${reducaoRes} ( 10% ) = ${resRestante}\n` +
+                               `> Res: ${resAtualOp} - ${reducaoRes} (10%) = ${resRestante}\n` +
                                `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}`;
 
             if (imagemBuffer) {
@@ -290,8 +286,19 @@ async function handleComboCommands(sock, m, text, from) {
                 delete arenaAtiva.ataquePendenteAlvo;
             }
 
-            // REFERENCIA EXCLUSIVAMENTE A RES E O HP DO PRÓPRIO DEFESSOR (JOGADOR DA VEZ)
-            const resAtual = Number(jogadorArena.res);
+            // RECUPERA O VALOR ORIGINAL DA RES ANTES DO ATAQUE PENDENTE TER SIDO APLICADO AUTOMATICAMENTE
+            let resAtual = Number(jogadorArena.res);
+            if (ataqueRecebido > 0) {
+                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * 0.10);
+                resAtual = Math.min(100, resAtual + reducaoAntigaSimulada);
+                // Devolve temporariamente o HP que foi descontado pelo ataque pendente para que a defesa calcule corretamente do zero
+                let danoHpAnterior = 0;
+                if (ataqueRecebido > resAtual) {
+                    danoHpAnterior = ataqueRecebido - resAtual;
+                }
+                jogadorArena.hp = Math.min(100, Number(jogadorArena.hp) + danoHpAnterior);
+            }
+
             const hpAtual = Number(jogadorArena.hp);
 
             let danoHp = 0;
@@ -304,11 +311,11 @@ async function handleComboCommands(sock, m, text, from) {
                 if (ataqueRecebido > defTotal) {
                     const danoRestante = ataqueRecebido - defTotal;
                     
-                    // Retira os 10% do dano excedente da Resistência
+                    // Retira os 10% do dano excedente da Resistência original
                     reducaoRes = Math.floor(danoRestante * 0.10);
                     resRestante = Math.max(0, resAtual - reducaoRes);
 
-                    // Se o dano restante após abater a defesa for maior que a resistência atual, tira a diferença do HP
+                    // Se o dano restante após abater a defesa for maior que a resistência original, tira a diferença do HP
                     if (danoRestante > resAtual) {
                         danoHp = danoRestante - resAtual;
                         hpRestante = Math.max(0, hpAtual - danoHp);
@@ -325,12 +332,17 @@ async function handleComboCommands(sock, m, text, from) {
                 }
             }
 
+            // Aplica o Cooldown e Consome Stamina após o cálculo correto da defesa
+            jogadorArena.cooldowns[chaveCd] = skillRank;
+            jogadorArena.cooldowns[normalizar(skill.nome)] = skillRank;
+            jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
+
             await salvarArenaAtiva(from, arenaAtiva);
 
             const legendaDef = `*${skillNomeFormatado}*\n\n` +
-                               `> Def: ${defSkill} + ${metadeFor} ( 50% For ) = ${defTotal}\n\n` +
+                               `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
                                `${textoResumoDef}\n\n` +
-                               `> Res: ${resAtual} - ${reducaoRes} ( 10% ) = ${resRestante}\n` +
+                               `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
                                `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}`;
 
             if (imagemBuffer) {

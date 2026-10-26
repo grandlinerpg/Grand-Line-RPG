@@ -181,22 +181,23 @@ async function handleComboCommands(sock, m, text, from) {
         if (jogadorArena.hp === undefined) jogadorArena.hp = Number(statsBase.hp) || 100;
         if (jogadorArena.sta === undefined) jogadorArena.sta = Number(statsBase.sta ?? statsBase.stm ?? statsBase.sta) || 100;
         if (jogadorArena.res === undefined) jogadorArena.res = Number(statsBase.res) || 0;
-        if (!jogadorArena.cooldowns) jogadorArena.cooldowns = {};
+        if (!jogadorArena.cooldowns || typeof jogadorArena.cooldowns !== 'object') jogadorArena.cooldowns = {};
 
         // Inicializa atributos do OPONENTE na arena (caso não existam)
         if (oponenteArena.hp === undefined) oponenteArena.hp = Number(opStats.hp) || 100;
         if (oponenteArena.res === undefined) oponenteArena.res = Number(opStats.res) || 0;
         if (oponenteArena.sta === undefined) oponenteArena.sta = Number(opStats.sta ?? opStats.stm ?? opStats.sta) || 100;
-        if (!oponenteArena.cooldowns) oponenteArena.cooldowns = {};
+        if (!oponenteArena.cooldowns || typeof oponenteArena.cooldowns !== 'object') oponenteArena.cooldowns = {};
 
-        // Verifica Cooldown individual do jogador atual
-        if (jogadorArena.cooldowns[skill.nome] && jogadorArena.cooldowns[skill.nome] > 0) {
-            await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[skill.nome]} turno(s)!` }, { quoted: m });
+        // Verifica Cooldown individual do jogador atual (usando a chave exata ou normalizada do nome)
+        const chaveCd = normalizar(skill.nome);
+        if (jogadorArena.cooldowns[chaveCd] && Number(jogadorArena.cooldowns[chaveCd]) > 0) {
+            await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${jogadorArena.cooldowns[chaveCd]} turno(s)!` }, { quoted: m });
             return true;
         }
 
         // Aplica o Cooldown individualmente para quem usou
-        jogadorArena.cooldowns[skill.nome] = skillRank;
+        jogadorArena.cooldowns[chaveCd] = skillRank;
 
         // Consome Stamina do Jogador
         jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
@@ -298,25 +299,29 @@ async function handleComboCommands(sock, m, text, from) {
             let hpRestante = hpAtual;
             let textoResumoDef = `Sua Defesa bloqueou totalmente o ataque!`;
 
-            if (ataqueRecebido > defTotal) {
-                const danoRestante = ataqueRecebido - defTotal;
-                
-                // Retira os 10% da Resistência obrigatoriamente se o ataque passar da defesa
-                reducaoRes = Math.floor(danoRestante * 0.10);
-                resRestante = Math.max(0, resAtual - reducaoRes);
+            if (ataqueRecebido > 0) {
+                if (ataqueRecebido > defTotal) {
+                    const danoRestante = ataqueRecebido - defTotal;
+                    
+                    // Retira os 10% da Resistência se o ataque ultrapassar a defesa
+                    reducaoRes = Math.floor(danoRestante * 0.10);
+                    resRestante = Math.max(0, resAtual - reducaoRes);
 
-                // Se o dano restante ultrapassar a resistência, tira do HP
-                if (danoRestante > resAtual) {
-                    danoHp = danoRestante - resAtual;
-                    hpRestante = Math.max(0, hpAtual - danoHp);
+                    // Se o dano restante após abater a defesa for maior que a resistência atual, tira a diferença do HP
+                    if (danoRestante > resAtual) {
+                        danoHp = danoRestante - resAtual;
+                        hpRestante = Math.max(0, hpAtual - danoHp);
+                    }
+
+                    jogadorArena.res = resRestante;
+                    jogadorArena.hp = hpRestante;
+
+                    textoResumoDef = danoHp > 0 
+                        ? `Seu ataque passou a Defesa e me tirou ${danoHp} pontos de HP!`
+                        : `Seu ataque superou a Defesa, mas atingiu apenas a Resistência!`;
+                } else {
+                    textoResumoDef = `Sua Defesa absorveu completamente o ataque recebido!`;
                 }
-
-                jogadorArena.res = resRestante;
-                jogadorArena.hp = hpRestante;
-
-                textoResumoDef = danoHp > 0 
-                    ? `Seu ataque passou minha Def e me tirou ${danoHp} pontos de HP!`
-                    : `Seu ataque superou a Defesa, mas atingiu apenas a Resistência!`;
             }
 
             await salvarArenaAtiva(from, arenaAtiva);

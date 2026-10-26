@@ -213,31 +213,45 @@ async function handleComboCommands(sock, m, text, from) {
             const atkSkill = obterAtributoBaseSkill(skill, 'atk');
             const ataqueTotal = atkSkill + forAtual;
 
-            // Salva o ataque pendente para o oponente responder no turno dele
+            // Se houver um ataque pendente antigo que o oponente não defendeu, aplica o dano direto nele agora antes de sobrescrever
+            if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === oponenteArena.uid) {
+                const atkAntigo = arenaAtiva.ataquePendente;
+                let danoHpAntigo = 0;
+                if (atkAntigo > Number(oponenteArena.res)) {
+                    danoHpAntigo = atkAntigo - Number(oponenteArena.res);
+                }
+                const reducaoResAntiga = Math.floor(atkAntigo * 0.10);
+                oponenteArena.res = Math.max(0, Number(oponenteArena.res) - reducaoResAntiga);
+                oponenteArena.hp = Math.max(0, Number(oponenteArena.hp) - danoHpAntigo);
+            }
+
+            // Salva o novo ataque pendente para o oponente responder
             arenaAtiva.ataquePendente = ataqueTotal;
             arenaAtiva.ataquePendenteAlvo = oponenteArena.uid;
             await salvarArenaAtiva(from, arenaAtiva);
 
-            // Simula a legenda do ataque como se o alvo recebesse direto
-            let simDanoHp = 0;
-            let simUltrapassouRes = false;
-            if (ataqueTotal > oponenteArena.res) {
-                simUltrapassouRes = true;
-                simDanoHp = ataqueTotal - oponenteArena.res;
-            }
-            const simReducaoRes = Math.floor(ataqueTotal * 0.10);
-            const simResRestante = Math.max(0, Number(oponenteArena.res) - simReducaoRes);
-            const simHpRestante = Math.max(0, Number(oponenteArena.hp) - simDanoHp);
+            // Simulação para a legenda do ataque
+            const resAtualOp = Number(oponenteArena.res);
+            const hpAtualOp = Number(oponenteArena.hp);
 
-            const textoResumoSimulado = simUltrapassouRes
-                ? `O ataque passou a Res do adversário e tirou ${simDanoHp} pontos de HP.`
+            const reducaoRes = Math.floor(ataqueTotal * 0.10);
+            const resRestante = Math.max(0, resAtualOp - reducaoRes);
+
+            let danoHp = 0;
+            if (ataqueTotal > resAtualOp) {
+                danoHp = ataqueTotal - resAtualOp;
+            }
+            const hpRestante = Math.max(0, hpAtualOp - danoHp);
+
+            const textoResumoSimulado = ataqueTotal > resAtualOp
+                ? `O ataque passou a Res do adversário e atingiu o HP.`
                 : `O ataque não superou a Res do adversário e não causou dano ao HP.`;
 
             const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
                                `${textoResumoSimulado}\n\n` +
-                               `> Res Restante: ${simResRestante}\n` +
-                               `> HP Restante: ${simHpRestante}`;
+                               `> Res: ${resAtualOp}-${reducaoRes}(10%)= ${resRestante}\n` +
+                               `> HP: ${hpAtualOp}-${danoHp}= ${hpRestante}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
@@ -263,34 +277,42 @@ async function handleComboCommands(sock, m, text, from) {
                 delete arenaAtiva.ataquePendenteAlvo;
             }
 
+            const resAtual = Number(jogadorArena.res);
+            const hpAtual = Number(jogadorArena.hp);
+
             let danoHp = 0;
-            let passouDefensa = false;
+            let reducaoRes = 0;
+            let resRestante = resAtual;
+            let hpRestante = hpAtual;
+            let textoResumoDef = `Sua Defesa bloqueou totalmente o ataque!`;
 
             if (ataqueRecebido > defTotal) {
-                passouDefensa = true;
                 const danoRestante = ataqueRecebido - defTotal;
-
-                if (danoRestante > jogadorArena.res) {
-                    danoHp = danoRestante - jogadorArena.res;
+                if (danoRestante > resAtual) {
+                    danoHp = danoRestante - resAtual;
                 }
 
-                // 10% do dano que passou pela Defesa reduz a Resistência
-                const reducaoRes = Math.floor(danoRestante * 0.10);
-                jogadorArena.res = Math.max(0, Number(jogadorArena.res) - reducaoRes);
-                jogadorArena.hp = Math.max(0, Number(jogadorArena.hp) - danoHp);
+                reducaoRes = Math.floor(danoRestante * 0.10);
+                resRestante = Math.max(0, resAtual - reducaoRes);
+                hpRestante = Math.max(0, hpAtual - danoHp);
+
+                jogadorArena.res = resRestante;
+                jogadorArena.hp = hpRestante;
+
+                textoResumoDef = `Seu ataque passou minha Def e me tirou ${danoHp} pontos de HP!`;
+            } else {
+                // Mesmo defendendo, se houver impacto, pode aplicar desgaste mínimo ou manter
+                resRestante = resAtual;
+                hpRestante = hpAtual;
             }
 
             await salvarArenaAtiva(from, arenaAtiva);
 
-            const textoResumoDef = passouDefensa
-                ? `Seu ataque passou minha Def e me tirou ${danoHp} pontos de HP!`
-                : `Sua Defesa bloqueou totalmente o ataque!`;
-
             const legendaDef = `*${skillNomeFormatado}*\n\n` +
                                `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
                                `${textoResumoDef}\n\n` +
-                               `> Res Restante: ${jogadorArena.res}\n` +
-                               `> HP Restante: ${jogadorArena.hp}`;
+                               `> Res: ${resAtual}-${reducaoRes}(10%)= ${resRestante}\n` +
+                               `> HP: ${hpAtual}-${danoHp}= ${hpRestante}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaDef }, { quoted: m });

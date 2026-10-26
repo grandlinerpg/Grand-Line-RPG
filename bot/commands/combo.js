@@ -245,9 +245,10 @@ async function handleComboCommands(sock, m, text, from) {
             oponenteArena.res = resRestante;
             oponenteArena.hp = hpRestante;
 
-            // Aplica o Cooldown e Consome Stamina apenas após validar o uso com sucesso
-            jogadorArena.cooldowns[chaveCd] = skillRank;
-            jogadorArena.cooldowns[normalizar(skill.nome)] = skillRank;
+            // Aplica o Cooldown somando +1 para garantir que fique 1 turno completo sem poder usar (ex: rank 1 vira 2 turnos de espera até liberar na próxima rodada)
+            const valorCdReal = skillRank + 1;
+            jogadorArena.cooldowns[chaveCd] = valorCdReal;
+            jogadorArena.cooldowns[normalizar(skill.nome)] = valorCdReal;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);
@@ -259,7 +260,7 @@ async function handleComboCommands(sock, m, text, from) {
             const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
                                `${textoResumoSimulado}\n\n` +
-                               `> Res: ${resAtualOp} - ${reducaoRes} (10%) = ${resRestante}\n` +
+                               `> Res: ${resAtualOp} - ${reducaoRes} ( 10% ) = ${resRestante}\n` +
                                `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}`;
 
             if (imagemBuffer) {
@@ -286,19 +287,8 @@ async function handleComboCommands(sock, m, text, from) {
                 delete arenaAtiva.ataquePendenteAlvo;
             }
 
-            // RECUPERA O VALOR ORIGINAL DA RES ANTES DO ATAQUE PENDENTE TER SIDO APLICADO AUTOMATICAMENTE
-            let resAtual = Number(jogadorArena.res);
-            if (ataqueRecebido > 0) {
-                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * 0.10);
-                resAtual = Math.min(100, resAtual + reducaoAntigaSimulada);
-                // Devolve temporariamente o HP que foi descontado pelo ataque pendente para que a defesa calcule corretamente do zero
-                let danoHpAnterior = 0;
-                if (ataqueRecebido > resAtual) {
-                    danoHpAnterior = ataqueRecebido - resAtual;
-                }
-                jogadorArena.hp = Math.min(100, Number(jogadorArena.hp) + danoHpAnterior);
-            }
-
+            // PEGA DIRETAMENTE A RES E O HP ATUAIS SEM PRÉ-APLICAR O ATAQUE PENDENTE, POIS A DEFESA VAI COMPUTAR EM CIMA DELES
+            const resAtual = Number(jogadorArena.res);
             const hpAtual = Number(jogadorArena.hp);
 
             let danoHp = 0;
@@ -308,21 +298,18 @@ async function handleComboCommands(sock, m, text, from) {
             let textoResumoDef = `Sua Defesa bloqueou totalmente o ataque!`;
 
             if (ataqueRecebido > 0) {
+                // Redução fixa de 10% do ataque recebido sobre a resistência atual do defensor
+                reducaoRes = Math.floor(ataqueRecebido * 0.10);
+                resRestante = Math.max(0, resAtual - reducaoRes);
+
                 if (ataqueRecebido > defTotal) {
                     const danoRestante = ataqueRecebido - defTotal;
-                    
-                    // Retira os 10% do dano excedente da Resistência original
-                    reducaoRes = Math.floor(danoRestante * 0.10);
-                    resRestante = Math.max(0, resAtual - reducaoRes);
 
-                    // Se o dano restante após abater a defesa for maior que a resistência original, tira a diferença do HP
+                    // Se o dano restante após a defesa for maior que a resistência atual, a diferença vai para o HP
                     if (danoRestante > resAtual) {
                         danoHp = danoRestante - resAtual;
                         hpRestante = Math.max(0, hpAtual - danoHp);
                     }
-
-                    jogadorArena.res = resRestante;
-                    jogadorArena.hp = hpRestante;
 
                     textoResumoDef = danoHp > 0 
                         ? `Seu ataque passou a Defesa e me tirou ${danoHp} pontos de HP!`
@@ -330,19 +317,23 @@ async function handleComboCommands(sock, m, text, from) {
                 } else {
                     textoResumoDef = `Sua Defesa absorveu completamente o ataque recebido!`;
                 }
+
+                jogadorArena.res = resRestante;
+                jogadorArena.hp = hpRestante;
             }
 
-            // Aplica o Cooldown e Consome Stamina após o cálculo correto da defesa
-            jogadorArena.cooldowns[chaveCd] = skillRank;
-            jogadorArena.cooldowns[normalizar(skill.nome)] = skillRank;
+            // Aplica o Cooldown somando +1 para garantir que fique 1 turno completo sem poder usar
+            const valorCdReal = skillRank + 1;
+            jogadorArena.cooldowns[chaveCd] = valorCdReal;
+            jogadorArena.cooldowns[normalizar(skill.nome)] = valorCdReal;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);
 
             const legendaDef = `*${skillNomeFormatado}*\n\n` +
-                               `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
+                               `> Def: ${defSkill} + ${metadeFor} ( 50% For ) = ${defTotal}\n\n` +
                                `${textoResumoDef}\n\n` +
-                               `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
+                               `> Res: ${resAtual} - ${reducaoRes} ( 10% ) = ${resRestante}\n` +
                                `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}`;
 
             if (imagemBuffer) {

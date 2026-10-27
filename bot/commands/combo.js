@@ -169,6 +169,26 @@ async function handleComboCommands(sock, m, text, from) {
         if (!jogadorArena.uid) jogadorArena.uid = buscarUidPlayer(playersData, jogadorArena.numero || jogadorArena.lid);
         if (!oponenteArena.uid) oponenteArena.uid = buscarUidPlayer(playersData, oponenteArena.numero || oponenteArena.lid);
 
+        // ─────────────────────────────────────────────
+        // RESTRIÇÃO DE 1 ATAQUE E 1 DEFESA POR TURNO
+        // ─────────────────────────────────────────────
+        if (!arenaAtiva.acoesTurno || arenaAtiva.turnoAtual !== arenaAtiva.ultimoTurnoRegistrado) {
+            arenaAtiva.acoesTurno = { p1: { atk: false, def: false }, p2: { atk: false, def: false } };
+            arenaAtiva.ultimoTurnoRegistrado = arenaAtiva.turnoAtual;
+        }
+
+        const chaveTurnoJogador = numVez === 1 ? 'p1' : 'p2';
+
+        if (ehAtk && arenaAtiva.acoesTurno[chaveTurnoJogador].atk) {
+            await sock.sendMessage(from, { text: `⚠️ Você já utilizou um *Ataque* neste turno!` }, { quoted: m });
+            return true;
+        }
+
+        if (ehDef && arenaAtiva.acoesTurno[chaveTurnoJogador].def) {
+            await sock.sendMessage(from, { text: `⚠️ Você já utilizou uma *Defesa* neste turno!` }, { quoted: m });
+            return true;
+        }
+
         const jogadorInfo = playersData[jogadorArena.uid] || buscarJogadorPorSender(playersData, senderId);
         const statsBase = jogadorInfo?.player?.stats || jogadorInfo?.stats || {};
         const forAtual = Number(statsBase.str) || 0;
@@ -240,6 +260,9 @@ async function handleComboCommands(sock, m, text, from) {
 
             oponenteArena.res = resRestante;
             oponenteArena.hp = hpRestante;
+
+            // Marca que o jogador já usou o ataque neste turno
+            arenaAtiva.acoesTurno[chaveTurnoJogador].atk = true;
 
             // CORREÇÃO DO COOLDOWN: Adicionado +1 para compensar a contagem de turnos (garante 1 turno completo de espera)
             jogadorArena.cooldowns[chaveCd] = skillRank + 1;
@@ -322,6 +345,9 @@ async function handleComboCommands(sock, m, text, from) {
                     textoResumoDef = `Sua Defesa absorveu completamente o ataque recebido!`;
                 }
             }
+
+            // Marca que o jogador já usou a defesa neste turno
+            arenaAtiva.acoesTurno[chaveTurnoJogador].def = true;
 
             // CORREÇÃO DO COOLDOWN: Adicionado +1 para garantir que passe 1 turno completo sem poder usar
             jogadorArena.cooldowns[chaveCd] = skillRank + 1;

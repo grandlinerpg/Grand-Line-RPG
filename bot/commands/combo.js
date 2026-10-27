@@ -9,7 +9,7 @@ const ATRIBUTOS_RANK = {
     2: { stm: 4, atk: 5, def: 5 },
     3: { stm: 8, atk: 10, def: 10 },
     4: { stm: 15, atk: 15, def: 15 },
-    5: { stm: 20, atk: 20, def: 20 }
+    5: { stm: 20, atk: 20, def: 20 } 
 };
 
 function normalizar(str) {

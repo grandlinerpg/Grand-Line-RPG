@@ -105,15 +105,16 @@ async function checarDerrotaPorStatus(sock, m, from, jogadorPerdedorObj) {
 }
 
 // ─────────────────────────────────────────────
-// HANDLER PRINCIPAL DO COMBO (!atk E !def)
+// HANDLER PRINCIPAL DO COMBO (!atk, !def E !clash)
 // ─────────────────────────────────────────────
 async function handleComboCommands(sock, m, text, from) {
     const ehAtk = text.startsWith('!atk');
     const ehDef = text.startsWith('!def');
+    const ehClash = text.startsWith('!clash');
 
-    if (!ehAtk && !ehDef) return false;
+    if (!ehAtk && !ehDef && !ehClash) return false;
 
-    const prefixo = ehAtk ? '!atk' : '!def';
+    const prefixo = ehAtk ? '!atk' : (ehDef ? '!def' : '!clash');
     const nomeHabilidade = text.slice(prefixo.length).trim();
 
     if (!nomeHabilidade) {
@@ -160,6 +161,11 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
+        if (ehClash && categoriaSkill !== 'ofensivo') {
+            await sock.sendMessage(from, { text: `❌ A habilidade "*${skill.nome}*" não é do tipo *Ofensivo*! O Clash só aceita habilidades ofensivas.` }, { quoted: m });
+            return true;
+        }
+
         // Identificação segura baseada estritamente na vez do jogador na arena
         const numVez = arenaAtiva.jogadorVez || 1;
         const jogadorArena = numVez === 1 ? arenaAtiva.p1 : arenaAtiva.p2;
@@ -170,10 +176,10 @@ async function handleComboCommands(sock, m, text, from) {
         if (!oponenteArena.uid) oponenteArena.uid = buscarUidPlayer(playersData, oponenteArena.numero || oponenteArena.lid);
 
         // ─────────────────────────────────────────────
-        // RESTRIÇÃO DE 1 ATAQUE E 1 DEFESA POR TURNO
+        // RESTRIÇÕES DE AÇÕES POR TURNO
         // ─────────────────────────────────────────────
         if (!arenaAtiva.acoesTurno || arenaAtiva.turnoAtual !== arenaAtiva.ultimoTurnoRegistrado) {
-            arenaAtiva.acoesTurno = { p1: { atk: false, def: false }, p2: { atk: false, def: false } };
+            arenaAtiva.acoesTurno = { p1: { atk: false, def: false, clash: false }, p2: { atk: false, def: false, clash: false } };
             arenaAtiva.ultimoTurnoRegistrado = arenaAtiva.turnoAtual;
         }
 
@@ -184,8 +190,13 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
-        if (ehDef && arenaAtiva.acoesTurno[chaveTurnoJogador].def) {
-            await sock.sendMessage(from, { text: `⚠️ Você já utilizou uma *Defesa* neste turno!` }, { quoted: m });
+        if (ehDef && (arenaAtiva.acoesTurno[chaveTurnoJogador].def || arenaAtiva.acoesTurno[chaveTurnoJogador].clash)) {
+            await sock.sendMessage(from, { text: `⚠️ Não é permitido usar Defesa e Clash no mesmo turno!` }, { quoted: m });
+            return true;
+        }
+
+        if (ehClash && (arenaAtiva.acoesTurno[chaveTurnoJogador].def || arenaAtiva.acoesTurno[chaveTurnoJogador].clash)) {
+            await sock.sendMessage(from, { text: `⚠️ Não é permitido usar Defesa e Clash no mesmo turno!` }, { quoted: m });
             return true;
         }
 
@@ -209,12 +220,19 @@ async function handleComboCommands(sock, m, text, from) {
         if (oponenteArena.sta === undefined) oponenteArena.sta = Number(opStats.sta ?? opStats.stm ?? opStats.sta) || 100;
         if (!oponenteArena.cooldowns || typeof oponenteArena.cooldowns !== 'object') oponenteArena.cooldowns = {};
 
-        // Verificação de Cooldown (usa apenas a chave única limpa baseada no ID ou Nome)
-        const chaveCd = habResult.id || normalizar(skill.nome);
-        const cdAtual = Number(jogadorArena.cooldowns[chaveCd] || 0);
+        // Verificação de Cooldown pelo Nome Real da Habilidade
+        const chaveCdNome = String(skill.nome).trim();
+        const cdAtualSkill = Number(jogadorArena.cooldowns[chaveCdNome] || 0);
 
-        if (cdAtual > 0) {
-            await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${cdAtual} turno(s)!` }, { quoted: m });
+        if (cdAtualSkill > 0) {
+            await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${cdAtualSkill} turno(s)!` }, { quoted: m });
+            return true;
+        }
+
+        // Verificação do Cooldown do Ato de Clash
+        const cdAtualClash = Number(jogadorArena.cooldowns['Clash'] || 0);
+        if (ehClash && cdAtualClash > 0) {
+            await sock.sendMessage(from, { text: `⏳ A ação de *Counter Clash* está em cooldown por mais ${cdAtualClash} turno(s)!` }, { quoted: m });
             return true;
         }
 
@@ -261,11 +279,10 @@ async function handleComboCommands(sock, m, text, from) {
             oponenteArena.res = resRestante;
             oponenteArena.hp = hpRestante;
 
-            // Marca que o jogador já usou o ataque neste turno
             arenaAtiva.acoesTurno[chaveTurnoJogador].atk = true;
 
-            // CORREÇÃO DO COOLDOWN: Adicionado +1 para compensar a contagem de turnos (garante 1 turno completo de espera)
-            jogadorArena.cooldowns[chaveCd] = skillRank + 1;
+            // Salva na lista usando o NOME da skill
+            jogadorArena.cooldowns[chaveCdNome] = skillRank + 1;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);
@@ -346,11 +363,10 @@ async function handleComboCommands(sock, m, text, from) {
                 }
             }
 
-            // Marca que o jogador já usou a defesa neste turno
             arenaAtiva.acoesTurno[chaveTurnoJogador].def = true;
 
-            // CORREÇÃO DO COOLDOWN: Adicionado +1 para garantir que passe 1 turno completo sem poder usar
-            jogadorArena.cooldowns[chaveCd] = skillRank + 1;
+            // Salva na lista usando o NOME da skill
+            jogadorArena.cooldowns[chaveCdNome] = skillRank + 1;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);
@@ -365,6 +381,64 @@ async function handleComboCommands(sock, m, text, from) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaDef }, { quoted: m });
             } else {
                 await sock.sendMessage(from, { text: legendaDef }, { quoted: m });
+            }
+
+            await checarDerrotaPorStatus(sock, m, from, jogadorArena);
+            return true;
+        }
+
+        // ─────────────────────────────────────────────
+        // PROCESSAMENTO DE COUNTER CLASH (!clash)
+        // ─────────────────────────────────────────────
+        if (ehClash) {
+            const atkSkill = obterAtributoBaseSkill(skill, 'atk');
+            const clashTotal = atkSkill + forAtual;
+
+            let ataqueRecebido = 0;
+            if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === jogadorArena.uid) {
+                ataqueRecebido = arenaAtiva.ataquePendente;
+                delete arenaAtiva.ataquePendente;
+                delete arenaAtiva.ataquePendenteAlvo;
+            }
+
+            let resAtual = Number(jogadorArena.res);
+            if (ataqueRecebido > 0) {
+                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * 0.10);
+                resAtual = Math.min(100, resAtual + reducaoAntigaSimulada);
+                let danoHpAnterior = 0;
+                if (ataqueRecebido > resAtual) {
+                    danoHpAnterior = ataqueRecebido - resAtual;
+                }
+                jogadorArena.hp = Math.min(100, Number(jogadorArena.hp) + danoHpAnterior);
+            }
+
+            const hpAtual = Number(jogadorArena.hp);
+
+            let textoResumoClash = `Meu ataque neutraliza o seu.`;
+
+            if (ataqueRecebido > 0 && clashTotal < ataqueRecebido) {
+                textoResumoClash = `O ataque inimigo superou o seu clash e atingiu suas defesas.`;
+            }
+
+            arenaAtiva.acoesTurno[chaveTurnoJogador].clash = true;
+
+            // Tanto a skill usada quanto a ação de Clash entram em cooldown
+            jogadorArena.cooldowns[chaveCdNome] = skillRank + 1;
+            jogadorArena.cooldowns['Clash'] = 2; // 2 turnos de cooldown para o ato de clash
+            jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
+
+            await salvarArenaAtiva(from, arenaAtiva);
+
+            const legendaClash = `*${skillNomeFormatado}*\n\n` +
+                                 `> Atk: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
+                                 `${textoResumoClash}\n\n` +
+                                 `> Res: ${resAtual}\n` +
+                                 `> HP: ${hpAtual}`;
+
+            if (imagemBuffer) {
+                await sock.sendMessage(from, { image: imagemBuffer, caption: legendaClash }, { quoted: m });
+            } else {
+                await sock.sendMessage(from, { text: legendaClash }, { quoted: m });
             }
 
             await checarDerrotaPorStatus(sock, m, from, jogadorArena);

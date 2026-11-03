@@ -248,7 +248,7 @@ async function handleComboCommands(sock, m, text, from) {
         }
 
         // Verificação de Cooldown específico do ato de !clash
-        const cdAtualClash = Number(jogadorArena.cooldowns['Clash'] || 0);
+        const cdAtualClash = Number(jogadorArena.cooldowns['Counter-Clash'] || 0);
         if (ehClash && cdAtualClash > 0) {
             await sock.sendMessage(from, { text: `⏳ A ação de *Clash* está em cooldown por mais ${cdAtualClash} turno(s)!` }, { quoted: m });
             return true;
@@ -455,7 +455,7 @@ async function handleComboCommands(sock, m, text, from) {
 
             // Tanto a skill usada quanto o ato de Clash entram em cooldown (Clash = 2 turnos de cooldown)
             jogadorArena.cooldowns[nomeChaveCd] = skillRank + 1;
-            jogadorArena.cooldowns['Clash'] = 2;
+            jogadorArena.cooldowns['Counter-Clash'] = 2;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);

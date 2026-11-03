@@ -425,7 +425,7 @@ async function handleCombatesCommands(sock, m, text, from) {
         if (skillsComCd.length === 0) {
             cdTexto += 'Nenhuma habilidade em recarga.';
         } else {
-            cdTexto += skillsComCd.map(([nome, turnos]) => `➔ *${nome}*: ${turnos} turno(s) restante(s)`).join('\n');
+            cdTexto += skillsComCd.map(([nome, turnos]) => `➔ *${nome}*: ${turnos} turno(s)`).join('\n');
         }
         await sock.sendMessage(from, { text: cdTexto });
 

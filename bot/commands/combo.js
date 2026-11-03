@@ -418,12 +418,12 @@ async function handleComboCommands(sock, m, text, from) {
             let reducaoRes = 0;
             let resRestante = resAtual;
             let hpRestante = hpAtual;
-            let textoResumoClash = `⚔️ *COUNTER CLASH!* Você utilizou uma skill ofensiva para chocar diretamente com o ataque rival!`;
+            let textoResumoClash = `Você utilizou uma skill ofensiva para chocar diretamente com o ataque rival!`;
 
             if (houveAtaqueParaDefender) {
                 // Mecânica de Clash: Compara o poder do clash com o ataque recebido
                 if (clashTotal >= ataqueRecebido) {
-                    textoResumoClash = `⚔️ *CLASH VITORIOSO!* Sua investida com *${skill.nome}* anulou completamente o ataque rival de força ${ataqueRecebido}!`;
+                    textoResumoClash = `Sua investida anulou completamente o ataque rival!`;
                 } else {
                     const diferencaDano = ataqueRecebido - clashTotal;
                     reducaoRes = Math.floor(diferencaDano * 0.10);
@@ -438,11 +438,11 @@ async function handleComboCommands(sock, m, text, from) {
                     jogadorArena.hp = hpRestante;
 
                     textoResumoClash = danoHp > 0
-                        ? `⚔️ *CLASH PARCIAL!* O ataque rival era mais forte, e a sobra passou causando ${danoHp} de dano ao HP!`
-                        : `⚔️ *CLASH PARCIAL!* O ataque rival superou o seu clash, atingindo apenas sua Resistência.`;
+                        ? `O ataque rival era mais forte, e a sobra passou causando ${danoHp} de dano ao HP!`
+                        : `O ataque rival superou o seu clash, atingindo apenas sua Resistência.`;
                 }
             } else {
-                textoResumoClash = `⚔️ *COUNTER CLASH!* Você preparou seu golpe ofensivo antecipadamente para interceptar o próximo ataque.`;
+                textoResumoClash = `Você preparou seu golpe ofensivo antecipadamente para interceptar o próximo ataque.`;
             }
 
             arenaAtiva.acoesTurno[chaveTurnoJogador].clash = true;
@@ -454,8 +454,8 @@ async function handleComboCommands(sock, m, text, from) {
 
             await salvarArenaAtiva(from, arenaAtiva);
 
-            const legendaClash = `*CLASH: ${skillNomeFormatado}*\n\n` +
-                                 `> Atk/Clash: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
+            const legendaClash = `*${skillNomeFormatado}*\n\n` +
+                                 `> Atk: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
                                  `${textoResumoClash}\n\n` +
                                  `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
                                  `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}`;

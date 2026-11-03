@@ -209,6 +209,17 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
+        // ─────────────────────────────────────────────
+        // VALIDAÇÃO: Impedir DEF e CLASH sem ataque recebido
+        // ─────────────────────────────────────────────
+        const temAtaqueRecebido = (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === jogadorArena.uid);
+
+        if ((ehDef || ehClash) && !temAtaqueRecebido) {
+            const acaoNome = ehDef ? 'Defesa' : 'Clash';
+            await sock.sendMessage(from, { text: `⚠️ Você não recebeu nenhum ataque para poder usar o *!${acaoNome.toLowerCase()}*! Não é permitido prepará-lo antecipadamente.` }, { quoted: m });
+            return true;
+        }
+
         const jogadorInfo = playersData[jogadorArena.uid] || buscarJogadorPorSender(playersData, senderId);
         const statsBase = jogadorInfo?.player?.stats || jogadorInfo?.stats || {};
         const forAtual = Number(statsBase.str) || 0;
@@ -402,13 +413,10 @@ async function handleComboCommands(sock, m, text, from) {
             const clashTotal = atkSkill + forAtual;
 
             let ataqueRecebido = 0;
-            let houveAtaqueParaDefender = false;
-
             if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === jogadorArena.uid) {
                 ataqueRecebido = arenaAtiva.ataquePendente;
                 delete arenaAtiva.ataquePendente;
                 delete arenaAtiva.ataquePendenteAlvo;
-                houveAtaqueParaDefender = true;
             }
 
             let resAtual = Number(jogadorArena.res);
@@ -420,7 +428,7 @@ async function handleComboCommands(sock, m, text, from) {
             let hpRestante = hpAtual;
             let textoResumoClash = `Você utilizou uma skill ofensiva para chocar diretamente com o ataque rival!`;
 
-            if (houveAtaqueParaDefender) {
+            if (ataqueRecebido > 0) {
                 // Mecânica de Clash: Compara o poder do clash com o ataque recebido
                 if (clashTotal >= ataqueRecebido) {
                     textoResumoClash = `Sua investida anulou completamente o ataque rival!`;
@@ -441,8 +449,6 @@ async function handleComboCommands(sock, m, text, from) {
                         ? `O ataque rival era mais forte, e a sobra passou causando ${danoHp} de dano ao HP!`
                         : `O ataque rival superou o seu clash, atingindo apenas sua Resistência.`;
                 }
-            } else {
-                textoResumoClash = `Você preparou seu golpe ofensivo antecipadamente para interceptar o próximo ataque.`;
             }
 
             arenaAtiva.acoesTurno[chaveTurnoJogador].clash = true;

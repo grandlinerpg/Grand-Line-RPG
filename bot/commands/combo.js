@@ -162,7 +162,7 @@ async function handleComboCommands(sock, m, text, from) {
         }
 
         if (ehClash && categoriaSkill !== 'ofensivo') {
-            await sock.sendMessage(from, { text: `❌ A habilidade "*${skill.nome}*" não é do tipo *Ofensivo*! O Clash só aceita habilidades ofensivas.` }, { quoted: m });
+            await sock.sendMessage(from, { text: `❌ O *!clash* exige obrigatoriamente uma habilidade do tipo *Ofensivo* ("*${skill.nome}*" não é ofensiva)!` }, { quoted: m });
             return true;
         }
 
@@ -171,7 +171,6 @@ async function handleComboCommands(sock, m, text, from) {
         const jogadorArena = numVez === 1 ? arenaAtiva.p1 : arenaAtiva.p2;
         const oponenteArena = numVez === 1 ? arenaAtiva.p2 : arenaAtiva.p1;
 
-        // Garante UIDs para busca correta no banco de players
         if (!jogadorArena.uid) jogadorArena.uid = buscarUidPlayer(playersData, jogadorArena.numero || jogadorArena.lid);
         if (!oponenteArena.uid) oponenteArena.uid = buscarUidPlayer(playersData, oponenteArena.numero || oponenteArena.lid);
 
@@ -190,13 +189,23 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
-        if (ehDef && (arenaAtiva.acoesTurno[chaveTurnoJogador].def || arenaAtiva.acoesTurno[chaveTurnoJogador].clash)) {
+        if (ehDef && arenaAtiva.acoesTurno[chaveTurnoJogador].def) {
+            await sock.sendMessage(from, { text: `⚠️ Você já utilizou uma *Defesa* neste turno!` }, { quoted: m });
+            return true;
+        }
+
+        if (ehClash && arenaAtiva.acoesTurno[chaveTurnoJogador].def) {
             await sock.sendMessage(from, { text: `⚠️ Não é permitido usar Defesa e Clash no mesmo turno!` }, { quoted: m });
             return true;
         }
 
-        if (ehClash && (arenaAtiva.acoesTurno[chaveTurnoJogador].def || arenaAtiva.acoesTurno[chaveTurnoJogador].clash)) {
+        if (ehDef && arenaAtiva.acoesTurno[chaveTurnoJogador].clash) {
             await sock.sendMessage(from, { text: `⚠️ Não é permitido usar Defesa e Clash no mesmo turno!` }, { quoted: m });
+            return true;
+        }
+
+        if (ehClash && arenaAtiva.acoesTurno[chaveTurnoJogador].clash) {
+            await sock.sendMessage(from, { text: `⚠️ Você já utilizou um *Clash* neste turno!` }, { quoted: m });
             return true;
         }
 
@@ -208,31 +217,29 @@ async function handleComboCommands(sock, m, text, from) {
         const opInfo = playersData[oponenteArena.uid] || {};
         const opStats = opInfo.player?.stats || opInfo.stats || {};
 
-        // Inicializa atributos do JOGADOR na arena (caso não existam)
         if (jogadorArena.hp === undefined) jogadorArena.hp = Number(statsBase.hp) || 100;
         if (jogadorArena.sta === undefined) jogadorArena.sta = Number(statsBase.sta ?? statsBase.stm ?? statsBase.sta) || 100;
         if (jogadorArena.res === undefined) jogadorArena.res = Number(statsBase.res) || 0;
         if (!jogadorArena.cooldowns || typeof jogadorArena.cooldowns !== 'object') jogadorArena.cooldowns = {};
 
-        // Inicializa atributos do OPONENTE na arena (caso não existam)
         if (oponenteArena.hp === undefined) oponenteArena.hp = Number(opStats.hp) || 100;
         if (oponenteArena.res === undefined) oponenteArena.res = Number(opStats.res) || 0;
         if (oponenteArena.sta === undefined) oponenteArena.sta = Number(opStats.sta ?? opStats.stm ?? opStats.sta) || 100;
         if (!oponenteArena.cooldowns || typeof oponenteArena.cooldowns !== 'object') oponenteArena.cooldowns = {};
 
-        // Verificação de Cooldown pelo Nome Real da Habilidade
-        const chaveCdNome = String(skill.nome).trim();
-        const cdAtualSkill = Number(jogadorArena.cooldowns[chaveCdNome] || 0);
+        // Verificação de Cooldown usando o NOME REAL da skill para exibição correta
+        const nomeChaveCd = String(skill.nome).trim();
+        const cdAtualSkill = Number(jogadorArena.cooldowns[nomeChaveCd] || 0);
 
         if (cdAtualSkill > 0) {
             await sock.sendMessage(from, { text: `⏳ A habilidade *${skill.nome}* está em cooldown por mais ${cdAtualSkill} turno(s)!` }, { quoted: m });
             return true;
         }
 
-        // Verificação do Cooldown do Ato de Clash
+        // Verificação de Cooldown específico do ato de !clash
         const cdAtualClash = Number(jogadorArena.cooldowns['Clash'] || 0);
         if (ehClash && cdAtualClash > 0) {
-            await sock.sendMessage(from, { text: `⏳ A ação de *Counter Clash* está em cooldown por mais ${cdAtualClash} turno(s)!` }, { quoted: m });
+            await sock.sendMessage(from, { text: `⏳ A ação de *Clash* está em cooldown por mais ${cdAtualClash} turno(s)!` }, { quoted: m });
             return true;
         }
 
@@ -281,8 +288,8 @@ async function handleComboCommands(sock, m, text, from) {
 
             arenaAtiva.acoesTurno[chaveTurnoJogador].atk = true;
 
-            // Salva na lista usando o NOME da skill
-            jogadorArena.cooldowns[chaveCdNome] = skillRank + 1;
+            // Salva utilizando o NOME da skill na cooldown list
+            jogadorArena.cooldowns[nomeChaveCd] = skillRank + 1;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);
@@ -365,8 +372,8 @@ async function handleComboCommands(sock, m, text, from) {
 
             arenaAtiva.acoesTurno[chaveTurnoJogador].def = true;
 
-            // Salva na lista usando o NOME da skill
-            jogadorArena.cooldowns[chaveCdNome] = skillRank + 1;
+            // Salva utilizando o NOME da skill na cooldown list
+            jogadorArena.cooldowns[nomeChaveCd] = skillRank + 1;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);
@@ -395,45 +402,63 @@ async function handleComboCommands(sock, m, text, from) {
             const clashTotal = atkSkill + forAtual;
 
             let ataqueRecebido = 0;
+            let houveAtaqueParaDefender = false;
+
             if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === jogadorArena.uid) {
                 ataqueRecebido = arenaAtiva.ataquePendente;
                 delete arenaAtiva.ataquePendente;
                 delete arenaAtiva.ataquePendenteAlvo;
+                houveAtaqueParaDefender = true;
             }
 
             let resAtual = Number(jogadorArena.res);
-            if (ataqueRecebido > 0) {
-                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * 0.10);
-                resAtual = Math.min(100, resAtual + reducaoAntigaSimulada);
-                let danoHpAnterior = 0;
-                if (ataqueRecebido > resAtual) {
-                    danoHpAnterior = ataqueRecebido - resAtual;
+            let hpAtual = Number(jogadorArena.hp);
+
+            let danoHp = 0;
+            let reducaoRes = 0;
+            let resRestante = resAtual;
+            let hpRestante = hpAtual;
+            let textoResumoClash = `⚔️ *COUNTER CLASH!* Você utilizou uma skill ofensiva para chocar diretamente com o ataque rival!`;
+
+            if (houveAtaqueParaDefender) {
+                // Mecânica de Clash: Compara o poder do clash com o ataque recebido
+                if (clashTotal >= ataqueRecebido) {
+                    textoResumoClash = `⚔️ *CLASH VITORIOSO!* Sua investida com *${skill.nome}* anulou completamente o ataque rival de força ${ataqueRecebido}!`;
+                } else {
+                    const diferencaDano = ataqueRecebido - clashTotal;
+                    reducaoRes = Math.floor(diferencaDano * 0.10);
+                    resRestante = Math.max(0, resAtual - reducaoRes);
+
+                    if (diferencaDano > resAtual) {
+                        danoHp = diferencaDano - resAtual;
+                        hpRestante = Math.max(0, hpAtual - danoHp);
+                    }
+
+                    jogadorArena.res = resRestante;
+                    jogadorArena.hp = hpRestante;
+
+                    textoResumoClash = danoHp > 0
+                        ? `⚔️ *CLASH PARCIAL!* O ataque rival era mais forte, e a sobra passou causando ${danoHp} de dano ao HP!`
+                        : `⚔️ *CLASH PARCIAL!* O ataque rival superou o seu clash, atingindo apenas sua Resistência.`;
                 }
-                jogadorArena.hp = Math.min(100, Number(jogadorArena.hp) + danoHpAnterior);
-            }
-
-            const hpAtual = Number(jogadorArena.hp);
-
-            let textoResumoClash = `Meu ataque neutraliza o seu.`;
-
-            if (ataqueRecebido > 0 && clashTotal < ataqueRecebido) {
-                textoResumoClash = `O ataque inimigo superou o seu clash e atingiu suas defesas.`;
+            } else {
+                textoResumoClash = `⚔️ *COUNTER CLASH!* Você preparou seu golpe ofensivo antecipadamente para interceptar o próximo ataque.`;
             }
 
             arenaAtiva.acoesTurno[chaveTurnoJogador].clash = true;
 
-            // Tanto a skill usada quanto a ação de Clash entram em cooldown
-            jogadorArena.cooldowns[chaveCdNome] = skillRank + 1;
-            jogadorArena.cooldowns['Clash'] = 2; // 2 turnos de cooldown para o ato de clash
+            // Tanto a skill usada quanto o ato de Clash entram em cooldown (Clash = 2 turnos de cooldown)
+            jogadorArena.cooldowns[nomeChaveCd] = skillRank + 1;
+            jogadorArena.cooldowns['Clash'] = 2;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
 
             await salvarArenaAtiva(from, arenaAtiva);
 
-            const legendaClash = `*${skillNomeFormatado}*\n\n` +
-                                 `> Atk: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
+            const legendaClash = `*CLASH: ${skillNomeFormatado}*\n\n` +
+                                 `> Atk/Clash: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
                                  `${textoResumoClash}\n\n` +
-                                 `> Res: ${resAtual}\n` +
-                                 `> HP: ${hpAtual}`;
+                                 `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
+                                 `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaClash }, { quoted: m });

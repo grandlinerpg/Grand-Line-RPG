@@ -3,17 +3,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!navbarContainer) return;
 
   try {
-    const response = await fetch("navbar.html");  
+    // Se o seu HTML da navbar estiver separado em uma pasta (ex: components/navbar.html), ajuste o caminho abaixo:
+    const response = await fetch("navbar.html"); 
+    
+    // Se preferir manter o HTML direto no JS para evitar requisição extra, veja a alternativa abaixo.
     if (!response.ok) throw new Error("Não foi possível carregar a navbar.");
     
     const html = await response.text();
     navbarContainer.innerHTML = html;
 
-    setupMenuToggle();
+    // Ativa o comportamento do menu mobile (hambúrguer)
+    const menuToggle = document.getElementById("menu-toggle");
+    const navMenu = document.getElementById("nav-menu");
+
+    if (menuToggle && navMenu) {
+      menuToggle.addEventListener("click", () => {
+        navMenu.classList.toggle("active");
+      });
+    }
   } catch (error) {
     console.error("Erro ao carregar a barra de navegação:", error);
     
-    // Fallback com caminhos corrigidos com "/" na frente para apontar sempre para a raiz do site
+    // Fallback caso prefira injetar o HTML direto via JS caso o fetch dê erro de CORS local:
     navbarContainer.innerHTML = `
       <header class="navbar">
         <div class="logo-area">
@@ -34,17 +45,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       </header>
     `;
 
-    setupMenuToggle();
+    const menuToggle = document.getElementById("menu-toggle");
+    const navMenu = document.getElementById("nav-menu");
+
+    if (menuToggle && navMenu) {
+      menuToggle.addEventListener("click", () => {
+        navMenu.classList.toggle("active");
+      });
+    }
   }
 });
-
-function setupMenuToggle() {
-  const menuToggle = document.getElementById("menu-toggle");
-  const navMenu = document.getElementById("nav-menu");
-
-  if (menuToggle && navMenu) {
-    menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-    });
-  }
-}

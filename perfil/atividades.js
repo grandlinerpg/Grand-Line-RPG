@@ -32,7 +32,6 @@ function initAtividades() {
 
   const openBtn = document.getElementById("open-atividades");
   const closeBtn = document.getElementById("close-atividades");
-  const closeFooterBtn = document.getElementById("close-atividades-footer");
   const closeDetalhe = document.getElementById("close-detalhe");
   const participarBtn = document.getElementById("participar-atividade");
 
@@ -93,7 +92,7 @@ function initAtividades() {
         const limiteJogadores = ativ.jogadores?.limite || 1;
 
         const div = document.createElement("div");
-        div.className = "inventory-item"; // Mantém a exata mesma classe visual do inventário
+        div.className = "inventory-item";
 
         div.innerHTML = `
           <div class="inventory-item-top">
@@ -108,7 +107,7 @@ function initAtividades() {
           </div>
         `;
 
-        // Ao clicar na atividade, abre o modal de detalhes igualzinho ao inventário
+        // Ao clicar na atividade, abre o modal de detalhes
         div.onclick = () => {
           detalheModal.querySelector("#detalhe-emoji").innerText = emojiAtiv;
           detalheModal.querySelector("#detalhe-nome").innerText = nomeAtividade;
@@ -134,12 +133,6 @@ function initAtividades() {
   closeBtn.onclick = () => {
     atividadesModal.style.display = "none";
   };
-
-  if (closeFooterBtn) {
-    closeFooterBtn.onclick = () => {
-      atividadesModal.style.display = "none";
-    };
-  }
 
   closeDetalhe.onclick = () => {
     detalheModal.style.display = "none";

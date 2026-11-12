@@ -35,66 +35,12 @@
 
   </section>
 
-  <!-- BAÚS -->
-  <main class="guide-container">
-
-    <!-- BAÚ COMUM -->
-    <div class="guide-card" data-chest="bau1">
-
-      <div class="chest-icon">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432201/ba%C3%BA-comum.png">
-      </div>
-
-      <h2>Baú Comum</h2>
-
-      <p id="desc-bau1">
-        Carregando informações do baú...
-      </p>
-
-      <div class="reward-list" id="rewards-bau1">
-        <!-- Preenchido dinamicamente via Firebase -->
-      </div>
-
+  <!-- BAÚS (DINÂMICO) -->
+  <main class="guide-container" id="baus-container">
+    <!-- Os baús serão injetados aqui dinamicamente via Firebase -->
+    <div class="guide-card">
+      <p style="text-align: center; color: #fff;">Carregando baús do tesouro...</p>
     </div>
-
-    <!-- BAÚ RARO -->
-    <div class="guide-card" data-chest="bau2">
-
-      <div class="chest-icon">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/ba%C3%BA-raro.png">
-      </div>
-
-      <h2>Baú Raro</h2>
-
-      <p id="desc-bau2">
-        Carregando informações do baú...
-      </p>
-
-      <div class="reward-list" id="rewards-bau2">
-        <!-- Preenchido dinamicamente via Firebase -->
-      </div>
-
-    </div>
-
-    <!-- BAÚ LENDÁRIO -->
-    <div class="guide-card legendary-card" data-chest="bau3">
-
-      <div class="chest-icon">
-        <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/ba%C3%BA-lend%C3%A1rio.png">
-      </div>
-
-      <h2>Baú Lendário</h2>
-
-      <p id="desc-bau3">
-        Carregando informações do baú...
-      </p>
-
-      <div class="reward-list" id="rewards-bau3">
-        <!-- Preenchido dinamicamente via Firebase -->
-      </div>
-
-    </div>
-
   </main>
 
   <!-- FORMAS DE OBTER -->
@@ -132,73 +78,114 @@
     }
   </script>
 
-  <!-- Script para carregar os dados do Firebase nos baús -->
+  <!-- Script para carregar os dados dinâmicos do Firebase -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    // Certifique-se de que a configuração do Firebase corresponde à utilizada no seu projeto
-    // (Caso já importe o firebase de outro arquivo centralizado, você pode adaptar para importar a instância do database de lá)
     const firebaseConfig = {
-      databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com/" // Substitua se necessário ou ajuste para o seu arquivo de config
+      apiKey: "AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
+      authDomain: "grand-line-rpg-dcda9.firebaseapp.com",
+      projectId: "grand-line-rpg-dcda9",
+      storageBucket: "grand-line-rpg-dcda9.appspot.com",
+      messagingSenderId: "172042779786",
+      appId: "1:172042779786:web:ecdff9eaf4fee36eca8173",
+      databaseURL: "https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
     };
 
-    // Inicialização (ajuste caso já possua um arquivo de configuração global)
-    // Se o seu projeto usa um arquivo firebase.js centralizado, importe o 'db' de lá diretamente.
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
-    // Mapeamento amigável para os nomes dos drops que vêm do banco
-    const nomeDropsFormatado = {
-      Akuma: "Akuma no Mi",
-      Fator: "Fator de Linhagem",
-      Pergaminho: "Pergaminho de Ensinamento",
-      pedrapurificacao: "Pedra de Purificação",
-      dinheiro: "Dinheiro"
-    };
+    const CLOUD = "https://res.cloudinary.com/djh45admn/image/upload/v1779847983/";
 
     async function carregarBausDoFirebase() {
       try {
-        const bausRef = ref(db, 'baus'); // Ajuste o caminho do nó se necessário (ex: 'itens/baus')
-        const snapshot = await get(bausRef);
+        const container = document.getElementById('baus-container');
+        
+        // Busca simultânea dos baús e de todos os itens (para mapear os IDs dos drops)
+        const [bausSnap, itensSnap] = await Promise.all([
+          get(ref(db, 'itens/Baú do Tesouro')),
+          get(ref(db, 'itens'))
+        ]);
 
-        if (snapshot.exists()) {
-          const dadosBaus = snapshot.val();
+        if (!bausSnap.exists()) {
+          container.innerHTML = `<p style="text-align: center; color: #fff;">Nenhum baú encontrado.</p>`;
+          return;
+        }
 
-          ['bau1', 'bau2', 'bau3'].forEach(idBau => {
-            const infoBau = dadosBaus[idBau];
-            if (!infoBau) return;
-
-            // Atualiza a descrição se existir
-            if (infoBau.description) {
-              const descEl = document.getElementById(`desc-${idBau}`);
-              if (descEl) descEl.textContent = infoBau.description;
-            }
-
-            // Atualiza a lista de drops / rewards
-            const rewardListEl = document.getElementById(`rewards-${idBau}`);
-            if (rewardListEl && infoBau.drops) {
-              rewardListEl.innerHTML = ''; // Limpa os estáticos
-
-              // Percorre cada item dentro de 'drops'
-              for (const [chaveDrop, valorPorcentagem] of Object.entries(infoBau.drops)) {
-                const nomeExibicao = nomeDropsFormatado[chaveDrop] || chaveDrop;
-
-                const rewardDiv = document.createElement('div');
-                rewardDiv.className = 'reward';
-                
-                rewardDiv.innerHTML = `
-                  <span>${nomeExibicao}</span>
-                  <b>${valorPorcentagem}%</b>
-                `;
-                
-                rewardListEl.appendChild(rewardDiv);
-              }
+        // Mapeia todos os itens do banco para um dicionário rápido { idDoItem: dadosDoItem }
+        const mapaItens = {};
+        if (itensSnap.exists()) {
+          const categorias = itensSnap.val();
+          Object.values(categorias).forEach(catItens => {
+            if (typeof catItens === 'object' && catItens !== null) {
+              Object.entries(catItens).forEach(([idItem, dadosItem]) => {
+                mapaItens[idItem] = dadosItem;
+              });
             }
           });
         }
+
+        const bausData = bausSnap.val();
+        container.innerHTML = ''; // Limpa o "Carregando..."
+
+        // Percorre cada baú (ex: bau1, bau2, bau3)
+        Object.entries(bausData).forEach(([idBau, bau]) => {
+          const card = document.createElement('div');
+          
+          // Adiciona classe de destaque se for lendário ou baseada no nome/id
+          const isLendario = idBau === 'bau3' || (bau.nome && bau.nome.toLowerCase().includes('lendário'));
+          card.className = `guide-card ${isLendario ? 'legendary-card' : ''}`;
+          card.setAttribute('data-chest', idBau);
+
+          // Imagem do baú (se houver no nó do baú, senão usa padrão do Cloudinary ou emoji)
+          let imgHtml = '';
+          if (bau.img) {
+            imgHtml = `<img src="${CLOUD + bau.img}.png" onerror="this.src='https://res.cloudinary.com/djh45admn/image/upload/v1778432201/ba%C3%BA-comum.png'">`;
+          } else {
+            imgHtml = `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432201/ba%C3%BA-comum.png">`;
+          }
+
+          // Monta a lista de drops dinamicamente
+          let dropsHtml = '';
+          if (bau.drops && typeof bau.drops === 'object') {
+            for (const [idItemDrop, porcentagem] of Object.entries(bau.drops)) {
+              // Pega o nome real do item no catálogo de itens, ou usa o próprio ID se não achar
+              const itemInfo = mapaItens[idItemDrop];
+              const nomeExibicao = itemInfo ? itemInfo.nome : idItemDrop;
+
+              dropsHtml += `
+                <div class="reward">
+                  <span>${nomeExibicao}</span>
+                  <b>${porcentagem}%</b>
+                </div>
+              `;
+            }
+          } else {
+            dropsHtml = `<p style="font-size: 0.9rem; color: #aaa;">Sem drops cadastrados.</p>`;
+          }
+
+          card.innerHTML = `
+            <div class="chest-icon">
+              ${imgHtml}
+            </div>
+
+            <h2>${bau.nome || idBau}</h2>
+
+            <p id="desc-${idBau}">
+              ${bau.description || 'Sem descrição definida.'}
+            </p>
+
+            <div class="reward-list" id="rewards-${idBau}">
+              ${dropsHtml}
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+
       } catch (error) {
         console.error("Erro ao carregar os baús do Firebase:", error);
+        document.getElementById('baus-container').innerHTML = `<p style="text-align: center; color: #ff5555;">Erro ao carregar os baús.</p>`;
       }
     }
 

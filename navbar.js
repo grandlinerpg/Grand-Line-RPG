@@ -2,29 +2,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const navbarContainer = document.getElementById("navbar-container");
   if (!navbarContainer) return;
 
+  // Descobre automaticamente se estamos dentro de uma subpasta (como /guia/)
+  const isGuiaSubfolder = window.location.pathname.includes("/guia/");
+  const prefix = isGuiaSubfolder ? "../" : "";
+
   try {
-    // Se o seu HTML da navbar estiver separado em uma pasta (ex: components/navbar.html), ajuste o caminho abaixo:
-    const response = await fetch("navbar.html"); 
-    
-    // Se preferir manter o HTML direto no JS para evitar requisição extra, veja a alternativa abaixo.
+    const response = await fetch(`${prefix}navbar.html`);
     if (!response.ok) throw new Error("Não foi possível carregar a navbar.");
     
     const html = await response.text();
     navbarContainer.innerHTML = html;
-
-    // Ativa o comportamento do menu mobile (hambúrguer)
-    const menuToggle = document.getElementById("menu-toggle");
-    const navMenu = document.getElementById("nav-menu");
-
-    if (menuToggle && navMenu) {
-      menuToggle.addEventListener("click", () => {
-        navMenu.classList.toggle("active");
-      });
-    }
   } catch (error) {
-    console.error("Erro ao carregar a barra de navegação:", error);
+    console.warn("Usando fallback da navbar devido a restrição de fetch/CORS.");
     
-    // Fallback caso prefira injetar o HTML direto via JS caso o fetch dê erro de CORS local:
+    // Injeta o HTML com os links corrigidos dinamicamente pelo prefixo
     navbarContainer.innerHTML = `
       <header class="navbar">
         <div class="logo-area">
@@ -36,22 +27,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
         <button class="menu-toggle" id="menu-toggle">☰</button>
         <nav id="nav-menu">
-          <a href="/perfil.html">PERFIL</a>
-          <a href="/faccao.html">FACÇÃO</a>
-          <a href="/ranking.html">RANKING</a>
-          <a href="/mapa.html">MAPA</a>
-          <a href="/guia.html">GUIA</a>
+          <a href="${prefix}perfil.html">PERFIL</a>
+          <a href="${prefix}faccao.html">FACÇÃO</a>
+          <a href="${prefix}ranking.html">RANKING</a>
+          <a href="${prefix}mapa.html">MAPA</a>
+          <a href="${prefix}guia.html">GUIA</a>
         </nav>
       </header>
     `;
+  }
 
-    const menuToggle = document.getElementById("menu-toggle");
-    const navMenu = document.getElementById("nav-menu");
+  // Ativa o comportamento do menu mobile (hambúrguer)
+  const menuToggle = document.getElementById("menu-toggle");
+  const navMenu = document.getElementById("nav-menu");
 
-    if (menuToggle && navMenu) {
-      menuToggle.addEventListener("click", () => {
-        navMenu.classList.toggle("active");
-      });
-    }
+  if (menuToggle && navMenu) {
+    menuToggle.replaceWith(menuToggle.cloneNode(true));
+    const activeToggle = document.getElementById("menu-toggle");
+    
+    activeToggle.addEventListener("click", () => {
+      navMenu.classList.toggle("active");
+    });
   }
 });

@@ -34,44 +34,8 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <!-- NAVBAR -->
-  <header class="navbar">
-
-    <div class="logo-area">
-      <img
-        src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png"
-        class="logo"
-      >
-
-      <div class="logo-text">
-        <h1>GRAND LINE</h1>
-        <p>— RPG —</p>
-      </div>
-    </div>
-
-    <!-- BOTÃO MENU -->
-    <button
-      class="menu-toggle"
-      id="menu-toggle"
-      aria-label="Abrir Menu"
-    >
-      ☰
-    </button>
-
-    <!-- MENU -->
-    <nav id="nav-menu">
-
-      <a href="perfil.html">PERFIL</a>
-
-      <a href="faccao.html">FACÇÃO</a>
-
-      <a href="mapa.html">MAPA</a>
-
-      <a href="guia.html">GUIA</a>
-
-    </nav>
-    
-  </header>
+<!-- NAVBAR DINÂMICA -->
+  <div id="navbar-container"></div>
 
   <!-- PERFIL -->
   <main class="profile-container">
@@ -165,9 +129,6 @@
   <div id="atividades-container"></div>
   
   <button id="open-points" style="display:none;"></button>
-
-  <!-- SONS -->
-  <audio id="click-sound" src="sounds/sound1.mp3"></audio>
   
   <!-- FIREBASE SCRIPT -->
   <script type="module" src="perfil.js"></script>
@@ -192,20 +153,6 @@
   <script type="module" src="perfil/card.js"></script>
   <script type="module" src="perfil/card-char.js"></script>
   <script type="module" src="perfil/atividades.js"></script>
-
-  <!-- MENU MOBILE -->
-  <script>
-
-    const menuToggle = document.getElementById("menu-toggle");
-    const navMenu = document.getElementById("nav-menu");
-
-    menuToggle.addEventListener("click", () => {
-
-      navMenu.classList.toggle("active");
-
-    });
-
-  </script>
 
 <script>
 

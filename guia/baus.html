@@ -152,8 +152,8 @@
             const maxFormatado = Number(bau.dinheiro.max || 0).toLocaleString('pt-BR');
             dinheiroHtml = `
               <div class="reward">
-                <span>Berries</span>
-                <b>${minFormatado} ~ ${maxFormatado}</b>
+                <span>Dinheiro</span>
+                <b>฿ ${minFormatado} ~ ฿ ${maxFormatado}</b>
               </div>
             `;
           }
@@ -163,7 +163,7 @@
           if (bau.prob !== undefined && bau.prob !== null) {
             probHtml = `
               <div class="reward">
-                <span>Probabilidade de Item</span>
+                <span>Probabilidade de Drops</span>
                 <b>${bau.prob}%</b>
               </div>
             `;

@@ -18,32 +18,8 @@
   <div class="background"></div>
   <div class="overlay"></div>
 
-  <header class="navbar">
-
-    <div class="logo-area">
-      <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778336777/logoglrpg.png" class="logo" alt="Logo">
-
-      <div class="logo-text">
-        <h1>GRAND LINE</h1>
-        <p>— RPG —</p>
-      </div>
-    </div>
-
-    <!-- BOTÃO MENU MOBILE -->
-    <button class="menu-toggle" id="menu-toggle" aria-label="Abrir Menu">
-      ☰
-    </button>
-
-    <!-- MENU -->
-    <nav id="nav-menu">
-      <a href="index.html" id="home-link">INÍCIO</a>
-      <a href="faccao.html">FACÇÃO</a>
-      <a href="ranking.html">RANKING</a>
-      <a href="mapa.html" class="active">MAPA</a>
-      <a href="guia.html">GUIA</a>
-    </nav>
-
-  </header>
+  <!-- CONTAINER DA NAVBAR DINÂMICA -->
+  <div id="navbar-container"></div>
 
   <section class="players-title">
     <h1>MAPA DA GRAND LINE</h1>
@@ -363,6 +339,9 @@
     }
   </script>
 
+<!-- SCRIPT DA NAVBAR -->
+<script type="module" src="navbar.js"></script>
+  
 </body>
 
 </html>

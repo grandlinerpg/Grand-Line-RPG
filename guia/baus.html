@@ -39,7 +39,7 @@
   <main class="guide-container">
 
     <!-- BAÚ COMUM -->
-    <div class="guide-card">
+    <div class="guide-card" data-chest="bau1">
 
       <div class="chest-icon">
         <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432201/ba%C3%BA-comum.png">
@@ -47,33 +47,18 @@
 
       <h2>Baú Comum</h2>
 
-      <p>
-        Um baú simples encontrado em regiões menos perigosas.
+      <p id="desc-bau1">
+        Carregando informações do baú...
       </p>
 
-      <div class="reward-list">
-
-        <div class="reward">
-          <span>Pergaminho de Ensinamento</span>
-          <b>65%</b>
-        </div>
-
-        <div class="reward">
-          <span>Akuma no Mi</span>
-          <b>25%</b>
-        </div>
-
-        <div class="reward">
-          <span>Fator de Linhagem</span>
-          <b>10%</b>
-        </div>
-
+      <div class="reward-list" id="rewards-bau1">
+        <!-- Preenchido dinamicamente via Firebase -->
       </div>
 
     </div>
 
     <!-- BAÚ RARO -->
-    <div class="guide-card">
+    <div class="guide-card" data-chest="bau2">
 
       <div class="chest-icon">
         <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/ba%C3%BA-raro.png">
@@ -81,33 +66,18 @@
 
       <h2>Baú Raro</h2>
 
-      <p>
-        Encontrado em territórios perigosos e rotas avançadas.
+      <p id="desc-bau2">
+        Carregando informações do baú...
       </p>
 
-      <div class="reward-list">
-
-        <div class="reward">
-          <span>Pergaminho de Ensinamento</span>
-          <b>45%</b>
-        </div>
-
-        <div class="reward">
-          <span>Akuma no Mi</span>
-          <b>40%</b>
-        </div>
-
-        <div class="reward">
-          <span>Fator de Linhagem</span>
-          <b>15%</b>
-        </div>
-
+      <div class="reward-list" id="rewards-bau2">
+        <!-- Preenchido dinamicamente via Firebase -->
       </div>
 
     </div>
 
     <!-- BAÚ LENDÁRIO -->
-    <div class="guide-card legendary-card">
+    <div class="guide-card legendary-card" data-chest="bau3">
 
       <div class="chest-icon">
         <img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432202/ba%C3%BA-lend%C3%A1rio.png">
@@ -115,27 +85,12 @@
 
       <h2>Baú Lendário</h2>
 
-      <p>
-        Um tesouro extremamente raro contendo recompensas únicas.
+      <p id="desc-bau3">
+        Carregando informações do baú...
       </p>
 
-      <div class="reward-list">
-
-        <div class="reward">
-          <span>Pergaminho de Ensinamento</span>
-          <b>30%</b>
-        </div>
-
-        <div class="reward">
-          <span>Akuma no Mi</span>
-          <b>50%</b>
-        </div>
-
-        <div class="reward">
-          <span>Fator de Linhagem</span>
-          <b>20%</b>
-        </div>
-
+      <div class="reward-list" id="rewards-bau3">
+        <!-- Preenchido dinamicamente via Firebase -->
       </div>
 
     </div>
@@ -168,7 +123,6 @@
   </section>
 
   <script>
-
     function voltar(){
       if(document.referrer){
         window.history.back();
@@ -176,10 +130,82 @@
         window.location.href = "../guia.html";
       }
     }
-
   </script>
 
-<script type="module" src="../navbar.js"></script>
+  <!-- Script para carregar os dados do Firebase nos baús -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Certifique-se de que a configuração do Firebase corresponde à utilizada no seu projeto
+    // (Caso já importe o firebase de outro arquivo centralizado, você pode adaptar para importar a instância do database de lá)
+    const firebaseConfig = {
+      databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com/" // Substitua se necessário ou ajuste para o seu arquivo de config
+    };
+
+    // Inicialização (ajuste caso já possua um arquivo de configuração global)
+    // Se o seu projeto usa um arquivo firebase.js centralizado, importe o 'db' de lá diretamente.
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Mapeamento amigável para os nomes dos drops que vêm do banco
+    const nomeDropsFormatado = {
+      Akuma: "Akuma no Mi",
+      Fator: "Fator de Linhagem",
+      Pergaminho: "Pergaminho de Ensinamento",
+      pedrapurificacao: "Pedra de Purificação",
+      dinheiro: "Dinheiro"
+    };
+
+    async function carregarBausDoFirebase() {
+      try {
+        const bausRef = ref(db, 'baus'); // Ajuste o caminho do nó se necessário (ex: 'itens/baus')
+        const snapshot = await get(bausRef);
+
+        if (snapshot.exists()) {
+          const dadosBaus = snapshot.val();
+
+          ['bau1', 'bau2', 'bau3'].forEach(idBau => {
+            const infoBau = dadosBaus[idBau];
+            if (!infoBau) return;
+
+            // Atualiza a descrição se existir
+            if (infoBau.description) {
+              const descEl = document.getElementById(`desc-${idBau}`);
+              if (descEl) descEl.textContent = infoBau.description;
+            }
+
+            // Atualiza a lista de drops / rewards
+            const rewardListEl = document.getElementById(`rewards-${idBau}`);
+            if (rewardListEl && infoBau.drops) {
+              rewardListEl.innerHTML = ''; // Limpa os estáticos
+
+              // Percorre cada item dentro de 'drops'
+              for (const [chaveDrop, valorPorcentagem] of Object.entries(infoBau.drops)) {
+                const nomeExibicao = nomeDropsFormatado[chaveDrop] || chaveDrop;
+
+                const rewardDiv = document.createElement('div');
+                rewardDiv.className = 'reward';
+                
+                rewardDiv.innerHTML = `
+                  <span>${nomeExibicao}</span>
+                  <b>${valorPorcentagem}%</b>
+                `;
+                
+                rewardListEl.appendChild(rewardDiv);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Erro ao carregar os baús do Firebase:", error);
+      }
+    }
+
+    carregarBausDoFirebase();
+  </script>
+
+  <script type="module" src="../navbar.js"></script>
   
 </body>
 </html>

@@ -3,28 +3,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!navbarContainer) return;
 
   try {
-    // Se o seu HTML da navbar estiver separado em uma pasta (ex: components/navbar.html), ajuste o caminho abaixo:
-    const response = await fetch("navbar.html"); 
-    
-    // Se preferir manter o HTML direto no JS para evitar requisição extra, veja a alternativa abaixo.
+    const response = await fetch("navbar.html");  
     if (!response.ok) throw new Error("Não foi possível carregar a navbar.");
     
     const html = await response.text();
     navbarContainer.innerHTML = html;
 
-    // Ativa o comportamento do menu mobile (hambúrguer)
-    const menuToggle = document.getElementById("menu-toggle");
-    const navMenu = document.getElementById("nav-menu");
-
-    if (menuToggle && navMenu) {
-      menuToggle.addEventListener("click", () => {
-        navMenu.classList.toggle("active");
-      });
-    }
+    setupMenuToggle();
   } catch (error) {
     console.error("Erro ao carregar a barra de navegação:", error);
     
-    // Fallback caso prefira injetar o HTML direto via JS caso o fetch dê erro de CORS local:
+    // Fallback com caminhos corrigidos com "/" na frente para apontar sempre para a raiz do site
     navbarContainer.innerHTML = `
       <header class="navbar">
         <div class="logo-area">
@@ -36,22 +25,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
         <button class="menu-toggle" id="menu-toggle">☰</button>
         <nav id="nav-menu">
-          <a href="perfil.html">PERFIL</a>
-          <a href="faccao.html">FACÇÃO</a>
-          <a href="ranking.html">RANKING</a>
-          <a href="mapa.html">MAPA</a>
-          <a href="guia.html">GUIA</a>
+          <a href="/perfil.html">PERFIL</a>
+          <a href="/faccao.html">FACÇÃO</a>
+          <a href="/ranking.html">RANKING</a>
+          <a href="/mapa.html">MAPA</a>
+          <a href="/guia.html">GUIA</a>
         </nav>
       </header>
     `;
 
-    const menuToggle = document.getElementById("menu-toggle");
-    const navMenu = document.getElementById("nav-menu");
-
-    if (menuToggle && navMenu) {
-      menuToggle.addEventListener("click", () => {
-        navMenu.classList.toggle("active");
-      });
-    }
+    setupMenuToggle();
   }
 });
+
+function setupMenuToggle() {
+  const menuToggle = document.getElementById("menu-toggle");
+  const navMenu = document.getElementById("nav-menu");
+
+  if (menuToggle && navMenu) {
+    menuToggle.addEventListener("click", () => {
+      navMenu.classList.toggle("active");
+    });
+  }
+}

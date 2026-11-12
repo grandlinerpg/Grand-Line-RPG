@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <nav id="nav-menu">
           <a href="perfil.html">PERFIL</a>
           <a href="faccao.html">FACÇÃO</a>
+          <a href="ranking.html">RANKING</a>
           <a href="mapa.html">MAPA</a>
           <a href="guia.html">GUIA</a>
         </nav>

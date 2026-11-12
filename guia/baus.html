@@ -145,6 +145,30 @@
             imgHtml = `<img src="https://res.cloudinary.com/djh45admn/image/upload/v1778432201/ba%C3%BA-comum.png">`;
           }
 
+          // Informação de Dinheiro (Berries)
+          let dinheiroHtml = '';
+          if (bau.dinheiro && typeof bau.dinheiro === 'object') {
+            const minFormatado = Number(bau.dinheiro.min || 0).toLocaleString('pt-BR');
+            const maxFormatado = Number(bau.dinheiro.max || 0).toLocaleString('pt-BR');
+            dinheiroHtml = `
+              <div class="reward">
+                <span>Berries</span>
+                <b>${minFormatado} ~ ${maxFormatado}</b>
+              </div>
+            `;
+          }
+
+          // Informação de Probabilidade de Item
+          let probHtml = '';
+          if (bau.prob !== undefined && bau.prob !== null) {
+            probHtml = `
+              <div class="reward">
+                <span>Probabilidade de Item</span>
+                <b>${bau.prob}%</b>
+              </div>
+            `;
+          }
+
           // Monta a lista de drops dinamicamente
           let dropsHtml = '';
           if (bau.drops && typeof bau.drops === 'object') {
@@ -176,6 +200,8 @@
             </p>
 
             <div class="reward-list" id="rewards-${idBau}">
+              ${dinheiroHtml}
+              ${probHtml}
               ${dropsHtml}
             </div>
           `;

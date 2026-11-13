@@ -100,7 +100,7 @@ async function startAuth() {
           return;
         }
 
-        // Determina o caminho do nó no Firebase
+        // Determina o caminho do nó no Firebase para pegar informações visuais (nome, imagem)
         let factionPath = `faccoes/${faction}`;
         if (faction === "Piratas") {
           if (!bando) {
@@ -111,7 +111,7 @@ async function startAuth() {
         }
 
         // ======================
-        // DADOS DA FACÇÃO / BANDO
+        // DADOS DA FACÇÃO / BANDO (VISUAIS)
         // ======================
 
         onValue(
@@ -135,17 +135,11 @@ async function startAuth() {
             factionImg.onerror = function () {
               this.src = "https://res.cloudinary.com/djh45admn/image/upload/v1778661201/logoglrpg.png";
             };
-
-            // ARMAZÉM
-            document.getElementById("warehouse").innerText = (data.armazem || 0).toLocaleString("pt-BR");
-
-            // FORÇA
-            document.getElementById("power").innerText = (data.forca || 0).toLocaleString("pt-BR");
           }
         );
 
         // ======================
-        // MEMBROS DA FACÇÃO / BANDO
+        // MEMBROS, FORÇA E ARMAZÉM DA FACÇÃO / BANDO
         // ======================
 
         onValue(
@@ -153,6 +147,9 @@ async function startAuth() {
           (playersSnap) => {
             const box = document.getElementById("members-list");
             box.innerHTML = "";
+
+            let somaForca = 0;
+            let somaArmazem = 0;
 
             playersSnap.forEach((playerItem) => {
               const data = playerItem.val();
@@ -165,6 +162,10 @@ async function startAuth() {
                 : (playerFaction === faction);
 
               if (ehDoMesmoGrupo) {
+                // Soma o level e o saldo do jogador correspondente
+                somaForca += Number(data.info?.level || 0);
+                somaArmazem += Number(data.info?.saldo || 0);
+
                 const charName = data.character?.charName || "Sem personagem";
 
                 const div = document.createElement("div");
@@ -194,6 +195,10 @@ async function startAuth() {
             if (box.innerHTML === "") {
               box.innerHTML = "Sem membros";
             }
+
+            // Atualiza os elementos visuais de Armazém e Força com os totais somados
+            document.getElementById("warehouse").innerText = somaArmazem.toLocaleString("pt-BR");
+            document.getElementById("power").innerText = somaForca.toLocaleString("pt-BR");
           }
         );
       }

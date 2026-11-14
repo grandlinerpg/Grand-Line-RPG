@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Estilo de Luta - Grand Line RPG</title>
-
 <link rel="icon" type="image/png" href="/Grand-Line-RPG/icon-192.png">
-
 <link rel="stylesheet" href="../style.css">
 <link rel="stylesheet" href="../guia.css">
 <link rel="stylesheet" href="estilo-luta.css">
@@ -18,13 +14,9 @@
 <link rel="stylesheet" href="../perfil/ficha-edit.css">
 <link rel="stylesheet" href="../perfil/card.css">
 <link rel="stylesheet" href="efeitos.css">
-
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
-
 </head>
-
 <body>
-
 <div class="background"></div>
 <div class="overlay"></div>
 
@@ -32,49 +24,23 @@
 <div id="navbar-container"></div>
 
 <section class="guide-title">
-
 <h1>ESTILO DE LUTA</h1>
-
 <p>O estilo de luta é a maneira como o personagem enfrenta o combate.</p>
-
 </section>
-
-
 
 <main id="list"></main>
 
-
-
   <!-- MODAL -->
-
   <div id="modal" class="modal">
-
     <div class="modal-content">
-
-      <button
-        class="close-item-x"
-        onclick="closeModal()"
-      >
-        ×
-      </button>
-
+      <button class="close-item-x" onclick="closeModal()">×</button>
       <img id="m-img" class="modal-img">
-
       <h2 id="m-title"></h2>
-
       <p id="m-desc"></p>
-
       <img id="m-tier-img" class="modal-tier-img">
-
-      <button id="m-btn" class="habilidades-btn">
-        VER HABILIDADES
-      </button>
-
+      <button id="m-btn" class="habilidades-btn">VER HABILIDADES</button>
     </div>
-
   </div>
-
-
 
 <div id="habilidades-container"></div>
 <div id="ficha-container"></div>
@@ -82,242 +48,98 @@
 <div id="card-container"></div>
 <div id="efeito-container"></div>
 
-
 <script type="module">
-
-
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import{getDatabase,ref,get}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-
-
 const firebaseConfig={
-
 apiKey:"AIzaSyC4kgy_L79WYFqr9XZhoDuZBfqG4AGTVUQ",
-
 authDomain:"grand-line-rpg-dcda9.firebaseapp.com",
-
 projectId:"grand-line-rpg-dcda9",
-
 storageBucket:"grand-line-rpg-dcda9.appspot.com",
-
 messagingSenderId:"172042779786",
-
 appId:"1:172042779786:web:ecdff9eaf4fee36eca8173",
-
 databaseURL:"https://grand-line-rpg-dcda9-default-rtdb.firebaseio.com"
-
 };
-
-
 
 const app=initializeApp(firebaseConfig);
-
 const db=getDatabase(app);
 
-
-
 const tiersImg={
-
 1:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-1.png",
-
 2:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-2.png",
-
 3:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-3.png",
-
 4:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-4.png",
-
 5:"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/tier-5.png"
-
 };
 
-
-
 const list=document.getElementById("list");
-
 let styles=[];
 
-
-
 async function carregarEstilos(){
-
-
 const snap=await get(ref(db,"itens/Pergaminho de Ensinamento"));
-
-
 if(!snap.exists())return;
-
-
 
 const data=snap.val();
 
-
-
 styles=Object.keys(data)
-
 .filter(key=>data[key].tipo!==1)
-
 .map(key=>{
-
-
 let s=data[key];
-
-
 return{
-
 n:key,
-
 t:Number(s.tier),
-
 d:s["description-alter"],
-
 img:s["img-alter"]
-
 };
-
-
 });
-
-
 
 renderizar();
-
-
 }
-
-
-
-
 
 function renderizar(){
-
-
 list.innerHTML="";
 
-
-
 for(let t=1;t<=5;t++){
-
-
-
 const sep=document.createElement("div");
-
 sep.className="tier-sep";
-
 sep.innerHTML=`<img src="${tiersImg[t]}">`;
-
 list.appendChild(sep);
 
-
-
-
-
 styles.filter(s=>s.t===t).forEach(s=>{
-
-
-
 const item=document.createElement("div");
-
 item.className="item";
-
-
-
 item.innerHTML=`
-
 <img src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/${s.img}.jpg">
-
 <span>${s.n}</span>
-
 `;
-
-
-
 item.onclick=()=>openModal(s);
-
-
-
 list.appendChild(item);
-
-
-
 });
-
-
 }
-
-
 }
-
-
-
 
 function openModal(s){
-
-
-
 document.getElementById("modal").style.display="flex";
-
-
-
 document.getElementById("m-title").innerText=s.n;
-
-
-
 document.getElementById("m-desc").innerText=s.d;
-
-
-
 document.getElementById("m-tier-img").src=tiersImg[s.t];
-
-
-
-document.getElementById("m-img").src=
-
-"https://res.cloudinary.com/djh45admn/image/upload/v1779847983/"+s.img+".jpg";
-
-
-
-
+document.getElementById("m-img").src="https://res.cloudinary.com/djh45admn/image/upload/v1779847983/"+s.img+".jpg";
 
 document.getElementById("m-btn").onclick=()=>{
-
 abrirHabilidades(s.n, "Estilo de Luta");
-
 };
-
-
-
 }
-
-
-
-
 
 window.closeModal=function(){
-
 document.getElementById("modal").style.display="none";
-
 }
-
-
-
-
 
 window.voltar=function(){
-
 history.back();
-
 }
 
-
-
-
-
 carregarEstilos();
-
-
-
 </script>
 <script type="module" src="../navbar.js"></script>
 <script type="module" src="../permissao.js"></script>
@@ -327,7 +149,5 @@ carregarEstilos();
 <script type="module" src="efeito.js"></script>
 <script type="module" src="../perfil/ficha-edit.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
 </body>
-
 </html>

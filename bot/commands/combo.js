@@ -1,6 +1,6 @@
 const axios = require('axios');   
 const { FIREBASE_URL, obterJidEfetivo } = require('../index');
-const { obterArenaAtiva, buscarUidPlayer, limparId, salvarArenaAtiva, handleCombatesCommands } = require('./combates');
+const { obterArenaAtiva, buscarUidPlayer, limparId, salvarArenaAtiva, handleCombatesCommands, calcularEssencias } = require('./combates');
 
 const CLOUDINARY_HABILIDADES = 'https://res.cloudinary.com/djh45admn/image/upload/v1781908673';
 
@@ -11,6 +11,20 @@ const ATRIBUTOS_RANK = {
     4: { stm: 15, atk: 15, def: 15 },
     5: { stm: 20, atk: 20, def: 20 } 
 };
+
+// Tabela de custo de essência por rank solicitada
+const ESSENCIAS_RANK = {
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 5,
+    5: 6
+};
+
+function obterCustoEssencia(rank) {
+    const r = Number(rank) || 1;
+    return ESSENCIAS_RANK[r] || r;
+}
 
 function normalizar(str) {
     return String(str || '')
@@ -174,6 +188,20 @@ async function handleComboCommands(sock, m, text, from) {
         if (!jogadorArena.uid) jogadorArena.uid = buscarUidPlayer(playersData, jogadorArena.numero || jogadorArena.lid);
         if (!oponenteArena.uid) oponenteArena.uid = buscarUidPlayer(playersData, oponenteArena.numero || oponenteArena.lid);
 
+        // Garante que o jogador possui o contador de essências individual inicializado no turno atual
+        const essenciaNecessaria = obterCustoEssencia(skillRank);
+        if (jogadorArena.essencias === undefined) {
+            jogadorArena.essencias = calcularEssencias(arenaAtiva.turnoAtual);
+        }
+
+        // Validação de Essências Suficientes
+        if (jogadorArena.essencias < essenciaNecessaria) {
+            await sock.sendMessage(from, { 
+                text: `⚡ Essências insuficientes! A habilidade *${skill.nome}* (Rank ${skillRank}) custa *${essenciaNecessaria}* essências, mas você possui apenas *${jogadorArena.essencias}* neste turno.` 
+            }, { quoted: m });
+            return true;
+        }
+
         // ─────────────────────────────────────────────
         // RESTRIÇÕES DE AÇÕES POR TURNO
         // ─────────────────────────────────────────────
@@ -256,6 +284,9 @@ async function handleComboCommands(sock, m, text, from) {
 
         const imagemBuffer = await baixarImagemHabilidade(skill);
 
+        // Desconta as essências do jogador ao usar a skill com sucesso
+        jogadorArena.essencias -= essenciaNecessaria;
+
         // ─────────────────────────────────────────────
         // PROCESSAMENTO DE ATAQUE (!atk)
         // ─────────────────────────────────────────────
@@ -313,7 +344,8 @@ async function handleComboCommands(sock, m, text, from) {
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
                                `${textoResumoSimulado}\n\n` +
                                `> Res: ${resAtualOp} - ${reducaoRes} (10%) = ${resRestante}\n` +
-                               `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}`;
+                               `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}\n\n` +
+                               `⚡ Essências restantes: ${jogadorArena.essencias}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
@@ -393,7 +425,8 @@ async function handleComboCommands(sock, m, text, from) {
                                `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
                                `${textoResumoDef}\n\n` +
                                `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
-                               `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}`;
+                               `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n` +
+                               `⚡ Essências restantes: ${jogadorArena.essencias}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaDef }, { quoted: m });
@@ -439,7 +472,6 @@ async function handleComboCommands(sock, m, text, from) {
             let textoResumoClash = `Você utilizou uma skill ofensiva para chocar diretamente com o ataque rival!`;
 
             if (ataqueRecebido > 0) {
-                // Mecânica de Clash: Compara o poder do clash com o ataque recebido
                 if (clashTotal >= ataqueRecebido) {
                     textoResumoClash = `Sua investida anulou completamente o ataque rival!`;
                 } else {
@@ -463,7 +495,7 @@ async function handleComboCommands(sock, m, text, from) {
 
             arenaAtiva.acoesTurno[chaveTurnoJogador].clash = true;
 
-            // Tanto a skill usada quanto o ato de Clash entram em cooldown (Clash = 2 turnos de cooldown)
+            // Tanto a skill usada quanto o ato de Clash entram em cooldown
             jogadorArena.cooldowns[nomeChaveCd] = skillRank + 1;
             jogadorArena.cooldowns['Counter-Clash'] = 2;
             jogadorArena.sta = Math.max(0, Number(jogadorArena.sta) - stmConsumo);
@@ -474,7 +506,8 @@ async function handleComboCommands(sock, m, text, from) {
                                  `> Atk: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
                                  `${textoResumoClash}\n\n` +
                                  `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
-                                 `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}`;
+                                 `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n` +
+                                 `⚡ Essências restantes: ${jogadorArena.essencias}`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaClash }, { quoted: m });

@@ -197,7 +197,7 @@ async function handleComboCommands(sock, m, text, from) {
         // Validação de Essências Suficientes
         if (jogadorArena.essencias < essenciaNecessaria) {
             await sock.sendMessage(from, { 
-                text: `⚡ Essências insuficientes! A habilidade *${skill.nome}* (Rank ${skillRank}) custa *${essenciaNecessaria}* essências, mas você possui apenas *${jogadorArena.essencias}* neste turno.` 
+                text: `⚡ Essências insuficientes! A habilidade *${skill.nome}* custa *${essenciaNecessaria}* essência(s), mas você possui apenas *${jogadorArena.essencias}* neste turno.` 
             }, { quoted: m });
             return true;
         }
@@ -344,8 +344,7 @@ async function handleComboCommands(sock, m, text, from) {
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
                                `${textoResumoSimulado}\n\n` +
                                `> Res: ${resAtualOp} - ${reducaoRes} (10%) = ${resRestante}\n` +
-                               `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}\n\n` +
-                               `⚡ Essências restantes: ${jogadorArena.essencias}`;
+                               `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}\n\n`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaAtk }, { quoted: m });
@@ -425,8 +424,7 @@ async function handleComboCommands(sock, m, text, from) {
                                `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
                                `${textoResumoDef}\n\n` +
                                `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
-                               `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n` +
-                               `⚡ Essências restantes: ${jogadorArena.essencias}`;
+                               `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaDef }, { quoted: m });
@@ -506,8 +504,7 @@ async function handleComboCommands(sock, m, text, from) {
                                  `> Atk: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
                                  `${textoResumoClash}\n\n` +
                                  `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
-                                 `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n` +
-                                 `⚡ Essências restantes: ${jogadorArena.essencias}`;
+                                 `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n`;
 
             if (imagemBuffer) {
                 await sock.sendMessage(from, { image: imagemBuffer, caption: legendaClash }, { quoted: m });

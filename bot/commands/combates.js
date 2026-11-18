@@ -98,11 +98,13 @@ function calcularEssencias(turno) {
 function iniciarEstruturaBatalha(grupoJid, p1, p2, tipo = 'PVP', sock = null) {
     limparTimersBatalha(batalhas[grupoJid]);
 
+    const essenciasIniciais = calcularEssencias(1);
+
     const novaBatalha = {
         grupoJid,
         tipo,
-        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome, uid: p1.uid, cooldowns: {} },
-        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome, uid: p2.uid, cooldowns: {} },
+        p1: { lid: p1.lid, numero: p1.numero, nome: p1.nome, uid: p1.uid, cooldowns: {}, essencias: essenciasIniciais },
+        p2: { lid: p2.lid, numero: p2.numero, nome: p2.nome, uid: p2.uid, cooldowns: {}, essencias: essenciasIniciais },
         fase: 'apresentacao',
         jogadorVez: 1,
         turnoAtual: 1,
@@ -142,16 +144,22 @@ async function comecarCombateDeFato(grupoJid, sock) {
     const p1Info = uidP1 ? playersData[uidP1] : null;
     const p2Info = uidP2 ? playersData[uidP2] : null;
 
+    const essenciasTurno1 = calcularEssencias(1);
+    bat.turnoAtual = 1;
+
     if (p1Info?.stats) {
         bat.p1.hp = Number(bat.p1.hp ?? p1Info.stats.hp ?? 100);
         bat.p1.res = Number(bat.p1.res ?? p1Info.stats.res ?? 0);
         bat.p1.sta = Number(bat.p1.sta ?? p1Info.stats.sta ?? p1Info.stats.stm ?? 100);
     }
+    bat.p1.essencias = essenciasTurno1;
+
     if (p2Info?.stats) {
         bat.p2.hp = Number(bat.p2.hp ?? p2Info.stats.hp ?? 100);
         bat.p2.res = Number(bat.p2.res ?? p2Info.stats.res ?? 0);
         bat.p2.sta = Number(bat.p2.sta ?? p2Info.stats.sta ?? p2Info.stats.stm ?? 100);
     }
+    bat.p2.essencias = essenciasTurno1;
 
     const statsP1 = p1Info?.stats || {};
     const statsP2 = p2Info?.stats || {};
@@ -176,8 +184,7 @@ async function comecarCombateDeFato(grupoJid, sock) {
 
     bat.fase = 'em_combate';
     bat.jogadorVez = primeiroEscolhido;
-    bat.primeiroDoCombate = primeiroEscolhido; // Guarda quem iniciou a rodada
-    bat.turnoAtual = 1;
+    bat.primeiroDoCombate = primeiroEscolhido;
 
     if (socketParaEnviar) {
         if (p1Info) await enviarCardApresentacaoArena(socketParaEnviar, grupoJid, p1Info, bat.p1);
@@ -188,11 +195,11 @@ async function comecarCombateDeFato(grupoJid, sock) {
 
     const horarioFim = obterHorarioTermino(30);
     const jogadorVezNome = bat.jogadorVez === 1 ? (bat.p1?.nome || 'Jogador 1') : (bat.p2?.nome || 'Jogador 2');
-    const essencias = calcularEssencias(bat.turnoAtual);
+    const jogadorVezObj = bat.jogadorVez === 1 ? bat.p1 : bat.p2;
 
     const msg = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\n` +
                 `VEZ DE *${jogadorVezNome.toUpperCase()}*\n\n` +
-                `> Essências: ${essencias}\n` +
+                `> Essências: ${jogadorVezObj.essencias}\n` +
                 `> Término: ${horarioFim} (UTC-3)`;
 
     if (socketParaEnviar) {
@@ -308,19 +315,22 @@ async function enviarCardApresentacaoArena(sock, from, playerInfo, arenaPlayer) 
 async function iniciarCombateAposAceitar(sock, from, desafio, tipo = 'PVP') {
     const arenaAtiva = await obterArenaAtiva(from);
 
+    const essenciasIniciais = calcularEssencias(1);
     const p1 = { 
         lid: desafio.desafianteLid || desafio.p1Lid, 
         numero: desafio.desafianteNum || desafio.p1Num, 
         nome: desafio.desafianteNome || desafio.p1Nome,
         uid: desafio.desafianteUid || desafio.p1Uid,
-        cooldowns: {}
+        cooldowns: {},
+        essencias: essenciasIniciais
     };
     const p2 = { 
         lid: desafio.desafiadoLid || desafio.p2Lid, 
         numero: desafio.desafiadoNum || desafio.p2Num, 
         nome: desafio.desafiadoNome || desafio.p2Nome,
         uid: desafio.desafiadoUid || desafio.p2Uid,
-        cooldowns: {}
+        cooldowns: {},
+        essencias: essenciasIniciais
     };
 
     const indexArena = GRUPOS_ARENA.indexOf(from) + 1;
@@ -381,6 +391,10 @@ async function handleCombatesCommands(sock, m, text, from) {
         // Se a vez voltar para quem abriu o combate, avança 1 Turno completo
         if (bat.jogadorVez === (bat.primeiroDoCombate || 1)) {
             bat.turnoAtual = (bat.turnoAtual || 1) + 1;
+            // Reseta e atualiza as essências de ambos os jogadores para o novo turno
+            const novasEssencias = calcularEssencias(bat.turnoAtual);
+            if (bat.p1) bat.p1.essencias = novasEssencias;
+            if (bat.p2) bat.p2.essencias = novasEssencias;
         }
 
         // Decrementa cooldowns do jogador que VAI JOGAR AGORA
@@ -396,7 +410,7 @@ async function handleCombatesCommands(sock, m, text, from) {
 
         await salvarArenaAtiva(from, bat);
 
-        // 1. Envia Card do jogador que combou (com status da ARENA atualizados)
+        // 1. Envia Card do jogador que combou
         try {
             const playersRes = await axios.get(`${FIREBASE_URL}/players.json`);
             const playersData = playersRes.data || {};
@@ -409,12 +423,12 @@ async function handleCombatesCommands(sock, m, text, from) {
             console.error('Erro ao buscar dados do jogador que combou no !prox:', e.message);
         }
 
-        // 2. Envia a mensagem do novo turno
+        // 2. Envia a mensagem do novo turno com as essências individuais atualizadas
         const nomeDoVez = proximoJogadorObj?.nome || `Jogador ${bat.jogadorVez}`;
         const horarioFim = obterHorarioTermino(30);
-        const essencias = calcularEssencias(bat.turnoAtual);
+        const essenciasAtuais = proximoJogadorObj?.essencias ?? calcularEssencias(bat.turnoAtual);
 
-        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Essências: ${essencias}\n> Término: ${horarioFim} (UTC-3)`;
+        const msgNovoTurno = `🔄 *TURNO ${bat.turnoAtual}* 🔄\n\nVEZ DE *${nomeDoVez.toUpperCase()}*\n\n> Essências: ${essenciasAtuais}\n> Término: ${horarioFim} (UTC-3)`;
         await sock.sendMessage(from, { text: msgNovoTurno });
 
         // 3. Envia a Cooldown List do jogador que VAI JOGAR AGORA por último
@@ -622,5 +636,6 @@ module.exports = {
     resetarArenaAguardando,
     limparTimersBatalha,
     limparId,
-    buscarUidPlayer
+    buscarUidPlayer,
+    calcularEssencias
 };

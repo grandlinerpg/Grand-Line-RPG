@@ -420,7 +420,17 @@ async function handleComboCommands(sock, m, text, from) {
             }
 
             let resAtual = Number(jogadorArena.res);
-            let hpAtual = Number(jogadorArena.hp);
+            if (ataqueRecebido > 0) {
+                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * 0.10);
+                resAtual = Math.min(100, resAtual + reducaoAntigaSimulada);
+                let danoHpAnterior = 0;
+                if (ataqueRecebido > resAtual) {
+                    danoHpAnterior = ataqueRecebido - resAtual;
+                }
+                jogadorArena.hp = Math.min(100, Number(jogadorArena.hp) + danoHpAnterior);
+            }
+
+            const hpAtual = Number(jogadorArena.hp);
 
             let danoHp = 0;
             let reducaoRes = 0;

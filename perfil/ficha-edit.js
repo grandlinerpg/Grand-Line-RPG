@@ -59,7 +59,7 @@ function criarSegundaPropriedade(valor = ""){
             <option value="Perfurante">Perfurante</option>
             <option value="Sobrenatural">Sobrenatural</option>
         </select>
-        <button class="remove-propriedade-edit" type="button">×</button>
+        <button class="remove-efeito-edit" type="button">×</button>
     `;
 
     const selectExtra = row.querySelector("select");

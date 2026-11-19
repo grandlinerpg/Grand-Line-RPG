@@ -1,75 +1,35 @@
 <div id="ficha-edit" class="ficha-edit-modal">
-
-
 <div class="ficha-edit-window">
-
-
-<button id="close-ficha-edit" class="close-ficha-edit">
-×
-</button>
-
-<h2>
-EDITAR FICHA
-</h2>
+<button id="close-ficha-edit" class="close-ficha-edit">×</button>
+<h2>EDITAR FICHA</h2>
 
 <div class="ficha-edit-scroll">
 
 <div class="img-upload-area">
-
     <div class="img-box">
-
         <img id="edit-img" class="edit-img">
-
     </div>
-
-    <button id="upload-img-btn" class="upload-img-btn">
-        📤
-    </button>
-
-    <input 
-    type="file" 
-    id="upload-img-input" 
-    accept="image/*"
-    hidden>
-
+    <button id="upload-img-btn" class="upload-img-btn">📤</button>
+    <input type="file" id="upload-img-input" accept="image/*" hidden>
 </div>
 
-<label>
-Nome
-</label>
-
+<label>Nome</label>
 <input id="edit-nome">
 
-
-
-<label>
-Descrição
-</label>
-
+<label>Descrição</label>
 <textarea id="edit-description"></textarea>
 
-
-
-<label>
-Rank
-</label>
-
+<label>Rank</label>
 <select id="edit-rank">
-
 <option value="1">Iniciante</option>
 <option value="2">Aprendiz</option>
 <option value="3">Novato</option>
 <option value="4">Intermediário</option>
 <option value="5">Veterano</option>
-
 </select>
 
-<label>
-Cooldown
-</label>
-
+<label>Cooldown</label>
 <select id="edit-cooldown">
-
 <option value="">Padrão</option>
 <option value="0">0</option>
 <option value="1">1</option>
@@ -77,59 +37,41 @@ Cooldown
 <option value="3">3</option>
 <option value="4">4</option>
 <option value="5">5</option>
-
 </select>
 
-<label>
-Categoria
-</label>
-
+<label>Categoria</label>
 <select id="edit-categoria">
-
     <option value="Ofensivo">Ofensivo</option>
     <option value="Defensivo">Defensivo</option>
     <option value="Suporte">Suporte</option>
     <option value="Suplementar">Suplementar</option>
     <option value="Equipamento">Equipamento</option>
-
 </select>
 
+<label>Propriedade</label>
+<div id="propriedades-edit-area" class="propriedades-edit-area">
+    <div class="propriedade-edit-row">
+        <select id="edit-propriedade" class="edit-propriedade">
+            <option value="Contundente">Contundente</option>
+            <option value="Cortante">Cortante</option>
+            <option value="Perfurante">Perfurante</option>
+            <option value="Sobrenatural">Sobrenatural</option>
+        </select>
+        <button id="add-propriedade-edit" class="add-propriedade-edit" type="button">+</button>
+    </div>
+</div>
 
-<label>
-Propriedade
-</label>
-
-<select id="edit-propriedade">
-
-    <option value="Contundente">Contundente</option>
-    <option value="Cortante">Cortante</option>
-    <option value="Perfurante">Perfurante</option>
-    <option value="Sobrenatural">Sobrenatural</option>
-
-</select>
-
-
-<label>
-Alcance
-</label>
-
+<label>Alcance</label>
 <select id="edit-alcance">
-
     <option value="Pessoal">Pessoal</option>
     <option value="Curto">Curto</option>
     <option value="Médio-Baixo">Médio-Baixo</option>
     <option value="Médio">Médio</option>
     <option value="Longo-Baixo">Longo-Baixo</option>
     <option value="Longo">Longo</option>
-
 </select>
 
-
-
-<label>
-Alvos
-</label>
-
+<label>Alvos</label>
 <select id="edit-alvos">
     <option value="1">1</option>
     <option value="2">2</option>
@@ -144,13 +86,8 @@ Alvos
 </select>
 
 <div id="edit-precisao-wrap">
-
-<label>
-Precisão
-</label>
-
+<label>Precisão</label>
 <select id="edit-precisao">
-
 <option value="">Padrão</option>
 <option value="5">5%</option>
 <option value="10">10%</option>
@@ -172,34 +109,15 @@ Precisão
 <option value="90">90%</option>
 <option value="95">95%</option>
 <option value="100">100%</option>
-
 </select>
+</div>
+
+<label>Efeitos</label>
+<div id="efeitos-edit-area" class="efeitos-edit-area"></div>
+<button id="add-efeito-edit" class="add-efeito-edit" type="button">+</button>
 
 </div>
 
-<label>
-Efeitos
-</label>
-
-<div id="efeitos-edit-area" class="efeitos-edit-area">
-
+<button id="salvar-ficha-edit" class="salvar-ficha-edit">SALVAR</button>
 </div>
-
-<button
-id="add-efeito-edit"
-class="add-efeito-edit"
-type="button">
-+
-</button>
-
-</div>
-
-<button id="salvar-ficha-edit" class="salvar-ficha-edit">
-SALVAR
-</button>
-
-
-</div>
-
-
 </div>

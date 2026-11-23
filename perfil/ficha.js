@@ -142,7 +142,8 @@ window.abrirFicha = async function(
     mostrarEditar = false,
     skillUid = null,
     bancoCategoria = "",
-    sub = ""
+    sub = "",
+    jaPossui = false
 ){
     if(!document.getElementById("ficha-modal")){
         await carregarFichaHTML();
@@ -400,21 +401,32 @@ window.abrirFicha = async function(
         skill.degradation
     );
 
-    const priceBox = document.querySelector("#ficha-modal .price-box");
+    const costBox = document.getElementById("ficha-cost");
+    const nivelInfo = document.getElementById("ficha-nivel-info");
     const fichaBottom = document.querySelector("#ficha-modal .ficha-bottom");
     const buyBtn = document.querySelector("#ficha-modal #ficha-buy-btn");
+    const maestriaBtn = document.getElementById("ficha-maestria-btn");
     const editBtn = document.querySelector("#ficha-modal #ficha-edit-btn");
 
-    if(priceBox){
-        if(mostrarCusto){
-            priceBox.style.display = "flex";
+    if(costBox){
+        if(mostrarCusto && !jaPossui){
+            costBox.style.display = "flex";
         }else{
-            priceBox.style.display = "none";
+            costBox.style.display = "none";
+        }
+    }
+
+    if(nivelInfo){
+        if(jaPossui){
+            nivelInfo.innerText = "NÍVEL 1";
+            nivelInfo.style.display = "flex";
+        }else{
+            nivelInfo.style.display = "none";
         }
     }
 
     if(buyBtn){
-        if(mostrarComprar){
+        if(mostrarComprar && !jaPossui){
             buyBtn.style.display = "block";
             buyBtn.onclick = () => {
                 document
@@ -424,6 +436,22 @@ window.abrirFicha = async function(
         }else{
             buyBtn.style.display = "none";
             buyBtn.onclick = null;
+        }
+    }
+
+    if(maestriaBtn){
+        if(jaPossui){
+            maestriaBtn.style.display = "block";
+            maestriaBtn.onclick = () => {
+                if(window.abrirMaestria){
+                    window.abrirMaestria(skill, skillUid);
+                }else{
+                    console.log("abrirMaestria não definido");
+                }
+            };
+        }else{
+            maestriaBtn.style.display = "none";
+            maestriaBtn.onclick = null;
         }
     }
 
@@ -449,7 +477,13 @@ window.abrirFicha = async function(
     }
 
     if(fichaBottom){
-        if(!mostrarCusto && !mostrarComprar && !mostrarEditar){
+        const temAlgoVisivel =
+            (mostrarCusto && !jaPossui) ||
+            (mostrarComprar && !jaPossui) ||
+            jaPossui ||
+            Boolean(editBtn && editBtn.style.display === "block");
+
+        if(!temAlgoVisivel){
             fichaBottom.style.display = "none";
         }else{
             fichaBottom.style.display = "flex";

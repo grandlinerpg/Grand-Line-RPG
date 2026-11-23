@@ -93,6 +93,7 @@ function initSkills() {
       }
 
       ranks[rank].push({
+        id: skillId,
         nome: data.nome,
         img: data.img,
         description: data.description,
@@ -142,7 +143,7 @@ function initSkills() {
 
         div.addEventListener("click", () => {
           console.log("Clicou na skill:", skill);
-          abrirFicha(skill, false, false, false, true);
+          abrirFicha(skill, false, false, false, skill.id, skill.categoria, skill.sub, true);
 
         });
 

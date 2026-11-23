@@ -93,9 +93,12 @@ function initSkills() {
       }
 
       ranks[rank].push({
+        id: skillId,
+        sub: sub,
         nome: data.nome,
         img: data.img,
         description: data.description,
+        efeito: data.efeito,
         atributos: {
             atk: data.atributos?.atk,
             def: data.atributos?.def,
@@ -143,8 +146,7 @@ function initSkills() {
 
         div.addEventListener("click", () => {
           console.log("Clicou na skill:", skill);
-          abrirFicha(skill, false, false, false);
-
+          abrirFicha(skill, false, false, false, skill.id, skill.categoria, skill.sub, true);
         });
 
 
@@ -265,3 +267,4 @@ habilidadesCallback = onValue(habilidadesRef, (snapshot) => {
   } // <-- fecha initSkills()
 
 loadSkillsHTML();
+```[cite: 8]

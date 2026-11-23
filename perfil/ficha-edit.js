@@ -1,5 +1,4 @@
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
     getDatabase,
     ref,
@@ -25,7 +24,6 @@ const CATEGORIAS_COM_PRECISAO = ["Ofensivo", "Suplementar"];
 // Mostra o campo só nas categorias com precisão e atualiza o
 // texto da opção "Padrão": base do rank (ofensivas) ou sem precisão
 function atualizarCampoPrecisao(){
-
     const wrap = document.getElementById("edit-precisao-wrap");
     const select = document.getElementById("edit-precisao");
 
@@ -38,604 +36,308 @@ function atualizarCampoPrecisao(){
 
     // só ajusta o texto se o campo for o <select> (HTML atualizado)
     if(select.options && select.options.length){
-
         select.options[0].text = (categoria === "Ofensivo" || categoria === "Suplementar")
             ? `Padrão (${precisaoBase(rank)}%)`
             : "Padrão (sem precisão)";
-
     }
-
 }
 
 console.log("FICHA-EDIT JS CARREGOU");
 
-
-
 async function carregarFichaEditHTML(){
+    const container = document.getElementById("ficha-edit-container");
+    if(!container) return;
 
+    const res = await fetch(
+        location.pathname.includes("/guia/")
+        ? "../perfil/ficha-edit.html"
+        : "perfil/ficha-edit.html"
+    );
 
-const container =
-document.getElementById("ficha-edit-container");
+    container.innerHTML = await res.text();
 
-
-if(!container) return;
-
-
-
-const res = await fetch(
-    location.pathname.includes("/guia/")
-    ? "../perfil/ficha-edit.html"
-    : "perfil/ficha-edit.html"
-);
-
-
-container.innerHTML =
-await res.text();
-
-
-
-document
-.getElementById("close-ficha-edit")
-.onclick = fecharFichaEdit;
-
-
-
-document
-.getElementById("salvar-ficha-edit")
-.onclick = salvarFichaEdit;
-
-document
-.getElementById("upload-img-btn")
-.onclick = ()=>{
-
-    document
-    .getElementById("upload-img-input")
-    .click();
-
-};
-
-
-document
-.getElementById("upload-img-input")
-.onchange = uploadImagem;
-
-document
-.getElementById("add-efeito-edit")
-.onclick = ()=>{
-
-    criarSelectEfeito();
-
-};
-
-
+    document.getElementById("close-ficha-edit").onclick = fecharFichaEdit;
+    document.getElementById("salvar-ficha-edit").onclick = salvarFichaEdit;
+    document.getElementById("upload-img-btn").onclick = ()=>{
+        document.getElementById("upload-img-input").click();
+    };
+    document.getElementById("upload-img-input").onchange = uploadImagem;
+    document.getElementById("add-efeito-edit").onclick = ()=>{
+        criarSelectEfeito();
+    };
 }
 
 async function carregarListaEfeitos(){
-
     const snap = await get(
         ref(db,"efeitos")
     );
 
-
     if(!snap.exists()){
-
         console.log("Nenhum efeito encontrado");
-
         return;
-
     }
 
-
     listaEfeitosFirebase = snap.val();
-
-    console.log(
-        "Efeitos carregados:",
-        listaEfeitosFirebase
-    );
-
+    console.log("Efeitos carregados:", listaEfeitosFirebase);
 }
 
 function carregarEfeitosEdit(skill){
+    const area = document.getElementById("efeitos-edit-area");
+    if(!area) return;
 
+    area.innerHTML = "";
 
-const area =
-document.getElementById("efeitos-edit-area");
+    let efeitos = [];
 
+    if(Array.isArray(skill.efeito)){
+        efeitos = skill.efeito;
+    }else if(typeof skill.efeito === "object"){
+        efeitos = Object.keys(skill.efeito);
+    }else if(skill.efeito){
+        efeitos = [skill.efeito];
+    }
 
-if(!area) return;
-
-
-area.innerHTML = "";
-
-
-let efeitos = [];
-
-
-if(Array.isArray(skill.efeito)){
-
-    efeitos = skill.efeito;
-
-}else if(typeof skill.efeito === "object"){
-
-    efeitos = Object.keys(skill.efeito);
-
-}else if(skill.efeito){
-
-    efeitos = [skill.efeito];
-
+    efeitos.forEach(efeito=>{
+        criarSelectEfeito(efeito);
+    });
 }
-
-
-
-efeitos.forEach(efeito=>{
-
-    criarSelectEfeito(efeito);
-
-});
-
-
-}
-
-
 
 function criarSelectEfeito(valor=""){
+    const area = document.getElementById("efeitos-edit-area");
+    const row = document.createElement("div");
+    row.className = "efeito-edit-row";
 
-
-const area =
-document.getElementById("efeitos-edit-area");
-
-
-const row =
-document.createElement("div");
-
-
-row.className =
-"efeito-edit-row";
-
-
-let options = `
-
+    let options = `
 <option value="">
 Escolher efeito
 </option>
-
 `;
 
-
-Object.entries(listaEfeitosFirebase)
-.forEach(([uid, efeito])=>{
-
-
-options += `
-
+    Object.entries(listaEfeitosFirebase)
+    .forEach(([uid, efeito])=>{
+        options += `
 <option value="${uid}">
 ${efeito.nome}
 </option>
-
 `;
+    });
 
-
-});
-
-
-
-row.innerHTML = `
-
+    row.innerHTML = `
 <select class="efeito-select">
-
 ${options}
-
 </select>
-
-
 <button 
 class="remove-efeito-edit">
 ×
 </button>
-
 `;
 
+    const select = row.querySelector("select");
+    // mantém o UID salvo
+    select.value = valor;
 
+    row.querySelector(".remove-efeito-edit").onclick = ()=>{
+        row.remove();
+    };
 
-const select =
-row.querySelector("select");
-
-
-// mantém o UID salvo
-select.value = valor;
-
-
-
-row.querySelector(".remove-efeito-edit")
-.onclick = ()=>{
-
-    row.remove();
-
-};
-
-
-
-area.appendChild(row);
-
-
+    area.appendChild(row);
 }
-
-
 
 window.abrirFichaEdit = async function(){
+    const skill = window.skillAtual;
 
-const skill =
-window.skillAtual;
+    if(!document.getElementById("ficha-edit")){
+        await carregarFichaEditHTML();
+    }
 
+    if(!skill){
+        console.log("Nenhuma skill");
+        return;
+    }
 
-if(!document.getElementById("ficha-edit")){
+    await carregarListaEfeitos();
 
-    await carregarFichaEditHTML();
+    const modal = document.getElementById("ficha-edit");
+    modal.style.display="flex";
 
+    if(skill.img){
+        document.getElementById("edit-img").src =
+        `https://res.cloudinary.com/djh45admn/image/upload/${skill.img}`;
+    }else{
+        document.getElementById("edit-img").src = "";
+    }
+
+    document.getElementById("edit-nome").value = skill.nome || "";
+    document.getElementById("edit-description").value = skill.description || "";
+    document.getElementById("edit-rank").value = skill.rank || 1;
+    document.getElementById("edit-categoria").value = skill.categoria || "";
+    document.getElementById("edit-propriedade").value = skill.propriedade || "";
+    document.getElementById("edit-alcance").value = skill.alcance || "";
+    document.getElementById("edit-alvos").value = skill.alvos || "";
+    document.getElementById("edit-cooldown").value = skill.cooldown || "";
+
+    // ----- precisão ("" = Padrão do rank) -----
+    const selectPrecisao = document.getElementById("edit-precisao");
+
+    selectPrecisao.value =
+    (skill.precisao !== undefined && skill.precisao !== null)
+    ? String(skill.precisao)
+    : "";
+
+    // valor salvo fora da lista (ex.: 0 ou decimal) volta para Padrão
+    if(selectPrecisao.selectedIndex === -1){
+        selectPrecisao.value = "";
+    }
+
+    document.getElementById("edit-rank").onchange = atualizarCampoPrecisao;
+    document.getElementById("edit-categoria").onchange = atualizarCampoPrecisao;
+
+    atualizarCampoPrecisao();
+    carregarEfeitosEdit(skill);
 }
-
-
-
-if(!skill){
-
-console.log("Nenhuma skill");
-
-return;
-
-}
-
-await carregarListaEfeitos();
-
-
-const modal =
-document.getElementById("ficha-edit");
-
-
-modal.style.display="flex";
-
-
-if(skill.img){
-
-    document.getElementById("edit-img").src =
-    `https://res.cloudinary.com/djh45admn/image/upload/${skill.img}`;
-
-}else{
-
-    document.getElementById("edit-img").src =
-    "";
-
-}
-
-
-document.getElementById("edit-nome").value =
-skill.nome || "";
-
-
-document.getElementById("edit-description").value =
-skill.description || "";
-
-
-document.getElementById("edit-rank").value =
-skill.rank || 1;
-
-
-document.getElementById("edit-categoria").value =
-skill.categoria || "";
-
-
-document.getElementById("edit-propriedade").value =
-skill.propriedade || "";
-
-
-document.getElementById("edit-alcance").value =
-skill.alcance || "";
-
-
-document.getElementById("edit-alvos").value =
-skill.alvos || "";
-
-
-document.getElementById("edit-cooldown").value =
-skill.cooldown || "";
-
-// ----- precisão ("" = Padrão do rank) -----
-const selectPrecisao = document.getElementById("edit-precisao");
-
-selectPrecisao.value =
-(skill.precisao !== undefined && skill.precisao !== null)
-? String(skill.precisao)
-: "";
-
-// valor salvo fora da lista (ex.: 0 ou decimal) volta para Padrão
-if(selectPrecisao.selectedIndex === -1){
-    selectPrecisao.value = "";
-}
-
-document.getElementById("edit-rank").onchange = atualizarCampoPrecisao;
-document.getElementById("edit-categoria").onchange = atualizarCampoPrecisao;
-
-atualizarCampoPrecisao();
-
-carregarEfeitosEdit(skill);
-
-}
-
-
-
 
 function fecharFichaEdit(){
-
-
-document
-.getElementById("ficha-edit")
-.style.display="none";
-
-
+    document.getElementById("ficha-edit").style.display="none";
 }
 
 async function uploadImagem(e){
+    const file = e.target.files[0];
+    if(!file) return;
 
-const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "grandline-rpg");
+    formData.append("folder", "Grand Line RPG/Habilidades");
 
-if(!file) return;
+    try{
+        const res = await fetch(
+            "https://api.cloudinary.com/v1_1/djh45admn/image/upload",
+            {
+                method:"POST",
+                body:formData
+            }
+        );
 
+        const data = await res.json();
+        console.log("STATUS:", res.status);
+        console.log("ERRO CLOUDINARY:", data.error?.message);
 
-const formData = new FormData();
+        if(!data.secure_url){
+            console.error("Upload falhou:", data);
+            return;
+        }
 
-
-formData.append(
-"file",
-file
-);
-
-
-formData.append(
-"upload_preset",
-"grandline-rpg"
-);
-
-
-formData.append(
-"folder",
-"Grand Line RPG/Habilidades"
-);
-
-
-
-try{
-
-
-const res = await fetch(
-"https://api.cloudinary.com/v1_1/djh45admn/image/upload",
-{
-method:"POST",
-body:formData
-}
-);
-
-
-
-const data = await res.json();
-
-
-console.log("STATUS:", res.status);
-
-console.log(
-"ERRO CLOUDINARY:",
-data.error?.message
-);
-
-
-
-if(!data.secure_url){
-
-    console.error("Upload falhou:", data);
-    return;
-
-}
-
-
-
-window.skillAtual.img =
-data.public_id;
-
-
-
-document
-.getElementById("edit-img")
-.src =
-data.secure_url;
-
-
-
-console.log("Imagem salva:", data.public_id);
-
-
-
-}catch(err){
-
-console.error(
-"Erro upload:",
-err
-);
-
-}
-
-
+        window.skillAtual.img = data.public_id;
+        document.getElementById("edit-img").src = data.secure_url;
+        console.log("Imagem salva:", data.public_id);
+    }catch(err){
+        console.error("Erro upload:", err);
+    }
 }
 
 function limparUID(nome){
-
     return nome
     .trim()
     .replace(/[.#$[\]/]/g,"")
     .replace(/\s+/g,"_");
-
 }
-
 
 async function salvarFichaEdit(){
+    const skill = window.skillAtual;
 
+    skill.nome = document.getElementById("edit-nome").value;
 
-const skill =
-window.skillAtual;
-
-
-
-skill.nome =
-document.getElementById("edit-nome").value;
-
-// sem nome o UID fica vazio e a skill seria gravada em cima do próprio estilo/raça
-if(!skill.nome.trim()){
-
-    alert("Informe o nome da habilidade antes de salvar.");
-
-    return;
-
-}
-
-
-skill.description =
-document.getElementById("edit-description").value;
-
-
-skill.rank =
-Number(document.getElementById("edit-rank").value);
-
-
-
-skill.categoria =
-document.getElementById("edit-categoria").value;
-
-
-skill.propriedade =
-document.getElementById("edit-propriedade").value;
-
-
-skill.alcance =
-document.getElementById("edit-alcance").value;
-
-
-skill.alvos =
-document.getElementById("edit-alvos").value;
-
-
-skill.cooldown =
-document.getElementById("edit-cooldown").value;
-
-// Precisão: "" = Padrão (base do rank nas ofensivas; nenhuma nas demais)
-if(CATEGORIAS_COM_PRECISAO.includes(skill.categoria)){
-
-    const valorPrecisao = document.getElementById("edit-precisao").value;
-
-    skill.precisao =
-    valorPrecisao === "" ? "" : Number(valorPrecisao);
-
-}else{
-
-    delete skill.precisao;
-
-}
-
-const efeitos = [];
-
-document
-.querySelectorAll(".efeito-select")
-.forEach(select=>{
-
-    if(select.value){
-
-        efeitos.push(select.value);
-
+    // sem nome o UID fica vazio e a skill seria gravada em cima do próprio estilo/raça
+    if(!skill.nome.trim()){
+        alert("Informe o nome da habilidade antes de salvar.");
+        return;
     }
 
-});
+    skill.description = document.getElementById("edit-description").value;
+    skill.rank = Number(document.getElementById("edit-rank").value);
+    skill.categoria = document.getElementById("edit-categoria").value;
+    skill.propriedade = document.getElementById("edit-propriedade").value;
+    skill.alcance = document.getElementById("edit-alcance").value;
+    skill.alvos = document.getElementById("edit-alvos").value;
+    skill.cooldown = document.getElementById("edit-cooldown").value;
 
+    // Precisão: "" = Padrão (base do rank nas ofensivas; nenhuma nas demais)
+    if(CATEGORIAS_COM_PRECISAO.includes(skill.categoria)){
+        const valorPrecisao = document.getElementById("edit-precisao").value;
+        skill.precisao = valorPrecisao === "" ? "" : Number(valorPrecisao);
+    }else{
+        delete skill.precisao;
+    }
 
-skill.efeito = efeitos;
-
-console.log(
-"SKILL EDITADA:",
-skill
-);
-
-if(!window.skillCategoria || !window.skillSub){
-
-    console.error("Categoria ou estilo faltando:", {
-        categoria: window.skillCategoria,
-        sub: window.skillSub
+    const efeitos = [];
+    document.querySelectorAll(".efeito-select").forEach(select=>{
+        if(select.value){
+            efeitos.push(select.value);
+        }
     });
 
-    return;
+    skill.efeito = efeitos;
+    console.log("SKILL EDITADA:", skill);
 
-}
+    if(!window.skillCategoria || !window.skillSub){
+        console.error("Categoria ou estilo faltando:", {
+            categoria: window.skillCategoria,
+            sub: window.skillSub
+        });
+        return;
+    }
 
+    // se for uma skill nova cria o UID pelo nome
+    const skillNova = !window.skillUid;
 
-// se for uma skill nova cria o UID pelo nome
-const skillNova = !window.skillUid;
+    if(skillNova){
+        window.skillUid = limparUID(skill.nome);
+    }
 
-if(skillNova){
+    const skillSalvar = { ...skill };
 
-    window.skillUid =
-    limparUID(skill.nome);
+    // null remove a chave no Firebase (ex.: categoria sem precisão)
+    if(!CATEGORIAS_COM_PRECISAO.includes(skill.categoria)){
+        skillSalvar.precisao = null;
+    }
 
-}
+    delete skillSalvar.id;
+    delete skillSalvar.bancoCategoria;
+    delete skillSalvar.estilo;
 
-const skillSalvar = { ...skill };
+    try{
+        await update(
+            ref(
+                db,
+                `habilidades/${window.skillCategoria}/${window.skillSub}/${window.skillUid}`
+            ),
+            skillSalvar
+        );
+    }catch(err){
+        console.error("Erro ao salvar skill:", err);
 
-// null remove a chave no Firebase (ex.: categoria sem precisão)
-if(!CATEGORIAS_COM_PRECISAO.includes(skill.categoria)){
-    skillSalvar.precisao = null;
-}
+        // skill nova: libera o UID para ser recalculado se o nome mudar na próxima tentativa
+        if(skillNova) window.skillUid = null;
 
-delete skillSalvar.id;
-delete skillSalvar.bancoCategoria;
-delete skillSalvar.estilo;
+        alert("Não foi possível salvar a habilidade: " + err.message);
+        return;
+    }
 
-try{
+    console.log("Skill salva no Firebase!");
+    fecharFichaEdit();
 
-    await update(
-        ref(
-            db,
-            `habilidades/${window.skillCategoria}/${window.skillSub}/${window.skillUid}`
-        ),
-        skillSalvar
-    );
+    // se a lista de habilidades está aberta (guia), atualiza para mostrar a skill salva
+    const listaAberta = document.getElementById("habilidades-modal");
 
-}catch(err){
-
-    console.error("Erro ao salvar skill:", err);
-
-    // skill nova: libera o UID para ser recalculado se o nome mudar na próxima tentativa
-    if(skillNova) window.skillUid = null;
-
-    alert("Não foi possível salvar a habilidade: " + err.message);
-
-    return;
-
-}
-
-console.log("Skill salva no Firebase!");
-
-fecharFichaEdit();
-
-// se a lista de habilidades está aberta (guia), atualiza para mostrar a skill salva
-const listaAberta = document.getElementById("habilidades-modal");
-
-if(
-    listaAberta &&
-    listaAberta.style.display === "flex" &&
-    window.abrirHabilidades &&
-    window.habilidadesEstiloAtual
-){
-
-    window.abrirHabilidades(
-        window.habilidadesEstiloAtual,
-        window.habilidadesCategoriaAtual
-    );
-
-}
-
-
-
+    if(
+        listaAberta &&
+        listaAberta.style.display === "flex" &&
+        window.abrirHabilidades &&
+        window.habilidadesEstiloAtual
+    ){
+        window.abrirHabilidades(
+            window.habilidadesEstiloAtual,
+            window.habilidadesCategoriaAtual
+        );
+    }
 }

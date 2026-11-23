@@ -92,14 +92,30 @@ Categoria
 Propriedade
 </label>
 
-<select id="edit-propriedade">
+<div id="propriedade-edit-area" class="efeitos-edit-area">
 
-    <option value="Contundente">Contundente</option>
-    <option value="Cortante">Cortante</option>
-    <option value="Perfurante">Perfurante</option>
-    <option value="Sobrenatural">Sobrenatural</option>
+    <div class="efeito-edit-row">
 
-</select>
+        <select id="edit-propriedade" class="efeito-select">
+
+            <option value="Contundente">Contundente</option>
+            <option value="Cortante">Cortante</option>
+            <option value="Perfurante">Perfurante</option>
+            <option value="Sobrenatural">Sobrenatural</option>
+
+        </select>
+
+        <button
+        id="add-propriedade-edit"
+        class="add-efeito-edit"
+        type="button"
+        style="margin-top:0;">
+        +
+        </button>
+
+    </div>
+
+</div>
 
 <label>
 Alcance

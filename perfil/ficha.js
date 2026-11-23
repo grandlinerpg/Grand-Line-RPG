@@ -243,29 +243,29 @@ window.abrirFicha = async function(
     // =====================
     const atributosRank = {
         1:{
-            stm:100,
-            atk:100,
-            def:100
+            stm:2,
+            atk:2,
+            def:2
         },
         2:{
-            stm:250,
-            atk:250,
-            def:250
+            stm:4,
+            atk:5,
+            def:5
         },
         3:{
-            stm:500,
-            atk:500,
-            def:500
+            stm:8,
+            atk:10,
+            def:10
         },
         4:{
-            stm:1000,
-            atk:1000,
-            def:1000
+            stm:15,
+            atk:15,
+            def:15
         },
         5:{
-            stm:2000,
-            atk:2000,
-            def:2000
+            stm:20,
+            atk:20,
+            def:20
         }
     };
 

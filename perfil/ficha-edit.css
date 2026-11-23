@@ -363,7 +363,8 @@ cursor:pointer;
 }
 
 
-.remove-efeito-edit .remove-propriedade-edit{
+.remove-efeito-edit,
+.remove-propriedade-edit{
 
     width:32px;
 

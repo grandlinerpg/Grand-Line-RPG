@@ -140,6 +140,9 @@ window.abrirFicha = async function(
     mostrarCusto = true,
     mostrarComprar = true,
     mostrarEditar = false,
+    skillUid = null,
+    bancoCategoria = "",
+    sub = "",
     jaPossui = false
 ){
     if(!document.getElementById("ficha-modal")){

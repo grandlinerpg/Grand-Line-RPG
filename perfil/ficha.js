@@ -418,7 +418,19 @@ window.abrirFicha = async function(
 
     if(nivelInfo){
         if(jaPossui){
-            nivelInfo.innerText = "NÍVEL 1";
+            let nivelSkill = skill?.level;
+
+            if(nivelSkill === undefined || nivelSkill === null || nivelSkill === ""){
+                const uid = window.auth?.currentUser?.uid;
+                if(uid && skillUid){
+                    const snapLevel = await get(ref(db, `players/${uid}/skills/${skillUid}/level`));
+                    nivelSkill = snapLevel.exists() ? snapLevel.val() : 1;
+                }else{
+                    nivelSkill = 1;
+                }
+            }
+
+            nivelInfo.innerText = `NÍVEL ${nivelSkill}`;
             nivelInfo.style.display = "flex";
         }else{
             nivelInfo.style.display = "none";

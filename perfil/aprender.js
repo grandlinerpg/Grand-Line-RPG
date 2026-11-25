@@ -112,7 +112,7 @@ function iniciarAprenderSkill() {
             const nomeRankNecessario = NOMES_RANK[rankSkill] || `Rank ${rankSkill}`;
             abrirResultado(
                 "RANK INSUFICIENTE",
-                `Você precisa ter rank ${nomeRankNecessario} (Rank ${rankSkill}) ou superior para aprender esta habilidade.`
+                `Você precisa ter rank ${nomeRankNecessario} ou superior para aprender esta habilidade.`
             );
             return;
         }

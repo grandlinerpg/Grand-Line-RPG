@@ -7,6 +7,14 @@ import {
 
 console.log("APRENDER.JS CARREGOU");
 
+const NOMES_RANK = {
+    1: "INICIANTE",
+    2: "APRENDIZ",
+    3: "NOVATO",
+    4: "INTERMEDIÁRIO",
+    5: "VETERANO"
+};
+
 function abrirResultado(titulo, texto) {
     document.getElementById("skill-result-title").textContent = titulo;
     document.getElementById("skill-result-text").textContent = texto;
@@ -37,7 +45,7 @@ function obterChavePontoCategoria(categoria, sub) {
     if (cat.includes("raça") || cat.includes("raca") || cat.includes("race") || s.includes("raça") || s.includes("raca") || s.includes("race")) {
         return "skill-race";
     }
-    
+
     return "skill-others";
 }
 
@@ -95,6 +103,20 @@ function iniciarAprenderSkill() {
         }
 
         const player = playerSnap.val();
+
+        // Verifica se o rank do jogador é igual ou maior que o rank da habilidade (1 a 5)
+        const rankJogador = Number(player?.character?.rank) || 1;
+        const rankSkill = Number(skill.rank) || 1;
+
+        if (rankJogador < rankSkill) {
+            const nomeRankNecessario = NOMES_RANK[rankSkill] || `Rank ${rankSkill}`;
+            abrirResultado(
+                "RANK INSUFICIENTE",
+                `Você precisa ter rank ${nomeRankNecessario} (Rank ${rankSkill}) ou superior para aprender esta habilidade.`
+            );
+            return;
+        }
+
         const custo = Number(skill.custo) || 0;
         const disponivel = Number(player?.points?.["skill-available"]) || 0;
 

@@ -1,480 +1,280 @@
 /* =========================
    MODAL FICHA SKILL
 ========================= */
-
 .ficha-modal{
-
   position:fixed;
   inset:0;
-
   background:rgba(0,0,0,0.7);
-
   display:none;
-
   justify-content:center;
   align-items:center;
-
   z-index:4000;
-
 }
-
-
 
 /* =========================
    JANELA
 ========================= */
-
 .ficha-window{
-
   width:90%;
   max-width:400px;
-
   height:auto;
   max-height:550px;
-
   background:rgba(10,10,10,0.96);
-
   border:1px solid rgba(255,215,120,0.2);
-
   border-radius:16px;
-
   padding:20px;
   padding-bottom:5px;
-
   position:relative;
-
   margin:auto;
-
   overflow:hidden;
-
   text-align:center;
-
   box-sizing:border-box;
-
   display:flex;
   flex-direction:column;
-
 }
-
 
 /* =========================
    BOTÃO FECHAR
 ========================= */
-
 #close-ficha{
-
   position:absolute;
-
   top:10px;
   right:15px;
-
   background:none;
-
   border:none;
-
   padding:0;
-
   width:auto;
   height:auto;
-
   color:#f6d365;
-
   font-size:30px;
-
   line-height:1;
-
   cursor:pointer;
-
   transition:.3s;
-
 }
-
 
 #close-ficha:hover{
-
   transform:scale(1.1);
-
   color:#fff;
-
 }
-
-
 
 /* =========================
    IMAGEM SKILL 3:2
 ========================= */
-
 .ficha-img{
-
   width:250px;
-
   max-width:100%;
-
   aspect-ratio:3 / 2;
-
   object-fit:cover;
-
   border-radius:12px;
-
   border:1px solid rgba(255,215,120,0.2);
-
   margin-bottom:5px;
-
   display:block;
   margin-left:auto;
   margin-right:auto;
-
 }
-
-
 
 /* =========================
    NOME
 ========================= */
-
 #ficha-nome{
-
   color:#f6d365;
-
   font-family:'Cinzel',serif;
-
   font-size:26px;
-
   margin:4px 0 8px;
-
 }
-
-
 
 /* =========================
    DESCRIÇÃO
 ========================= */
-
 #ficha-description{
-
   color:#ddd;
-
   font-size:14px;
-
   line-height:1.5;
-
   text-align:center;
-
   margin:0 10px 20px;
-
 }
 
 /* =========================
    BOX RANK + ATRIBUTOS
 ========================= */
-
 .ficha-status{
-
   width:70%;
-
   margin:0 auto 10px auto;
-
   background:rgba(255,255,255,0.05);
-
   border:1px solid rgba(255,215,120,0.15);
-
   border-radius:10px;
-
   padding:10px;
-
   box-sizing:border-box;
-
 }
-
 
 /* RANK */
-
 .ficha-rank{
-
   text-align:center;
-
   margin-bottom:8px;
-
 }
-
 
 .ficha-rank b{
-
   color:#f6d365;
-
   font-family:'Cinzel',serif;
-
   font-size:16px;
-
 }
-
 
 /* ATRIBUTOS */
-
 .ficha-atributos{
-
   display:grid;
-
   grid-template-columns:1fr 1fr;
-
   gap:4px;
-
 }
-
-
 
 .ficha-atributo{
-
   display:flex;
-
   justify-content:center;
-
   gap:4px;
-
   font-size:12px;
-
 }
-
 
 .ficha-atributo span{
-
   color:#f6d365;
-
   font-family:'Cinzel',serif;
-
   font-weight:bold;
-
 }
-
 
 .ficha-atributo b{
-
   color:#ddd;
-
 }
+
 /* =========================
    TABELA
 ========================= */
-
 .ficha-table{
-
   width:100%;
-
   border-collapse:collapse;
-
   background:rgba(255,255,255,0.05);
-
 }
-
-
 
 .ficha-table td{
-
   border:1px solid rgba(255,215,120,0.15);
-
   padding:8px;
-
   color:#ddd;
-
   font-size:13px;
-
 }
 
-
-
 .ficha-table td:first-child{
-
   width:50%;
-
   color:#f6d365;
-
   font-family:'Cinzel',serif;
-
   font-weight:bold;
-
 }
 
 /* =========================
    SCROLL FICHA
 ========================= */
-
 .ficha-scroll{
-
   overflow-x:hidden;
-
   padding-right:5px;
-
   margin-right:-10px;
-
   box-sizing:border-box;
-
   overflow-y:auto;
-
   flex:0 1 auto;
-
 }
-
 
 .ficha-scroll::-webkit-scrollbar{
-
   width:6px;
-
 }
-
 
 .ficha-scroll::-webkit-scrollbar-track{
-
   background:transparent;
-
 }
-
 
 .ficha-scroll::-webkit-scrollbar-thumb{
-
   background:rgba(246,211,101,0.25);
-
   border-radius:999px;
-
 }
 
-
 .ficha-scroll::-webkit-scrollbar-thumb:hover{
-
   background:rgba(246,211,101,0.45);
-
 }
 
 /* =========================
    MOBILE
 ========================= */
-
 @media(max-width:700px){
-
   .ficha-window{
-
     width:90%;
     max-height:650px;
     padding:18px;
     padding-bottom:5px;
-
   }
 
   .ficha-img{
-
     width:80%;
-
   }
-
 }
 
 /* =========================
    CUSTO + BOTÃO
 ========================= */
-
 .ficha-bottom{
-
   display:flex;
-
   align-items:center;
-
   gap:10px;
-
   margin-top:8px;
   padding-bottom:10px;
-
 }
 
 .ficha-bottom .item-actions{
-
   flex:1;
-
   margin-top:0;
-
 }
 
 /* =========================
    ÁREA STATUS + EFEITO
 ========================= */
-
 .ficha-status-area{
-
-    position:relative;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    width:100%;
-
-    margin-bottom:10px; /* aproxima da tabela */
-
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  margin-bottom:10px; /* aproxima da tabela */
 }
-
 
 /* BOX ATRIBUTOS CENTRALIZADA */
-
 .ficha-status{
-
-    width:70%;
-
-    margin:0 auto;
-
+  width:70%;
+  margin:0 auto;
 }
-
 
 /* EFEITO NO CANTO DIREITO */
-
 .ficha-efeito{
-
-    position:absolute;
-
-    right:3%;
-
-    top:50%;
-
-    transform:translateY(-50%);
-
+  position:absolute;
+  right:3%;
+  top:50%;
+  transform:translateY(-50%);
 }
 
-
 #ficha-efeitoss{
-
-    font-size:20px;
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:center;
-
-    justify-content:center;
-
-    gap:3px;
-
+  font-size:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
 }
 
 /* =========================
    ICONE DOS EFEITOS
 ========================= */
-
 .efeito-icon{
-
-    width:32px;
-
-    height:32px;
-
-    object-fit:contain;
-
-    display:block;
-
+  width:32px;
+  height:32px;
+  object-fit:contain;
+  display:block;
 }
 
 /* =========================
    MAESTRIA
 ========================= */
-
 .maestria-modal {
   display: none;
   position: fixed;
@@ -573,128 +373,18 @@
 }
 
 .maestria-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 12px;
-    background: rgba(0, 0, 0, 0.28);
-    border-radius: 8px;
-    overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .maestria-table th {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffd166;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    padding: 10px 8px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.maestria-table td {
-    padding: 11px 8px;
-    font-size: 13px;
-    text-align: center;
-    color: #d8dee9;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.maestria-table tr:last-child td {
-    border-bottom: none;
-}
-
-.maestria-table tr.nivel-atual {
-    background: rgba(255, 209, 102, 0.14);
-}
-
-.maestria-table tr.nivel-atual td {
-    color: #ffffff;
-    font-weight: 600;
-}
-
-.maestria-table tr.nivel-concluido td {
-    color: #8b95a5;
-}
-
-.maestria-badge {
-    display: inline-block;
-    margin-left: 5px;
-    padding: 2px 6px;
-    font-size: 10px;
-    font-weight: 700;
-    border-radius: 4px;
-    background: #ffd166;
-    color: #12141a;
-    vertical-align: middle;
-}
-
-.maestria-aviso {
-  min-height: 16px;
-  margin: 4px 0 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffd166;
   font-size: 12px;
-  text-align: center;
-  color: #ff6b6b;
-}
-
-.maestria-aviso.sucesso {
-  color: #7ee787;
-}
-
-.maestria-actions {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  justify-content: center;
-}
-
-.maestria-actions button {
-  flex: 1;
-  padding: 9px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 215, 120, 0.25);
-  font-family: 'Cinzel', serif;
-  font-weight: bold;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-#maestria-upgrade-btn {
-  background: rgba(246, 211, 101, 0.18);
-  color: #f6d365;
-}
-
-#maestria-upgrade-btn:hover:not(:disabled) {
-  background: rgba(246, 211, 101, 0.3);
-  color: #fff;
-}
-
-#maestria-upgrade-btn:disabled {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #777;
-  cursor: not-allowed;
-}
-
-#maestria-close-btn {
-  background: rgba(255, 255, 255, 0.07);
-  color: #ddd;
-}
-
-#maestria-close-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
-@media (max-width: 700px) {
-  .maestria-window {
-    width: 92%;
-    padding: 18px 15px;
-  }
-
-  .maestria-header h2 {
-    font-size: 19px;
-  }
-}
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding

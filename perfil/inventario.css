@@ -5,7 +5,8 @@
 .inventory-modal,
 .market-modal,
 .item-modal,
-.skills-modal{
+.skills-modal,
+.points-modal{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,0.7);
@@ -31,7 +32,8 @@
 ========================= */
 
 .inventory-window,
-.item-window{
+.item-window,
+.skills-window{
   width:90%;
   max-width:500px;
   background:rgba(10,10,10,0.96);
@@ -506,7 +508,7 @@
   align-items:center;
   gap:10px;
   margin-top:0px;
-  margin-right:8px; /* 🔥 isso impede colar no botão */
+  margin-right:8px;
 }
 
 

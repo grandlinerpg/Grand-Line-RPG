@@ -127,7 +127,7 @@ window.abrirMaestria = async function (skill, skillUid) {
 
     const pontosDisponiveis = Number(player?.points?.["skill-available"]) || 0;
 
-    document.getElementById("maestria-title").innerText = `MAESTRIA • ${skill.nome || ""}`;
+    document.getElementById("maestria-title").innerText = "MAESTRIA";
     document.getElementById("maestria-subtitle").innerText =
         `${NOMES_RANK[rank] || "RANK " + rank} • NÍVEL ATUAL: ${nivelAtual}`;
     document.getElementById("maestria-col-atributo").innerText = tipoAtributo;

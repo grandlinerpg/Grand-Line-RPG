@@ -476,206 +476,219 @@
 ========================= */
 
 .maestria-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.82);
-    backdrop-filter: blur(4px);
-    z-index: 10050;
-    justify-content: center;
-    align-items: center;
-    padding: 16px;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  z-index: 4100;
 }
 
 .maestria-window {
-    position: relative;
-    background: linear-gradient(180deg, #1b1e26 0%, #12141a 100%);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 14px;
-    width: 100%;
-    max-width: 420px;
-    padding: 22px 20px;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65);
-    color: #f1f1f1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    animation: maestriaFadeIn 0.2s ease-out;
+  position: relative;
+  width: 90%;
+  max-width: 400px;
+  background: rgba(10, 10, 10, 0.96);
+  border: 1px solid rgba(255, 215, 120, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  box-sizing: border-box;
+  color: #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+  animation: maestriaFadeIn 0.2s ease-out;
 }
 
 @keyframes maestriaFadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .maestria-close-x {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    background: transparent;
-    border: none;
-    color: #aaa;
-    font-size: 24px;
-    line-height: 1;
-    cursor: pointer;
-    transition: color 0.2s;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  padding: 0;
+  width: auto;
+  height: auto;
+  color: #f6d365;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 .maestria-close-x:hover {
-    color: #fff;
+  transform: scale(1.1);
+  color: #fff;
 }
 
 .maestria-header {
-    text-align: center;
-    margin-bottom: 12px;
-    width: 100%;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+  padding-right: 20px;
+  box-sizing: border-box;
 }
 
 .maestria-header h2 {
-    margin: 0;
-    font-size: 18px;
-    letter-spacing: 1px;
-    color: #ffd166;
-    text-transform: uppercase;
+  margin: 4px 0;
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  color: #f6d365;
 }
 
 .maestria-header p {
-    margin: 5px 0 0;
-    font-size: 12px;
-    color: #a9b1c2;
-    letter-spacing: 0.5px;
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #bbb;
+  letter-spacing: 0.5px;
 }
 
 .maestria-pontos-box {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 13px;
-    color: #d0d6e2;
-    margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 120, 0.15);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 13px;
+  color: #ddd;
+  margin-bottom: 12px;
 }
 
 .maestria-pontos-box b {
-    color: #4ade80;
+  color: #f6d365;
 }
 
 .maestria-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 12px;
-    background: rgba(0, 0, 0, 0.28);
-    border-radius: 8px;
-    overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 10px;
 }
 
 .maestria-table th {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffd166;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    padding: 10px 8px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 215, 120, 0.15);
+  background: rgba(255, 215, 120, 0.08);
+  color: #f6d365;
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 8px;
+  text-align: center;
 }
 
 .maestria-table td {
-    padding: 11px 8px;
-    font-size: 13px;
-    text-align: center;
-    color: #d8dee9;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.maestria-table tr:last-child td {
-    border-bottom: none;
+  border: 1px solid rgba(255, 215, 120, 0.15);
+  padding: 8px;
+  font-size: 13px;
+  color: #ddd;
+  text-align: center;
 }
 
 .maestria-table tr.nivel-atual {
-    background: rgba(255, 209, 102, 0.14);
+  background: rgba(246, 211, 101, 0.14);
 }
 
 .maestria-table tr.nivel-atual td {
-    color: #ffffff;
-    font-weight: 600;
+  color: #fff;
+  font-weight: bold;
 }
 
 .maestria-table tr.nivel-concluido td {
-    color: #8b95a5;
+  color: #888;
 }
 
 .maestria-badge {
-    display: inline-block;
-    margin-left: 5px;
-    padding: 2px 6px;
-    font-size: 10px;
-    font-weight: 700;
-    border-radius: 4px;
-    background: #ffd166;
-    color: #12141a;
-    vertical-align: middle;
+  display: inline-block;
+  margin-left: 5px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 6px;
+  background: #f6d365;
+  color: #111;
+  vertical-align: middle;
 }
 
 .maestria-aviso {
-    min-height: 18px;
-    margin: 4px 0 12px;
-    font-size: 12px;
-    text-align: center;
-    color: #f87171;
+  min-height: 16px;
+  margin: 4px 0 10px;
+  font-size: 12px;
+  text-align: center;
+  color: #ff6b6b;
 }
 
 .maestria-aviso.sucesso {
-    color: #4ade80;
+  color: #7ee787;
 }
 
 .maestria-actions {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    justify-content: center;
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
 }
 
 .maestria-actions button {
-    flex: 1;
-    padding: 10px 14px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.6px;
-    cursor: pointer;
-    transition: transform 0.15s, opacity 0.2s, background 0.2s;
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 120, 0.25);
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 #maestria-upgrade-btn {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #111;
+  background: rgba(246, 211, 101, 0.18);
+  color: #f6d365;
 }
 
 #maestria-upgrade-btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    filter: brightness(1.08);
+  background: rgba(246, 211, 101, 0.3);
+  color: #fff;
 }
 
 #maestria-upgrade-btn:disabled {
-    background: #374151;
-    color: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.75;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #777;
+  cursor: not-allowed;
 }
 
 #maestria-close-btn {
-    background: rgba(255, 255, 255, 0.12);
-    color: #eee;
+  background: rgba(255, 255, 255, 0.07);
+  color: #ddd;
 }
 
 #maestria-close-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+@media (max-width: 700px) {
+  .maestria-window {
+    width: 92%;
+    padding: 18px 15px;
+  }
+
+  .maestria-header h2 {
+    font-size: 19px;
+  }
 }

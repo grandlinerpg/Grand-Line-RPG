@@ -161,7 +161,7 @@ window.abrirMaestria = async function (skill, skillUid) {
         } else if (lvl === nivelAtual + 1) {
             textoCusto = `${custoEvolucao} PTS`;
         } else {
-            textoCusto = `${custoEvolucao} PTS (Nível ${lvl - 1})`;
+            textoCusto = `${custoEvolucao} PTS`;
         }
 
         const badgeAtual = lvl === nivelAtual ? `<span class="maestria-badge">ATUAL</span>` : "";

@@ -4,7 +4,8 @@
 
 .inventory-modal,
 .market-modal,
-.item-modal{
+.item-modal,
+.skills-modal{
   position:fixed;
   inset:0;
   background:rgba(0,0,0,0.7);
@@ -50,14 +51,16 @@
    HEADER
 ========================= */
 
-.inventory-header{
+.inventory-header,
+.skills-header{
   display:flex;
   align-items:center;
   justify-content:center;
   margin-bottom:18px;
 }
 
-.inventory-header h2{
+.inventory-header h2,
+.skills-header h2{
   color:#f6d365;
   font-family:'Cinzel', serif;
   text-align:center;

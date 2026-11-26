@@ -470,3 +470,212 @@
     display:block;
 
 }
+
+/* =========================
+   MAESTRIA
+========================= */
+
+.maestria-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(4px);
+    z-index: 10050;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+
+.maestria-window {
+    position: relative;
+    background: linear-gradient(180deg, #1b1e26 0%, #12141a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 420px;
+    padding: 22px 20px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65);
+    color: #f1f1f1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: maestriaFadeIn 0.2s ease-out;
+}
+
+@keyframes maestriaFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.maestria-close-x {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.maestria-close-x:hover {
+    color: #fff;
+}
+
+.maestria-header {
+    text-align: center;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.maestria-header h2 {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: #ffd166;
+    text-transform: uppercase;
+}
+
+.maestria-header p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: #a9b1c2;
+    letter-spacing: 0.5px;
+}
+
+.maestria-pontos-box {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #d0d6e2;
+    margin-bottom: 14px;
+}
+
+.maestria-pontos-box b {
+    color: #4ade80;
+}
+
+.maestria-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    background: rgba(0, 0, 0, 0.28);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.maestria-table th {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffd166;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.maestria-table td {
+    padding: 11px 8px;
+    font-size: 13px;
+    text-align: center;
+    color: #d8dee9;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.maestria-table tr:last-child td {
+    border-bottom: none;
+}
+
+.maestria-table tr.nivel-atual {
+    background: rgba(255, 209, 102, 0.14);
+}
+
+.maestria-table tr.nivel-atual td {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.maestria-table tr.nivel-concluido td {
+    color: #8b95a5;
+}
+
+.maestria-badge {
+    display: inline-block;
+    margin-left: 5px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 4px;
+    background: #ffd166;
+    color: #12141a;
+    vertical-align: middle;
+}
+
+.maestria-aviso {
+    min-height: 18px;
+    margin: 4px 0 12px;
+    font-size: 12px;
+    text-align: center;
+    color: #f87171;
+}
+
+.maestria-aviso.sucesso {
+    color: #4ade80;
+}
+
+.maestria-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+}
+
+.maestria-actions button {
+    flex: 1;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.2s, background 0.2s;
+}
+
+#maestria-upgrade-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #111;
+}
+
+#maestria-upgrade-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+}
+
+#maestria-upgrade-btn:disabled {
+    background: #374151;
+    color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+#maestria-close-btn {
+    background: rgba(255, 255, 255, 0.12);
+    color: #eee;
+}
+
+#maestria-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

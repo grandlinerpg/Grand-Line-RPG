@@ -2,26 +2,8 @@
    MODAIS (HIERARQUIA CORRETA)
 ========================= */
 
-.inventory-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-}
-
-.market-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:2000;
-}
-
+.inventory-modal,
+.market-modal,
 .item-modal{
   position:fixed;
   inset:0;
@@ -29,6 +11,17 @@
   display:none;
   justify-content:center;
   align-items:center;
+}
+
+.inventory-modal{
+  z-index:1000;
+}
+
+.market-modal{
+  z-index:2000;
+}
+
+.item-modal{
   z-index:3000;
 }
 
@@ -36,7 +29,8 @@
    JANELA
 ========================= */
 
-.inventory-window{
+.inventory-window,
+.item-window{
   width:90%;
   max-width:500px;
   background:rgba(10,10,10,0.96);
@@ -49,16 +43,7 @@
 }
 
 .item-window{
-  width:90%;
-  max-width:500px;
-  background:rgba(10,10,10,0.96);
-  border:1px solid rgba(255,215,120,0.2);
-  border-radius:16px;
-  padding:22px;
   padding-bottom:16px;
-  position:relative;
-  margin:auto;
-  overflow:hidden;
 }
 
 /* =========================
@@ -299,21 +284,14 @@
 
 .item-actions button{
   flex:1;
-
   padding:12px;
-
   border:1px solid rgba(246,211,101,.25);
   border-radius:10px;
-
   background:rgba(255,255,255,.04);
-
   color:#f6d365;
-
   font-family:'Cinzel',serif;
   font-size:14px;
-
   cursor:pointer;
-
   transition:.25s ease;
 }
 

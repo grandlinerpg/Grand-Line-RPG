@@ -15,15 +15,7 @@
 ========================= */
 
 .skills-window{
-  width:90%;
-  max-width:500px;
-  background:rgba(10,10,10,0.96);
-  border:1px solid rgba(255,215,120,0.2);
-  border-radius:16px;
   padding:22px 22px 15px;
-  position:relative;
-  margin:auto;
-  overflow:hidden;
 }
 
 /* =========================

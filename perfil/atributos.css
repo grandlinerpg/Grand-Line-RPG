@@ -1,15 +1,6 @@
 /* MODAL */
 
 .points-modal{
-  position:fixed;
-  inset:0;
-
-  display:none;
-  justify-content:center;
-  align-items:center;
-
-  background:rgba(0,0,0,0.70);
-
   z-index:9999;
 }
 
@@ -19,7 +10,6 @@
   position:relative;
   width:88%;
   max-width:400px;
-
   background:
     linear-gradient(
       to bottom,

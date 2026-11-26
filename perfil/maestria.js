@@ -30,7 +30,7 @@ function garantirModalMaestria() {
 
                 <div class="maestria-header">
                     <h2 id="maestria-title">MAESTRIA</h2>
-                    <p id="maestria-subtitle">Rank 1 • Nível Atual: 1</p>
+                    <p id="maestria-subtitle">Rank 1 • Nome da Skill</p>
                 </div>
 
                 <div class="maestria-pontos-box">
@@ -127,9 +127,9 @@ window.abrirMaestria = async function (skill, skillUid) {
 
     const pontosDisponiveis = Number(player?.points?.["skill-available"]) || 0;
 
-    document.getElementById("maestria-title").innerText = "MAESTRIA";
+    document.getElementById("maestria-title").innerText = "UPGRADE MAESTRIA";
     document.getElementById("maestria-subtitle").innerText =
-        `${NOMES_RANK[rank] || "RANK " + rank} • NÍVEL ATUAL: ${nivelAtual}`;
+        `${NOMES_RANK[rank] || "RANK " + rank} • ${skill.nome || ""}`;
     document.getElementById("maestria-col-atributo").innerText = tipoAtributo;
     document.getElementById("maestria-pontos-disponiveis").innerText = pontosDisponiveis;
 

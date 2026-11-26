@@ -14,6 +14,24 @@ let skillAtual = null;
 // Precisão base de cada rank de habilidade ofensiva/suplementar (%)
 const PRECISAO_BASE_RANK = { 1: 90, 2: 85, 3: 80, 4: 75, 5: 70 };
 
+// Tabela de valores de ATK/DEF por Rank e Nível (1 a 3)
+export const MAESTRIA_VALORES = {
+    1: { 1: 2,  2: 5,  3: 10 },
+    2: { 1: 4,  2: 10, 3: 20 },
+    3: { 1: 8,  2: 15, 3: 30 },
+    4: { 1: 10, 2: 20, 3: 40 },
+    5: { 1: 15, 2: 30, 3: 50 }
+};
+
+// Custo por evolução conforme o Rank (1 a 5)
+export const MAESTRIA_CUSTO_RANK = {
+    1: 2,
+    2: 4,
+    3: 6,
+    4: 8,
+    5: 10
+};
+
 async function carregarFichaHTML(){
     if(!fichaContainer){
         console.log("ERRO: ficha-container não encontrado");
@@ -164,6 +182,21 @@ window.abrirFicha = async function(
 
     modal.style.display = "flex";
 
+    // Busca nível atual da skill caso o jogador já possua
+    let nivelSkill = 1;
+    if(jaPossui){
+        if(skill?.level !== undefined && skill?.level !== null && skill?.level !== ""){
+            nivelSkill = Number(skill.level) || 1;
+        }else{
+            const uid = window.auth?.currentUser?.uid;
+            if(uid && skillUid){
+                const snapLevel = await get(ref(db, `players/${uid}/skills/${skillUid}/level`));
+                nivelSkill = snapLevel.exists() ? (Number(snapLevel.val()) || 1) : 1;
+            }
+        }
+    }
+    nivelSkill = Math.min(Math.max(nivelSkill, 1), 3);
+
     // reseta linhas escondidas de outra skill
     document
     .querySelectorAll(".ficha-table tr")
@@ -240,72 +273,44 @@ window.abrirFicha = async function(
     }
 
     // =====================
-    // VALORES PADRÃO POR RANK
+    // VALORES PADRÃO POR RANK E MAESTRIA
     // =====================
-    const atributosRank = {
-        1:{
-            stm:2,
-            atk:2,
-            def:2
-        },
-        2:{
-            stm:4,
-            atk:5,
-            def:5
-        },
-        3:{
-            stm:8,
-            atk:10,
-            def:10
-        },
-        4:{
-            stm:15,
-            atk:15,
-            def:15
-        },
-        5:{
-            stm:20,
-            atk:20,
-            def:20
-        }
-    };
-
-    const base = atributosRank[skill.rank] || {};
+    const stmRank = { 1: 2, 2: 4, 3: 8, 4: 15, 5: 20 };
+    const rankNum = Number(skill.rank) || 1;
+    const valorMaestriaAtual = MAESTRIA_VALORES[rankNum]?.[nivelSkill] ?? 2;
 
     // STM sempre
     atualizarAtributo(
         "atributo-stm",
         "ficha-stm",
-        skill.atributos?.stm !== ""
-            ? (skill.atributos?.stm ?? base.stm)
-            : base.stm
+        skill.atributos?.stm !== "" && skill.atributos?.stm !== undefined
+            ? skill.atributos.stm
+            : stmRank[rankNum]
     );
 
     // ATK somente ofensivo
-    atualizarAtributo(
-        "atributo-atk",
-        "ficha-atk",
-        skill.categoria === "Ofensivo"
-        ? (
-            skill.atributos?.atk !== ""
-                ? (skill.atributos?.atk ?? base.atk)
-                : base.atk
-        )
-        : null
-    );
+    let atkFinal = null;
+    if(skill.categoria === "Ofensivo"){
+        const temAtkManual = skill.atributos?.atk !== "" && skill.atributos?.atk !== undefined && skill.atributos?.atk !== null;
+        if(temAtkManual && nivelSkill === 1){
+            atkFinal = skill.atributos.atk;
+        }else{
+            atkFinal = valorMaestriaAtual;
+        }
+    }
+    atualizarAtributo("atributo-atk", "ficha-atk", atkFinal);
 
     // DEF somente defensivo
-    atualizarAtributo(
-        "atributo-def",
-        "ficha-def",
-        skill.categoria === "Defensivo"
-        ? (
-            skill.atributos?.def !== ""
-                ? (skill.atributos?.def ?? base.def)
-                : base.def
-        )        
-        : null
-    );
+    let defFinal = null;
+    if(skill.categoria === "Defensivo"){
+        const temDefManual = skill.atributos?.def !== "" && skill.atributos?.def !== undefined && skill.atributos?.def !== null;
+        if(temDefManual && nivelSkill === 1){
+            defFinal = skill.atributos.def;
+        }else{
+            defFinal = valorMaestriaAtual;
+        }
+    }
+    atualizarAtributo("atributo-def", "ficha-def", defFinal);
 
     // POW manual
     atualizarAtributo(
@@ -324,11 +329,7 @@ window.abrirFicha = async function(
 
     let cooldownValor;
 
-    console.log(skill);
-    console.log("Categoria:", skill.categoria);
-    console.log("Cooldown:", skill.cooldown);
     if (skill.categoria === "Equipamento") {
-        // Equipamentos não usam cooldown padrão
         cooldownValor = skill.cooldown || "";
     } else {
         const cooldownBase = cooldownRank[skill.rank] ?? "-";
@@ -418,18 +419,6 @@ window.abrirFicha = async function(
 
     if(nivelInfo){
         if(jaPossui){
-            let nivelSkill = skill?.level;
-
-            if(nivelSkill === undefined || nivelSkill === null || nivelSkill === ""){
-                const uid = window.auth?.currentUser?.uid;
-                if(uid && skillUid){
-                    const snapLevel = await get(ref(db, `players/${uid}/skills/${skillUid}/level`));
-                    nivelSkill = snapLevel.exists() ? snapLevel.val() : 1;
-                }else{
-                    nivelSkill = 1;
-                }
-            }
-
             nivelInfo.innerText = `NÍVEL ${nivelSkill}`;
             nivelInfo.style.display = "flex";
         }else{
@@ -452,7 +441,8 @@ window.abrirFicha = async function(
     }
 
     if(maestriaBtn){
-        if(jaPossui){
+        const temMaestria = jaPossui && (skill.categoria === "Ofensivo" || skill.categoria === "Defensivo");
+        if(temMaestria){
             maestriaBtn.style.display = "block";
             maestriaBtn.onclick = () => {
                 if(window.abrirMaestria){
@@ -469,9 +459,6 @@ window.abrirFicha = async function(
 
     if(editBtn){
         const podeEditar = await verificarPermissao(3);
-
-        console.log("mostrarEditar:", mostrarEditar);
-        console.log("podeEditar:", podeEditar);
 
         if(mostrarEditar && podeEditar){
             editBtn.style.display = "block";

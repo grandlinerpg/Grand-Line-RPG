@@ -26,19 +26,6 @@
   margin-bottom:12px;
 }
 
-#skills-category,
-#market-skills-category{
-  width:100%;
-  padding:10px 12px;
-  border-radius:10px;
-  border:1px solid rgba(246,211,101,.2);
-  background:rgba(20,20,20,.95);
-  color:#f6d365;
-  font-family:'Cinzel', serif;
-  font-size:14px;
-  outline:none;
-}
-
 /* =========================
    BOX PONTOS
 ========================= */
@@ -146,23 +133,14 @@
 ========================= */
 
 .skills-category{
-
   color:#f6d365;
-
   font-family:'Cinzel', serif;
-
   font-size:13px;
-
   text-transform:uppercase;
-
   letter-spacing:1px;
-
   padding:8px 10px;
-
   margin-top:8px;
-
   border-left:2px solid rgba(246,211,101,0.4);
-
   background:rgba(255,255,255,0.03);
 }
 
@@ -171,20 +149,13 @@
 ========================= */
 
 .skill-item{
-
   background:rgba(255,255,255,0.05);
-
   border:1px solid rgba(255,215,120,0.15);
-
   border-radius:10px;
-
   height:44px;
-
   padding:0 12px;
-
   display:flex;
   align-items:center;
-
   transition:0.2s;
 }
 
@@ -193,13 +164,9 @@
 }
 
 .skill-item span{
-
   color:#f6d365;
-
   font-family:'Cinzel', serif;
-
   font-size:12px;
-
   text-transform:uppercase;
 }
 
@@ -209,41 +176,27 @@
 
 .skills-divider{
   height:2px;
-
   background:rgba(246,211,101,0.40);
-
   margin:10px 0;
 }
 
 .skill-rank{
-
   display:flex;
   align-items:center;
-
   gap:10px;
-
   margin:12px 0 6px;
-
   color:#f6d365;
-
   font-family:'Cinzel', serif;
-
   font-size:13px;
-
   letter-spacing:1px;
-
   text-transform:uppercase;
 }
 
 .skill-rank::before,
 .skill-rank::after{
-
   content:"";
-
   flex:1;
-
   height:1px;
-
   background:rgba(246,211,101,0.35);
 }
 /* =========================

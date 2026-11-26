@@ -153,7 +153,8 @@
   border:1px solid rgba(255,215,120,0.15);
   border-radius:10px;
   height:44px;
-  padding:0 12px;
+  gap:10px;
+  padding:10px;
   display:flex;
   align-items:center;
   transition:0.2s;
@@ -265,12 +266,6 @@
 imagem
 ========================= */
 
-.skill-item{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px;
-}
 
 /* IMAGEM 3:2 */
 .skill-icon{

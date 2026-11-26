@@ -74,7 +74,8 @@
 ========================= */
 
 .inventory-close-btn,
-.close-item-x{
+.close-item-x,
+.close-skills{
   position:absolute;
   top:10px;
   right:15px;
@@ -91,7 +92,8 @@
 }
 
 .inventory-close-btn:hover,
-.close-item-x:hover{
+.close-item-x:hover,
+.close-skills:hover{
   transform:scale(1.1);
   color:#fff;
 }

@@ -573,54 +573,60 @@
 }
 
 .maestria-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.05);
-  margin-bottom: 10px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    background: rgba(0, 0, 0, 0.28);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .maestria-table th {
-  border: 1px solid rgba(255, 215, 120, 0.15);
-  background: rgba(255, 215, 120, 0.08);
-  color: #f6d365;
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 8px;
-  text-align: center;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffd166;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .maestria-table td {
-  border: 1px solid rgba(255, 215, 120, 0.15);
-  padding: 8px;
-  font-size: 13px;
-  color: #ddd;
-  text-align: center;
+    padding: 11px 8px;
+    font-size: 13px;
+    text-align: center;
+    color: #d8dee9;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.maestria-table tr:last-child td {
+    border-bottom: none;
 }
 
 .maestria-table tr.nivel-atual {
-  background: rgba(246, 211, 101, 0.14);
+    background: rgba(255, 209, 102, 0.14);
 }
 
 .maestria-table tr.nivel-atual td {
-  color: #fff;
-  font-weight: bold;
+    color: #ffffff;
+    font-weight: 600;
 }
 
 .maestria-table tr.nivel-concluido td {
-  color: #888;
+    color: #8b95a5;
 }
 
 .maestria-badge {
-  display: inline-block;
-  margin-left: 5px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: bold;
-  border-radius: 6px;
-  background: #f6d365;
-  color: #111;
-  vertical-align: middle;
+    display: inline-block;
+    margin-left: 5px;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 4px;
+    background: #ffd166;
+    color: #12141a;
+    vertical-align: middle;
 }
 
 .maestria-aviso {

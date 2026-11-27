@@ -21,6 +21,13 @@ const ESSENCIAS_RANK = {
     5: 6
 };
 
+const PERCENTUAL_PROPRIEDADE = {
+    cortante: 0.12,
+    perfurante: 0.12,
+    sobrenatural: 0.10,
+    contundente: 0.10
+};
+
 function obterCustoEssencia(rank) {
     const r = Number(rank) || 1;
     return ESSENCIAS_RANK[r] || r;
@@ -33,6 +40,40 @@ function normalizar(str) {
         .toLowerCase()
         .replace(/\s+/g, ' ')
         .trim();
+}
+
+function obterPropriedadesSkill(skill) {
+    const prop = skill?.propriedade;
+    if (!prop) return [];
+
+    let valores = [];
+    if (Array.isArray(prop)) {
+        valores = prop;
+    } else if (typeof prop === 'object') {
+        valores = Object.values(prop);
+    } else if (typeof prop === 'string') {
+        valores = [prop];
+    }
+
+    return valores
+        .map(v => normalizar(v))
+        .filter(Boolean);
+}
+
+function obterPercentualResSkill(skill) {
+    const props = obterPropriedadesSkill(skill);
+    if (!props.length) return 0.10;
+
+    let maior = null;
+    for (const p of props) {
+        if (PERCENTUAL_PROPRIEDADE[p] !== undefined) {
+            if (maior === null || PERCENTUAL_PROPRIEDADE[p] > maior) {
+                maior = PERCENTUAL_PROPRIEDADE[p];
+            }
+        }
+    }
+
+    return maior !== null ? maior : 0.10;
 }
 
 function entradasObjeto(obj) {
@@ -248,6 +289,19 @@ async function handleComboCommands(sock, m, text, from) {
             return true;
         }
 
+        if (ehClash) {
+            const propsAtaque = Array.isArray(arenaAtiva.ataquePendentePropriedades) ? arenaAtiva.ataquePendentePropriedades : [];
+            const propsClash = obterPropriedadesSkill(skill);
+            const temPropriedadeIgual = propsClash.some(p => propsAtaque.includes(p));
+
+            if (propsAtaque.length > 0 && !temPropriedadeIgual) {
+                await sock.sendMessage(from, {
+                    text: `⚠️ A habilidade *${skill.nome}* não possui nenhuma propriedade em comum com o ataque recebido para realizar o *!clash*!`
+                }, { quoted: m });
+                return true;
+            }
+        }
+
         const jogadorInfo = playersData[jogadorArena.uid] || buscarJogadorPorSender(playersData, senderId);
         const statsBase = jogadorInfo?.player?.stats || jogadorInfo?.stats || {};
         const forAtual = Number(statsBase.str) || 0;
@@ -287,6 +341,9 @@ async function handleComboCommands(sock, m, text, from) {
         // Desconta as essências do jogador ao usar a skill com sucesso
         jogadorArena.essencias -= essenciaNecessaria;
 
+        const percSkill = obterPercentualResSkill(skill);
+        const percLabel = Math.round(percSkill * 100);
+
         // ─────────────────────────────────────────────
         // PROCESSAMENTO DE ATAQUE (!atk)
         // ─────────────────────────────────────────────
@@ -296,6 +353,7 @@ async function handleComboCommands(sock, m, text, from) {
 
             if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === oponenteArena.uid) {
                 const atkAntigo = arenaAtiva.ataquePendente;
+                const percAntigo = Number(arenaAtiva.ataquePendentePerc) || 0.10;
                 const resAntigaOp = Number(oponenteArena.res);
                 const hpAntigoOp = Number(oponenteArena.hp);
 
@@ -303,18 +361,20 @@ async function handleComboCommands(sock, m, text, from) {
                 if (atkAntigo > resAntigaOp) {
                     danoHpAntigo = atkAntigo - resAntigaOp;
                 }
-                const reducaoResAntiga = Math.floor(atkAntigo * 0.10);
+                const reducaoResAntiga = Math.floor(atkAntigo * percAntigo);
                 oponenteArena.res = Math.max(0, resAntigaOp - reducaoResAntiga);
                 oponenteArena.hp = Math.max(0, hpAntigoOp - danoHpAntigo);
             }
 
             arenaAtiva.ataquePendente = ataqueTotal;
             arenaAtiva.ataquePendenteAlvo = oponenteArena.uid;
+            arenaAtiva.ataquePendentePropriedades = obterPropriedadesSkill(skill);
+            arenaAtiva.ataquePendentePerc = percSkill;
 
             const resAtualOp = Number(oponenteArena.res);
             const hpAtualOp = Number(oponenteArena.hp);
 
-            const reducaoRes = Math.floor(ataqueTotal * 0.10);
+            const reducaoRes = Math.floor(ataqueTotal * percSkill);
             const resRestante = Math.max(0, resAtualOp - reducaoRes);
 
             let danoHp = 0;
@@ -343,7 +403,7 @@ async function handleComboCommands(sock, m, text, from) {
             const legendaAtk = `*${skillNomeFormatado}*\n\n` +
                                `> Atk: ${atkSkill} + ${forAtual} (For) = ${ataqueTotal}\n\n` +
                                `${textoResumoSimulado}\n\n` +
-                               `> Res: ${resAtualOp} - ${reducaoRes} (10%) = ${resRestante}\n` +
+                               `> Res: ${resAtualOp} - ${reducaoRes} (${percLabel}%) = ${resRestante}\n` +
                                `> HP: ${hpAtualOp} - ${danoHp} = ${hpRestante}\n\n`;
 
             if (imagemBuffer) {
@@ -364,15 +424,21 @@ async function handleComboCommands(sock, m, text, from) {
             const defTotal = defSkill + metadeFor;
 
             let ataqueRecebido = 0;
+            let percAtaqueRecebido = percSkill;
             if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === jogadorArena.uid) {
                 ataqueRecebido = arenaAtiva.ataquePendente;
+                percAtaqueRecebido = Number(arenaAtiva.ataquePendentePerc) || percSkill;
                 delete arenaAtiva.ataquePendente;
                 delete arenaAtiva.ataquePendenteAlvo;
+                delete arenaAtiva.ataquePendentePropriedades;
+                delete arenaAtiva.ataquePendentePerc;
             }
+
+            const percDefLabel = Math.round(percAtaqueRecebido * 100);
 
             let resAtual = Number(jogadorArena.res);
             if (ataqueRecebido > 0) {
-                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * 0.10);
+                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * percAtaqueRecebido);
                 resAtual = Math.min(100, resAtual + reducaoAntigaSimulada);
                 let danoHpAnterior = 0;
                 if (ataqueRecebido > resAtual) {
@@ -393,7 +459,7 @@ async function handleComboCommands(sock, m, text, from) {
                 if (ataqueRecebido > defTotal) {
                     const danoRestante = ataqueRecebido - defTotal;
                     
-                    reducaoRes = Math.floor(danoRestante * 0.10);
+                    reducaoRes = Math.floor(danoRestante * percAtaqueRecebido);
                     resRestante = Math.max(0, resAtual - reducaoRes);
 
                     if (danoRestante > resAtual) {
@@ -423,7 +489,7 @@ async function handleComboCommands(sock, m, text, from) {
             const legendaDef = `*${skillNomeFormatado}*\n\n` +
                                `> Def: ${defSkill} + ${metadeFor} (50% For) = ${defTotal}\n\n` +
                                `${textoResumoDef}\n\n` +
-                               `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
+                               `> Res: ${resAtual} - ${reducaoRes} (${percDefLabel}%) = ${resRestante}\n` +
                                `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n`;
 
             if (imagemBuffer) {
@@ -444,15 +510,21 @@ async function handleComboCommands(sock, m, text, from) {
             const clashTotal = atkSkill + forAtual;
 
             let ataqueRecebido = 0;
+            let percAtaqueRecebido = percSkill;
             if (arenaAtiva.ataquePendente && arenaAtiva.ataquePendenteAlvo === jogadorArena.uid) {
                 ataqueRecebido = arenaAtiva.ataquePendente;
+                percAtaqueRecebido = Number(arenaAtiva.ataquePendentePerc) || percSkill;
                 delete arenaAtiva.ataquePendente;
                 delete arenaAtiva.ataquePendenteAlvo;
+                delete arenaAtiva.ataquePendentePropriedades;
+                delete arenaAtiva.ataquePendentePerc;
             }
+
+            const percClashLabel = Math.round(percAtaqueRecebido * 100);
 
             let resAtual = Number(jogadorArena.res);
             if (ataqueRecebido > 0) {
-                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * 0.10);
+                const reducaoAntigaSimulada = Math.floor(ataqueRecebido * percAtaqueRecebido);
                 resAtual = Math.min(100, resAtual + reducaoAntigaSimulada);
                 let danoHpAnterior = 0;
                 if (ataqueRecebido > resAtual) {
@@ -474,7 +546,7 @@ async function handleComboCommands(sock, m, text, from) {
                     textoResumoClash = `Sua investida anulou completamente o ataque rival!`;
                 } else {
                     const diferencaDano = ataqueRecebido - clashTotal;
-                    reducaoRes = Math.floor(diferencaDano * 0.10);
+                    reducaoRes = Math.floor(diferencaDano * percAtaqueRecebido);
                     resRestante = Math.max(0, resAtual - reducaoRes);
 
                     if (diferencaDano > resAtual) {
@@ -503,7 +575,7 @@ async function handleComboCommands(sock, m, text, from) {
             const legendaClash = `*${skillNomeFormatado}*\n\n` +
                                  `> Atk: ${atkSkill} + ${forAtual} (For) = ${clashTotal}\n\n` +
                                  `${textoResumoClash}\n\n` +
-                                 `> Res: ${resAtual} - ${reducaoRes} (10%) = ${resRestante}\n` +
+                                 `> Res: ${resAtual} - ${reducaoRes} (${percClashLabel}%) = ${resRestante}\n` +
                                  `> HP: ${hpAtual} - ${danoHp} = ${hpRestante}\n\n`;
 
             if (imagemBuffer) {
